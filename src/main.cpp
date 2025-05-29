@@ -99,8 +99,13 @@ int main(int argc, char** argv) {
         ComputeEnergy::get_all_inputs(input_file, sequence, structure);
 
     for (ComputeEnergy::RNAEntry& current : inputs) {
-        // std::cout << "Name: " << current.name << " Sequence: " << current.sequence << "
-        // Structure: " << current.structure << std::endl;
+        std::cout << "Name: " << current.name << " Sequence: " << current.sequence
+                  << "\nStructure: " << current.structure << std::endl;
+
+        for (int n : current.get_pairings()) {
+            std::cout << n << " ";
+        }
+        std::cout << std::endl;
     }
     return 0;
 }

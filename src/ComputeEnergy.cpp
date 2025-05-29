@@ -2,19 +2,14 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-namespace ComputeEnergy {
+#include "RNARegions/RNAEntry.hpp"
 
-/**
- * @brief Represents the parser's state during file processing.
- *
- * Used internally in get_all_file_entries() to track whether the parser
- * is currently reading a name, sequence, or structure.
- */
-enum class ParserState { UNINITIALIZED = -1, NAME = 0, SEQUENCE = 1, STRUCTURE = 2 };
+namespace ComputeEnergy {
 
 /**
  * @brief Trims leading and trailing whitespace from a string.
@@ -201,6 +196,10 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
         }
     }
     return !structure.empty() && paren == 0 && square == 0;
+}
+
+void dostuff() {
+    std::vector<Region> stack;
 }
 
 }  // namespace ComputeEnergy

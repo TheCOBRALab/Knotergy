@@ -13,6 +13,28 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(ComputEnergySources
     src/ComputeEnergy.cpp
+    src/RNARegions/Bands.cpp
+)
+
+# Enable debug symbols and extra warnings
+set(CMAKE_BUILD_TYPE Debug)
+
+# Enable maximum warnings and debugging info for GCC, Clang, and MSVC
+add_compile_options(
+    -g
+    -O0
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wshadow
+    -Wconversion
+    -Wsign-conversion
+    -fsanitize=address
+    -fno-omit-frame-pointer
+)
+
+add_link_options(
+    -fsanitize=address
 )
 
 add_library(ComputeEnergyLib ${ComputEnergySources})
