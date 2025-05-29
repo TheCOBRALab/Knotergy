@@ -52,15 +52,15 @@ void Bands::aux_Find_bands(size_t border1, size_t border2, size_t* NumberOfBands
         j = entry.get_pairings()[i];
         i_prime = i;
         j_prime = j;
-        while (true) {
+        i_help = pattern[i_prime].next;
+        j_help = pattern[j_prime].prev;
+        while (entry.get_pairings()[i_help] == j_help) {
+            i_prime = i_help;
+            j_prime = j_help;
             i_help = pattern[i_prime].next;
             j_help = pattern[j_prime].prev;
-            if (entry.get_pairings()[i_help] == j_help) {
-                i_prime = i_help;
-                j_prime = j_help;
-            } else
-                break;
         }
+
         // found the borders of the band region, now set them in pattern
         pattern[i].is_band_start = true;
         pattern[j_prime].is_band_start = true;

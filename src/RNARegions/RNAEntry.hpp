@@ -20,10 +20,8 @@ struct RNAEntry {
     std::vector<int>& get_pairings() {
         // builtin_expect just tells the compiler that this case is unlikely to happen. It's used
         // for optimization
-        if (__builtin_expect(
-                (sequence != last_checked_sequence || structure != last_checked_structure), 0)) {
+        if (__builtin_expect((structure != last_checked_structure), 0)) {
             update_pairings();
-            last_checked_sequence = sequence;
             last_checked_structure = structure;
         }
         return pairings;
@@ -35,7 +33,6 @@ struct RNAEntry {
 
     // Used to check if either structure or sequence has changed since last time the user got the
     // pairings
-    std::string last_checked_sequence = "";
     std::string last_checked_structure = "";
 
     /**
