@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "RNARegions/Bands.hpp"
 #include "RNARegions/RNAEntry.hpp"
 
 namespace ComputeEnergy {
@@ -72,34 +73,36 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
         // '>' is a header line indicator, indicating the start of a new entry
         if (line[0] == '>') {
             if (state != ParserState::UNINITIALIZED) {
-                if (current.sequence.empty() || current.structure.empty()) {
+                if (current.get_sequence().empty() || current.get_structure().empty()) {
                     throw std::runtime_error(
-                        "Error: Sequence and/or structure are empty for entry: " + current.name +
-                        ". Line number: " + std::to_string(line_number));
+                        "Error: Sequence and/or structure are empty for entry: " +
+                        current.get_name() + ". Line number: " + std::to_string(line_number));
                 }
-                if (current.sequence.length() != current.structure.length()) {
+                if (current.get_sequence().length() != current.get_structure().length()) {
                     throw std::runtime_error(
                         "Error: Sequence and structure are not the same length in entry: " +
-                        current.name + ". Line number: " + std::to_string(line_number));
+                        current.get_name() + ". Line number: " + std::to_string(line_number));
                 }
                 entries.push_back(current);
                 current = {};
             }
-            current.name = line.substr(1);
+            current.set_name(line.substr(1));
             state = ParserState::SEQUENCE;
         } else if (state == ParserState::SEQUENCE) {
             if (!validate_sequence(line)) {
-                throw std::runtime_error("Error: Sequence is invalid for entry: " + current.name +
-                                         ". Line number: " + std::to_string(line_number));
+                throw std::runtime_error(
+                    "Error: Sequence is invalid for entry: " + current.get_name() +
+                    ". Line number: " + std::to_string(line_number));
             }
-            current.sequence = line;
+            current.set_sequence(line);
             state = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
             if (!validate_structure(line)) {
-                throw std::runtime_error("Error: Structure is invalid for entry: " + current.name +
-                                         ". Line number: " + std::to_string(line_number));
+                throw std::runtime_error(
+                    "Error: Structure is invalid for entry: " + current.get_name() +
+                    ". Line number: " + std::to_string(line_number));
             }
-            current.structure = line;
+            current.set_structure(line);
             state = ParserState::NAME;
         } else {
             // Should never reach here
@@ -109,11 +112,14 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
     }
 
     // Saves the last entry
-    if (!current.name.empty() && !current.sequence.empty() && !current.structure.empty()) {
+    if (!current.get_name().empty() && !current.get_sequence().empty() &&
+        !current.get_structure().empty()) {
         entries.push_back(current);
-    } else if (!current.name.empty() && (current.sequence.empty() || current.structure.empty())) {
-        throw std::runtime_error("Error: Sequence and/or structure are empty for entry: " +
-                                 current.name + ". Line number: " + std::to_string(line_number));
+    } else if (!current.get_name().empty() &&
+               (current.get_sequence().empty() || current.get_structure().empty())) {
+        throw std::runtime_error(
+            "Error: Sequence and/or structure are empty for entry: " + current.get_name() +
+            ". Line number: " + std::to_string(line_number));
     }
 
     return entries;
@@ -198,8 +204,16 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
     return !structure.empty() && paren == 0 && square == 0;
 }
 
-void dostuff() {
+void dostuff(RNAEntry entry) {
     std::vector<Region> stack;
+    Bands band{entry};
+    printf("Seq: %s \n", entry.get_sequence().c_str());
+    printf("Size: %ld \n", entry.get_sequence().size());
+    for (size_t i = 1; i < entry.get_sequence().size(); ++i) {
+        // printf("%d ", entry.get_pairings()[i]);
+    }
+    printf("\n-------------------------------\n Making the Loop Tree\n");
+    // Loop* L = new Loop(0, MaxN + 1, R, B, s);
 }
 
 }  // namespace ComputeEnergy

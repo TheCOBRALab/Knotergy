@@ -6,34 +6,45 @@
 #include <vector>
 
 namespace ComputeEnergy {
-struct RNAEntry {
-    std::string name;
-    std::string sequence;
-    std::string structure;
-
-    RNAEntry(std::string n, std::string s, std::string st)
-        : name(std::move(n)), sequence(std::move(s)), structure(std::move(st)) {}
+class RNAEntry {
+   public:
+    RNAEntry(std::string name_, std::string sequence_, std::string structure_) {
+        name = std::move(name_);
+        sequence = std::move(sequence_);
+        set_structure(std::move(structure_));  // makes call to update pairings
+    }
 
     // Default constructor (needed for vector resizing or default initialization)
     RNAEntry() = default;
 
-    std::vector<int>& get_pairings() {
-        // builtin_expect just tells the compiler that this case is unlikely to happen. It's used
-        // for optimization
-        if (__builtin_expect((structure != last_checked_structure), 0)) {
-            update_pairings();
-            last_checked_structure = structure;
+    // Getters
+    [[nodiscard]] const std::string& get_name() const { return name; }
+    [[nodiscard]] const std::string& get_sequence() const { return sequence; }
+    [[nodiscard]] const std::string& get_structure() const { return structure; }
+    [[nodiscard]] size_t get_first_pair_index() const { return first_pair_index; }
+    [[nodiscard]] const std::vector<int>& get_pairings() const {
+        if (sequence.size() != structure.size()) {
+            std::cerr << "Warning: Sequence and Structure are different sizes.\n"
+                      << "Sequence: " << sequence << "\n"
+                      << "Structure: " << structure << std::endl;
         }
         return pairings;
     }
 
-   private:
-    std::vector<int>
-        pairings;  // [4, -1, -1, 1] the number represents the index that base is paired to
+    // Setters
+    void set_name(std::string name_) { name = name_; }
+    void set_sequence(std::string sequence_) { sequence = sequence_; }
+    void set_structure(std::string structure_) {
+        structure = structure_;
+        update_pairings();
+    }
 
-    // Used to check if either structure or sequence has changed since last time the user got the
-    // pairings
-    std::string last_checked_structure = "";
+   private:
+    std::string name;
+    std::string sequence;
+    std::string structure;
+    std::vector<int> pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
+    size_t first_pair_index = 0;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -59,13 +70,7 @@ struct RNAEntry {
      *   - Opening brackets remain unmatched at the end
      */
     void update_pairings() {
-        if (sequence.size() != structure.size()) {
-            std::cerr << "Warning: Sequence and Structure are different sizes.\n"
-                      << "Sequence: " << sequence << "\n"
-                      << "Structure: " << structure << std::endl;
-        }
-
-        pairings.assign(sequence.size(), -1);  // pre-allocate pairings with -1
+        pairings.assign(structure.size(), -1);  // pre-allocate pairings with -1
         std::stack<size_t> brackets;
         std::stack<size_t> pseudoknots;
         size_t j;
@@ -75,9 +80,15 @@ struct RNAEntry {
                 case '.':
                     break;
                 case '(':
+                    if (!first_pair_index) {
+                        first_pair_index = i;
+                    }
                     brackets.push(i);
                     break;
                 case '[':
+                    if (!first_pair_index) {
+                        first_pair_index = i;
+                    }
                     pseudoknots.push(i);
                     break;
                 case ')':
@@ -106,11 +117,10 @@ struct RNAEntry {
                         std::string(1, structure[i]) + "\nSequence: " + sequence +
                         "\nStructure: " + structure);
             }
-            if (!brackets.empty() || !pseudoknots.empty()) {
-                throw std::runtime_error(
-                    "Unmatched opening brackets in RNA structure.\nSequence: " + sequence +
-                    "\nStructure: " + structure);
-            }
+        }
+        if (!brackets.empty() || !pseudoknots.empty()) {
+            throw std::runtime_error("Unmatched opening brackets in RNA structure.\nSequence: " +
+                                     sequence + "\nStructure: " + structure);
         }
     }
 };
