@@ -21,7 +21,6 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence; }
     [[nodiscard]] const std::string& get_structure() const { return structure; }
-    [[nodiscard]] size_t get_first_pair_index() const { return first_pair_index; }
     [[nodiscard]] const std::vector<int>& get_pairings() const {
         if (sequence.size() != structure.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
@@ -44,7 +43,6 @@ class RNAEntry {
     std::string sequence;
     std::string structure;
     std::vector<int> pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
-    size_t first_pair_index = 0;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -80,15 +78,9 @@ class RNAEntry {
                 case '.':
                     break;
                 case '(':
-                    if (!first_pair_index) {
-                        first_pair_index = i;
-                    }
                     brackets.push(i);
                     break;
                 case '[':
-                    if (!first_pair_index) {
-                        first_pair_index = i;
-                    }
                     pseudoknots.push(i);
                     break;
                 case ')':

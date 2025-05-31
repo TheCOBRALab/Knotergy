@@ -6,10 +6,7 @@
 
 namespace ComputeEnergy {
 
-size_t first_pair_index;  // for debugging
-
 Bands::Bands(RNAEntry& entry_) : entry(entry_) {
-    first_pair_index = entry.get_first_pair_index() + 1;
     // Index 0 is unused to simplify boundary logic — acts like a dummy head node
     size_t n = entry.get_structure().size();
     pattern.resize(n + 1);
@@ -29,10 +26,13 @@ Bands::Bands(RNAEntry& entry_) : entry(entry_) {
 /*********************************************************************************
 Find_next_good_index: returns the start of the next band region
 *********************************************************************************/
-size_t Bands::find_next_good_index(size_t start_index, size_t end_index) {
-    size_t i = start_index;
-    while ((pattern[i].is_band_start == true) && (i < end_index + 1)) {
-        i = pattern[i].next;
+size_t Bands::find_next_good_index(size_t start, size_t end) {
+    const std::size_t max_idx = entry.get_structure().size();
+    const std::size_t last_safe = std::min(end, max_idx - 1);
+
+    size_t i = start;
+    while (i <= last_safe && pattern[i].is_band_start) {
+        i = pattern[i].next;  // Assumes `next` is always valid
     }
     return i;
 }
@@ -50,14 +50,14 @@ Number of Bands and the pointer to the last band region.
 std::pair<size_t, size_t> Bands::aux_find_bands(size_t border1, size_t border2) {
     size_t i, j, i_prime, j_prime;  // the bands will be [i,i_prime] [j_prime,j]
     size_t next_left_candidate, next_right_candidate;
-    size_t number_of_bands{0}, current_band_region{0};
+    size_t band_count{0}, current_band_region{0};
 
     const std::vector<int>& pairings = entry.get_pairings();
     i = find_next_good_index(border1, border2);
 
     while (i < border2 + 1) {
         // find the borders i, i_prime, j, j_prime
-        ++number_of_bands;
+        ++band_count;
         if (pairings[i] < 0) {
             throw std::runtime_error("Error: unpaired base in \"good index\"");
         }
@@ -93,7 +93,7 @@ std::pair<size_t, size_t> Bands::aux_find_bands(size_t border1, size_t border2) 
         // starting from the next possible base pair outside of [i,i_prime])
         i = find_next_good_index(pattern[i].next, border2);
     }
-    return {number_of_bands, current_band_region};
+    return {band_count, current_band_region};
 }
 
 void Bands::update_links(size_t from, size_t to) {
@@ -109,9 +109,9 @@ size_t Bands::next(size_t i) const {
     return pattern[i].next;
 }
 
-void Bands::print_pairings(size_t hint) {
+void Bands::print_pairings() {
     size_t last_index_seen = 0;
-    size_t i = hint;
+    size_t i = 1;
     while (i > last_index_seen) {
         std::cout << i << std::endl;
         pattern[i].print_band();

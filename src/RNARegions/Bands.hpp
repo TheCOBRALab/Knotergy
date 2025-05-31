@@ -41,7 +41,7 @@ class Bands {
     std::pair<size_t, size_t> aux_find_bands(size_t border1, size_t border2);
     size_t prev(size_t i) const;
     size_t next(size_t i) const;
-    void print_pairings(size_t hint = 1);
+    void print_pairings();
     std::vector<B_pattern> pattern;
     RNAEntry entry;
 };
