@@ -217,4 +217,4 @@ void dostuff(RNAEntry entry) {
     // Loop* L = new Loop(0, MaxN + 1, R, B, s);
 }
 
-}  // namespace ComputeEnergy
+}  // namespace compute_energy

@@ -2,32 +2,28 @@
 
 #include <vector>
 
-#include "RNAEntry.hpp"
 #include "../helpers/common.hpp"
+#include "RNAEntry.hpp"
 
 namespace compute_energy {
-
-// max size of size_t
-
 
 Bands::Bands(RNAEntry& entry) : entry_(entry) {
     size_t n = entry_.get_structure().size();
     pattern.resize(n + 1);  // includes dummy head at index 0
 
     // Index 0 acts like a dummy head node and tells us the index of the first pairing
-    pattern[0] = B_pattern{false, (n > 0 ? 1 : null_index), null_index, 0};
+    pattern[0] = B_pattern{false, (n > 0 ? 1 : NULL_INDEX), NULL_INDEX, 0};
 
     for (size_t i = 1; i < n; ++i) {
         pattern[i] = B_pattern{false, i + 1, i - 1, 0};
     }
-    pattern[n] = B_pattern{false, null_index, n - 1, 0};  // last element has no "next"
+    pattern[n] = B_pattern{false, NULL_INDEX, n - 1, 0};  // last element has no "next"
 
     for (size_t i = 1; i <= n; ++i) {
-        if (entry_.get_pairings()[i - 1] < 0) {
+        if (entry_.get_pairings()[i - 1] == NULL_INDEX) {
             unlink(i);
         }
     }
-    print_pairings();
 }
 
 /*********************************************************************************
@@ -59,21 +55,21 @@ std::pair<size_t, size_t> Bands::aux_find_bands(size_t border1, size_t border2) 
     size_t next_left_candidate, next_right_candidate;
     size_t band_count{0}, current_band_region{0};
 
-    const std::vector<int>& pairings = entry_.get_pairings();
+    const std::vector<size_t>& pairings = entry_.get_pairings();
     i = find_next_good_index(border1, border2);
 
     while (i < border2 + 1) {
         // find the borders i, i_prime, j, j_prime
         ++band_count;
-        if (pairings[i] < 0) {
+        if (pairings[i] == NULL_INDEX) {
             throw std::runtime_error("Error: unpaired base in \"good index\"");
         }
-        j = static_cast<size_t>(pairings[i]);
+        j = pairings[i];
         i_prime = i;
         j_prime = j;
         next_left_candidate = pattern[i_prime].next;
         next_right_candidate = pattern[j_prime].prev;
-        while (pairings[next_left_candidate] == static_cast<int>(next_right_candidate)) {
+        while (pairings[next_left_candidate] == next_right_candidate) {
             i_prime = next_left_candidate;
             j_prime = next_right_candidate;
             next_left_candidate = pattern[i_prime].next;
@@ -109,8 +105,8 @@ void Bands::update_links(size_t from, size_t to) {
 }
 
 void Bands::unlink(size_t idx) {
-    if (pattern[idx].prev != null_index) pattern[pattern[idx].prev].next = pattern[idx].next;
-    if (pattern[idx].next != null_index) pattern[pattern[idx].next].prev = pattern[idx].prev;
+    if (pattern[idx].prev != NULL_INDEX) pattern[pattern[idx].prev].next = pattern[idx].next;
+    if (pattern[idx].next != NULL_INDEX) pattern[pattern[idx].next].prev = pattern[idx].prev;
 }
 
 size_t Bands::prev(size_t i) const {
@@ -123,10 +119,10 @@ size_t Bands::next(size_t i) const {
 
 void Bands::print_pairings() {
     size_t i = pattern[0].next;
-    while (i != null_index) {
+    while (i != NULL_INDEX) {
         pattern[i].print_band(i);
         i = pattern[i].next;
     }
 }
 
-}  // namespace ComputeEnergy
+}  // namespace compute_energy

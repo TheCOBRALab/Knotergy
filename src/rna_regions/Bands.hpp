@@ -47,4 +47,4 @@ class Bands {
     RNAEntry entry_;
 };
 
-}  // namespace ComputeEnergy
+}  // namespace compute_energy

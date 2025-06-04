@@ -2,7 +2,7 @@
 #include <rna_regions/RNAEntry.hpp>
 #include <string>
 #include <vector>
-
+#include <helpers/common.hpp>
 
 TEST(RNAEntryBasics, populate){
     std::string name = "Test Input";
@@ -35,7 +35,7 @@ TEST(RNAEntryPairings, SimplePairing){
     std::string sequence = "AAUU";
     std::string structure = "(..)";
     compute_energy::RNAEntry rna(name, sequence, structure);
-    std::vector<int> expected_pairings = {3,-1,-1,0};
+    std::vector<size_t> expected_pairings = {3,compute_energy::NULL_INDEX, compute_energy::NULL_INDEX,0};
     
     EXPECT_EQ(rna.get_pairings(), expected_pairings);
 }

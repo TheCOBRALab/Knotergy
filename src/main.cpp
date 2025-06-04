@@ -102,8 +102,12 @@ int main(int argc, char** argv) {
         std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
                   << "\nStructure: " << current.get_structure() << std::endl;
 
-        for (int n : current.get_pairings()) {
-            std::cout << n << " ";
+        for (size_t n : current.get_pairings()) {
+            if (n == compute_energy::NULL_INDEX) {
+                std::cout << -1 << " ";
+            } else {
+                std::cout << n << " ";
+            }
         }
         std::cout << std::endl;
         compute_energy::dostuff(current);

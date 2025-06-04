@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "../helpers/common.hpp"
+
 namespace compute_energy {
 class RNAEntry {
    public:
@@ -22,7 +24,7 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence; }
     [[nodiscard]] const std::string& get_structure() const { return structure; }
-    [[nodiscard]] const std::vector<int>& get_pairings() const {
+    [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence.size() != structure.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
                       << "Sequence: " << sequence << "\n"
@@ -43,17 +45,17 @@ class RNAEntry {
     // [from, to)
     size_t get_unpaired_count(size_t from, size_t to) {
         if (from >= to) return 0;
+        // todo: validate input
         return unpaired_count_map[to] - unpaired_count_map[from];
     }
 
    private:
-    static constexpr size_t null_index = static_cast<size_t>(-1);
     std::string name;
     std::string sequence;
     std::string structure;
-    std::vector<int> pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
-    std::map<size_t, size_t>
-        unpaired_count_map;
+    std::vector<size_t>
+        pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
+    std::map<size_t, size_t> unpaired_count_map;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -63,7 +65,7 @@ class RNAEntry {
      * for example
      *  .(.[.).]..
      *  -1, 5, -1, 7, -1, 1, -1, 3, -1, -1
-     * 
+     *
      * Supported brackets:
      * - `()` for regular base pairs
      * - `[]` for pseudoknots
@@ -81,7 +83,7 @@ class RNAEntry {
      *   - Opening brackets remain unmatched at the end
      */
     void update_pairings() {
-        pairings.assign(structure.size(), -1);  // pre-allocate pairings with -1
+        pairings.assign(structure.size(), NULL_INDEX);  // pre-allocate pairings with -1
         std::stack<size_t> brackets;
         std::stack<size_t> pseudoknots;
         size_t j;
@@ -103,8 +105,8 @@ class RNAEntry {
                     }
                     j = brackets.top();
                     brackets.pop();
-                    pairings[i] = static_cast<int>(j);
-                    pairings[j] = static_cast<int>(i);
+                    pairings[i] = j;
+                    pairings[j] = i;
                     break;
                 case ']':
                     if (pseudoknots.empty()) {
@@ -113,8 +115,8 @@ class RNAEntry {
                     }
                     j = pseudoknots.top();
                     pseudoknots.pop();
-                    pairings[i] = static_cast<int>(j);
-                    pairings[j] = static_cast<int>(i);
+                    pairings[i] = j;
+                    pairings[j] = i;
                     break;
                 default:
                     throw std::runtime_error(
@@ -136,10 +138,10 @@ class RNAEntry {
         size_t count = 0;
         for (size_t i = 0; i <= structure.size(); i++) {
             unpaired_count_map[i] = count;
-            if (pairings[i] < 0) {
+            if (pairings[i] == NULL_INDEX) {
                 ++count;
             }
         }
     };
 };
-}  // namespace ComputeEnergy
+}  // namespace compute_energy

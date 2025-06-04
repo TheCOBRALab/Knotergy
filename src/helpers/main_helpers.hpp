@@ -22,4 +22,4 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file);
 std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                      const std::string& restricted);
 void dostuff(RNAEntry entry);
-}  // namespace ComputeEnergy
+}  // namespace compute_energy
