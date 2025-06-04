@@ -1,10 +1,10 @@
 #include "Loop.hpp"
 
-#include "Bands.hpp"
-#include "ComputeEnergy.hpp"
-#include "RNAEntry.hpp"
+#include "../rna_regions/Bands.hpp"
+#include "../rna_regions/RNAEntry.hpp"
+#include "../helpers/common.hpp"
 
-namespace ComputeEnergy {
+namespace compute_energy {
 Loop::Loop(size_t start, size_t end, RNAEntry& rna_entry, Bands& bands,
            std::vector<Region>& stacks) {
     size_t start_ = start;

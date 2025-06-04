@@ -5,7 +5,7 @@
 
 #include "RNAEntry.hpp"
 
-namespace ComputeEnergy {
+namespace compute_energy {
 
 /**
  * @brief Metadata for a single position in the RNA band.

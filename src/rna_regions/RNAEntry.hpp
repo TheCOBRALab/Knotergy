@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace ComputeEnergy {
+namespace compute_energy {
 class RNAEntry {
    public:
     RNAEntry(std::string name_, std::string sequence_, std::string structure_) {
@@ -47,12 +47,13 @@ class RNAEntry {
     }
 
    private:
+    static constexpr size_t null_index = static_cast<size_t>(-1);
     std::string name;
     std::string sequence;
     std::string structure;
     std::vector<int> pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
     std::map<size_t, size_t>
-        unpaired_count_map;  // creates a map of how many unpaired bases there are
+        unpaired_count_map;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.

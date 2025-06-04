@@ -3,11 +3,12 @@
 #include <vector>
 
 #include "RNAEntry.hpp"
+#include "../helpers/common.hpp"
 
-namespace ComputeEnergy {
+namespace compute_energy {
 
 // max size of size_t
-constexpr size_t null_index = static_cast<size_t>(-1);
+
 
 Bands::Bands(RNAEntry& entry) : entry_(entry) {
     size_t n = entry_.get_structure().size();

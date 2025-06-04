@@ -1,4 +1,4 @@
-#include "ComputeEnergy.hpp"
+#include "main_helpers.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -7,10 +7,11 @@
 #include <string>
 #include <vector>
 
-#include "RNARegions/Bands.hpp"
-#include "RNARegions/RNAEntry.hpp"
+#include "../rna_regions/Bands.hpp"
+#include "../rna_regions/RNAEntry.hpp"
+#include "common.hpp"
 
-namespace ComputeEnergy {
+namespace compute_energy {
 
 /**
  * @brief Trims leading and trailing whitespace from a string.

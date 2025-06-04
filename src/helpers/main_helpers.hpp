@@ -3,14 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "RNARegions/RNAEntry.hpp"
+#include "../rna_regions/RNAEntry.hpp"
 
-namespace ComputeEnergy {
-
-struct Region {
-    int begin = -1;
-    int end = -1;
-};
+namespace compute_energy {
 
 /**
  * @brief Represents the parser's state during file processing.
