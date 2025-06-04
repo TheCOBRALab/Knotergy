@@ -6,21 +6,27 @@
 
 namespace ComputeEnergy {
 
-Bands::Bands(RNAEntry& entry_) : entry(entry_) {
-    // Index 0 is unused to simplify boundary logic — acts like a dummy head node
-    size_t n = entry.get_structure().size();
-    pattern.resize(n + 1);
-    pattern[0] = B_pattern{false, 0, 0, 0};
+// max size of size_t
+constexpr size_t null_index = static_cast<size_t>(-1);
 
-    for (size_t i = 1; i <= n; ++i) {
-        pattern[i] = B_pattern{false, (i + 1 <= n ? i + 1 : i), i - 1, 0};
+Bands::Bands(RNAEntry& entry_) : entry(entry_) {
+    size_t n = entry.get_structure().size();
+    pattern.resize(n + 1); // includes dummy head at index 0
+
+    // Index 0 acts like a dummy head node and tells us the index of the first pairing
+    pattern[0] = B_pattern{false, (n > 0 ? 1 : null_index), null_index, 0};
+
+    for (size_t i = 1; i < n; ++i) {
+        pattern[i] = B_pattern{false, i + 1, i - 1, 0};
     }
+    pattern[n] = B_pattern{false, null_index, n - 1, 0};  // last element has no "next"
 
     for (size_t i = 1; i <= n; ++i) {
         if (entry.get_pairings()[i - 1] < 0) {
-            update_links(pattern[i].prev, pattern[i].next);
+            unlink(i);
         }
     }
+    print_pairings();
 }
 
 /*********************************************************************************
@@ -101,6 +107,13 @@ void Bands::update_links(size_t from, size_t to) {
     pattern[to].prev = from;
 }
 
+void Bands::unlink(size_t idx) {
+    if (pattern[idx].prev != null_index)
+        pattern[pattern[idx].prev].next = pattern[idx].next;
+    if (pattern[idx].next != null_index)
+        pattern[pattern[idx].next].prev = pattern[idx].prev;
+}
+
 size_t Bands::prev(size_t i) const {
     return pattern[i].prev;
 }
@@ -110,14 +123,11 @@ size_t Bands::next(size_t i) const {
 }
 
 void Bands::print_pairings() {
-    size_t last_index_seen = 0;
-    size_t i = 1;
-    while (i > last_index_seen) {
-        std::cout << i << std::endl;
-        pattern[i].print_band();
-        std::cout << std::endl;
-        last_index_seen = i;
+    size_t i = pattern[0].next;
+    while (i != null_index) {
+        pattern[i].print_band(i);
         i = pattern[i].next;
     }
 }
+
 }  // namespace ComputeEnergy
