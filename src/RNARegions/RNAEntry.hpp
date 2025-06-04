@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <map>
 #include <stack>
 #include <string>
 #include <vector>
@@ -36,6 +37,13 @@ class RNAEntry {
     void set_structure(std::string structure_) {
         structure = structure_;
         update_pairings();
+        generate_unpaired_bases_count_map();
+    }
+
+    // [from, to)
+    size_t get_unpaired_count(size_t from, size_t to) {
+        if (from >= to) return 0;
+        return unpaired_count_map[to] - unpaired_count_map[from];
     }
 
    private:
@@ -43,14 +51,18 @@ class RNAEntry {
     std::string sequence;
     std::string structure;
     std::vector<int> pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
+    std::map<size_t, size_t>
+        unpaired_count_map;  // creates a map of how many unpaired bases there are
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
      *
-     * This function parses the `structure` string using dot-bracket notation and updates
-     * the `pairings` vector, where each index `i` maps to the base `j` that `i` is paired with.
-     * Unpaired positions are marked with `-1`.
-     *
+     * This function loops through a structure in dot-bracket notation
+     * It populates the vector `pairings` with the indicies of each pair
+     * for example
+     *  .(.[.).]..
+     *  -1, 5, -1, 7, -1, 1, -1, 3, -1, -1
+     * 
      * Supported brackets:
      * - `()` for regular base pairs
      * - `[]` for pseudoknots
@@ -115,5 +127,18 @@ class RNAEntry {
                                      sequence + "\nStructure: " + structure);
         }
     }
+
+    /**
+     * @brief Creates a map indicating the number of unpaired bases up till that index
+     */
+    void generate_unpaired_bases_count_map() {
+        size_t count = 0;
+        for (size_t i = 0; i <= structure.size(); i++) {
+            unpaired_count_map[i] = count;
+            if (pairings[i] < 0) {
+                ++count;
+            }
+        }
+    };
 };
 }  // namespace ComputeEnergy

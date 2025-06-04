@@ -26,13 +26,14 @@ struct B_pattern {
 
     void print_band(size_t index) const {
         std::cout << "Index " << index << ": " << (is_band_start ? "[Start] " : "")
-                  << "Next: " << next << ", Prev: " << prev << ", Band end: " << band_end << std::endl;
+                  << "Next: " << next << ", Prev: " << prev << ", Band end: " << band_end
+                  << std::endl;
     }
 };
 
 class Bands {
    public:
-    Bands(RNAEntry& entry_);
+    Bands(RNAEntry& entry);
 
     void unlink(size_t idx);
     void update_links(size_t from, size_t to);
@@ -43,7 +44,7 @@ class Bands {
     size_t next(size_t i) const;
     void print_pairings();
     std::vector<B_pattern> pattern;
-    RNAEntry entry;
+    RNAEntry entry_;
 };
 
 }  // namespace ComputeEnergy

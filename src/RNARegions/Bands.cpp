@@ -9,9 +9,9 @@ namespace ComputeEnergy {
 // max size of size_t
 constexpr size_t null_index = static_cast<size_t>(-1);
 
-Bands::Bands(RNAEntry& entry_) : entry(entry_) {
-    size_t n = entry.get_structure().size();
-    pattern.resize(n + 1); // includes dummy head at index 0
+Bands::Bands(RNAEntry& entry) : entry_(entry) {
+    size_t n = entry_.get_structure().size();
+    pattern.resize(n + 1);  // includes dummy head at index 0
 
     // Index 0 acts like a dummy head node and tells us the index of the first pairing
     pattern[0] = B_pattern{false, (n > 0 ? 1 : null_index), null_index, 0};
@@ -22,7 +22,7 @@ Bands::Bands(RNAEntry& entry_) : entry(entry_) {
     pattern[n] = B_pattern{false, null_index, n - 1, 0};  // last element has no "next"
 
     for (size_t i = 1; i <= n; ++i) {
-        if (entry.get_pairings()[i - 1] < 0) {
+        if (entry_.get_pairings()[i - 1] < 0) {
             unlink(i);
         }
     }
@@ -33,7 +33,7 @@ Bands::Bands(RNAEntry& entry_) : entry(entry_) {
 Find_next_good_index: returns the start of the next band region
 *********************************************************************************/
 size_t Bands::find_next_good_index(size_t start, size_t end) {
-    const std::size_t max_idx = entry.get_structure().size();
+    const std::size_t max_idx = entry_.get_structure().size();
     const std::size_t last_safe = std::min(end, max_idx - 1);
 
     size_t i = start;
@@ -58,7 +58,7 @@ std::pair<size_t, size_t> Bands::aux_find_bands(size_t border1, size_t border2) 
     size_t next_left_candidate, next_right_candidate;
     size_t band_count{0}, current_band_region{0};
 
-    const std::vector<int>& pairings = entry.get_pairings();
+    const std::vector<int>& pairings = entry_.get_pairings();
     i = find_next_good_index(border1, border2);
 
     while (i < border2 + 1) {
@@ -108,10 +108,8 @@ void Bands::update_links(size_t from, size_t to) {
 }
 
 void Bands::unlink(size_t idx) {
-    if (pattern[idx].prev != null_index)
-        pattern[pattern[idx].prev].next = pattern[idx].next;
-    if (pattern[idx].next != null_index)
-        pattern[pattern[idx].next].prev = pattern[idx].prev;
+    if (pattern[idx].prev != null_index) pattern[pattern[idx].prev].next = pattern[idx].next;
+    if (pattern[idx].next != null_index) pattern[pattern[idx].next].prev = pattern[idx].prev;
 }
 
 size_t Bands::prev(size_t i) const {
