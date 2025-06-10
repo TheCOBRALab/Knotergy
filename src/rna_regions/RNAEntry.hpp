@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <map>
 #include <stack>
 #include <string>
 #include <vector>
@@ -39,14 +38,14 @@ class RNAEntry {
     void set_structure(std::string structure_) {
         structure = structure_;
         update_pairings();
-        generate_unpaired_bases_count_map();
+        generate_unpaired_bases_count_list();
     }
 
     // [from, to)
     size_t get_unpaired_count(size_t from, size_t to) {
         if (from >= to) return 0;
         // todo: validate input
-        return unpaired_count_map[to] - unpaired_count_map[from];
+        return unpaired_count_list[to] - unpaired_count_list[from];
     }
 
    private:
@@ -55,7 +54,7 @@ class RNAEntry {
     std::string structure;
     std::vector<size_t>
         pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
-    std::map<size_t, size_t> unpaired_count_map;
+    std::vector<size_t> unpaired_count_list;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -132,15 +131,16 @@ class RNAEntry {
     }
 
     /**
-     * @brief Creates a map indicating the number of unpaired bases up till that index
+     * @brief Creates a list indicating the number of unpaired bases up till that index
      */
-    void generate_unpaired_bases_count_map() {
+    void generate_unpaired_bases_count_list() {
         size_t count = 0;
-        for (size_t i = 0; i <= structure.size(); i++) {
-            unpaired_count_map[i] = count;
-            if (pairings[i] == NULL_INDEX) {
-                ++count;
-            }
+        size_t n = structure.size();
+
+        unpaired_count_list.assign(n + 1, 0);
+        for (size_t i = 0; i < n; ++i) {
+            count += (pairings[i] == NULL_INDEX);
+            unpaired_count_list[i + 1] = count;
         }
     };
 };
