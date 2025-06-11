@@ -5,16 +5,17 @@
 #include "../rna_regions/RNAEntry.hpp"
 
 namespace compute_energy {
+
 class Loop {
    public:
-    Loop(Bands& bands, std::vector<Region>& stacks);
-    ~Loop();
-    Bands bands_;
-    std::vector<Region> stacks_;
-    RNAEntry entry_;
+    Loop(Bands& bands);
+    ~Loop() = default;
+    Bands& bands_;
+    RNAEntry& entry;
+    const std::vector<size_t>& pairings;
 
-    private:
-    void build_tree();
-    bool Add(size_t a, int&b, int &e);
+   private:
+    void build_tree(const std::vector<Pair>& pairs);
+    void add_loop(size_t i, size_t j);
 };
 }  // namespace compute_energy

@@ -10,33 +10,48 @@
 namespace compute_energy {
 class RNAEntry {
    public:
-    RNAEntry(std::string name_, std::string sequence_, std::string structure_) {
-        name = std::move(name_);
-        sequence = std::move(sequence_);
-        set_structure(std::move(structure_));  // makes call to update pairings
+    RNAEntry(std::string name, std::string sequence, std::string structure) {
+        name_ = std::move(name);
+        sequence_ = std::move(sequence);
+        set_structure(std::move(structure));  // makes call to update pairings
     }
 
     // Default constructor (needed for vector resizing or default initialization)
     RNAEntry() = default;
 
     // Getters
-    [[nodiscard]] const std::string& get_name() const { return name; }
-    [[nodiscard]] const std::string& get_sequence() const { return sequence; }
-    [[nodiscard]] const std::string& get_structure() const { return structure; }
+    [[nodiscard]] const std::string& get_name() const { return name_; }
+    [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
+    [[nodiscard]] const std::string& get_structure() const { return structure_; }
+    [[nodiscard]] const std::vector<bool>& get_pseudoknot_flags() const {
+        return is_pseudoknot_pair;
+    }
+    [[nodiscard]] const std::vector<Pair>& get_pair_struct() const {
+        return pairs_struct;
+    }
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
-        if (sequence.size() != structure.size()) {
+        if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
-                      << "Sequence: " << sequence << "\n"
-                      << "Structure: " << structure << std::endl;
+                      << "Sequence: " << sequence_ << "\n"
+                      << "Structure: " << structure_ << std::endl;
         }
         return pairings;
     }
 
     // Setters
-    void set_name(std::string name_) { name = name_; }
-    void set_sequence(std::string sequence_) { sequence = sequence_; }
-    void set_structure(std::string structure_) {
-        structure = structure_;
+    void set_name(std::string name) { name_ = name; }
+    void set_sequence(std::string sequence) { sequence_ = sequence; }
+    void set_structure(std::string structure) {
+        structure_ = structure;
+        pairings.clear();
+        pairs_struct.clear();
+        unpaired_count_list.clear(); 
+        is_pseudoknot_pair.clear();
+
+        pairings.assign(structure_.size(), NULL_INDEX);
+        is_pseudoknot_pair.assign(structure_.size(), false);
+        pairs_struct.reserve(structure_.size());
+        
         update_pairings();
         generate_unpaired_bases_count_list();
     }
@@ -49,12 +64,15 @@ class RNAEntry {
     }
 
    private:
-    std::string name;
-    std::string sequence;
-    std::string structure;
+    std::string name_;
+    std::string sequence_;
+    std::string structure_;
     std::vector<size_t>
         pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
+    std::vector<Pair> pairs_struct;
     std::vector<size_t> unpaired_count_list;
+    std::vector<bool> is_pseudoknot_pair;
+    
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -82,13 +100,12 @@ class RNAEntry {
      *   - Opening brackets remain unmatched at the end
      */
     void update_pairings() {
-        pairings.assign(structure.size(), NULL_INDEX);  // pre-allocate pairings with -1
         std::stack<size_t> brackets;
         std::stack<size_t> pseudoknots;
         size_t j;
 
-        for (size_t i = 0; i < structure.size(); i++) {
-            switch (structure[i]) {
+        for (size_t i = 0; i < structure_.size(); i++) {
+            switch (structure_[i]) {
                 case '.':
                     break;
                 case '(':
@@ -100,33 +117,37 @@ class RNAEntry {
                 case ')':
                     if (brackets.empty()) {
                         throw std::runtime_error("Structure in RNAEntry is invalid. \nSequence: " +
-                                                 sequence + "\nStructure: " + structure);
+                                                 sequence_ + "\nStructure: " + structure_);
                     }
                     j = brackets.top();
                     brackets.pop();
                     pairings[i] = j;
                     pairings[j] = i;
+                    pairs_struct.emplace_back(i,j,false);
                     break;
                 case ']':
                     if (pseudoknots.empty()) {
                         throw std::runtime_error("Structure in RNAEntry is invalid. \nSequence: " +
-                                                 sequence + "\nStructure: " + structure);
+                                                 sequence_ + "\nStructure: " + structure_);
                     }
                     j = pseudoknots.top();
                     pseudoknots.pop();
                     pairings[i] = j;
                     pairings[j] = i;
+                    is_pseudoknot_pair[i] = true;
+                    is_pseudoknot_pair[j] = true;
+                    pairs_struct.emplace_back(i,j,true);
                     break;
                 default:
                     throw std::runtime_error(
                         "Character in RNAEntry's structure is invalid. \nInvalid Character: " +
-                        std::string(1, structure[i]) + "\nSequence: " + sequence +
-                        "\nStructure: " + structure);
+                        std::string(1, structure_[i]) + "\nSequence: " + sequence_ +
+                        "\nStructure: " + structure_);
             }
         }
         if (!brackets.empty() || !pseudoknots.empty()) {
             throw std::runtime_error("Unmatched opening brackets in RNA structure.\nSequence: " +
-                                     sequence + "\nStructure: " + structure);
+                                     sequence_ + "\nStructure: " + structure_);
         }
     }
 
@@ -135,7 +156,7 @@ class RNAEntry {
      */
     void generate_unpaired_bases_count_list() {
         size_t count = 0;
-        size_t n = structure.size();
+        size_t n = structure_.size();
 
         unpaired_count_list.assign(n + 1, 0);
         for (size_t i = 0; i < n; ++i) {

@@ -9,8 +9,12 @@ namespace compute_energy {
 // Max size of size_t
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
-struct Region {
-    size_t begin = NULL_INDEX;
+struct Pair {
+    size_t start = NULL_INDEX;
     size_t end = NULL_INDEX;
+    bool pseudo = false;
+
+    Pair() = default;
+    Pair(size_t s, size_t e, bool p = false) : start(s), end(e), pseudo(p) {}
 };
 }  // namespace compute_energy

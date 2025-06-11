@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "../loop/Loop.hpp"
 #include "../rna_regions/Bands.hpp"
 #include "../rna_regions/RNAEntry.hpp"
-#include "../loop/Loop.hpp"
 #include "common.hpp"
 
 namespace compute_energy {
@@ -207,7 +207,6 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
 }
 
 void dostuff(RNAEntry entry) {
-    std::vector<Region> stack;
     Bands band{entry};
     printf("Seq: %s \n", entry.get_sequence().c_str());
     printf("Size: %ld \n", entry.get_sequence().size());
@@ -215,7 +214,7 @@ void dostuff(RNAEntry entry) {
         // printf("%d ", entry.get_pairings()[i]);
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
-    Loop L{band, stack};
+    Loop L{band};
 }
 
 }  // namespace compute_energy
