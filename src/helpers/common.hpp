@@ -10,7 +10,7 @@ namespace compute_energy {
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
 struct Region {
-    int begin = -1;
-    int end = -1;
+    size_t begin = NULL_INDEX;
+    size_t end = NULL_INDEX;
 };
 }  // namespace compute_energy

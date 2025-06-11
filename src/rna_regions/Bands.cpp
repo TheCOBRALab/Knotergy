@@ -31,7 +31,7 @@ Find_next_good_index: returns the start of the next band region
 *********************************************************************************/
 size_t Bands::find_next_good_index(size_t start, size_t end) {
     const std::size_t max_idx = entry_.get_structure().size();
-    const std::size_t last_safe = std::min(end, max_idx - 1);
+    const std::size_t last_safe = (max_idx > 0) ? std::min(end, max_idx - 1) : 0;
 
     size_t i = start;
     while (i <= last_safe && pattern[i].is_band_start) {
