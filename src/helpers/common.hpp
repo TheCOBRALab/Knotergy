@@ -17,4 +17,17 @@ struct Pair {
     Pair() = default;
     Pair(size_t s, size_t e, bool p = false) : start(s), end(e), pseudo(p) {}
 };
+
+enum class LoopType{
+      stackloop, hairpin,	interior,	multi,	external,	pseudo
+};
+
+
+/******************************************
+//possible location status for the loops
+*******************************************/
+enum class PseudoNestedType{
+	none, inBand, unBand, inMulti
+
+};
 }  // namespace compute_energy

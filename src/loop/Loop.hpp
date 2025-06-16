@@ -12,7 +12,8 @@ class Loop {
     ~Loop() = default;
     Bands& bands_;
     RNAEntry& entry;
-    const std::vector<size_t>& pairings;
+    const std::vector<Pair>& regular_pairs;
+    const std::vector<Pair>& pseudo_pairs;
 
    private:
     void build_tree(const std::vector<Pair>& pairs);

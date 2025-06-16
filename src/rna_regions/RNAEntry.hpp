@@ -29,6 +29,13 @@ class RNAEntry {
     [[nodiscard]] const std::vector<Pair>& get_pair_struct() const {
         return pairs_struct;
     }
+    [[nodiscard]] const std::vector<Pair>& get_regular_pairs() const {
+        return regular_pairs;
+    }
+    [[nodiscard]] const std::vector<Pair>& get_pseudo_pairs() const {
+        return pseudo_pairs;
+    }
+
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
@@ -70,6 +77,8 @@ class RNAEntry {
     std::vector<size_t>
         pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
     std::vector<Pair> pairs_struct;
+    std::vector<Pair> regular_pairs;
+    std::vector<Pair> pseudo_pairs;
     std::vector<size_t> unpaired_count_list;
     std::vector<bool> is_pseudoknot_pair;
     
@@ -124,6 +133,7 @@ class RNAEntry {
                     pairings[i] = j;
                     pairings[j] = i;
                     pairs_struct.emplace_back(i,j,false);
+                    regular_pairs.emplace_back(i,j,false);
                     break;
                 case ']':
                     if (pseudoknots.empty()) {
@@ -137,6 +147,7 @@ class RNAEntry {
                     is_pseudoknot_pair[i] = true;
                     is_pseudoknot_pair[j] = true;
                     pairs_struct.emplace_back(i,j,true);
+                    pseudo_pairs.emplace_back(i,j,true);
                     break;
                 default:
                     throw std::runtime_error(
