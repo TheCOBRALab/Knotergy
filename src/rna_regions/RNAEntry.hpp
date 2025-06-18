@@ -23,19 +23,7 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name_; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
     [[nodiscard]] const std::string& get_structure() const { return structure_; }
-    [[nodiscard]] const std::vector<bool>& get_pseudoknot_flags() const {
-        return is_pseudoknot_pair;
-    }
-    [[nodiscard]] const std::vector<Pair>& get_pair_struct() const {
-        return pairs_struct;
-    }
-    [[nodiscard]] const std::vector<Pair>& get_regular_pairs() const {
-        return regular_pairs;
-    }
-    [[nodiscard]] const std::vector<Pair>& get_pseudo_pairs() const {
-        return pseudo_pairs;
-    }
-
+    [[nodiscard]] const std::vector<Region>& get_closed_regions() const { return closed_regions; };
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
@@ -51,16 +39,12 @@ class RNAEntry {
     void set_structure(std::string structure) {
         structure_ = structure;
         pairings.clear();
-        pairs_struct.clear();
-        unpaired_count_list.clear(); 
-        is_pseudoknot_pair.clear();
-
+        unpaired_count_list.clear();
         pairings.assign(structure_.size(), NULL_INDEX);
-        is_pseudoknot_pair.assign(structure_.size(), false);
-        pairs_struct.reserve(structure_.size());
-        
+
         update_pairings();
         generate_unpaired_bases_count_list();
+        compute_closed_regions();
     }
 
     // [from, to)
@@ -74,14 +58,10 @@ class RNAEntry {
     std::string name_;
     std::string sequence_;
     std::string structure_;
-    std::vector<size_t>
-        pairings;  // [4, -1, -1, 1] Number represents the index that base is paired to
-    std::vector<Pair> pairs_struct;
-    std::vector<Pair> regular_pairs;
-    std::vector<Pair> pseudo_pairs;
+    // pairings represents the indicies where base is paired to. e.g. (..) = [3, -1, -1, 0]
+    std::vector<size_t> pairings;
+    std::vector<Region> closed_regions;
     std::vector<size_t> unpaired_count_list;
-    std::vector<bool> is_pseudoknot_pair;
-    
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -132,8 +112,6 @@ class RNAEntry {
                     brackets.pop();
                     pairings[i] = j;
                     pairings[j] = i;
-                    pairs_struct.emplace_back(i,j,false);
-                    regular_pairs.emplace_back(i,j,false);
                     break;
                 case ']':
                     if (pseudoknots.empty()) {
@@ -144,10 +122,6 @@ class RNAEntry {
                     pseudoknots.pop();
                     pairings[i] = j;
                     pairings[j] = i;
-                    is_pseudoknot_pair[i] = true;
-                    is_pseudoknot_pair[j] = true;
-                    pairs_struct.emplace_back(i,j,true);
-                    pseudo_pairs.emplace_back(i,j,true);
                     break;
                 default:
                     throw std::runtime_error(
@@ -175,5 +149,51 @@ class RNAEntry {
             unpaired_count_list[i + 1] = count;
         }
     };
+
+    void compute_closed_regions() {
+        closed_regions.clear();
+        std::vector<Region> stack;
+        const size_t n = pairings.size();
+
+        for (size_t i = 0; i < n; ++i) {
+            size_t bp = pairings[i];
+            if (bp == NULL_INDEX) continue;  // unpaired
+
+            // ───── OPENING BASE: i < bp ────────────────────────────
+            if (i < bp) {
+                stack.push_back({i, bp});
+                continue;
+            }
+
+            // ───── CLOSING BASE: bp < i ────────────────────────────
+            size_t largest_right = i;  // rightmost boundary seen
+
+            // if crossing (pseudoknotted), find right end of closed region
+            while (!stack.empty() && stack.back().begin > bp) {
+                largest_right = std::max(largest_right, stack.back().end);
+                stack.pop_back();
+            }
+            if (stack.empty()) continue;  // unmatched/crossing ⇒ ignore
+
+            stack.back().end =
+                std::max(largest_right, stack.back().end);  // extend region if needed
+
+            // region finished?
+            if (i == stack.back().end) {
+                closed_regions.push_back(stack.back());
+                stack.pop_back();
+            }
+        }
+    }
 };
+
+
+inline std::ostream& operator<<(std::ostream& os, const RNAEntry& entry) {
+    os << "Closed Regions:\n";
+    for (const Region& r : entry.get_closed_regions()) {
+        os << "Region from " << r.begin << " to " << r.end << ": ";
+        os << entry.get_sequence().substr(r.begin, r.end - r.begin + 1) << std::endl;
+    }
+    return os;
+}
 }  // namespace compute_energy

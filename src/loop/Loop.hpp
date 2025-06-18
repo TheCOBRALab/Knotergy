@@ -12,11 +12,9 @@ class Loop {
     ~Loop() = default;
     Bands& bands_;
     RNAEntry& entry;
-    const std::vector<Pair>& regular_pairs;
-    const std::vector<Pair>& pseudo_pairs;
 
    private:
-    void build_tree(const std::vector<Pair>& pairs);
+    void build_tree(const std::vector<Region>& pairs);
     void add_loop(size_t i, size_t j);
 };
 }  // namespace compute_energy

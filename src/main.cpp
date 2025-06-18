@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
         compute_energy::get_all_inputs(input_file, sequence, structure);
 
     for (compute_energy::RNAEntry& current : inputs) {
+        std::cout << current;
         std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
                   << "\nStructure: " << current.get_structure() << std::endl;
 

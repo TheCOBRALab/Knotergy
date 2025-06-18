@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iostream>
 
 namespace compute_energy {
 
@@ -9,25 +10,32 @@ namespace compute_energy {
 // Max size of size_t
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
-struct Pair {
-    size_t start = NULL_INDEX;
-    size_t end = NULL_INDEX;
-    bool pseudo = false;
+struct Region {
+    size_t begin{};
+    size_t end{};
 
-    Pair() = default;
-    Pair(size_t s, size_t e, bool p = false) : start(s), end(e), pseudo(p) {}
+    Region() = default;
+    Region(size_t b, size_t e) : begin(b), end(e) {}
+
+    bool operator==(const Region& rhs) const { return begin == rhs.begin && end == rhs.end; }
 };
 
-enum class LoopType{
-      stackloop, hairpin,	interior,	multi,	external,	pseudo
-};
+// Lets you print out the Region (overloading the << operator )
+inline std::ostream& operator<<(std::ostream& os, const Region& region) {
+    os << "Region(" << region.begin << ", " << region.end << ")";
+    return os;
+}
 
+enum class LoopType { stackloop, hairpin, interior, multi, external, pseudo };
 
 /******************************************
 //possible location status for the loops
 *******************************************/
-enum class PseudoNestedType{
-	none, inBand, unBand, inMulti
+enum class PseudoNestedType {
+    none,
+    inBand,
+    unBand,
+    inMulti
 
 };
 }  // namespace compute_energy
