@@ -39,13 +39,7 @@ After initializing the submodule, re-run CMake to enable tests.
 
 endif()
 
-
 # ------------------------- build -------------------------
-set(ComputEnergySources
-    src/helpers/main_helpers.cpp
-    src/rna_regions/Bands.cpp
-    src/loop/Loop.cpp
-)
 
 # Enable debug symbols and extra warnings
 set(CMAKE_BUILD_TYPE Debug)
@@ -68,13 +62,13 @@ add_link_options(
     -fsanitize=address
 )
 
-add_library(ComputeEnergyLib ${ComputEnergySources})
-target_include_directories(ComputeEnergyLib
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/rna_regions
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/loop
+file(GLOB ComputeEnergySources
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/rna_regions/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loop/*.cpp
 )
+
+add_library(ComputeEnergyLib ${ComputeEnergySources})
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ComputeEnergyLib)

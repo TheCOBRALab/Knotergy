@@ -8,6 +8,25 @@
 #include "../helpers/common.hpp"
 
 namespace compute_energy {
+
+struct Region {
+    size_t begin{};
+    size_t end{};
+    bool pseudoknotted = false;
+
+    Region() = default;
+    Region(size_t b, size_t e) : begin(b), end(e) {}
+    Region(size_t b, size_t e, bool p) : begin(b), end(e), pseudoknotted(p) {}
+
+    bool operator==(const Region& rhs) const { return begin == rhs.begin && end == rhs.end; }
+};
+
+// Lets you print out the Region (overloading the << operator )
+inline std::ostream& operator<<(std::ostream& os, const Region& region) {
+    os << "Region(" << region.begin << ", " << region.end << ") pk: " << region.pseudoknotted;
+    return os;
+}
+
 class RNAEntry {
    public:
     RNAEntry(std::string name, std::string sequence, std::string structure) {
@@ -136,6 +155,44 @@ class RNAEntry {
         }
     }
 
+    void compute_closed_regions() {
+        closed_regions.clear();
+        std::stack<Region> stack;
+        const size_t n = pairings.size();
+
+        for (size_t i = 0; i < n; ++i) {
+            size_t bp = pairings[i];
+            if (bp == NULL_INDEX) continue;  // unpaired
+
+            // ───── OPENING BASE: i < bp ────────────────────────────
+            if (i < bp) {
+                stack.push({i, bp});
+                continue;
+            }
+
+            // ───── CLOSING BASE: bp < i ────────────────────────────
+            size_t largest_right = i;  // rightmost boundary seen
+
+            // if crossing (pseudoknotted), find right end of closed region
+            while (!stack.empty() && stack.top().begin > bp) {
+                stack.top().pseudoknotted = true;
+                largest_right = std::max(largest_right, stack.top().end);
+                stack.pop();
+            }
+
+            if (stack.empty()) continue;  // if unbalanced (should never happen)
+
+            // extend region if needed
+            stack.top().end = std::max(largest_right, stack.top().end);
+
+            // region finished?
+            if (i == stack.top().end) {
+                closed_regions.push_back(stack.top());
+                stack.pop();
+            }
+        }
+    }
+
     /**
      * @brief Creates a list indicating the number of unpaired bases up till that index
      */
@@ -149,45 +206,9 @@ class RNAEntry {
             unpaired_count_list[i + 1] = count;
         }
     };
-
-    void compute_closed_regions() {
-        closed_regions.clear();
-        std::vector<Region> stack;
-        const size_t n = pairings.size();
-
-        for (size_t i = 0; i < n; ++i) {
-            size_t bp = pairings[i];
-            if (bp == NULL_INDEX) continue;  // unpaired
-
-            // ───── OPENING BASE: i < bp ────────────────────────────
-            if (i < bp) {
-                stack.push_back({i, bp});
-                continue;
-            }
-
-            // ───── CLOSING BASE: bp < i ────────────────────────────
-            size_t largest_right = i;  // rightmost boundary seen
-
-            // if crossing (pseudoknotted), find right end of closed region
-            while (!stack.empty() && stack.back().begin > bp) {
-                largest_right = std::max(largest_right, stack.back().end);
-                stack.pop_back();
-            }
-            if (stack.empty()) continue;  // unmatched/crossing ⇒ ignore
-
-            stack.back().end =
-                std::max(largest_right, stack.back().end);  // extend region if needed
-
-            // region finished?
-            if (i == stack.back().end) {
-                closed_regions.push_back(stack.back());
-                stack.pop_back();
-            }
-        }
-    }
 };
 
-
+// Operator overloading to output all closed regions (cout << Region)
 inline std::ostream& operator<<(std::ostream& os, const RNAEntry& entry) {
     os << "Closed Regions:\n";
     for (const Region& r : entry.get_closed_regions()) {

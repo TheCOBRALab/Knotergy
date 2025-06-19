@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "../loop/Loop.hpp"
 #include "../rna_regions/Bands.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
@@ -214,7 +213,6 @@ void dostuff(RNAEntry entry) {
         // printf("%d ", entry.get_pairings()[i]);
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
-    Loop L{band};
 }
 
 }  // namespace compute_energy
