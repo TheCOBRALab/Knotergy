@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "../rna_regions/Bands.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
 
@@ -206,7 +205,6 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
 }
 
 void dostuff(RNAEntry entry) {
-    Bands band{entry};
     printf("Seq: %s \n", entry.get_sequence().c_str());
     printf("Size: %ld \n", entry.get_sequence().size());
     for (size_t i = 1; i < entry.get_sequence().size(); ++i) {
