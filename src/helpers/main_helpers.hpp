@@ -13,7 +13,7 @@ namespace compute_energy {
  * Used internally in get_all_file_entries() to track whether the parser
  * is currently reading a name, sequence, or structure.
  */
-enum class ParserState { UNINITIALIZED = -1, NAME = 0, SEQUENCE = 1, STRUCTURE = 2 };
+enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE};
 
 void trim(std::string& s);
 [[nodiscard]] bool validate_sequence(const std::string& sequence);

@@ -7,26 +7,9 @@
 #include <vector>
 
 #include "../helpers/common.hpp"
+#include "ClosedRegion.hpp"
 
 namespace compute_energy {
-
-struct Region {
-    size_t begin{};
-    size_t end{};
-    bool pseudoknotted = false;
-
-    Region() = default;
-    Region(size_t b, size_t e) : begin(b), end(e) {}
-    Region(size_t b, size_t e, bool p) : begin(b), end(e), pseudoknotted(p) {}
-
-    bool operator==(const Region& rhs) const { return begin == rhs.begin && end == rhs.end; }
-};
-
-// Lets you print out the Region (overloading the << operator )
-inline std::ostream& operator<<(std::ostream& os, const Region& region) {
-    os << "Region(" << region.begin << ", " << region.end << ") pk: " << region.pseudoknotted;
-    return os;
-}
 
 class RNAEntry {
    public:
@@ -43,7 +26,7 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name_; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
     [[nodiscard]] const std::string& get_structure() const { return structure_; }
-    [[nodiscard]] const std::vector<Region>& get_closed_regions() const { return closed_regions_; };
+    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const { return closed_regions_; };
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
@@ -67,10 +50,14 @@ class RNAEntry {
     }
 
     // [from, to)
-    size_t get_unpaired_count(size_t from, size_t to) {
+    int get_unpaired_count(size_t from, size_t to) const {
         if (from >= to) return 0;
         // todo: validate input
         return unpaired_count_list_[to] - unpaired_count_list_[from];
+    }
+
+    int get_unpaired_count(ClosedRegion cr) const {
+        return get_unpaired_count(cr.begin, cr.end);
     }
 
    // --------------------------------- Proccess Structure ---------------------------------
@@ -82,7 +69,7 @@ class RNAEntry {
     // pairings represents the indicies where base is paired to. e.g. (..) = [3, -1, -1, 0]
     std::vector<size_t> pairings_;
 
-    std::vector<Region> closed_regions_;
+    std::vector<ClosedRegion> closed_regions_;
     std::vector<std::array<size_t, 4>> bands_;
     std::vector<size_t> unpaired_count_list_;
 
@@ -161,9 +148,9 @@ class RNAEntry {
         return pairings;
     }
 
-    std::vector<Region> compute_closed_regions() {
-        std::vector<Region> closed_regions;
-        std::stack<Region> stack;
+    std::vector<ClosedRegion> compute_closed_regions() {
+        std::vector<ClosedRegion> closed_regions;
+        std::stack<ClosedRegion> stack;
         const size_t n = pairings_.size();
 
         for (size_t i = 0; i < n; ++i) {
@@ -289,7 +276,7 @@ class RNAEntry {
 // Operator overloading to output all closed regions (cout << Region)
 inline std::ostream& operator<<(std::ostream& os, const RNAEntry& entry) {
     os << "Closed Regions:\n";
-    for (const Region& r : entry.get_closed_regions()) {
+    for (const ClosedRegion& r : entry.get_closed_regions()) {
         os << "Region from " << r.begin << " to " << r.end << ": ";
         os << entry.get_sequence().substr(r.begin, r.end - r.begin + 1) << std::endl;
     }

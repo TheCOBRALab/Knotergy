@@ -9,6 +9,7 @@
 
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
+#include "../loops/LoopFactory.hpp"
 
 namespace compute_energy {
 
@@ -211,6 +212,9 @@ void dostuff(RNAEntry entry) {
         // printf("%d ", entry.get_pairings()[i]);
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
+    LoopFactory factory(entry);
+    factory.print_tree();
+
 }
 
 }  // namespace compute_energy

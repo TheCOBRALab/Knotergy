@@ -65,7 +65,7 @@ add_link_options(
 file(GLOB ComputeEnergySources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rna_regions/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/loop/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loops/*.cpp
 )
 
 add_library(ComputeEnergyLib ${ComputeEnergySources})

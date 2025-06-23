@@ -10,8 +10,6 @@ namespace compute_energy {
 // Max size of size_t
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
-enum class LoopType { stackloop, hairpin, interior, multi, external, pseudo };
-
 /******************************************
 //possible location status for the loops
 *******************************************/
