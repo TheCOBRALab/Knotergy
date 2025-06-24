@@ -26,7 +26,9 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name_; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
     [[nodiscard]] const std::string& get_structure() const { return structure_; }
-    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const { return closed_regions_; };
+    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {
+        return closed_regions_;
+    };
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
@@ -51,8 +53,15 @@ class RNAEntry {
 
     // [from, to)
     int get_unpaired_count(size_t from, size_t to) const {
-        if (from >= to) return 0;
-        // todo: validate input
+
+        if (from >= unpaired_count_list_.size() || to > unpaired_count_list_.size()) {
+            throw std::out_of_range("Index out of range in get_unpaired_count");
+        }
+
+        if (from >= to)
+            return 0;
+        
+        // Return the difference in unpaired counts between the two indices
         return unpaired_count_list_[to] - unpaired_count_list_[from];
     }
 
@@ -60,7 +69,7 @@ class RNAEntry {
         return get_unpaired_count(cr.begin, cr.end);
     }
 
-   // --------------------------------- Proccess Structure ---------------------------------
+    // --------------------------------- Proccess Structure ---------------------------------
    private:
     std::string name_;
     std::string sequence_;
@@ -71,7 +80,7 @@ class RNAEntry {
 
     std::vector<ClosedRegion> closed_regions_;
     std::vector<std::array<size_t, 4>> bands_;
-    std::vector<size_t> unpaired_count_list_;
+    std::vector<int> unpaired_count_list_;
 
     /**
      * @brief Computes base pairings from the RNA secondary structure string.
@@ -190,10 +199,10 @@ class RNAEntry {
     /**
      * @brief Creates a list indicating the number of unpaired bases up till that index
      */
-    std::vector<size_t> generate_unpaired_bases_count_list() {
-        size_t count = 0;
+    std::vector<int> generate_unpaired_bases_count_list() {
+        int count = 0;
         size_t n = structure_.size();
-        std::vector<size_t> unpaired_count_list;
+        std::vector<int> unpaired_count_list;
 
         unpaired_count_list.assign(n + 1, 0);
         for (size_t i = 0; i < n; ++i) {
