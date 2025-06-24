@@ -24,8 +24,14 @@ void LoopFactory::build_tree() {
     node_stack.push(root_node_);
 
     for (const ClosedRegion& closed_region : closed_regions_) {
+
         // pop until node_stack.end() is parent of current node
+        // A node is only popped (and processed) after all of its children have been added.
+        // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
         while (node_stack.top()->end < closed_region.begin) {
+            node_stack.top()->loop_type = get_loop_type(*node_stack.top());
+            // TODO: Implement Bands
+            pseudo_nested_check(node_stack.top());
             node_stack.pop();
         }
 
@@ -36,9 +42,6 @@ void LoopFactory::build_tree() {
         child->parent = parent;
 
         child->number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
-        child->loop_type = get_loop_type(*child);
-        // Implement Bands
-        pseudo_nested_check(child);
 
         node_stack.push(child);
     }
@@ -78,7 +81,7 @@ void LoopFactory::pseudo_nested_check(std::shared_ptr<LoopNode> node) {
 
         if (child_node->pseudo_type == PseudoNestedType::InsideBand) {
             ++node->number_of_children_inside_band;
-        } else if (node->pseudo_type == PseudoNestedType::OutsideBand) {
+        } else if (child_node->pseudo_type == PseudoNestedType::OutsideBand) {
             ++node->number_of_children_outside_band;
             node->number_of_unpaired_bases_in_children_outside_band +=
                 static_cast<int>(child_node->end - child_node->begin + 1);
