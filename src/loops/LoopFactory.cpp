@@ -29,12 +29,17 @@ void LoopFactory::build_tree() {
             node_stack.pop();
         }
 
+        // Parent = parent of current node. Child = current node
         std::shared_ptr<LoopNode>& parent = node_stack.top();
         parent->children.emplace_back(std::make_shared<LoopNode>(closed_region));
         std::shared_ptr<LoopNode>& child = parent->children.back();
+        child->parent = parent;
 
-        child->num_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
+        child->number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
         child->loop_type = get_loop_type(*child);
+        // Implement Bands
+        pseudo_nested_check(child);
+
 
         node_stack.push(child);
     }
@@ -66,10 +71,18 @@ LoopType LoopFactory::get_loop_type(const LoopNode& node) {
     return LoopType::Multi;
 }
 
-void LoopFactory::PseudoNestedCheck(const LoopNode& node) {
-    if (node.loop_type != LoopType::Pseudoknot) return;
+void LoopFactory::pseudo_nested_check(std::shared_ptr<LoopNode> node) {
+    if (node->loop_type != LoopType::Pseudoknot) return;
 
-    for (std::shared_ptr<LoopNode> n : node.children) {
+    for (std::shared_ptr<LoopNode> child_node : node->children) {
+        // TODO: find band type
+
+        if (child_node->pseudo_type == PseudoNestedType::InsideBand){
+            ++node->number_of_children_inside_band;
+        } else if (node->pseudo_type == PseudoNestedType::OutsideBand){
+            ++node->number_of_children_outside_band;
+            node->number_of_unpaired_bases_in_children_outside_band += child_node->end - child_node->begin + 1;
+        }
     }
 }
 
@@ -79,8 +92,8 @@ std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
     std::vector<std::vector<ClosedRegion>> buckets(structure_length);
     for (const ClosedRegion& cr : closed_regions) {
         if (!buckets[cr.begin].empty()) {
-            throw std::runtime_error("Duplicate starting index " + std::to_string(cr.begin) +
-                                     "found in closed regions");
+            throw std::runtime_error("Duplicate starting index `" + std::to_string(cr.begin) +
+                                     "` found in closed regions");
         }
         buckets[cr.begin].push_back(cr);
     }
@@ -106,7 +119,7 @@ void LoopFactory::print_tree() const {
 void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
-              << "  unpaired=" << node->num_of_unpaired_bases
+              << "  unpaired=" << node->number_of_unpaired_bases
               << "  children=" << node->children.size() << '\n';
 
     for (const auto& child : node->children) {

@@ -10,14 +10,4 @@ namespace compute_energy {
 // Max size of size_t
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
-/******************************************
-//possible location status for the loops
-*******************************************/
-enum class PseudoNestedType {
-    none,
-    inBand,
-    unBand,
-    inMulti
-
-};
 }  // namespace compute_energy
