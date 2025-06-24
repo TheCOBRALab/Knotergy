@@ -13,13 +13,13 @@ class LoopFactory {
    private:
     std::vector<ClosedRegion> closed_regions_;
     const RNAEntry& entry_;
-    std::vector<LoopNode> loop_tree;
-    std::shared_ptr<LoopNode> root_;
-    std::vector<std::shared_ptr<LoopNode>> nodes_;
     std::shared_ptr<LoopNode> root_node_;
+    size_t structure_length_;
 
     LoopType get_loop_type(const LoopNode& node);
     void PseudoNestedCheck(const LoopNode& node);
+    std::vector<ClosedRegion> closed_region_bucket_sort(std::vector<ClosedRegion>& closed_regions,
+                                                        size_t structure_length);
 
     void build_tree();
 };

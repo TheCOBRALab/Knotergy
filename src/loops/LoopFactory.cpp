@@ -8,13 +8,10 @@ namespace compute_energy {
 
 LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
     closed_regions_ = entry_.get_closed_regions();
+    structure_length_ = entry_.get_structure().size();
 
-    // Should already be sorted, this is just a safety pre-caution
-    // Sorted where end index is in ascending order
-    [[likely]] if (!std::is_sorted(closed_regions_.begin(), closed_regions_.end())) {
-        std::cerr << "Warning: Closed regions are not sorted by end index. Sorting now.\n";
-        std::sort(closed_regions_.begin(), closed_regions_.end());
-    }
+    // Sorted by begin index in ascending order (Complexity: O(n))
+    closed_regions_ = closed_region_bucket_sort(closed_regions_, structure_length_);
 
     build_tree();
 }
@@ -22,37 +19,24 @@ LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
 void LoopFactory::build_tree() {
     std::stack<std::shared_ptr<LoopNode>> node_stack;
 
-    root_node_ =
-        std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, entry_.get_structure().size()});
+    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length_});
     root_node_->loop_type = LoopType::External;
     node_stack.push(root_node_);
 
     for (const ClosedRegion& closed_region : closed_regions_) {
-        std::shared_ptr<LoopNode> node = std::make_shared<LoopNode>(closed_region);
-        node->num_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
-
-        if (node_stack.size() == 1) {
-            node_stack.push(node);
-            node->loop_type = get_loop_type(*node);
-            // TODO: Find Bands
-            // TODO: PseudoNested
-            continue;
+        // pop until node_stack.end() is parent of current node
+        while (node_stack.top()->end < closed_region.begin) {
+            node_stack.pop();
         }
 
-        // Pop nodes from the stack until we find a node that is not a child of the current node
-        if ((node->begin < node_stack.top()->begin) || (node_stack.top()->begin == NULL_INDEX)) {
-            while (node_stack.size() > 1) {
-                node->children.push_back(node_stack.top());
-                node_stack.pop();
-            }
-        }
-        node_stack.push(node);
-    }
+        std::shared_ptr<LoopNode>& parent = node_stack.top();
+        parent->children.emplace_back(std::make_shared<LoopNode>(closed_region));
+        std::shared_ptr<LoopNode>& child = parent->children.back();
 
-    // Pop all remaining nodes in the stack and add them to the root node
-    while (node_stack.size() > 1) {
-        root_node_->children.push_back(node_stack.top());
-        node_stack.pop();
+        child->num_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
+        child->loop_type = get_loop_type(*child);
+
+        node_stack.push(child);
     }
 }
 
@@ -89,9 +73,34 @@ void LoopFactory::PseudoNestedCheck(const LoopNode& node) {
     }
 }
 
+std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
+    std::vector<ClosedRegion>& closed_regions, size_t structure_length) {
+    /*  one linear pass buckets the regions by their left index  */
+    std::vector<std::vector<ClosedRegion>> buckets(structure_length);
+    for (const ClosedRegion& cr : closed_regions) {
+        if (!buckets[cr.begin].empty()) {
+            throw std::runtime_error("Duplicate starting index " + std::to_string(cr.begin) +
+                                     "found in closed regions");
+        }
+        buckets[cr.begin].push_back(cr);
+    }
+
+    /*  then walk the buckets left-to-right: O(n)  */
+    std::vector<ClosedRegion> sorted_regions;
+    sorted_regions.reserve(closed_regions.size());
+    for (std::vector<ClosedRegion> b : buckets) {
+        for (ClosedRegion& cr : b) {
+            sorted_regions.push_back(cr);
+        }
+    }
+
+    return sorted_regions;
+}
+
 void LoopFactory::print_tree() const {
-    std::cout << "Root Node: ";
-    print_tree(root_node_, 0);
+    for (const auto& child : root_node_->children) {
+        print_tree(child, 0);
+    }
 }
 
 void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth) const {

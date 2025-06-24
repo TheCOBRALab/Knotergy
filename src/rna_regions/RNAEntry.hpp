@@ -53,21 +53,17 @@ class RNAEntry {
 
     // [from, to)
     int get_unpaired_count(size_t from, size_t to) const {
-
         if (from >= unpaired_count_list_.size() || to > unpaired_count_list_.size()) {
             throw std::out_of_range("Index out of range in get_unpaired_count");
         }
 
-        if (from >= to)
-            return 0;
-        
+        if (from >= to) return 0;
+
         // Return the difference in unpaired counts between the two indices
         return unpaired_count_list_[to] - unpaired_count_list_[from];
     }
 
-    int get_unpaired_count(ClosedRegion cr) const {
-        return get_unpaired_count(cr.begin, cr.end);
-    }
+    int get_unpaired_count(ClosedRegion cr) const { return get_unpaired_count(cr.begin, cr.end); }
 
     // --------------------------------- Proccess Structure ---------------------------------
    private:
