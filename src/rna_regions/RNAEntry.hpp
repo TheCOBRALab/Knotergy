@@ -173,7 +173,6 @@ class RNAEntry {
 
             // if crossing (pseudoknotted), find right end of closed region
             while (!stack.empty() && stack.top().begin > bp) {
-                stack.top().pseudoknotted = true;
                 largest_right = std::max(largest_right, stack.top().end);
                 stack.pop();
             }

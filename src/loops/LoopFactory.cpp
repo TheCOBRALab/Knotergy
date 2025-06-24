@@ -40,7 +40,6 @@ void LoopFactory::build_tree() {
         // Implement Bands
         pseudo_nested_check(child);
 
-
         node_stack.push(child);
     }
 }
@@ -77,11 +76,12 @@ void LoopFactory::pseudo_nested_check(std::shared_ptr<LoopNode> node) {
     for (std::shared_ptr<LoopNode> child_node : node->children) {
         // TODO: find band type
 
-        if (child_node->pseudo_type == PseudoNestedType::InsideBand){
+        if (child_node->pseudo_type == PseudoNestedType::InsideBand) {
             ++node->number_of_children_inside_band;
-        } else if (node->pseudo_type == PseudoNestedType::OutsideBand){
+        } else if (node->pseudo_type == PseudoNestedType::OutsideBand) {
             ++node->number_of_children_outside_band;
-            node->number_of_unpaired_bases_in_children_outside_band += child_node->end - child_node->begin + 1;
+            node->number_of_unpaired_bases_in_children_outside_band +=
+                static_cast<int>(child_node->end - child_node->begin + 1);
         }
     }
 }

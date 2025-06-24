@@ -16,14 +16,13 @@ struct LoopNode {
 
     size_t begin;
     size_t end;
-    
+
     LoopType loop_type;
     PseudoNestedType pseudo_type = PseudoNestedType::None;
     int number_of_unpaired_bases = 0;
     int number_of_children_inside_band = 0;
     int number_of_children_outside_band = 0;
     int number_of_unpaired_bases_in_children_outside_band = 0;
-
 
     std::shared_ptr<LoopNode> parent;
     std::vector<std::shared_ptr<LoopNode>> children;

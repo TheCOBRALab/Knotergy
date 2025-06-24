@@ -45,7 +45,7 @@ TEST(RNAEntryClosedRegions, SimpleRegion) {
     std::string sequence = "AAUU";
     std::string structure = "(..)";
     compute_energy::RNAEntry rna(name, sequence, structure);
-    std::vector<compute_energy::ClosedRegion> expected_pairings = {{0, 3, false}};
+    std::vector<compute_energy::ClosedRegion> expected_pairings = {{0, 3}};
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
 
@@ -55,7 +55,7 @@ TEST(RNAEntryClosedRegions, SimplePseudoKnot) {
     std::string structure2 = "[(])";
     compute_energy::RNAEntry rna(name, sequence, structure);
     compute_energy::RNAEntry rna2(name, sequence, structure2);
-    std::vector<compute_energy::ClosedRegion> expected_pairings = {{0, 3, true}};
+    std::vector<compute_energy::ClosedRegion> expected_pairings = {{0, 3}};
     EXPECT_EQ(rna.get_closed_regions(), rna2.get_closed_regions());
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
@@ -64,7 +64,7 @@ TEST(RNAEntryClosedRegions, PseudoknotWithNestedBP) {
     std::string sequence = "AAGGUAGUU";
     std::string structure = "[(..().])";
     compute_energy::RNAEntry rna(name, sequence, structure);
-    std::vector<compute_energy::ClosedRegion> expected_pairings = {{4, 5, false}, {0, 8, true}};
+    std::vector<compute_energy::ClosedRegion> expected_pairings = {{4, 5}, {0, 8}};
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
 
@@ -72,7 +72,7 @@ TEST(RNAEntryClosedRegions, PseudoknotWithNestedPseudoknot) {
     std::string sequence = "AAGGTTGGUUU";
     std::string structure = "[(..([)].])";
     compute_energy::RNAEntry rna(name, sequence, structure);
-    std::vector<compute_energy::ClosedRegion> expected_pairings = {{4, 7, true}, {0, 10, true}};
+    std::vector<compute_energy::ClosedRegion> expected_pairings = {{4, 7}, {0, 10}};
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
 
@@ -81,7 +81,7 @@ TEST(RNAEntryClosedRegions, ComplexPseudoKnot) {
     std::string structure = "([)([)()].(((([[[[))))(]]]]).().(])";
     compute_energy::RNAEntry rna(name, sequence, structure);
     std::vector<compute_energy::ClosedRegion> expected_pairings = {
-        {6, 7, false}, {3, 8, true}, {10, 27, true}, {29, 30, false}, {0, 34, true}};
+        {6, 7}, {3, 8}, {10, 27}, {29, 30}, {0, 34}};
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
 
@@ -90,6 +90,6 @@ TEST(RNAEntryClosedRegions, FauxPseudoKnots) {
     std::string structure = "(([][])[()])";
     compute_energy::RNAEntry rna(name, sequence, structure);
     std::vector<compute_energy::ClosedRegion> expected_pairings = {
-        {2, 3, false}, {4, 5, false}, {1, 6, false}, {8, 9, false}, {7, 10, false}, {0, 11, false}};
+        {2, 3}, {4, 5}, {1, 6}, {8, 9}, {7, 10}, {0, 11}};
     EXPECT_EQ(rna.get_closed_regions(), expected_pairings);
 }
