@@ -18,6 +18,10 @@ target_link_libraries(${TEST_TARGET} PUBLIC
 )
 target_include_directories(${TEST_TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
+# Add sanitizer flags to match the main build
+target_compile_options(${TEST_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+target_link_options(${TEST_TARGET} PRIVATE -fsanitize=address)
+
 gtest_discover_tests(${TEST_TARGET}
     DISCOVERY_MODE PRE_TEST
     EXTRA_ARGS --gtest_color=yes

@@ -22,6 +22,7 @@ class LoopFactory {
                                                         size_t structure_length);
 
     void build_tree();
+    void annotate_bands(const std::shared_ptr<LoopNode>& node);
 };
 
 }  // namespace compute_energy

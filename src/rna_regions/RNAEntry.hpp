@@ -8,7 +8,6 @@
 
 #include "../helpers/common.hpp"
 #include "ClosedRegion.hpp"
-
 namespace compute_energy {
 
 class RNAEntry {
@@ -37,7 +36,6 @@ class RNAEntry {
         }
         return pairings_;
     }
-    [[nodiscard]] const std::vector<std::array<size_t, 4>>& get_bands() const { return bands_; }
 
     // ---------------------------------------- Setters -----------------------------------------
     void set_name(std::string name) { name_ = name; }
@@ -48,7 +46,6 @@ class RNAEntry {
         pairings_ = update_pairings();
         unpaired_count_list_ = generate_unpaired_bases_count_list();
         closed_regions_ = compute_closed_regions();
-        bands_ = find_bands();
     }
 
     // [from, to)
@@ -75,7 +72,6 @@ class RNAEntry {
     std::vector<size_t> pairings_;
 
     std::vector<ClosedRegion> closed_regions_;
-    std::vector<std::array<size_t, 4>> bands_;
     std::vector<int> unpaired_count_list_;
 
     /**
@@ -206,75 +202,6 @@ class RNAEntry {
         }
         return unpaired_count_list;
     };
-
-    // ─────────────────────────────────────────────────────────────
-    //  Helper:  extend one step along a perfectly stacked stem.
-    //  Return true while i+1 pairs j-1.
-    bool extend_stem(size_t& il, size_t& jr) const {
-        const size_t n = pairings_.size();
-
-        size_t ip = il + 1;
-        size_t jp = jr - 1;
-
-        // find next valid base pair
-        while (ip < n && (pairings_[ip] == NULL_INDEX)) {
-            ++ip;
-        }
-
-        // find next valid base pair
-        while (jp > 0 && (pairings_[jp] == NULL_INDEX)) {
-            --jp;
-        }
-
-        if (ip < jp && pairings_[ip] == jp) {
-            il = ip;
-            jr = jp;
-            return true;
-        }
-        return false;
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    //  Main: find all bands inside the whole molecule
-    //  Result: vector<array<size_t,4>>  storing {i, i′, j′, j}
-    std::vector<std::array<size_t, 4>> find_bands() const {
-        const size_t n = pairings_.size();
-
-        // pair is already used in a previous band?
-        std::vector<bool> done(n, false);
-        std::vector<std::array<size_t, 4>> bands;
-
-        for (size_t i = 0; i < n; ++i) {
-            // left border of an unexplored base pair?
-            if (done[i] || pairings_[i] == NULL_INDEX || pairings_[i] < i) continue;
-
-            size_t j = pairings_[i];
-            size_t il = i;  // will become i′
-            size_t jr = j;  // will become j′
-
-            // walks the stem until last base pair in the band is found
-            while (extend_stem(il, jr)) {
-            }
-
-            // record the band
-            bands.push_back(std::array<size_t, 4>{i, il, jr, j});
-
-            // mark every base that is now part of a finished band as done
-            for (size_t k = i; k <= il; ++k) {
-                done[k] = true;
-                if (pairings_[k] != NULL_INDEX) done[pairings_[k]] = true;
-            }
-
-            for (size_t k = jr; k <= j; ++k) {
-                done[k] = true;
-                if (pairings_[k] != NULL_INDEX) done[pairings_[k]] = true;
-            }
-
-            // fast-forward outer loop (go to next base pair)
-            i = il;
-        }
-        return bands;
-    }
 };
 
 // Operator overloading to output all closed regions (cout << Region)

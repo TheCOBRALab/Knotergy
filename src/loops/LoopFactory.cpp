@@ -4,6 +4,8 @@
 #include <memory>
 #include <stack>
 
+#include "../rna_regions/BandUtils.hpp"
+
 namespace compute_energy {
 
 LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
@@ -22,15 +24,15 @@ void LoopFactory::build_tree() {
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length_});
     root_node_->loop_type = LoopType::External;
     node_stack.push(root_node_);
+    BandUtils band_helper(entry_.get_pairings());
 
     for (const ClosedRegion& closed_region : closed_regions_) {
-
         // pop until node_stack.end() is parent of current node
         // A node is only popped (and processed) after all of its children have been added.
         // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
         while (node_stack.top()->end < closed_region.begin) {
             node_stack.top()->loop_type = get_loop_type(*node_stack.top());
-            // TODO: Implement Bands
+            band_helper.annotate_bands(node_stack.top());
             pseudo_nested_check(node_stack.top());
             node_stack.pop();
         }
@@ -44,6 +46,12 @@ void LoopFactory::build_tree() {
         child->number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
+    }
+    while (node_stack.top()->begin != NULL_INDEX) {
+        node_stack.top()->loop_type = get_loop_type(*node_stack.top());
+        band_helper.annotate_bands(node_stack.top());
+        pseudo_nested_check(node_stack.top());
+        node_stack.pop();
     }
 }
 

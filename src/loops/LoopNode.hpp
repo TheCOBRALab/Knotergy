@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "../rna_regions/Band.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 
 namespace compute_energy {
@@ -26,5 +27,75 @@ struct LoopNode {
 
     std::shared_ptr<LoopNode> parent;
     std::vector<std::shared_ptr<LoopNode>> children;
+    std::vector<Band> bands;
+    int number_of_bands;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
+    os << "LoopNode {\n";
+    os << "  begin: " << node.begin << "\n";
+    os << "  end: " << node.end << "\n";
+    os << "  loop_type: ";
+
+    switch (node.loop_type) {
+        case LoopType::Stack:
+            os << "Stack";
+            break;
+        case LoopType::Hairpin:
+            os << "Hairpin";
+            break;
+        case LoopType::Internal:
+            os << "Internal";
+            break;
+        case LoopType::Multi:
+            os << "Multi";
+            break;
+        case LoopType::External:
+            os << "External";
+            break;
+        case LoopType::Pseudoknot:
+            os << "Pseudoknot";
+            break;
+    }
+    os << "\n";
+
+    os << "  pseudo_type: ";
+    switch (node.pseudo_type) {
+        case PseudoNestedType::None:
+            os << "None";
+            break;
+        case PseudoNestedType::InsideBand:
+            os << "InsideBand";
+            break;
+        case PseudoNestedType::OutsideBand:
+            os << "OutsideBand";
+            break;
+        case PseudoNestedType::InsideMultiloop:
+            os << "InsideMultiloop";
+            break;
+    }
+    os << "\n";
+
+    os << "  number_of_unpaired_bases: " << node.number_of_unpaired_bases << "\n";
+    os << "  number_of_children_inside_band: " << node.number_of_children_inside_band << "\n";
+    os << "  number_of_children_outside_band: " << node.number_of_children_outside_band << "\n";
+    os << "  number_of_unpaired_bases_in_children_outside_band: "
+       << node.number_of_unpaired_bases_in_children_outside_band << "\n";
+
+    os << "  number_of_bands: " << node.number_of_bands << "\n";
+    os << "  bands:\n";
+    for (const auto& band : node.bands) {
+        os << "    Band(" << band.left_border << ", " << band.left_inner << ", " << band.right_inner
+           << ", " << band.right_border << ")\n";
+    }
+
+    os << "  children count: " << node.children.size() << "\n";
+    for (const auto& child : node.children) {
+        os << "    Child -> begin: " << child->begin << ", end: " << child->end << "\n";
+    }
+
+    os << "}\n";
+    return os;
+}
+
 }  // namespace compute_energy

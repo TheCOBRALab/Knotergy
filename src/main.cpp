@@ -80,6 +80,8 @@ int main(int argc, char** argv) {
 
     if (sequence.length() != structure.length()) {
         std::cout << "Error: Input sequence and structure are not the same length";
+        std::cout << "\nSequence length: " << sequence.length()
+                  << ", Structure length: " << structure.length() << std::endl;
         return 1;
     }
 
