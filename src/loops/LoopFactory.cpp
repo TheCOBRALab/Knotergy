@@ -121,20 +121,25 @@ std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
     return sorted_regions;
 }
 
-void LoopFactory::print_tree() const {
+void LoopFactory::print_tree(bool debug) const {
     for (const auto& child : root_node_->children) {
-        print_tree(child, 0);
+        print_tree(child, 0, debug);
     }
 }
 
-void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth) const {
+void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth,
+                             bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
               << "  unpaired=" << node->number_of_unpaired_bases
               << "  children=" << node->children.size() << '\n';
 
+    if (debug) {
+        std::cout << *node << '\n';
+    }
+
     for (const auto& child : node->children) {
-        print_tree(child, depth + 1);
+        print_tree(child, depth + 1, debug);
     }
 }
 

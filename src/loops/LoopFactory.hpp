@@ -7,8 +7,8 @@ namespace compute_energy {
 class LoopFactory {
    public:
     LoopFactory(const RNAEntry& entry);
-    void print_tree() const;
-    void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth) const;
+    void print_tree(bool debug = false) const;
+    void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
     std::vector<ClosedRegion> closed_regions_;

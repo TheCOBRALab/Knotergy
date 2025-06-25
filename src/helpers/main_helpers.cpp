@@ -213,7 +213,7 @@ void dostuff(RNAEntry entry) {
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
     LoopFactory factory(entry);
-    factory.print_tree();
+    factory.print_tree(true);
 }
 
 }  // namespace compute_energy

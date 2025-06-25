@@ -36,7 +36,8 @@ std::vector<Band> BandUtils::find_bands_in_region(size_t left, size_t right) {
         size_t il = i;
         size_t jr = j;
 
-        while (extend_stem(il, jr)) { /* keep stretching */
+        // walks the stem until last base pair in the given region
+        while (il > left && jr <= right && pairings_[il - 1] && extend_stem(il, jr)) {
         }
 
         bands.push_back(Band{i, il, jr, j});
