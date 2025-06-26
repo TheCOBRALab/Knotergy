@@ -1,0 +1,78 @@
+name: CMake on multiple platforms
+
+on:
+  workflow_dispatch:
+  push:         { branches: [main] }
+  pull_request: { branches: [main] }
+
+env:
+  VIENNARNA_VERSION: "2.7.0"
+  VIENNARNA_PREFIX: "${{ github.workspace }}/viennarna"
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-13] # ubuntu-24.04-arm,
+        build_type: [Release]
+        include:
+          - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
+          #- { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
+          - { os: macos-13        , c_compiler: clang, cpp_compiler: clang++  }
+    steps:
+    - uses: actions/checkout@v4
+      with: { submodules: true }
+    
+
+# -------------------- ViennaRNA --------------------
+    - name: Restore ViennaRNA from cache
+      id: cache-viennarna
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.VIENNARNA_PREFIX }}
+        key: viennarna-${{ env.VIENNARNA_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+
+    - name: Build & install ViennaRNA
+      if: steps.cache-viennarna.outputs.cache-hit != 'true'
+      run: |
+        curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v${VIENNARNA_VERSION}/ViennaRNA-${VIENNARNA_VERSION}.tar.gz
+        tar -xzf ViennaRNA-${VIENNARNA_VERSION}.tar.gz
+        cd ViennaRNA-${VIENNARNA_VERSION}
+        ./configure --without-perl --prefix="${VIENNARNA_PREFIX}"
+        CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+        make -j"$CORES"
+        make install -j"$CORES"
+
+    # Expose headers & libs to the compiler / linker / CMake
+    - name: Export ViennaRNA paths
+      shell: bash
+      run: |
+        echo "VIENNARNA_LIB=${VIENNARNA_PREFIX}/lib"                                          >>"$GITHUB_ENV"
+        echo "CPATH=${VIENNARNA_PREFIX}/include:$CPATH"                                       >>"$GITHUB_ENV"
+        echo "LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$LIBRARY_PATH"                             >>"$GITHUB_ENV"
+        echo "CMAKE_PREFIX_PATH=${VIENNARNA_PREFIX}"                                          >>"$GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$LD_LIBRARY_PATH"                       >>"$GITHUB_ENV"
+        echo "DYLD_FALLBACK_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >>"$GITHUB_ENV"
+
+# -------------------- Build --------------------
+    - name: Set reusable strings
+      id: strings
+      run: echo "build-output-dir=${{ github.workspace }}/build" >>"$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel
+
+# -------------------- Test --------------------
+    - name: Test Knotergy
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --output-on-failure
