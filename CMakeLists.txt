@@ -36,32 +36,9 @@ To enable unit testing, please do one of the following:
 
 After initializing the submodule, re-run CMake to enable tests.
 ============================================================")
-
 endif()
 
-# ------------------------- build -------------------------
-
-# Enable debug symbols and extra warnings
-set(CMAKE_BUILD_TYPE Debug)
-
-# Enable maximum warnings and debugging info for GCC, Clang, and MSVC
-add_compile_options(
-    -g
-    -O0
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wshadow
-    -Wconversion
-    -Wsign-conversion
-    -fsanitize=address
-    -fno-omit-frame-pointer
-)
-
-add_link_options(
-    -fsanitize=address
-)
-
+# ------------------------- Source Files -------------------------
 file(GLOB KnotergySources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rna_regions/*.cpp
@@ -73,5 +50,39 @@ add_library(KnotergyLib ${KnotergySources})
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
 
+# ------------------------- Configurations -------------------------
 
+# Default build type if none is specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Debug configuration
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Building in Debug mode")
+    add_compile_options(
+        -g
+        -O0
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wshadow
+        -Wconversion
+        -Wsign-conversion
+        -fsanitize=address
+        -fno-omit-frame-pointer
+    )
+    add_link_options(-fsanitize=address)
+else()
+    # Normal (Release or other non-Debug builds)
+    message(STATUS "Building in Release/Normal mode")
+    add_compile_options(
+        -O3
+        -Wall
+        -Wextra
+        -Wpedantic
+    )
+endif()
+
+# ------------------------- Install -------------------------
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

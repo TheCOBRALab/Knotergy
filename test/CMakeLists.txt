@@ -18,9 +18,12 @@ target_link_libraries(${TEST_TARGET} PUBLIC
 )
 target_include_directories(${TEST_TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-# Add sanitizer flags to match the main build
-target_compile_options(${TEST_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-target_link_options(${TEST_TARGET} PRIVATE -fsanitize=address)
+# Conditionally apply sanitizers if in Debug mode
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Debug build detected in test target, enabling sanitizers")
+    target_compile_options(${TEST_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+    target_link_options(${TEST_TARGET} PRIVATE -fsanitize=address)
+endif()
 
 gtest_discover_tests(${TEST_TARGET}
     DISCOVERY_MODE PRE_TEST
