@@ -4,7 +4,7 @@
 #include <memory>
 #include <stack>
 
-#include "../rna_regions/BandUtils.hpp"
+#include "../rna_regions/BandAnnotator.hpp"
 
 namespace compute_energy {
 
@@ -24,7 +24,7 @@ void LoopFactory::build_tree() {
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length_});
     root_node_->loop_type = LoopType::External;
     node_stack.push(root_node_);
-    BandUtils band_helper(entry_.get_pairings());
+    BandAnnotator band_helper(entry_.get_pairings());
 
     for (const ClosedRegion& closed_region : closed_regions_) {
         // pop until node_stack.end() is parent of current node
