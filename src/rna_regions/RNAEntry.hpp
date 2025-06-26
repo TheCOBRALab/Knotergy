@@ -8,7 +8,7 @@
 
 #include "../helpers/common.hpp"
 #include "ClosedRegion.hpp"
-namespace compute_energy {
+namespace knotergy {
 
 class RNAEntry {
    public:
@@ -213,4 +213,4 @@ inline std::ostream& operator<<(std::ostream& os, const RNAEntry& entry) {
     }
     return os;
 }
-}  // namespace compute_energy
+}  // namespace knotergy

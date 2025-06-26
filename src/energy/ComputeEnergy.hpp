@@ -1,7 +1,7 @@
 #pragma once
 #include "../loops/LoopNode.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 class ComputeEnergy {
    public:
     ComputeEnergy(std::shared_ptr<LoopNode> root_node) : root_node_(root_node) {
@@ -17,4 +17,4 @@ class ComputeEnergy {
     float calculate_energy(std::shared_ptr<LoopNode> node) const;
     float ComputeEnergy::process_node(std::shared_ptr<LoopNode> node) const;
 };
-}  // namespace compute_energy
+}  // namespace knotergy

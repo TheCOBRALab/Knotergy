@@ -38,6 +38,6 @@ jobs:
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel
 
 # -------------------- Test --------------------
-    - name: Test ComputeEnergy
+    - name: Test Knotergy
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: ctest --output-on-failure

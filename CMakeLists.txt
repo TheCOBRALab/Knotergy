@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(ComputeEnergy
+project(Knotergy
     LANGUAGES CXX
-    DESCRIPTION "ComputeEnergy: A C++ library for computing energy values of pseudoknotten structures"
+    DESCRIPTION "Knotergy: A C++ library for computing energy values of pseudoknotten structures"
 )
 
 # Set the C++ standard
@@ -62,16 +62,16 @@ add_link_options(
     -fsanitize=address
 )
 
-file(GLOB ComputeEnergySources
+file(GLOB KnotergySources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rna_regions/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/loops/*.cpp
 )
 
-add_library(ComputeEnergyLib ${ComputeEnergySources})
+add_library(KnotergyLib ${KnotergySources})
 
 add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ComputeEnergyLib)
+target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
 
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

@@ -6,7 +6,7 @@
 #include "rna_regions/RNAEntry.hpp"
 namespace {
 void help() {
-    std::cout << "Usage: ./ComputeEnergy [options]\n"
+    std::cout << "Usage: ./Knotergy [options]\n"
               << "Options:\n"
               << "  -s, --sequence <string>       RNA sequence\n"
               << "  -r, --structure <string>      Input structure\n"
@@ -19,7 +19,7 @@ void help() {
 std::string get_trimmed_arg(int& i, int argc, char** argv) {
     if (i + 1 >= argc) return "";
     std::string value = argv[++i];
-    compute_energy::trim(value);
+    knotergy::trim(value);
     return value;
 }
 }  // namespace
@@ -57,10 +57,10 @@ int main(int argc, char** argv) {
     if (sequence.empty() && input_file.empty()) {
         std::cout << "Sequence : ";
         std::cin >> sequence;
-        compute_energy::trim(sequence);
+        knotergy::trim(sequence);
     }
 
-    if (!sequence.empty() && !compute_energy::validate_sequence(sequence)) {
+    if (!sequence.empty() && !knotergy::validate_sequence(sequence)) {
         std::cout << "Error: Sequence is empty or contains invalid character/s. Allowed: G, C, "
                      "A, U, T";
         return 1;
@@ -69,10 +69,10 @@ int main(int argc, char** argv) {
     if (structure.empty() && input_file.empty()) {
         std::cout << "Structure: ";
         std::cin >> structure;
-        compute_energy::trim(structure);
+        knotergy::trim(structure);
     }
 
-    if (!structure.empty() && !compute_energy::validate_structure(structure)) {
+    if (!structure.empty() && !knotergy::validate_structure(structure)) {
         std::cout << "Error: Structure is empty or contains invalid character/s. Allowed: '.', "
                      "'(',  ')', '[', ']'";
         return 1;
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    compute_energy::trim(input_file);
+    knotergy::trim(input_file);
     if (!input_file.empty() && !std::filesystem::exists(input_file)) {
         std::cerr << "Input file not found: " << input_file << std::endl;
         return 1;
@@ -97,23 +97,23 @@ int main(int argc, char** argv) {
     }
 
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<compute_energy::RNAEntry> inputs =
-        compute_energy::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::RNAEntry> inputs =
+        knotergy::get_all_inputs(input_file, sequence, structure);
 
-    for (compute_energy::RNAEntry& current : inputs) {
+    for (knotergy::RNAEntry& current : inputs) {
         std::cout << current;
         std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
                   << "\nStructure: " << current.get_structure() << std::endl;
 
         for (size_t n : current.get_pairings()) {
-            if (n == compute_energy::NULL_INDEX) {
+            if (n == knotergy::NULL_INDEX) {
                 std::cout << -1 << " ";
             } else {
                 std::cout << n << " ";
             }
         }
         std::cout << std::endl;
-        compute_energy::dostuff(current);
+        knotergy::dostuff(current);
     }
     return 0;
 }

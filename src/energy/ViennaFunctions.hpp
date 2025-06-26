@@ -1,6 +1,6 @@
 #pragma once
 
-namespace compute_energy {
+namespace knotergy {
 
 class ViennaFunctions {
    public:
@@ -34,4 +34,4 @@ class ViennaFunctions {
         return 0.0f;  // Replace with actual energy calculation
     }
 };
-}  // namespace compute_energy
+}  // namespace knotergy

@@ -6,7 +6,7 @@
 
 #include "../rna_regions/BandAnnotator.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 
 LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
     closed_regions_ = entry_.get_closed_regions();
@@ -143,4 +143,4 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
     }
 }
 
-}  // namespace compute_energy
+}  // namespace knotergy

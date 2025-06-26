@@ -5,7 +5,7 @@
 
 #include "../rna_regions/RNAEntry.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 
 /**
  * @brief Represents the parser's state during file processing.
@@ -22,4 +22,4 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file);
 std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                      const std::string& restricted);
 void dostuff(RNAEntry entry);
-}  // namespace compute_energy
+}  // namespace knotergy

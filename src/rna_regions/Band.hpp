@@ -1,6 +1,6 @@
 #pragma once
 #include <cstddef>
-namespace compute_energy {
+namespace knotergy {
 struct Band {
     size_t left_border = NULL_INDEX;  //  i
     size_t left_inner;                //  i′
@@ -11,4 +11,4 @@ struct Band {
                (idx >= right_inner && idx <= right_border);
     }
 };
-}  // namespace compute_energy
+}  // namespace knotergy

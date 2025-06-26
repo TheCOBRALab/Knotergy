@@ -3,7 +3,7 @@
 #include "../rna_regions/RNAEntry.hpp"
 #include "LoopNode.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 class LoopFactory {
    public:
     LoopFactory(const RNAEntry& entry);
@@ -25,4 +25,4 @@ class LoopFactory {
     void annotate_bands(const std::shared_ptr<LoopNode>& node);
 };
 
-}  // namespace compute_energy
+}  // namespace knotergy

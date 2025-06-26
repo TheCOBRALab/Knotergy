@@ -6,7 +6,7 @@
 #include "../helpers/common.hpp"
 #include "../loops/LoopNode.hpp"
 #include "Band.hpp"
-namespace compute_energy {
+namespace knotergy {
 
 // walk one step along a perfect stack:  (i+1) pairs (j−1)
 class BandAnnotator {
@@ -95,4 +95,4 @@ class BandAnnotator {
     }
 };
 
-}  // namespace compute_energy
+}  // namespace knotergy

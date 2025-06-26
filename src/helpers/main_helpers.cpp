@@ -11,7 +11,7 @@
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 
 /**
  * @brief Trims leading and trailing whitespace from a string.
@@ -216,4 +216,4 @@ void dostuff(RNAEntry entry) {
     factory.print_tree(true);
 }
 
-}  // namespace compute_energy
+}  // namespace knotergy

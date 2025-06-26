@@ -1,6 +1,6 @@
 #include "ComputeEnergy.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 
 float ComputeEnergy::process_node(std::shared_ptr<LoopNode> node) const {
     float node_energy = 0.0f;
@@ -23,4 +23,4 @@ float ComputeEnergy::process_node(std::shared_ptr<LoopNode> node) const {
     return node_energy;
 }
 
-}  // namespace compute_energy
+}  // namespace knotergy

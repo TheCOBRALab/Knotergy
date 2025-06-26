@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(GoogleTest)
 
-set(TEST_TARGET ComputeEnergyTests)
+set(TEST_TARGET KnotergyTests)
 
 set(SOURCES
     tests/test_RNAEntry.cpp
@@ -14,7 +14,7 @@ set(SOURCES
 add_executable(${TEST_TARGET} ${SOURCES})
 target_link_libraries(${TEST_TARGET} PUBLIC
     gtest_main
-    ComputeEnergyLib
+    KnotergyLib
 )
 target_include_directories(${TEST_TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 

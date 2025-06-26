@@ -6,7 +6,7 @@
 #include "../rna_regions/Band.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 
-namespace compute_energy {
+namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multi, External, Pseudoknot };
 enum class PseudoNestedType { None, InsideBand, OutsideBand, InsideMultiloop };
 
@@ -98,4 +98,4 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     return os;
 }
 
-}  // namespace compute_energy
+}  // namespace knotergy
