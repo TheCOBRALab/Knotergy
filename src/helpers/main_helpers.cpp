@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "../energy/ComputeEnergy.hpp"
 #include "../loops/LoopFactory.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
@@ -213,7 +214,9 @@ void dostuff(RNAEntry entry) {
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
     LoopFactory factory(entry);
-    factory.print_tree(true);
+    // factory.print_tree(true);
+    ComputeEnergy energy_calculator(factory.get_root_node(), entry.get_sequence());
+    std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
 }
 
 }  // namespace knotergy

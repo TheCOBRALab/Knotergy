@@ -1,5 +1,7 @@
 #pragma once
 #include <cstddef>
+
+#include "../helpers/common.hpp"
 namespace knotergy {
 struct Band {
     size_t left_border = NULL_INDEX;  //  i

@@ -7,6 +7,7 @@ namespace knotergy {
 class LoopFactory {
    public:
     LoopFactory(const RNAEntry& entry);
+    std::shared_ptr<LoopNode> get_root_node() { return root_node_; };
     void print_tree(bool debug = false) const;
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 

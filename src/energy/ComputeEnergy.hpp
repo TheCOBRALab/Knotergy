@@ -4,8 +4,9 @@
 namespace knotergy {
 class ComputeEnergy {
    public:
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node) : root_node_(root_node) {
-        energy_ = calculate_energy(root_node_);
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence)
+        : root_node_(root_node), sequence_(sequence) {
+        process_tree(*root_node_);
     };
 
     // Add methods to compute energy, etc.
@@ -13,8 +14,9 @@ class ComputeEnergy {
 
    private:
     std::shared_ptr<LoopNode> root_node_;
-    float energy_;
-    float calculate_energy(std::shared_ptr<LoopNode> node) const;
-    float ComputeEnergy::process_node(std::shared_ptr<LoopNode> node) const;
+    const std::string& sequence_;
+    float energy_ = 0.0f;
+    void process_tree(const LoopNode& root_node);
+    float process_node(const LoopNode& node) const;
 };
 }  // namespace knotergy

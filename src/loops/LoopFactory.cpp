@@ -64,6 +64,9 @@ LoopType LoopFactory::get_loop_type(const LoopNode& node) {
 
     // Zero Children
     if (node.children.empty()) {
+        if (node.number_of_unpaired_bases == 0) {
+            return LoopType::External;
+        }
         return LoopType::Hairpin;
     }
 
