@@ -10,6 +10,42 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ------------------------- Configurations -------------------------
+
+# Default build type if none is specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# Debug configuration
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Building in Debug mode")
+    add_compile_options(
+        -g
+        -O0
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wshadow
+        -Wsign-compare
+        -Wconversion
+        -Wsign-conversion
+        -fsanitize=address
+        -fno-omit-frame-pointer
+    )
+    add_link_options(-fsanitize=address)
+else()
+    # Normal (Release or other non-Debug builds)
+    message(STATUS "Building in Release/Normal mode")
+    add_compile_options(
+        -O3
+        -Wall
+        -Wextra
+        -Wpedantic
+    )
+endif()
+
+
 # --------------------------------- Google Test ---------------------------------------
 option(ENABLE_TESTS "Build unit tests" ON)
 
@@ -41,12 +77,9 @@ endif()
 
 
 
-
-
-
-
-
-# ------------------ Find the ViennaRNA library -----------------
+# -------------------------------------------------------------------
+#                  ViennaRNA Library Configuration
+# -------------------------------------------------------------------
 
 # Get Raw user input for library path
 set(_raw_user_input_lib "${VIENNARNA_LIB}") # user input using -D flag
@@ -143,8 +176,9 @@ endif()
 
 
 
-
-
+# -------------------------------------------------------------------
+#                     Knotergy Configuration
+# -------------------------------------------------------------------
 
 # ------------------------- Source Files -------------------------
 file(GLOB KnotergySources
@@ -160,40 +194,6 @@ target_include_directories(KnotergyLib SYSTEM PUBLIC ${VIENNARNA_INCLUDE_DIRECTO
 target_link_libraries(KnotergyLib PUBLIC ${VIENNARNA_LIBRARY})
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
-
-# ------------------------- Configurations -------------------------
-
-# Default build type if none is specified
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
-# Debug configuration
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Building in Debug mode")
-    add_compile_options(
-        -g
-        -O0
-        -Wall
-        -Wextra
-        -Wpedantic
-        -Wshadow
-        -Wconversion
-        -Wsign-conversion
-        -fsanitize=address
-        -fno-omit-frame-pointer
-    )
-    add_link_options(-fsanitize=address)
-else()
-    # Normal (Release or other non-Debug builds)
-    message(STATUS "Building in Release/Normal mode")
-    add_compile_options(
-        -O3
-        -Wall
-        -Wextra
-        -Wpedantic
-    )
-endif()
 
 # ------------------------- Install -------------------------
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

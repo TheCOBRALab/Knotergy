@@ -23,17 +23,19 @@ class ViennaFunctions {
     ~ViennaFunctions() { free(P); }
 
     int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence) {
-        if (i >= sequence.size() || j >= sequence.size() || ci >= sequence.size() ||
-            cj >= sequence.size())
+        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size())
             return 0;
 
-        int type1 = get_pair_type(sequence[i], sequence[j]);
-        int type2 = get_pair_type(sequence[ci], sequence[cj]);
+        unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
+        unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
         return P->stack[type1][type2];
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
-        unsigned int size = static_cast<int>(j - i - 1);
+        if (j <= i || j >= sequence.size())
+            return 0;
+
+        unsigned int size = static_cast<unsigned int>(j - i - 1);
         if (size < 3) {
             std::cerr << "Hairpin loop size is less than 3. Infinite Energy. Sequence: " << sequence
                       << " i: " << i << ", j: " << j << std::endl;
@@ -58,10 +60,14 @@ class ViennaFunctions {
     int internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,
                              const std::string& sequence) {
         // c = child or nested bp
-        int n1 = ci - i - 1;
-        int n2 = j - cj - 1;
-        int pair_type = get_pair_type(sequence[i], sequence[j]);
-        int pair_type2 = get_pair_type(sequence[ci], sequence[cj]);
+
+        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size())
+            return 0;
+
+        unsigned int n1 = static_cast<unsigned int>(ci - i - 1);
+        unsigned int n2 = static_cast<unsigned int>(j - cj - 1);
+        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
+        unsigned int pair_type2 = get_pair_type(sequence[ci], sequence[cj]);
         int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);   // 5' mismatch of closing pair
         int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);   // 3' mismatch of closing pair
         int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &md);  // 5' mismatch of enclosed pair
