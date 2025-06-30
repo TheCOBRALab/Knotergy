@@ -26,7 +26,8 @@ float ComputeEnergy::process_node(const LoopNode& node) {
             node_energy += vienna.internal_loop_energy(
                 node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             break;
-        case LoopType::Multi:
+        case LoopType::Multibranch:
+            node_energy += vienna.multibranch_energy(node.begin, node.end, sequence_);
             break;
         case LoopType::Pseudoknot:
             break;

@@ -7,7 +7,7 @@
 #include "../rna_regions/RNAEntry.hpp"
 
 namespace knotergy {
-enum class LoopType { Stack, Hairpin, Internal, Multi, External, Pseudoknot };
+enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
 enum class PseudoNestedType { None, InsideBand, OutsideBand, InsideMultiloop };
 
 struct LoopNode {
@@ -47,7 +47,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
         case LoopType::Internal:
             os << "Internal";
             break;
-        case LoopType::Multi:
+        case LoopType::Multibranch:
             os << "Multi";
             break;
         case LoopType::External:

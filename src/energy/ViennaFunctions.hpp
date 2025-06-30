@@ -4,10 +4,10 @@
 #include "../rna_regions/RNAEntry.hpp"
 
 extern "C" {
+#include <ViennaRNA/eval/exterior.h>
 #include <ViennaRNA/eval/hairpin.h>
 #include <ViennaRNA/eval/internal.h>
-#include <ViennaRNA/mfe/exterior.h>
-#include <ViennaRNA/mfe/multibranch.h>
+#include <ViennaRNA/eval/multibranch.h>
 #include <ViennaRNA/model.h>
 #include <ViennaRNA/sequences/alphabet.h>
 #include <ViennaRNA/utils/basic.h>
@@ -23,17 +23,21 @@ class ViennaFunctions {
     ~ViennaFunctions() { free(P); }
 
     int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence) {
-        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size())
+        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
+            std::cerr << "Invalid indices for stack energy calculation." << std::endl;
             return 0;
-
+        }
+        // c = child or nested bp
         unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
         unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
         return P->stack[type1][type2];
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
-        if (j <= i || j >= sequence.size())
+        if (j <= i || j >= sequence.size()) {
+            std::cerr << "Invalid indices for hairpin energy calculation." << std::endl;
             return 0;
+        }
 
         unsigned int size = static_cast<unsigned int>(j - i - 1);
         if (size < 3) {
@@ -61,8 +65,10 @@ class ViennaFunctions {
                              const std::string& sequence) {
         // c = child or nested bp
 
-        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size())
+        if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
+            std::cerr << "Invalid indices for internal loop energy calculation." << std::endl;
             return 0;
+        }
 
         unsigned int n1 = static_cast<unsigned int>(ci - i - 1);
         unsigned int n2 = static_cast<unsigned int>(j - cj - 1);
@@ -76,19 +82,27 @@ class ViennaFunctions {
         return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, P);
     }
 
-    int multi_energy(size_t i, std::string& sequence) {
+    int multibranch_energy(size_t i, size_t j, const std::string& sequence) {
+        if (j <= i || j >= sequence.size()) {
+            std::cerr << "Invalid indices for multibranch loop energy calculation." << std::endl;
+            return 0;
+        }
+
+        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
+        int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);  // 5' mismatch of closing pair
+        int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);  // 3' mismatch of closing pair
+
+        return vrna_E_multibranch_stem(pair_type, si1, sj1, P);
+    }
+
+    int pseudoknot_energy(size_t i, size_t j, const std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0;  // Replace with actual energy calculation
     }
 
-    int pseudoknot_energy(size_t i, size_t j, std::string& sequence) {
-        // Placeholder for actual energy calculation logic
-        return 0;  // Replace with actual energy calculation
-    }
-
-    int external_energy(size_t i, size_t j, std::string& sequence) {
+    int external_energy(size_t i, size_t j, const std::string& sequence) {
         if (i >= j || j >= sequence.size()) return 0;
-
+        // Placeholder for actual energy calculation logic
         return 0;  // Replace with actual energy calculation
     }
 
