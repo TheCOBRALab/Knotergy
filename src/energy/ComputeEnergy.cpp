@@ -16,11 +16,15 @@ float ComputeEnergy::process_node(const LoopNode& node) {
 
     switch (type) {
         case LoopType::Stack:
+            node_energy += vienna.stack_energy(node.begin, node.end, node.children[0]->begin,
+                                               node.children[0]->end, sequence_);
             break;
         case LoopType::Hairpin:
             node_energy += vienna.hairpin_energy(node.begin, node.end, sequence_);
             break;
         case LoopType::Internal:
+            node_energy += vienna.internal_loop_energy(
+                node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             break;
         case LoopType::Multi:
             break;
@@ -29,7 +33,7 @@ float ComputeEnergy::process_node(const LoopNode& node) {
         case LoopType::External:
             break;
     }
-    return node_energy/100.0f;
+    return node_energy / 100.0f;
 }
 
 }  // namespace knotergy

@@ -13,8 +13,8 @@
 #include "common.hpp"
 
 extern "C" {
-    // used for load_energy_parameters
-    #include <ViennaRNA/params/io.h> 
+// used for load_energy_parameters
+#include <ViennaRNA/params/io.h>
 }
 
 namespace knotergy {

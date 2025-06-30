@@ -1,11 +1,12 @@
 #pragma once
 
+#include "../loops/LoopNode.hpp"
 #include "../rna_regions/RNAEntry.hpp"
 
 extern "C" {
 #include <ViennaRNA/eval/hairpin.h>
+#include <ViennaRNA/eval/internal.h>
 #include <ViennaRNA/mfe/exterior.h>
-#include <ViennaRNA/mfe/internal.h>
 #include <ViennaRNA/mfe/multibranch.h>
 #include <ViennaRNA/model.h>
 #include <ViennaRNA/sequences/alphabet.h>
@@ -15,12 +16,20 @@ extern "C" {
 namespace knotergy {
 class ViennaFunctions {
    public:
-    ViennaFunctions() { vrna_md_set_default(&md); P = vrna_params(&md);}
+    ViennaFunctions() {
+        vrna_md_set_default(&md);
+        P = vrna_params(&md);
+    }
     ~ViennaFunctions() { free(P); }
 
-    int stack_energy(size_t i, size_t j, std::string& sequence) {
-        // Placeholder for actual energy calculation logic
-        return 0.0f;  // Replace with actual energy calculation
+    int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence) {
+        if (i >= sequence.size() || j >= sequence.size() || ci >= sequence.size() ||
+            cj >= sequence.size())
+            return 0;
+
+        int type1 = get_pair_type(sequence[i], sequence[j]);
+        int type2 = get_pair_type(sequence[ci], sequence[cj]);
+        return P->stack[type1][type2];
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
@@ -30,7 +39,7 @@ class ViennaFunctions {
                       << " i: " << i << ", j: " << j << std::endl;
         }
 
-        unsigned int type = get_pair_type(sequence[i], sequence[j]);
+        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
         int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);
         int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);
 
@@ -43,28 +52,38 @@ class ViennaFunctions {
             loop_seq = loop_subseq.c_str();              // temporary c-string
         }
 
-        int energy = vrna_E_hairpin(size, type, si1, sj1, loop_seq, P);
-        return energy;
+        return vrna_E_hairpin(size, pair_type, si1, sj1, loop_seq, P);
     }
 
-    int internal_loop_energy(size_t i, size_t j, std::string& sequence) {
-        // Placeholder for actual energy calculation logic
-        return 0.0f;  // Replace with actual energy calculation
+    int internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,
+                             const std::string& sequence) {
+        // c = child or nested bp
+        int n1 = ci - i - 1;
+        int n2 = j - cj - 1;
+        int pair_type = get_pair_type(sequence[i], sequence[j]);
+        int pair_type2 = get_pair_type(sequence[ci], sequence[cj]);
+        int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);   // 5' mismatch of closing pair
+        int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);   // 3' mismatch of closing pair
+        int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &md);  // 5' mismatch of enclosed pair
+        int sq1 = vrna_nucleotide_encode(sequence[cj + 1], &md);  // 3' mismatch of enclosed pair
+
+        return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, P);
     }
 
     int multi_energy(size_t i, std::string& sequence) {
         // Placeholder for actual energy calculation logic
-        return 0.0f;  // Replace with actual energy calculation
+        return 0;  // Replace with actual energy calculation
     }
 
     int pseudoknot_energy(size_t i, size_t j, std::string& sequence) {
         // Placeholder for actual energy calculation logic
-        return 0.0f;  // Replace with actual energy calculation
+        return 0;  // Replace with actual energy calculation
     }
 
     int external_energy(size_t i, size_t j, std::string& sequence) {
-        // Placeholder for actual energy calculation logic
-        return 0.0f;  // Replace with actual energy calculation
+        if (i >= j || j >= sequence.size()) return 0;
+
+        return 0;  // Replace with actual energy calculation
     }
 
    private:
