@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
             }
         }
         std::cout << std::endl;
-        knotergy::dostuff(current);
+        knotergy::dostuff(current, parameter_file);
     }
     return 0;
 }

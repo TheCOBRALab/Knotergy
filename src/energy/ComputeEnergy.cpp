@@ -1,10 +1,6 @@
 #include "ComputeEnergy.hpp"
 
-#include "ViennaFunctions.hpp"
-
 namespace knotergy {
-
-ViennaFunctions vienna;
 
 void ComputeEnergy::process_tree(const LoopNode& root_node) {
     std::vector<std::shared_ptr<LoopNode>> children = root_node.children;
@@ -14,7 +10,7 @@ void ComputeEnergy::process_tree(const LoopNode& root_node) {
     }
 }
 
-float ComputeEnergy::process_node(const LoopNode& node) const {
+float ComputeEnergy::process_node(const LoopNode& node) {
     float node_energy = 0.0f;
     LoopType type = node.loop_type;
 
@@ -33,7 +29,7 @@ float ComputeEnergy::process_node(const LoopNode& node) const {
         case LoopType::External:
             break;
     }
-    return node_energy;
+    return node_energy/100.0f;
 }
 
 }  // namespace knotergy

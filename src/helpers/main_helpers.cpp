@@ -12,6 +12,11 @@
 #include "../rna_regions/RNAEntry.hpp"
 #include "common.hpp"
 
+extern "C" {
+    // used for load_energy_parameters
+    #include <ViennaRNA/params/io.h> 
+}
+
 namespace knotergy {
 
 /**
@@ -206,7 +211,34 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
     return !structure.empty() && paren == 0 && square == 0;
 }
 
-void dostuff(RNAEntry entry) {
+void load_energy_parameters(const std::string& paramFile, const std::string& seq) {
+    if (!paramFile.empty()) {
+        if (std::filesystem::exists(paramFile)) {
+            int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+            if (!loaded) {
+                throw std::runtime_error("Failed to load parameter file: " + paramFile);
+            }
+            std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
+            return;
+        } else {
+            std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
+        }
+    } else {
+        std::cerr << "Warning: No parameter file provided." << std::endl;
+    }
+
+    // Default fallback based on sequence
+    if (seq.find('T') != std::string::npos) {
+        std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
+        vrna_params_load_DNA_Mathews2004();
+    } else {
+        std::cerr << "Defaulting to RNA parameters (Langdon 2018)." << std::endl;
+        vrna_params_load_RNA_Langdon2018();
+    }
+}
+
+void dostuff(RNAEntry entry, std::string parameter_file) {
+    load_energy_parameters(parameter_file, entry.get_sequence());
     printf("Seq: %s \n", entry.get_sequence().c_str());
     printf("Size: %ld \n", entry.get_sequence().size());
     for (size_t i = 1; i < entry.get_sequence().size(); ++i) {

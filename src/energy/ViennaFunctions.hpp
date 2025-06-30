@@ -15,10 +15,10 @@ extern "C" {
 namespace knotergy {
 class ViennaFunctions {
    public:
-    ViennaFunctions() { vrna_md_set_default(&md); }
+    ViennaFunctions() { vrna_md_set_default(&md); P = vrna_params(&md);}
     ~ViennaFunctions() { free(P); }
 
-    float stack_energy(size_t i, size_t j, std::string& sequence) {
+    int stack_energy(size_t i, size_t j, std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0.0f;  // Replace with actual energy calculation
     }
@@ -31,8 +31,8 @@ class ViennaFunctions {
         }
 
         unsigned int type = get_pair_type(sequence[i], sequence[j]);
-        int mismatching_nucleotide_5 = vrna_nucleotide_encode(sequence[i + 1], &md);
-        int mismatching_nucleotide_3 = vrna_nucleotide_encode(sequence[j - 1], &md);
+        int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);
+        int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);
 
         // For loop size < 7, you MUST pass the loop sequence substring
         // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
@@ -43,32 +43,26 @@ class ViennaFunctions {
             loop_seq = loop_subseq.c_str();              // temporary c-string
         }
 
-        // Create energy parameters (should ideally cache this)
-        P = vrna_params(&md);
-
-        int energy = vrna_E_hairpin(size, type, mismatching_nucleotide_5, mismatching_nucleotide_3,
-                                    loop_seq, P);
-
-        // Placeholder for actual energy calculation logic
-        return energy;  // Replace with actual energy calculation
+        int energy = vrna_E_hairpin(size, type, si1, sj1, loop_seq, P);
+        return energy;
     }
 
-    float internal_loop_energy(size_t i, size_t j, std::string& sequence) {
+    int internal_loop_energy(size_t i, size_t j, std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0.0f;  // Replace with actual energy calculation
     }
 
-    float multi_energy(size_t i, std::string& sequence) {
+    int multi_energy(size_t i, std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0.0f;  // Replace with actual energy calculation
     }
 
-    float pseudoknot_energy(size_t i, size_t j, std::string& sequence) {
+    int pseudoknot_energy(size_t i, size_t j, std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0.0f;  // Replace with actual energy calculation
     }
 
-    float external_energy(size_t i, size_t j, std::string& sequence) {
+    int external_energy(size_t i, size_t j, std::string& sequence) {
         // Placeholder for actual energy calculation logic
         return 0.0f;  // Replace with actual energy calculation
     }
