@@ -237,6 +237,14 @@ void load_energy_parameters(const std::string& paramFile, const std::string& seq
     }
 }
 
+void load_energy_parameters(const std::string& paramFile) {
+    load_energy_parameters(paramFile, "");
+}
+
+void load_energy_parameters() {
+    load_energy_parameters("");
+}
+
 void dostuff(RNAEntry entry, std::string parameter_file) {
     load_energy_parameters(parameter_file, entry.get_sequence());
     printf("Seq: %s \n", entry.get_sequence().c_str());

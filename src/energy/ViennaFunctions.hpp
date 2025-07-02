@@ -30,7 +30,7 @@ class ViennaFunctions {
         // c = child or nested bp
         unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
         unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
-        return P->stack[type1][type2];
+        return P->stack[type1][md.rtype[type2]];
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
@@ -100,17 +100,21 @@ class ViennaFunctions {
         return 0;  // Replace with actual energy calculation
     }
 
-    int external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence) {
+    int external_energy(const std::vector<std::shared_ptr<LoopNode>>& children,
+                        const std::string& sequence) {
         int energy = 0;
-        
-        for (std::shared_ptr<LoopNode> child : children){
-            if (child->loop_type != LoopType::Pseudoknot){
-                unsigned int pair_type = get_pair_type(sequence[child->begin], sequence[child->end]);
-                int n5d = child->begin > 0 ? vrna_nucleotide_encode(sequence[child->begin - 1], &md) : -1;
-                int n3d = child->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[child->end + 1], &md) : -1;
+
+        for (std::shared_ptr<LoopNode> child : children) {
+            if (child->loop_type != LoopType::Pseudoknot) {
+                unsigned int pair_type =
+                    get_pair_type(sequence[child->begin], sequence[child->end]);
+                int n5d =
+                    child->begin > 0 ? vrna_nucleotide_encode(sequence[child->begin - 1], &md) : -1;
+                int n3d = child->end < sequence.size() - 1
+                              ? vrna_nucleotide_encode(sequence[child->end + 1], &md)
+                              : -1;
                 energy += vrna_E_exterior_stem(pair_type, n5d, n3d, P);
             }
-            
         }
         return energy;
     }

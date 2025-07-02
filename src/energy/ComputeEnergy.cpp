@@ -17,21 +17,26 @@ float ComputeEnergy::process_node(const LoopNode& node) {
         case LoopType::Stack:
             node_energy += vienna.stack_energy(node.begin, node.end, node.children[0]->begin,
                                                node.children[0]->end, sequence_);
+            std::cout << "Stack: " << node_energy << std::endl;
             break;
         case LoopType::Hairpin:
             node_energy += vienna.hairpin_energy(node.begin, node.end, sequence_);
+            std::cout << "Hairpin: " << node_energy << std::endl;
             break;
         case LoopType::Internal:
             node_energy += vienna.internal_loop_energy(
                 node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
+            std::cout << "Internal: " << node_energy << std::endl;
             break;
         case LoopType::Multibranch:
             node_energy += vienna.multibranch_energy(node.begin, node.end, sequence_);
+            std::cout << "Multibranch: " << node_energy << std::endl;
             break;
         case LoopType::Pseudoknot:
             break;
         case LoopType::External:
             node_energy += vienna.external_energy(node.children, sequence_);
+            std::cout << "Multibranch: " << node_energy << std::endl;
             break;
     }
     return static_cast<float>(node_energy) / 100.0f;

@@ -21,5 +21,10 @@ void trim(std::string& s);
 std::vector<RNAEntry> get_all_file_entries(const std::string& file);
 std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                      const std::string& restricted);
+
+void load_energy_parameters(const std::string& paramFile, const std::string& seq);
+void load_energy_parameters(const std::string& paramFile);
+void load_energy_parameters();
+
 void dostuff(RNAEntry entry, std::string parameter_file);
 }  // namespace knotergy

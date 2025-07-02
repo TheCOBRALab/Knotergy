@@ -17,6 +17,11 @@ class RNAEntry {
         sequence_ = std::move(sequence);
         set_structure(std::move(structure));  // makes call to update pairings
     }
+    RNAEntry(std::string sequence, std::string structure) {
+        name_ = "N/A";
+        sequence_ = std::move(sequence);
+        set_structure(std::move(structure));  // makes call to update pairings
+    }
 
     // Default constructor (needed for vector resizing or default initialization)
     RNAEntry() = default;

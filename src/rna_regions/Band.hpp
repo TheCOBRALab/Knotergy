@@ -15,8 +15,8 @@ struct Band {
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Band& band) {
-    os << "Band(" << band.left_border << ", " << band.left_inner << ", "
-       << band.right_inner << ", " << band.right_border << ")";
+    os << "Band(" << band.left_border << ", " << band.left_inner << ", " << band.right_inner << ", "
+       << band.right_border << ")";
     return os;
 }
 

@@ -7,9 +7,10 @@ include(GoogleTest)
 
 set(TEST_TARGET KnotergyTests)
 
-set(SOURCES
-    tests/test_RNAEntry.cpp
+file(GLOB SOURCES
+    tests/*.cpp
 )
+
 
 add_executable(${TEST_TARGET} ${SOURCES})
 target_link_libraries(${TEST_TARGET} PUBLIC
