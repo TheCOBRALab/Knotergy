@@ -25,7 +25,7 @@ struct LoopNode {
     int number_of_children_outside_band = 0;
     int number_of_unpaired_bases_in_children_outside_band = 0;
 
-    std::shared_ptr<LoopNode> parent;
+    std::weak_ptr<LoopNode> parent;
     std::vector<std::shared_ptr<LoopNode>> children;
     std::vector<Band> bands;
     int number_of_bands;
