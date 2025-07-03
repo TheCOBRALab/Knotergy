@@ -9,7 +9,7 @@
 
 #include "../energy/ComputeEnergy.hpp"
 #include "../loops/LoopFactory.hpp"
-#include "../rna_regions/RNAEntry.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 #include "common.hpp"
 
 extern "C" {

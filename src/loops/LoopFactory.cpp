@@ -4,21 +4,22 @@
 #include <memory>
 #include <stack>
 
-#include "../rna_regions/BandAnnotator.hpp"
+#include "../preprocessing/BandAnnotator.hpp"
 
 namespace knotergy {
 
 LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
-    closed_regions_ = entry_.get_closed_regions();
+    const std::vector<ClosedRegion>& closed_regions = entry_.get_closed_regions();
     structure_length_ = entry_.get_structure().size();
 
     // Sorted by begin index in ascending order (Complexity: O(n))
-    closed_regions_ = closed_region_bucket_sort(closed_regions_, structure_length_);
+    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions, structure_length_);
 
-    build_tree();
+    // Build the tree structure from closed regions
+    build_tree(sorted_closed_regions);
 }
 
-void LoopFactory::build_tree() {
+void LoopFactory::build_tree(std::vector<ClosedRegion> closed_regions) {
     std::stack<std::shared_ptr<LoopNode>> node_stack;
 
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length_});
@@ -26,7 +27,7 @@ void LoopFactory::build_tree() {
     node_stack.push(root_node_);
     BandAnnotator band_helper(entry_.get_pairings());
 
-    for (const ClosedRegion& closed_region : closed_regions_) {
+    for (const ClosedRegion& closed_region : closed_regions) {
         // pop until node_stack.end() is parent of current node
         // A node is only popped (and processed) after all of its children have been added.
         // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
@@ -98,7 +99,7 @@ void LoopFactory::pseudo_nested_check(std::shared_ptr<LoopNode> node) {
 }
 
 std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
-    std::vector<ClosedRegion>& closed_regions, size_t structure_length) {
+    const std::vector<ClosedRegion>& closed_regions, size_t structure_length) {
     /*  one linear pass buckets the regions by their left index  */
     std::vector<std::vector<ClosedRegion>> buckets(structure_length);
     for (const ClosedRegion& cr : closed_regions) {

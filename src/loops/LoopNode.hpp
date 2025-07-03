@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <memory>
 
-#include "../rna_regions/Band.hpp"
-#include "../rna_regions/RNAEntry.hpp"
+#include "../preprocessing/Band.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };

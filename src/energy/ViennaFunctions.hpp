@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../loops/LoopNode.hpp"
-#include "../rna_regions/RNAEntry.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 
 extern "C" {
 #include <ViennaRNA/eval/exterior.h>

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "../rna_regions/RNAEntry.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 
 namespace knotergy {
 

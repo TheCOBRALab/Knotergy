@@ -2,7 +2,7 @@
 
 #include <helpers/common.hpp>
 #include <helpers/main_helpers.hpp>
-#include <rna_regions/RNAEntry.hpp>
+#include <preprocessing/RNAEntry.hpp>
 #include <loops/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
 

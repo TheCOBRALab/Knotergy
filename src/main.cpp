@@ -3,7 +3,7 @@
 #include <string>
 
 #include "helpers/main_helpers.hpp"
-#include "rna_regions/RNAEntry.hpp"
+#include "preprocessing/RNAEntry.hpp"
 namespace {
 void help() {
     std::cout << "Usage: ./Knotergy [options]\n"

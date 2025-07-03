@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <helpers/common.hpp>
-#include <rna_regions/RNAEntry.hpp>
+#include <preprocessing/RNAEntry.hpp>
 #include <string>
 #include <vector>
 

@@ -12,16 +12,16 @@ namespace knotergy {
 
 class RNAEntry {
    public:
-    RNAEntry(std::string name, std::string sequence, std::string structure) {
-        name_ = std::move(name);
-        sequence_ = std::move(sequence);
-        set_structure(std::move(structure));  // makes call to update pairings
+    // ----------------------------------------- Constructors -----------------------------------------
+    // Constructor for RNAEntry with a name
+    RNAEntry(std::string name, std::string sequence, std::string structure)
+        : name_(std::move(name)), sequence_(std::move(sequence)) {
+        set_structure(std::move(structure));
     }
-    RNAEntry(std::string sequence, std::string structure) {
-        name_ = "N/A";
-        sequence_ = std::move(sequence);
-        set_structure(std::move(structure));  // makes call to update pairings
-    }
+
+    // Constructor for RNAEntry without a name
+    RNAEntry(std::string sequence, std::string structure)
+    : RNAEntry("N/A", std::move(sequence), std::move(structure)) {}
 
     // Default constructor (needed for vector resizing or default initialization)
     RNAEntry() = default;
@@ -30,24 +30,24 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name_; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
     [[nodiscard]] const std::string& get_structure() const { return structure_; }
-    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {
-        return closed_regions_;
-    };
+    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {return closed_regions_;};
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
-                      << "Sequence: " << sequence_ << "\n"
-                      << "Structure: " << structure_ << std::endl;
+                      << "Name: " << name_ << "\n"               
+                      << "Sequence: " << sequence_ 
+                      << " Sequence length: " << sequence_.size() << "\n"
+                      << "Structure: " << structure_ 
+                      << " Structure length: " << structure_.size() << std::endl;
         }
         return pairings_;
     }
 
-    // ---------------------------------------- Setters -----------------------------------------
+    // ----------------------------------------- Setters -----------------------------------------
     void set_name(std::string name) { name_ = name; }
     void set_sequence(std::string sequence) { sequence_ = sequence; }
     void set_structure(std::string structure) {
         structure_ = structure;
-
         pairings_ = update_pairings();
         unpaired_count_list_ = generate_unpaired_bases_count_list();
         closed_regions_ = compute_closed_regions();
