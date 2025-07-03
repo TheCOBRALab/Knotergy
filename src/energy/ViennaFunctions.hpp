@@ -83,20 +83,31 @@ class ViennaFunctions {
     }
 
     int multibranch_energy(const LoopNode& node, const std::string& sequence) {
-        int energy = P->MLclosing; // closing penalty
-        energy += node.number_of_unpaired_bases * P->MLbase; // unpaired bases pentalty
+        int energy = P->MLclosing;  // closing penalty
+        size_t i = node.begin;
+        size_t j = node.end;
 
+        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
+        int n5d = vrna_nucleotide_encode(sequence[i + 1], &md);
+        int n3d = vrna_nucleotide_encode(sequence[j - 1], &md);
+
+        energy += vrna_E_multibranch_stem(md.rtype[pair_type], n3d, n5d, P);
+
+        int unpaired = node.number_of_unpaired_bases;
         const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
         for (const std::shared_ptr<LoopNode>& child : children) {
-            size_t i = child->begin;
-            size_t j = child->end;
+            size_t ci = child->begin;
+            size_t cj = child->end;
 
-            unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
-            int n5d = i > 0 ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
-            int n3d = j < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[j + 1], &md): -1;
+            unsigned int pair_type = get_pair_type(sequence[ci], sequence[cj]);
+            int n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
+            int n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
 
             energy += vrna_E_multibranch_stem(pair_type, n5d, n3d, P);
+            unpaired -= child->number_of_unpaired_bases;
         }
+
+        energy += unpaired * P->MLbase;
 
         return energy;
     }
@@ -114,7 +125,9 @@ class ViennaFunctions {
             if (c->loop_type != LoopType::Pseudoknot) {
                 unsigned int pair_type = get_pair_type(sequence[c->begin], sequence[c->end]);
                 int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &md) : -1;
-                int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &md): -1;
+                int n3d = c->end < sequence.size() - 1
+                              ? vrna_nucleotide_encode(sequence[c->end + 1], &md)
+                              : -1;
                 energy += vrna_E_exterior_stem(pair_type, n5d, n3d, P);
             }
         }
