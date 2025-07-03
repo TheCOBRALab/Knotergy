@@ -9,27 +9,78 @@
 #include <string>
 #include <vector>
 
-
-// echo -e "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC\n(((((.........................)))))................" | RNAeval -P ./rna_langdon2018.par
+// echo -e "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC\n.(((((.........................)))))................" | RNAeval
 TEST(NonPseudoKnottedEnergies, BasicStack) {
-    std::string sequence = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
-    std::string structure = "(((((.........................)))))................";
+    std::string sequence = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
+    std::string structure = ".(((((.........................)))))................";
     knotergy::load_energy_parameters();
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::LoopFactory factory(rna);
     knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
     
-    EXPECT_NEAR(energy.getEnergy(), -11.30, 0.001);
+    EXPECT_NEAR(energy.getEnergy(), -8.30, 0.001);
 }
 
-// echo -e "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCC\n...........((((((....((((((............))))))....((((((......))))))...((....)).))))))" | RNAeval -P ./rna_langdon2018.par
-TEST(NonPseudoKnottedEnergies, MultiLoopWithStacks) {
-    std::string sequence = "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCC";
-    std::string structure = "...........((((((....((((((............))))))....((((((......))))))...((....)).))))))";
+// echo -e "GGGGAGAAAAAAAAAUUUUUU\n((((((.........))))))" | RNAeval
+TEST(NonPseudoKnottedEnergies, StacksFullStructure) {
+    std::string sequence = "GGGGAGAAAAAAAAAUUUUUU";
+    std::string structure = "((((((.........))))))";
     knotergy::load_energy_parameters();
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::LoopFactory factory(rna);
     knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
 
-    EXPECT_NEAR(energy.getEnergy(), -44.00, 0.001);
+    EXPECT_NEAR(energy.getEnergy(), 3.70, 0.001);
 }
+
+// echo -e "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCC\n((((((.....................))))))................((((((......))))))...(((...)))......" | RNAeval
+TEST(NonPseudoKnottedEnergies, MultipleStacks) {
+    std::string sequence = "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCC";
+    std::string structure = "((((((.....................))))))................((((((......))))))...(((...)))......";
+    knotergy::load_energy_parameters();
+    knotergy::RNAEntry rna(sequence, structure);
+    knotergy::LoopFactory factory(rna);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
+
+    EXPECT_NEAR(energy.getEnergy(), -28.10, 0.001);
+}
+
+
+// echo -e "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCCA\n...........((((((....((((((............))))))....((((((......))))))...((....)).))))))." | RNAeval
+TEST(NonPseudoKnottedEnergies, MultiLoopWithStacks) {
+    std::string sequence = "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCCA";
+    std::string structure = "...........((((((....((((((............))))))....((((((......))))))...((....)).)))))).";
+    knotergy::load_energy_parameters();
+    knotergy::RNAEntry rna(sequence, structure);
+    knotergy::LoopFactory factory(rna);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
+
+    EXPECT_NEAR(energy.getEnergy(), -41.10, 0.001);
+}
+
+// echo -e "AAAAAAGGGGCCCCCCAAAAAAAAAAAAGGGGGGAAAAGGGGGGUUUUUUCCCCCCAAAUUUUUUAAGUUUUUU\n((((((....((((((............))))))....((((((......))))))...((....)).))))))" | RNAeval
+TEST(NonPseudoKnottedEnergies, MultiLoopWithStacksFull) {
+    std::string sequence = "AAAAAAGGGGCCCCCCAAAAAAAAAAAAGGGGGGAAAAGGGGGGUUUUUUCCCCCCAAAUUUUUUAAGUUUUUU";
+    std::string structure = "((((((....((((((............))))))....((((((......))))))...((....)).))))))";
+    knotergy::load_energy_parameters();
+    knotergy::RNAEntry rna(sequence, structure);
+    knotergy::LoopFactory factory(rna);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
+
+    EXPECT_NEAR(energy.getEnergy(), -21.9, 0.001);
+}
+
+// echo -e "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC\n((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))" | RNAeval
+TEST(NonPseudoKnottedEnergies, MultiWithMultiLoop) {
+    std::string sequence = "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC";
+    std::string structure = "((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))";
+    knotergy::load_energy_parameters();
+    knotergy::RNAEntry rna(sequence, structure);
+    knotergy::LoopFactory factory(rna);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
+
+    EXPECT_NEAR(energy.getEnergy(), 30.90, 0.001);
+}
+
+
+

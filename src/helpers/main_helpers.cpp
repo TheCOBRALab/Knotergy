@@ -233,7 +233,7 @@ void load_energy_parameters(const std::string& paramFile, const std::string& seq
         vrna_params_load_DNA_Mathews2004();
     } else {
         std::cerr << "Defaulting to RNA parameters (Langdon 2018)." << std::endl;
-        vrna_params_load_RNA_Langdon2018();
+        vrna_params_load_RNA_Turner2004();
     }
 }
 
