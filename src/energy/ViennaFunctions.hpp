@@ -27,7 +27,7 @@ class ViennaFunctions {
             std::cerr << "Invalid indices for stack energy calculation." << std::endl;
             return 0;
         }
-        // c = child or nested bp
+        // c = child or nested base pair
         unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
         unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
         return P->stack[type1][md.rtype[type2]];
@@ -82,17 +82,23 @@ class ViennaFunctions {
         return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, P);
     }
 
-    int multibranch_energy(size_t i, size_t j, const std::string& sequence) {
-        if (j <= i || j >= sequence.size()) {
-            std::cerr << "Invalid indices for multibranch loop energy calculation." << std::endl;
-            return 0;
+    int multibranch_energy(const LoopNode& node, const std::string& sequence) {
+        int energy = P->MLclosing; // closing penalty
+        energy += node.number_of_unpaired_bases * P->MLbase; // unpaired bases pentalty
+
+        const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
+        for (const std::shared_ptr<LoopNode>& child : children) {
+            size_t i = child->begin;
+            size_t j = child->end;
+
+            unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
+            int n5d = i > 0 ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
+            int n3d = j < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[j + 1], &md): -1;
+
+            energy += vrna_E_multibranch_stem(pair_type, n5d, n3d, P);
         }
 
-        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
-        int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);  // 5' mismatch of closing pair
-        int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);  // 3' mismatch of closing pair
-
-        return vrna_E_multibranch_stem(pair_type, si1, sj1, P);
+        return energy;
     }
 
     int pseudoknot_energy(size_t i, size_t j, const std::string& sequence) {
@@ -104,15 +110,11 @@ class ViennaFunctions {
                         const std::string& sequence) {
         int energy = 0;
 
-        for (std::shared_ptr<LoopNode> child : children) {
-            if (child->loop_type != LoopType::Pseudoknot) {
-                unsigned int pair_type =
-                    get_pair_type(sequence[child->begin], sequence[child->end]);
-                int n5d =
-                    child->begin > 0 ? vrna_nucleotide_encode(sequence[child->begin - 1], &md) : -1;
-                int n3d = child->end < sequence.size() - 1
-                              ? vrna_nucleotide_encode(sequence[child->end + 1], &md)
-                              : -1;
+        for (std::shared_ptr<LoopNode> c : children) {
+            if (c->loop_type != LoopType::Pseudoknot) {
+                unsigned int pair_type = get_pair_type(sequence[c->begin], sequence[c->end]);
+                int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &md) : -1;
+                int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &md): -1;
                 energy += vrna_E_exterior_stem(pair_type, n5d, n3d, P);
             }
         }

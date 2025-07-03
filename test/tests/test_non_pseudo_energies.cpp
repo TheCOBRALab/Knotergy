@@ -19,7 +19,7 @@ TEST(NonPseudoKnottedEnergies, BasicStack) {
     knotergy::LoopFactory factory(rna);
     knotergy::ComputeEnergy energy(factory.get_root_node(), sequence);
     
-    EXPECT_EQ(energy.getEnergy(), -11.30);
+    EXPECT_NEAR(energy.getEnergy(), -11.30, 0.01);
 }
 
 // // echo -e "GGGGGGAAAAAGGGGGGAAAAGGGGGGCCCCCCAAAAAACCCCCCAAAAGGGGGGAAAAAACCCCCCAAAGGGAAACCCCCCCCC\n...........((((((....((((((............))))))....((((((......))))))...((....)).))))))" | RNAeval -P ./rna_langdon2018.par
