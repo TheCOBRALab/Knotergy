@@ -38,9 +38,11 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     for (const ClosedRegion& closed_region : sorted_closed_regions) {
         while (node_stack.top()->end < closed_region.begin) {
             std::shared_ptr<LoopNode>& node = node_stack.top();
+
             node->loop_type = find_loop_type(*node);
             band_helper.annotate_bands(node);
-            pseudo_nested_check(node);
+            count_unpaired_bases_excluding_children(*node);
+            pseudo_nested_check(*node);
             node_stack.pop();
         }
 
@@ -52,18 +54,28 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         child->parent = parent;  // May be unused
 
         // Gets the total unpaired base pairs within the closed region (including that of children)
-        child->number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
+        child->number_of_exclusive_unpaired_bases = entry_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
     }
 
     // process all remaining nodes
     while (node_stack.top()->begin != NULL_INDEX) {
-        node_stack.top()->loop_type = find_loop_type(*node_stack.top());
-        band_helper.annotate_bands(node_stack.top());
-        pseudo_nested_check(node_stack.top());
+        std::shared_ptr<LoopNode>& node = node_stack.top();
+        count_unpaired_bases_excluding_children(*node);
+        node->loop_type = find_loop_type(*node);
+        band_helper.annotate_bands(node);
+        pseudo_nested_check(*node);
         node_stack.pop();
     }
+}
+
+void LoopFactory::count_unpaired_bases_excluding_children(LoopNode& node) {
+    int total = node.total_number_of_unpaired_bases;
+    for (std::shared_ptr<LoopNode> child : node.children) {
+        total -= child->total_number_of_unpaired_bases;
+    }
+    node.number_of_exclusive_unpaired_bases = total;
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
@@ -92,17 +104,15 @@ LoopType LoopFactory::find_loop_type(const LoopNode& node) {
     return LoopType::Multibranch;
 }
 
-void LoopFactory::pseudo_nested_check(std::shared_ptr<LoopNode> node) {
-    if (node->loop_type != LoopType::Pseudoknot) return;
+void LoopFactory::pseudo_nested_check(LoopNode& node) {
+    if (node.loop_type != LoopType::Pseudoknot) return;
 
-    for (std::shared_ptr<LoopNode> child_node : node->children) {
-        // TODO: find band type
-
+    for (std::shared_ptr<LoopNode> child_node : node.children) {
         if (child_node->pseudo_type == PseudoNestedType::InsideBand) {
-            ++node->number_of_children_inside_band;
+            ++node.number_of_children_inside_band;
         } else if (child_node->pseudo_type == PseudoNestedType::OutsideBand) {
-            ++node->number_of_children_outside_band;
-            node->number_of_unpaired_bases_in_children_outside_band +=
+            ++node.number_of_children_outside_band;
+            node.number_of_unpaired_bases_in_children_outside_band +=
                 static_cast<int>(child_node->end - child_node->begin + 1);
         }
     }
@@ -142,7 +152,7 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
                              bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
-              << "  unpaired=" << node->number_of_unpaired_bases
+              << "  unpaired=" << node->number_of_exclusive_unpaired_bases
               << "  children=" << node->children.size() << '\n';
 
     if (debug) {

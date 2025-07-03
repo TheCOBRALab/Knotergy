@@ -29,8 +29,8 @@ class ViennaFunctions {
         }
         // c = child or nested base pair
         unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
-        unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
-        return P->stack[type1][md.rtype[type2]];
+        unsigned int type2 = get_pair_type(sequence[cj], sequence[ci]);  // rtype
+        return P->stack[type1][type2];
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
@@ -83,38 +83,32 @@ class ViennaFunctions {
     }
 
     int multibranch_energy(const LoopNode& node, const std::string& sequence) {
-        int energy = P->MLclosing;  // closing penalty
         size_t i = node.begin;
         size_t j = node.end;
 
-        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
+        unsigned int pair_type = get_pair_type(sequence[j], sequence[i]);  // rtype
         int n5d = vrna_nucleotide_encode(sequence[i + 1], &md);
         int n3d = vrna_nucleotide_encode(sequence[j - 1], &md);
 
-        energy += vrna_E_multibranch_stem(md.rtype[pair_type], n3d, n5d, P);
+        // penalties
+        int energy = P->MLclosing;  // closing penalty
+        energy += vrna_E_multibranch_stem(pair_type, n3d, n5d, P);
+        energy += node.number_of_exclusive_unpaired_bases * P->MLbase;
 
-        int unpaired = node.number_of_unpaired_bases;
         const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
         for (const std::shared_ptr<LoopNode>& child : children) {
             size_t ci = child->begin;
             size_t cj = child->end;
 
-            unsigned int pair_type = get_pair_type(sequence[ci], sequence[cj]);
-            int n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
-            int n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
+            unsigned int child_pair_type = get_pair_type(sequence[ci], sequence[cj]);
+            int child_n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
+            int child_n3d =
+                cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
 
-            energy += vrna_E_multibranch_stem(pair_type, n5d, n3d, P);
-            unpaired -= child->number_of_unpaired_bases;
+            energy += vrna_E_multibranch_stem(child_pair_type, child_n5d, child_n3d, P);
         }
 
-        energy += unpaired * P->MLbase;
-
         return energy;
-    }
-
-    int pseudoknot_energy(size_t i, size_t j, const std::string& sequence) {
-        // Placeholder for actual energy calculation logic
-        return 0;  // Replace with actual energy calculation
     }
 
     int external_energy(const std::vector<std::shared_ptr<LoopNode>>& children,
