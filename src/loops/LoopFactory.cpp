@@ -9,54 +9,64 @@
 namespace knotergy {
 
 LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
-    const std::vector<ClosedRegion>& closed_regions = entry_.get_closed_regions();
-    structure_length_ = entry_.get_structure().size();
-
-    // Sorted by begin index in ascending order (Complexity: O(n))
-    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions, structure_length_);
-
-    // Build the tree structure from closed regions
-    build_tree(sorted_closed_regions);
+    build_tree(entry_.get_closed_regions());
 }
 
-void LoopFactory::build_tree(std::vector<ClosedRegion> closed_regions) {
-    std::stack<std::shared_ptr<LoopNode>> node_stack;
+// Builds a tree of closed regions. Each node represents a closed region
+// Children of a node are all stems directly nested inside the closed region
+void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
+    // Sort regions by starting index (ascending)
+    size_t structure_length = entry_.get_structure().size();
+    std::vector<ClosedRegion> sorted_closed_regions =
+        closed_region_bucket_sort(closed_regions, structure_length);
 
-    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length_});
+    // Root node covers full structure [-1, structure_length]
+    // Use NULL_INDEX for -1 (unsigned type)
+    // Indicies are out of bounds so the root node is always larger than any closed region inside
+    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length});
     root_node_->loop_type = LoopType::External;
+
+    // Stack helps assign parent-child relationships (parents come before children)
+    std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
+
     BandAnnotator band_helper(entry_.get_pairings());
 
-    for (const ClosedRegion& closed_region : closed_regions) {
-        // pop until node_stack.end() is parent of current node
-        // A node is only popped (and processed) after all of its children have been added.
-        // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
+    // Pop until node_stack.end() is the parent of current node
+    // A node is only popped (and processed) after all of its children have been added.
+    // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
+    for (const ClosedRegion& closed_region : sorted_closed_regions) {
         while (node_stack.top()->end < closed_region.begin) {
-            node_stack.top()->loop_type = get_loop_type(*node_stack.top());
-            band_helper.annotate_bands(node_stack.top());
-            pseudo_nested_check(node_stack.top());
+            std::shared_ptr<LoopNode>& node = node_stack.top();
+            node->loop_type = find_loop_type(*node);
+            band_helper.annotate_bands(node);
+            pseudo_nested_check(node);
             node_stack.pop();
         }
 
         // Parent = parent of current node. Child = current node
+        // Creates child node and links it to its parent
         std::shared_ptr<LoopNode>& parent = node_stack.top();
         parent->children.emplace_back(std::make_shared<LoopNode>(closed_region));
         std::shared_ptr<LoopNode>& child = parent->children.back();
-        child->parent = parent;
+        child->parent = parent;  // May be unused
 
+        // Gets the total unpaired base pairs within the closed region (including that of children)
         child->number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
     }
+
+    // process all remaining nodes
     while (node_stack.top()->begin != NULL_INDEX) {
-        node_stack.top()->loop_type = get_loop_type(*node_stack.top());
+        node_stack.top()->loop_type = find_loop_type(*node_stack.top());
         band_helper.annotate_bands(node_stack.top());
         pseudo_nested_check(node_stack.top());
         node_stack.pop();
     }
 }
 
-LoopType LoopFactory::get_loop_type(const LoopNode& node) {
+LoopType LoopFactory::find_loop_type(const LoopNode& node) {
     const std::vector<size_t>& pairings = entry_.get_pairings();
 
     if (pairings[node.begin] != node.end) {

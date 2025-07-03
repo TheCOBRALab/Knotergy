@@ -12,8 +12,8 @@ namespace knotergy {
 
 class RNAEntry {
    public:
-    // ----------------------------------------- Constructors -----------------------------------------
-    // Constructor for RNAEntry with a name
+    // ----------------------------------------- Constructors
+    // ----------------------------------------- Constructor for RNAEntry with a name
     RNAEntry(std::string name, std::string sequence, std::string structure)
         : name_(std::move(name)), sequence_(std::move(sequence)) {
         set_structure(std::move(structure));
@@ -21,7 +21,7 @@ class RNAEntry {
 
     // Constructor for RNAEntry without a name
     RNAEntry(std::string sequence, std::string structure)
-    : RNAEntry("N/A", std::move(sequence), std::move(structure)) {}
+        : RNAEntry("N/A", std::move(sequence), std::move(structure)) {}
 
     // Default constructor (needed for vector resizing or default initialization)
     RNAEntry() = default;
@@ -30,15 +30,17 @@ class RNAEntry {
     [[nodiscard]] const std::string& get_name() const { return name_; }
     [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
     [[nodiscard]] const std::string& get_structure() const { return structure_; }
-    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {return closed_regions_;};
+    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {
+        return closed_regions_;
+    };
     [[nodiscard]] const std::vector<size_t>& get_pairings() const {
         if (sequence_.size() != structure_.size()) {
             std::cerr << "Warning: Sequence and Structure are different sizes.\n"
-                      << "Name: " << name_ << "\n"               
-                      << "Sequence: " << sequence_ 
-                      << " Sequence length: " << sequence_.size() << "\n"
-                      << "Structure: " << structure_ 
-                      << " Structure length: " << structure_.size() << std::endl;
+                      << "Name: " << name_ << "\n"
+                      << "Sequence: " << sequence_ << " Sequence length: " << sequence_.size()
+                      << "\n"
+                      << "Structure: " << structure_ << " Structure length: " << structure_.size()
+                      << std::endl;
         }
         return pairings_;
     }

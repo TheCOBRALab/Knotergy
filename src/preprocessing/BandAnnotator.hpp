@@ -12,7 +12,7 @@ namespace knotergy {
 class BandAnnotator {
    public:
     BandAnnotator(const std::vector<size_t>& pairings)
-        : pairings_(pairings), done_(pairings_.size(), false){};
+        : pairings_(pairings), done_(pairings_.size(), false) {};
 
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(const std::shared_ptr<LoopNode>& node) {
