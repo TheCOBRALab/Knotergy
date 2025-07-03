@@ -54,7 +54,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         child->parent = parent;  // May be unused
 
         // Gets the total unpaired base pairs within the closed region (including that of children)
-        child->number_of_exclusive_unpaired_bases = entry_.get_unpaired_count(closed_region);
+        child->total_number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
     }

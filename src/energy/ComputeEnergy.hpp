@@ -1,5 +1,6 @@
 #pragma once
 #include "../loops/LoopNode.hpp"
+#include "PseudoknotFunctions.hpp"
 #include "ViennaFunctions.hpp"
 
 namespace knotergy {
@@ -15,6 +16,7 @@ class ComputeEnergy {
 
    private:
     ViennaFunctions vienna;
+    PseudoknotFunctions pseudo;
     std::shared_ptr<LoopNode> root_node_;
     const std::string& sequence_;
     float energy_ = 0.0f;
