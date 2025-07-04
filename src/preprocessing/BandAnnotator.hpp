@@ -12,7 +12,7 @@ namespace knotergy {
 class BandAnnotator {
    public:
     BandAnnotator(const std::vector<size_t>& pairings)
-        : pairings_(pairings), done_(pairings_.size(), false) {};
+        : pairings_(pairings), done_(pairings_.size(), false){};
 
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(const std::shared_ptr<LoopNode>& node) {
@@ -34,64 +34,72 @@ class BandAnnotator {
     }
 
    private:
-    std::vector<Band> find_bands_in_region() {
-        return find_bands_in_region(0, pairings_.size() - 1);
+    const std::vector<size_t> pairings_;
+    std::vector<bool> done_;
+    
+    bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
+                     const size_t& right_bound) {
+        size_t i_tmp = i_prime + 1;
+        size_t j_tmp = j_prime - 1;
+
+        /* skip unpaired positions on either side */
+        while (i_tmp <= right_bound && pairings_[i_tmp] == NULL_INDEX) ++i_tmp;
+        while (j_tmp > left_bound && pairings_[j_tmp] == NULL_INDEX) --j_tmp;
+
+        if (i_tmp < j_tmp && pairings_[i_tmp] == j_tmp) {  // still a canonical stack
+            i_prime = i_tmp;
+            j_prime = j_tmp;
+            return true;
+        }
+        return false;
     }
 
     /*──────────────── find all bands inside [left, right] ────────────────────*/
-    std::vector<Band> find_bands_in_region(size_t left, size_t right) {
+    std::vector<Band> find_bands_in_region(size_t left_bound, size_t right_bound) {
         std::vector<Band> bands;
 
-        for (size_t i = left; i <= right; ++i) {
+        const size_t n = pairings_.size();
+        if (right_bound >= n) {
+            right_bound = n - 1;
+        }
+
+        for (size_t i = left_bound; i <= right_bound; ++i) {
             /* skip anything that is   – already used
              *                         – unpaired
              *                         – closing half
              *                         – pairs outside this region */
-            if (done_[i] || pairings_[i] == NULL_INDEX || pairings_[i] < i || pairings_[i] > right)
+            if (done_[i] || pairings_[i] == NULL_INDEX || pairings_[i] < i ||
+                pairings_[i] > right_bound)
                 continue;
 
             size_t j = pairings_[i];
-            size_t il = i;
-            size_t jr = j;
+            size_t i_prime = i;
+            size_t j_prime = j;
 
-            // walks the stem until last base pair in the given region
-            while (il > left && jr <= right && pairings_[il - 1] && extend_stem(il, jr)) {
+            // walks the stem until last base pair in the given region (finds i` and j`)
+            while (extend_stem(i_prime, j_prime, left_bound, right_bound)) {
             }
 
-            bands.push_back(Band{i, il, jr, j});
+            // stores entire band
+            bands.push_back(Band{i, i_prime, j_prime, j});
 
             /* mark every position that belongs to this band */
-            for (size_t k = i; k <= il; ++k) {
+            for (size_t k = i; k <= i_prime; ++k) {
                 done_[k] = true;
                 if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
             }
-            for (size_t k = jr; k <= j; ++k) {
+            for (size_t k = j_prime; k <= j; ++k) {
                 done_[k] = true;
                 if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
             }
 
-            i = il;  // fast-forward
+            i = i_prime;  // fast-forward
         }
         return bands;
     }
 
-    const std::vector<size_t> pairings_;
-    std::vector<bool> done_;
-    bool extend_stem(size_t& il, size_t& jr) {
-        const size_t n = pairings_.size();
-        size_t ip = il + 1;
-        size_t jp = jr - 1;
-
-        /* skip unpaired positions on either side */
-        while (ip < n && pairings_[ip] == NULL_INDEX) ++ip;
-        while (jp > 0 && pairings_[jp] == NULL_INDEX) --jp;
-
-        if (ip < jp && pairings_[ip] == jp) {  // still a canonical stack
-            il = ip;
-            jr = jp;
-            return true;
-        }
-        return false;
+    std::vector<Band> find_bands_in_region() {
+        return find_bands_in_region(0, pairings_.size() - 1);
     }
 };
 
