@@ -17,9 +17,9 @@ class BandAnnotator {
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(const std::shared_ptr<LoopNode>& node) {
         /* only pseudoknots need bands; leave the rest untouched */
-        if (node->loop_type != LoopType::Pseudoknot) return;
         node->bands = find_bands_in_region(node->begin, node->end);
         node->number_of_bands = static_cast<int>(node->bands.size());
+        if (node->loop_type != LoopType::Pseudoknot) return;
 
         /* classify every direct child */
         for (std::shared_ptr<LoopNode>& child : node->children) {
