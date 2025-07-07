@@ -88,8 +88,11 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "  number_of_bands: " << node.number_of_bands << "\n";
     os << "  bands:\n";
     for (const auto& band : node.bands) {
-        os << "    Band(" << band.left_border << ", " << band.left_inner << ", " << band.right_inner
-           << ", " << band.right_border << ")\n";
+        os << "    Band(" << band.left_border() << ", " << band.left_inner() << ", "
+           << band.right_inner() << ", " << band.right_border() << ")\n";
+        for (const auto& base_pair : band.base_pairs()) {
+            os << "        BasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
+        }
     }
 
     os << "  children count: " << node.children.size() << "\n";

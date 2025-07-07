@@ -12,7 +12,7 @@ namespace knotergy {
 class BandAnnotator {
    public:
     BandAnnotator(const std::vector<size_t>& pairings)
-        : pairings_(pairings), done_(pairings_.size(), false){};
+        : pairings_(pairings), done_(pairings_.size(), false) {};
 
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(const std::shared_ptr<LoopNode>& node) {
@@ -36,7 +36,7 @@ class BandAnnotator {
    private:
     const std::vector<size_t> pairings_;
     std::vector<bool> done_;
-    
+
     bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
                      const size_t& right_bound) {
         size_t i_tmp = i_prime + 1;
@@ -81,7 +81,7 @@ class BandAnnotator {
             }
 
             // stores entire band
-            bands.push_back(Band{i, i_prime, j_prime, j});
+            bands.push_back(Band{i, i_prime, j_prime, j, pairings_});
 
             /* mark every position that belongs to this band */
             for (size_t k = i; k <= i_prime; ++k) {
