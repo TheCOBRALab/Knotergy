@@ -9,9 +9,9 @@
 namespace knotergy {
 
 // walk one step along a perfect stack:  (i+1) pairs (j−1)
-class BandAnnotator {
+class BandFinder {
    public:
-    BandAnnotator(const std::vector<size_t>& pairings)
+    BandFinder(const std::vector<size_t>& pairings)
         : pairings_(pairings), done_(pairings_.size(), false) {};
 
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/

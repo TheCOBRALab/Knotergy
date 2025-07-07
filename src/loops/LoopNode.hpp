@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "../preprocessing/Band.hpp"
+#include "../loops/Band.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 
 namespace knotergy {

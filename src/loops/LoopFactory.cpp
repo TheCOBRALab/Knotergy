@@ -4,7 +4,7 @@
 #include <memory>
 #include <stack>
 
-#include "../preprocessing/BandAnnotator.hpp"
+#include "../loops/BandFinder.hpp"
 
 namespace knotergy {
 
@@ -26,11 +26,10 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length});
     root_node_->loop_type = LoopType::External;
 
-    // Stack helps assign parent-child relationships (parents come before children)
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
 
-    BandAnnotator band_helper(entry_.get_pairings());
+    BandFinder band_finder(entry_.get_pairings());
 
     // Pop until node_stack.end() is the parent of current node
     // A node is only popped (and processed) after all of its children have been added.
@@ -38,9 +37,8 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     for (const ClosedRegion& closed_region : sorted_closed_regions) {
         while (node_stack.top()->end < closed_region.begin) {
             std::shared_ptr<LoopNode>& node = node_stack.top();
-
             node->loop_type = find_loop_type(*node);
-            band_helper.annotate_bands(node);
+            band_finder.annotate_bands(node);
             count_unpaired_bases_excluding_children(*node);
             pseudo_nested_check(*node);
             node_stack.pop();
@@ -64,7 +62,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         std::shared_ptr<LoopNode>& node = node_stack.top();
         count_unpaired_bases_excluding_children(*node);
         node->loop_type = find_loop_type(*node);
-        band_helper.annotate_bands(node);
+        band_finder.annotate_bands(node);
         pseudo_nested_check(*node);
         node_stack.pop();
     }
