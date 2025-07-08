@@ -29,8 +29,12 @@ class ViennaFunctions {
         }
         // c = child or nested base pair
         unsigned int type1 = get_pair_type(sequence[i], sequence[j]);
-        unsigned int type2 = get_pair_type(sequence[cj], sequence[ci]);  // rtype
-        return P->stack[type1][type2];
+        unsigned int type2 = get_pair_type(sequence[ci], sequence[cj]);
+        return P->stack[type1][reverse_pair_type(type2)];
+    }
+
+    int stack_energy(Pair pair, Pair child, const std::string& sequence){
+        return stack_energy(pair.i, pair.j, child.i, child.j, sequence);
     }
 
     int hairpin_energy(size_t i, size_t j, const std::string& sequence) {
@@ -41,7 +45,7 @@ class ViennaFunctions {
 
         unsigned int size = static_cast<unsigned int>(j - i - 1);
         if (size < 3) {
-            std::cerr << "Hairpin loop size is less than 3. Infinite Energy. Sequence: " << sequence
+            std::cerr << "Warning: Hairpin loop size is less than 3. Infinite Energy. Sequence: " << sequence
                       << " i: " << i << ", j: " << j << std::endl;
         }
 
@@ -49,7 +53,7 @@ class ViennaFunctions {
         int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);
         int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);
 
-        // For loop size < 7, you MUST pass the loop sequence substring
+        // If loop size < 7, you MUST pass the loop sequence substring
         // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
         const char* loop_seq = nullptr;
         std::string loop_subseq;
@@ -86,13 +90,13 @@ class ViennaFunctions {
         size_t i = node.begin;
         size_t j = node.end;
 
-        unsigned int pair_type = get_pair_type(sequence[j], sequence[i]);  // rtype
+        unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
         int n5d = vrna_nucleotide_encode(sequence[i + 1], &md);
         int n3d = vrna_nucleotide_encode(sequence[j - 1], &md);
 
         // penalties
         int energy = P->MLclosing;  // closing penalty
-        energy += vrna_E_multibranch_stem(pair_type, n3d, n5d, P);
+        energy += vrna_E_multibranch_stem(reverse_pair_type(pair_type), n3d, n5d, P);
         energy += node.number_of_exclusive_unpaired_bases * P->MLbase;
 
         const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
@@ -137,5 +141,12 @@ class ViennaFunctions {
         int encoded_j = vrna_nucleotide_encode(j, &md);
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
     }
+
+    // I created a pull request to remove the need for static cast
+    // https://github.com/ViennaRNA/ViennaRNA/pull/270
+    unsigned int reverse_pair_type(unsigned int type) const {
+        return static_cast<unsigned int>(md.rtype[type]);
+    }
+
 };
 }  // namespace knotergy

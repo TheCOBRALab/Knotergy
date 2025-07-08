@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../loop_tree/LoopNode.hpp"
+#include "ViennaFunctions.hpp"
 
 namespace knotergy {
 class PseudoknotFunctions {
@@ -12,14 +13,19 @@ class PseudoknotFunctions {
     // AGGGGUUUUUUUUUUUUUGGAAA
     // [[[[[.(((((]]]]]..)))))
     //
-    float pseudoknot_energy(const LoopNode& node) {
-        double P_tilda = 0.1f;  // pair in a pseudoknot
-        double Q_tilda = 0.2f;  // unpaired bases in a pseudoknot
-        double P_i = 0.1f;      // for E&R energy model
-        double Gw = 7.0f;       // starting a pseudoknot loop
-        double Gwh = 6.0f;      // each more band region
+    double pseudoknot_energy(const LoopNode& node, const std::string& sequence) {
+        const int P_tilda = 10;  // pair in a pseudoknot
+        const int Q_tilda = 20;  // unpaired bases in a pseudoknot
+        const int P_i = 10;      // for E&R energy model
+        const int Gw = 700;      // starting a pseudoknot loop
+        const int Gwh = 600;     // each more band region
 
-        double energy = 0.0f;
+        const double g_interiorPseudo = 0.83;
+        [[maybe_unused]] const int multi_OffsetPseudo = 843;
+        [[maybe_unused]] const int q_unpairedMultiPseudo = 0;
+        [[maybe_unused]] const int p_pairedMultiPseudo = 100;
+
+        double energy = 0;
 
         std::cout << node << std::endl;
         energy += Gw;
@@ -27,11 +33,18 @@ class PseudoknotFunctions {
         energy += P_tilda * 2 * node.number_of_bands;
         energy += Q_tilda * 2 * node.number_of_exclusive_unpaired_bases;
         energy += P_i * node.number_of_children_outside_band;
-        energy *= 100;
 
-        return static_cast<float>(energy);
+        for (const Band& band : node.bands){
+            const std::vector<Pair>& bp = band.base_pairs();
+            for (size_t idx = 0; idx < bp.size() - 1; ++idx){
+               energy +=  g_interiorPseudo * vienna.stack_energy(bp[idx], bp[idx+1], sequence) / 100.0 ;
+            }
+        }
+
+        return energy;
     }
 
    private:
+    ViennaFunctions vienna;
 };
 }  // namespace knotergy

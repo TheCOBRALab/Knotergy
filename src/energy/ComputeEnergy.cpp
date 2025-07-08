@@ -33,7 +33,7 @@ float ComputeEnergy::process_node(const LoopNode& node) {
             std::cout << "Multibranch: " << node_energy << std::endl;
             break;
         case LoopType::Pseudoknot:
-            node_energy += pseudo.pseudoknot_energy(node);
+            node_energy += pseudo.pseudoknot_energy(node, sequence_);
             break;
         case LoopType::External:
             node_energy += vienna.external_energy(node.children, sequence_);
