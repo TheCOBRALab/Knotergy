@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../helpers/common.hpp"
-#include "../loops/LoopNode.hpp"
+#include "../loop_tree/LoopNode.hpp"
 #include "Band.hpp"
 namespace knotergy {
 

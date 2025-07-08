@@ -5,6 +5,7 @@
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
+#include "common.hpp"
 
 namespace knotergy {
 

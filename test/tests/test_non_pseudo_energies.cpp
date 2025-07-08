@@ -4,7 +4,7 @@
 #include <helpers/main_helpers.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessedEntry.hpp>
-#include <loops/LoopFactory.hpp>
+#include <loop_tree/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
 
 #include <string>

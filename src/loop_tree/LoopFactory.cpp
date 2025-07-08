@@ -4,7 +4,7 @@
 #include <memory>
 #include <stack>
 
-#include "../loops/BandFinder.hpp"
+#include "../loop_tree/BandFinder.hpp"
 
 namespace knotergy {
 

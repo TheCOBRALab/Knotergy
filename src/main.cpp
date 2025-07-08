@@ -5,6 +5,7 @@
 #include "helpers/main_helpers.hpp"
 #include "preprocessing/RNAEntry.hpp"
 #include "preprocessing/RNAProcessedEntry.hpp"
+
 namespace {
 void help() {
     std::cout << "Usage: ./Knotergy [options]\n"

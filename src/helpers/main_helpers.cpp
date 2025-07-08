@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "../energy/ComputeEnergy.hpp"
-#include "../loops/LoopFactory.hpp"
+#include "../loop_tree/LoopFactory.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
 #include "common.hpp"
@@ -145,6 +145,11 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
                                      const std::string& structure) {
     std::vector<RNAEntry> entries;
     if (!sequence.empty()) {
+        if (sequence.size() != structure.size()) {
+            THROW_ERROR("Input sequence and structure are not the same length.\nSequence length: " +
+                        std::to_string(sequence.size()) +
+                        "\nStructure length: " + std::to_string(structure.size()));
+        }
         entries.emplace_back("Console Sequence", sequence, structure);
     }
     if (!input_file.empty()) {
@@ -152,7 +157,7 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
         entries.insert(entries.end(), std::make_move_iterator(file_entries.begin()),
                        std::make_move_iterator(file_entries.end()));
     }
-    if (entries.empty()) throw std::runtime_error("No Input Data Given");
+    if (entries.empty()) THROW_ERROR("No Input Data Given");
     return entries;
 }
 
@@ -237,7 +242,7 @@ void load_energy_parameters(const std::string& paramFile, const std::string& seq
         std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
         vrna_params_load_DNA_Mathews2004();
     } else {
-        std::cerr << "Defaulting to RNA parameters (Langdon 2018)." << std::endl;
+        std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
         vrna_params_load_RNA_Turner2004();
     }
 }

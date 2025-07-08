@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "../loops/LoopNode.hpp"
+#include "../loop_tree/LoopNode.hpp"
 
 namespace knotergy {
 class PseudoknotFunctions {

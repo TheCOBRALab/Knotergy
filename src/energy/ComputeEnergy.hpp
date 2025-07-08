@@ -1,5 +1,5 @@
 #pragma once
-#include "../loops/LoopNode.hpp"
+#include "../loop_tree/LoopNode.hpp"
 #include "PseudoknotFunctions.hpp"
 #include "ViennaFunctions.hpp"
 

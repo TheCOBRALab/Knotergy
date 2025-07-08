@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "../loops/Band.hpp"
+#include "../loop_tree/Band.hpp"
 #include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {

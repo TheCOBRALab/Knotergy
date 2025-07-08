@@ -184,7 +184,7 @@ endif()
 file(GLOB KnotergySources
     ${CMAKE_CURRENT_SOURCE_DIR}/src/helpers/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/preprocessing/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/loops/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loop_tree/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/energy/*.cpp
 )
 

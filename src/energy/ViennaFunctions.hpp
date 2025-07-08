@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../loops/LoopNode.hpp"
+#include "../loop_tree/LoopNode.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 
 extern "C" {
