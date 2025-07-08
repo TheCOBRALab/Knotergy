@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "../loops/Band.hpp"
-#include "../preprocessing/RNAEntry.hpp"
+#include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };

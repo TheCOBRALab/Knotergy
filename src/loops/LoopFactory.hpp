@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../preprocessing/RNAEntry.hpp"
+#include "../preprocessing/RNAProcessedEntry.hpp"
 #include "LoopNode.hpp"
 
 namespace knotergy {
 class LoopFactory {
    public:
-    LoopFactory(const RNAEntry& entry);
+    LoopFactory(const RNAProcessedEntry& processed_rna);
 
     std::shared_ptr<LoopNode> get_root_node() { return root_node_; };
 
@@ -14,7 +14,7 @@ class LoopFactory {
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
-    const RNAEntry& entry_;
+    const RNAProcessedEntry& processed_rna_;
     std::shared_ptr<LoopNode> root_node_;
     size_t structure_length_;
 
@@ -41,8 +41,8 @@ class LoopFactory {
      * - The method finalizes remaining nodes on the stack after all regions have been added.
      *
      * @note
-     * - Assumes `entry_` provides access to the secondary structure, base pairings, and unpaired
-     * counts.
+     * - Assumes `processed_rna` provides access to the secondary structure, base pairings, and
+     * unpaired counts.
      * - `NULL_INDEX` is used to represent an invalid or out-of-bound index for the root node.
      * - The tree is stored in `root_node_`, and child nodes are recursively linked.
      */

@@ -10,6 +10,9 @@ namespace knotergy {
 struct Pair {
     size_t i;
     size_t j;
+
+    Pair() = default;
+    Pair(size_t i, size_t j) : i(i), j(j) {}
 };
 
 // Visual representation of the band:
@@ -23,7 +26,7 @@ class Band {
         for (size_t idx = left_border_; idx <= left_inner_; ++idx) {
             size_t paired = pairings[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
-                base_pairs_.emplace_back(Pair{idx, paired});
+                base_pairs_.emplace_back(idx, paired);
             }
         }
     }

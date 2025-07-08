@@ -8,15 +8,15 @@
 
 namespace knotergy {
 
-LoopFactory::LoopFactory(const RNAEntry& entry) : entry_(entry) {
-    build_tree(entry_.get_closed_regions());
+LoopFactory::LoopFactory(const RNAProcessedEntry& processed_rna) : processed_rna_(processed_rna) {
+    build_tree(processed_rna.get_closed_regions());
 }
 
 // Builds a tree of closed regions. Each node represents a closed region
 // Children of a node are all stems directly nested inside the closed region
 void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Sort regions by starting index (ascending)
-    size_t structure_length = entry_.get_structure().size();
+    size_t structure_length = processed_rna_.size();
     std::vector<ClosedRegion> sorted_closed_regions =
         closed_region_bucket_sort(closed_regions, structure_length);
 
@@ -29,7 +29,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
 
-    BandFinder band_finder(entry_.get_pairings());
+    BandFinder band_finder(processed_rna_.get_pairings());
 
     // Pop until node_stack.end() is the parent of current node
     // A node is only popped (and processed) after all of its children have been added.
@@ -52,7 +52,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         child->parent = parent;  // May be unused
 
         // Gets the total unpaired base pairs within the closed region (including that of children)
-        child->total_number_of_unpaired_bases = entry_.get_unpaired_count(closed_region);
+        child->total_number_of_unpaired_bases = processed_rna_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
     }
@@ -77,7 +77,7 @@ void LoopFactory::count_unpaired_bases_excluding_children(LoopNode& node) {
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
-    const std::vector<size_t>& pairings = entry_.get_pairings();
+    const std::vector<size_t>& pairings = processed_rna_.get_pairings();
 
     if (pairings[node.begin] != node.end) {
         return LoopType::Pseudoknot;

@@ -4,6 +4,7 @@
 
 #include "helpers/main_helpers.hpp"
 #include "preprocessing/RNAEntry.hpp"
+#include "preprocessing/RNAProcessedEntry.hpp"
 namespace {
 void help() {
     std::cout << "Usage: ./Knotergy [options]\n"
@@ -99,9 +100,9 @@ int main(int argc, char** argv) {
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs =
         knotergy::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::RNAProcessedEntry> processed_inputs = knotergy::process_inputs(inputs);
 
-    for (knotergy::RNAEntry& current : inputs) {
-        std::cout << current;
+    for (const knotergy::RNAProcessedEntry& current : processed_inputs) {
         std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
                   << "\nStructure: " << current.get_structure() << std::endl;
 
