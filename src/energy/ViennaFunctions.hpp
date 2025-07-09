@@ -33,7 +33,7 @@ class ViennaFunctions {
         return P->stack[type1][reverse_pair_type(type2)];
     }
 
-    int stack_energy(Pair pair, Pair child, const std::string& sequence){
+    int stack_energy(Pair pair, Pair child, const std::string& sequence) {
         return stack_energy(pair.i, pair.j, child.i, child.j, sequence);
     }
 
@@ -45,8 +45,8 @@ class ViennaFunctions {
 
         unsigned int size = static_cast<unsigned int>(j - i - 1);
         if (size < 3) {
-            std::cerr << "Warning: Hairpin loop size is less than 3. Infinite Energy. Sequence: " << sequence
-                      << " i: " << i << ", j: " << j << std::endl;
+            std::cerr << "Warning: Hairpin loop size is less than 3. Infinite Energy. Sequence: "
+                      << sequence << " i: " << i << ", j: " << j << std::endl;
         }
 
         unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
@@ -147,6 +147,5 @@ class ViennaFunctions {
     unsigned int reverse_pair_type(unsigned int type) const {
         return static_cast<unsigned int>(md.rtype[type]);
     }
-
 };
 }  // namespace knotergy

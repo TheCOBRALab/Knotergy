@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <helpers/common.hpp>
+#include <pipeline/shared.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessedEntry.hpp>
 #include <string>

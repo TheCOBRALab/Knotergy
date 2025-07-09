@@ -34,10 +34,11 @@ class PseudoknotFunctions {
         energy += Q_tilda * 2 * node.number_of_exclusive_unpaired_bases;
         energy += P_i * node.number_of_children_outside_band;
 
-        for (const Band& band : node.bands){
+        for (const Band& band : node.bands) {
             const std::vector<Pair>& bp = band.base_pairs();
-            for (size_t idx = 0; idx < bp.size() - 1; ++idx){
-               energy +=  g_interiorPseudo * vienna.stack_energy(bp[idx], bp[idx+1], sequence) / 100.0 ;
+            for (size_t idx = 0; idx < bp.size() - 1; ++idx) {
+                energy +=
+                    g_interiorPseudo * vienna.stack_energy(bp[idx], bp[idx + 1], sequence) / 100.0;
             }
         }
 

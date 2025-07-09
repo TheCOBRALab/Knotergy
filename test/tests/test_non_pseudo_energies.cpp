@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <helpers/common.hpp>
-#include <helpers/main_helpers.hpp>
+#include <pipeline/shared.hpp>
+#include <pipeline/input_pipeline.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessedEntry.hpp>
 #include <loop_tree/LoopFactory.hpp>

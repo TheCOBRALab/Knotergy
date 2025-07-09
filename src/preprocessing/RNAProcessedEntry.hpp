@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "../helpers/common.hpp"
+#include "../pipeline/shared.hpp"
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
 namespace knotergy {

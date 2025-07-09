@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "../helpers/common.hpp"
 #include "../loop_tree/LoopNode.hpp"
+#include "../pipeline/shared.hpp"
 #include "Band.hpp"
 namespace knotergy {
 

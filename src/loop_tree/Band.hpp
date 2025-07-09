@@ -3,7 +3,7 @@
 #include <ostream>
 #include <vector>
 
-#include "../helpers/common.hpp"
+#include "../pipeline/shared.hpp"
 
 namespace knotergy {
 

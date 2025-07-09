@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "helpers/main_helpers.hpp"
+#include "pipeline/input_pipeline.hpp"
 #include "preprocessing/RNAEntry.hpp"
 #include "preprocessing/RNAProcessedEntry.hpp"
 

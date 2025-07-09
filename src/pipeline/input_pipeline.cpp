@@ -1,4 +1,4 @@
-#include "main_helpers.hpp"
+#include "input_pipeline.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -11,7 +11,7 @@
 #include "../loop_tree/LoopFactory.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
-#include "common.hpp"
+#include "shared.hpp"
 
 extern "C" {
 // used for load_energy_parameters
