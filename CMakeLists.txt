@@ -17,6 +17,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+# -------------------------------------------------------------------
+#                             C++ Flags
+# -------------------------------------------------------------------
+
 # Debug configuration
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Building in Debug mode")
@@ -46,7 +50,9 @@ else()
 endif()
 
 
-# --------------------------------- Google Test ---------------------------------------
+# -------------------------------------------------------------------
+#                      GoogleTest Configuration
+# -------------------------------------------------------------------
 option(ENABLE_TESTS "Build unit tests" ON)
 
 if (NOT ENABLE_TESTS)
