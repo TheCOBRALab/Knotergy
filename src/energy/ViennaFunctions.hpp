@@ -86,6 +86,10 @@ class ViennaFunctions {
         return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, P);
     }
 
+    int internal_loop_energy(Pair pair, Pair child, const std::string& sequence) {
+        return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence);
+    }
+
     int multibranch_energy(const LoopNode& node, const std::string& sequence) {
         size_t i = node.begin;
         size_t j = node.end;

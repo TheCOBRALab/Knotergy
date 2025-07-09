@@ -13,6 +13,9 @@ struct Pair {
 
     Pair() = default;
     Pair(size_t i, size_t j) : i(i), j(j) {}
+    bool is_stack(Pair child) const {
+        return i + 1 == child.i && j - 1 == child.j;
+    }
 };
 
 // Visual representation of the band:
