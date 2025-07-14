@@ -77,7 +77,7 @@ class ViennaFunctions {
         unsigned int n1 = static_cast<unsigned int>(ci - i - 1);
         unsigned int n2 = static_cast<unsigned int>(j - cj - 1);
         unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
-        unsigned int pair_type2 = get_pair_type(sequence[ci], sequence[cj]);
+        unsigned int pair_type2 = reverse_pair_type(get_pair_type(sequence[ci], sequence[cj]));
         int si1 = vrna_nucleotide_encode(sequence[i + 1], &md);   // 5' mismatch of closing pair
         int sj1 = vrna_nucleotide_encode(sequence[j - 1], &md);   // 3' mismatch of closing pair
         int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &md);  // 5' mismatch of enclosed pair
