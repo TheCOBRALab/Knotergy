@@ -9,6 +9,10 @@
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
 enum class PseudoNestedType { None, InsideBand, OutsideBand, InsideMultiloop };
+// Inside band (((..(...)..[[[...)))]]]
+// This hairpin     ^   ^ is nested in exactly one band, so it's InsideBand
+// Outside band ((([[[..(...)...)))]]]
+// This hairpin         ^   ^ is nested in multiple bands, so it's OutsideBand
 
 struct LoopNode {
    public:

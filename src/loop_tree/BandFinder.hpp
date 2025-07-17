@@ -16,19 +16,39 @@ class BandFinder {
 
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(const std::shared_ptr<LoopNode>& node) {
-        /* only pseudoknots need bands; leave the rest untouched */
         node->bands = find_bands_in_region(node->begin, node->end);
         node->number_of_bands = static_cast<int>(node->bands.size());
+
+        /* only pseudoknots need bands; leave the rest untouched */
         if (node->loop_type != LoopType::Pseudoknot) return;
 
-        /* classify every direct child */
-        for (std::shared_ptr<LoopNode>& child : node->children) {
+        size_t child_idx = 0;
+        size_t band_idx = 0;
+        const std::vector<Band>& bands = node->bands;
+
+        while (child_idx < node->children.size()) {
+            std::shared_ptr<LoopNode>& child = node->children[child_idx];
             child->pseudo_type = PseudoNestedType::OutsideBand;
-            for (const Band& b : node->bands) {
-                if (b.contains(child->begin) && b.contains(child->end)) {
+
+            // Prevent out-of-bounds in band lookup
+            if (band_idx >= bands.size()) {
+                ++child_idx;
+                continue;
+            }
+
+            // Checks if it's exclusively in one band
+            if (node->bands[band_idx].nests(child->begin, child->end)) {
+                bool crosses_previous =
+                    (band_idx > 0) && bands[band_idx - 1].nests(child->begin, child->end);
+                bool crosses_next = (band_idx + 1 < bands.size()) &&
+                                    bands[band_idx + 1].nests(child->begin, child->end);
+
+                if (!crosses_previous && !crosses_next) {
                     child->pseudo_type = PseudoNestedType::InsideBand;
-                    break;
                 }
+                ++child_idx;  // Done with this child, move to next
+            } else {
+                ++band_idx;
             }
         }
     }
@@ -96,6 +116,10 @@ class BandFinder {
             i = i_prime;  // fast-forward
         }
         return bands;
+    }
+
+    std::vector<Band> find_bands_in_region(size_t start) {
+        return find_bands_in_region(start, pairings_.size() - 1);
     }
 
     std::vector<Band> find_bands_in_region() {

@@ -13,9 +13,7 @@ struct Pair {
 
     Pair() = default;
     Pair(size_t i, size_t j) : i(i), j(j) {}
-    bool is_stack(Pair child) const {
-        return i + 1 == child.i && j - 1 == child.j;
-    }
+    bool is_stack(Pair child) const { return i + 1 == child.i && j - 1 == child.j; }
 };
 
 // Visual representation of the band:
@@ -38,6 +36,10 @@ class Band {
         return (idx >= left_border_ && idx <= left_inner_) ||
                (idx >= right_inner_ && idx <= right_border_);
     }
+
+    bool nests(size_t idx) const { return (idx > left_inner_ && idx < right_inner_); }
+
+    bool nests(size_t idx, size_t idx2) const { return nests(idx) && nests(idx2); }
 
     // === Read-only accessors ===
     size_t left_border() const { return left_border_; }

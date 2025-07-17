@@ -265,7 +265,7 @@ void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file)
     }
     printf("\n-------------------------------\n Making the Loop Tree\n");
     LoopFactory factory(processed_rna);
-    // factory.print_tree(processed_rna);
+    // factory.print_tree(true);
     ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence());
     std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
 }
