@@ -7,13 +7,13 @@
 
 namespace knotergy {
 
-struct Pair {
+struct BasePair  {
     size_t i;
     size_t j;
 
-    Pair() = default;
-    Pair(size_t i, size_t j) : i{i}, j{j} {}
-    bool is_stack(Pair child) const { return i + 1 == child.i && j - 1 == child.j; }
+    BasePair () = default;
+    BasePair (size_t left_index, size_t right_index) : i{left_index}, j{right_index} {}
+    bool is_stack(BasePair child) const { return i + 1 == child.i && j - 1 == child.j; }
 };
 
 // Visual representation of the band:
@@ -47,7 +47,7 @@ class Band {
     size_t right_inner() const { return right_inner_; }
     size_t right_border() const { return right_border_; }
 
-    const std::vector<Pair>& base_pairs() const { return base_pairs_; }
+    const std::vector<BasePair>& base_pairs() const { return base_pairs_; }
 
    private:
     size_t left_border_;   // i
@@ -55,7 +55,7 @@ class Band {
     size_t right_inner_;   // j`
     size_t right_border_;  // j
 
-    std::vector<Pair> base_pairs_;
+    std::vector<BasePair> base_pairs_;
 };
 
 // === Operator overload for printing ===

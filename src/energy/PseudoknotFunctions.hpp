@@ -66,7 +66,7 @@ class PseudoknotFunctions {
         // }
 
         for (const Band& band : node.bands) {
-            const std::vector<Pair>& bp = band.base_pairs();
+            const std::vector<BasePair>& bp = band.base_pairs();
             for (size_t idx = 0; idx < bp.size() - 1; ++idx) {
                 if (bp[idx].is_stack(bp[idx + 1])) {
                     energy +=

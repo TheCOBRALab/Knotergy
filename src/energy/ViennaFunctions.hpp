@@ -33,7 +33,7 @@ class ViennaFunctions {
         return P->stack[type1][reverse_pair_type(type2)];
     }
 
-    int stack_energy(Pair pair, Pair child, const std::string& sequence) {
+    int stack_energy(BasePair pair, BasePair child, const std::string& sequence) {
         return stack_energy(pair.i, pair.j, child.i, child.j, sequence);
     }
 
@@ -86,7 +86,7 @@ class ViennaFunctions {
         return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, P);
     }
 
-    int internal_loop_energy(Pair pair, Pair child, const std::string& sequence) {
+    int internal_loop_energy(BasePair pair, BasePair child, const std::string& sequence) {
         return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence);
     }
 

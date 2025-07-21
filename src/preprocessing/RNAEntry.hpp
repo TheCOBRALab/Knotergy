@@ -14,12 +14,12 @@ struct RNAEntry {
     RNAEntry() = default;
 
     // Constructor with all fields
-    RNAEntry(std::string name, std::string sequence, std::string structure)
-        : name{std::move(name)}, sequence{std::move(sequence)}, structure{std::move(structure)} {}
+    RNAEntry(std::string rna_name, std::string rna_sequence, std::string rna_structure)
+        : name{std::move(rna_name)}, sequence{std::move(rna_sequence)}, structure{std::move(rna_structure)} {}
 
     // Constructor without name (defaults to "N/A")
-    RNAEntry(std::string sequence, std::string structure)
-        : RNAEntry("N/A", std::move(sequence), std::move(structure)) {}
+    RNAEntry(std::string rna_sequence, std::string rna_structure)
+        : RNAEntry("N/A", std::move(rna_sequence), std::move(rna_structure)) {}
 
     size_t size() const {
         assert(sequence.size() == structure.size() &&
