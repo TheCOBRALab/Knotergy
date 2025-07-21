@@ -7,7 +7,7 @@ namespace knotergy {
 class ComputeEnergy {
    public:
     ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence)
-        : root_node_(root_node), sequence_(sequence) {
+        : root_node_{root_node}, sequence_{sequence} {
         process_tree(*root_node_);
     };
 

@@ -14,7 +14,7 @@ namespace knotergy {
 class RNAProcessedEntry {
    public:
     // Constructor for RNAEntry with a name
-    explicit RNAProcessedEntry(const RNAEntry& entry);
+    explicit RNAProcessedEntry(const RNAEntry& rna);
     explicit RNAProcessedEntry(std::string name, std::string sequence, std::string structure);
     explicit RNAProcessedEntry(std::string sequence, std::string structure);
 

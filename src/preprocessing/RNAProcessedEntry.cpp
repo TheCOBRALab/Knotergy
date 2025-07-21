@@ -2,7 +2,7 @@
 
 namespace knotergy {
 
-RNAProcessedEntry::RNAProcessedEntry(const RNAEntry& rna) : rna_(rna) {
+RNAProcessedEntry::RNAProcessedEntry(const RNAEntry& rna) : rna_{rna} {
     pairings_ = compute_pairings();
     closed_regions_ = compute_closed_regions();
     unpaired_prefix_sum_ = compute_unpaired_counts();

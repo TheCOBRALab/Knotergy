@@ -10,7 +10,7 @@ struct ClosedRegion {
     size_t end{};
 
     ClosedRegion() = default;
-    ClosedRegion(size_t b, size_t e) : begin(b), end(e) {}
+    ClosedRegion(size_t b, size_t e) : begin{b}, end{e} {}
 
     bool operator==(const ClosedRegion& rhs) const { return begin == rhs.begin && end == rhs.end; }
 };

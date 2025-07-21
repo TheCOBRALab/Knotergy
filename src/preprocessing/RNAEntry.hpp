@@ -15,7 +15,7 @@ struct RNAEntry {
 
     // Constructor with all fields
     RNAEntry(std::string name, std::string sequence, std::string structure)
-        : name(std::move(name)), sequence(std::move(sequence)), structure(std::move(structure)) {}
+        : name{std::move(name)}, sequence{std::move(sequence)}, structure{std::move(structure)} {}
 
     // Constructor without name (defaults to "N/A")
     RNAEntry(std::string sequence, std::string structure)
