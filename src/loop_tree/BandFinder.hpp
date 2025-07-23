@@ -28,7 +28,7 @@ class BandFinder {
 
         while (child_idx < node->children.size()) {
             std::shared_ptr<LoopNode>& child = node->children[child_idx];
-            child->pseudo_type = PseudoNestedType::OutsideBand;
+            child->pseudo_type = PseudoNestedType::CrossBand;
 
             // Prevent out-of-bounds in band lookup
             if (band_idx >= bands.size()) {

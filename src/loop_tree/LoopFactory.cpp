@@ -108,10 +108,10 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     for (std::shared_ptr<LoopNode> child_node : node.children) {
         if (child_node->pseudo_type == PseudoNestedType::InsideBand) {
             ++node.number_of_children_inside_band;
-        } else if (child_node->pseudo_type == PseudoNestedType::OutsideBand) {
-            ++node.number_of_children_outside_band;
-            node.number_of_unpaired_bases_in_children_outside_band +=
-                static_cast<int>(child_node->end - child_node->begin + 1);
+        } else if (child_node->pseudo_type == PseudoNestedType::CrossBand) {
+            ++node.number_of_crossband_children;
+            node.number_of_unpaired_bases_in_crossband_children +=
+                static_cast<int>(child_node->end - child_node->begin - 1);
         }
     }
 }

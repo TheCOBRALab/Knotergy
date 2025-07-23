@@ -8,11 +8,11 @@
 
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
-enum class PseudoNestedType { None, InsideBand, OutsideBand, InsideMultiloop };
+enum class PseudoNestedType { None, InsideBand, CrossBand , InsideMultiloop };
 // Inside band (((..(...)..[[[...)))]]]
 // This hairpin     ^   ^ is nested in exactly one band, so it's InsideBand
 // Outside band ((([[[..(...)...)))]]]
-// This hairpin         ^   ^ is nested in multiple bands, so it's OutsideBand
+// This hairpin         ^   ^ is nested in multiple bands, so it's CrossBand 
 
 struct LoopNode {
    public:
@@ -27,8 +27,8 @@ struct LoopNode {
     int number_of_exclusive_unpaired_bases = 0;
     int total_number_of_unpaired_bases = 0;  // children included
     int number_of_children_inside_band = 0;
-    int number_of_children_outside_band = 0;
-    int number_of_unpaired_bases_in_children_outside_band = 0;
+    int number_of_crossband_children = 0;
+    int number_of_unpaired_bases_in_crossband_children = 0;
 
     std::weak_ptr<LoopNode> parent;
     std::vector<std::shared_ptr<LoopNode>> children;
@@ -72,8 +72,8 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
         case PseudoNestedType::InsideBand:
             os << "InsideBand";
             break;
-        case PseudoNestedType::OutsideBand:
-            os << "OutsideBand";
+        case PseudoNestedType::CrossBand:
+            os << "CrossBand";
             break;
         case PseudoNestedType::InsideMultiloop:
             os << "InsideMultiloop";
@@ -85,9 +85,9 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
        << "\n";
     os << "  total_number_of_unpaired_bases: " << node.total_number_of_unpaired_bases << "\n";
     os << "  number_of_children_inside_band: " << node.number_of_children_inside_band << "\n";
-    os << "  number_of_children_outside_band: " << node.number_of_children_outside_band << "\n";
-    os << "  number_of_unpaired_bases_in_children_outside_band: "
-       << node.number_of_unpaired_bases_in_children_outside_band << "\n";
+    os << "  number_of_crossband_children: " << node.number_of_crossband_children << "\n";
+    os << "  number_of_unpaired_bases_in_crossband_children: "
+       << node.number_of_unpaired_bases_in_crossband_children << "\n";
 
     os << "  number_of_bands: " << node.number_of_bands << "\n";
     os << "  bands:\n";
