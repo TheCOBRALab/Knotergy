@@ -25,18 +25,19 @@ class PseudoknotFunctions {
         double pk_internal_penalty_x = 0.74;
 
         [[maybe_unused]] int pk_multi_init_penalty = 341;  // multiloop that spans a band penalty
-        [[maybe_unused]] int pk_multi_bp_penalty =
-            56;  // base pair for multiloop that spans a band penalty
+        int pk_multi_bp_penalty = 56;  // base pair for multiloop that spans a band penalty
         [[maybe_unused]] int pk_unpaired_in_multi_penalty =
             12;  // unpaired bases in a multiloop that spans a band penalty
 
         double energy = 0;
 
         // std::cout << node << std::endl;
-        energy += ext_pk_init_penalty;
-
+        
         if (std::shared_ptr<LoopNode> parent = node.parent.lock()) {
             switch (parent->loop_type){
+                case(LoopType::External):
+                    energy += ext_pk_init_penalty;
+                    break;
                 case(LoopType::Multibranch):
                     energy += pk_in_multi_penalty;
                     break;
@@ -59,17 +60,23 @@ class PseudoknotFunctions {
         energy += unpaired_in_pk_penalty * node.number_of_exclusive_unpaired_bases;
         energy += nested_cr_penalty * node.number_of_crossband_children;
 
+        // offset is good for comparing against hfold
+        double offset = 0;
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bp = band.base_pairs();
             for (size_t idx = 0; idx < bp.size() - 1; ++idx) {
                 if (bp[idx].is_stack(bp[idx + 1])) {
-                    energy += pk_stack_penalty_x * vienna.stack_energy(bp[idx], bp[idx + 1], sequence);
+                    double stack_penalty = pk_stack_penalty_x * vienna.stack_energy(bp[idx], bp[idx + 1], sequence);
+                    energy += stack_penalty;
+                    offset += stack_penalty - std::trunc(stack_penalty);
                     continue;
                 }
-                energy += pk_internal_penalty_x *
-                          vienna.internal_loop_energy(bp[idx], bp[idx + 1], sequence);
+                double internal_penalty = pk_internal_penalty_x * vienna.internal_loop_energy(bp[idx], bp[idx + 1], sequence);
+                energy += internal_penalty;
+                offset += internal_penalty - std::trunc(internal_penalty); 
             }
         }
+        std::cout << "Offset: " << offset << std::endl;
 
         return energy;
     }
@@ -89,6 +96,14 @@ class PseudoknotFunctions {
 // .[[[[...[[[[......[[[[....((((((.......)))))).((((]]]]........]]]]...]].]]))))..
 // -8.98
 
+// CAGGGGAUAUUUUUCUUACUUAGCCAAACCUCCACCAACUCCGCCUGCUGGGCAACAAUCCUGAAGUGCGAGAGGCAUUAUAUUGAAUCCUGGUUCCAUAUUUCGACGAUAAAGCCAGGCUGGCGGACGGACCGACAGCAUUGAGAAACACACAUUGAAGUAGCGGUGGUUCGAAGACUUACGCUGAUUUGCGGGAGACGCACUGUUACUAUCACGUCCUGUUAUGGUUACUUAUUAGCCAGAUCAAGAC
+// ..((((.......................))))......((((((.(((.(((....(((..(((.(((.....)))..((((.((((....)))).)))))))...)))...))).))).))))))[[..[[[.[[[[...[[[......[[.....((((((((((]].......]]]..]]]].....]]]....]])))))))))).....(((.((...((((((.....))))))...)).)))
+// -39.19
+
+
+// --------------------WORKING---------------------------
+
 // GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC
 // [[[[[.......((((((((((........]]]]]......))))))))))
-// -20.16
+// -20.16 HFold, -20.19 Knotergy
+// HFold rounds every value, so it's off due to HFold's rounding error

@@ -11,8 +11,8 @@ enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudokno
 enum class PseudoNestedType { None, InsideBand, CrossBand , InsideMultiloop };
 // Inside band (((..(...)..[[[...)))]]]
 // This hairpin     ^   ^ is nested in exactly one band, so it's InsideBand
-// Outside band ((([[[..(...)...)))]]]
-// This hairpin         ^   ^ is nested in multiple bands, so it's CrossBand 
+// Cross band  ((([[[..(...)...)))]]]
+// This hairpin        ^   ^ is nested in multiple bands, so it's CrossBand 
 
 struct LoopNode {
    public:
