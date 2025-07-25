@@ -32,17 +32,19 @@ class PseudoknotFunctions {
         double energy = 0;
 
         // std::cout << node << std::endl;
-        
+
         if (std::shared_ptr<LoopNode> parent = node.parent.lock()) {
-            switch (parent->loop_type){
-                case(LoopType::External):
+            switch (parent->loop_type) {
+                case (LoopType::External):
                     energy += ext_pk_init_penalty;
                     break;
-                case(LoopType::Multibranch):
+                case (LoopType::Multibranch):
                     energy += pk_in_multi_penalty;
                     break;
-                case(LoopType::Pseudoknot):
-                    energy += node.pseudo_type == PseudoNestedType::InsideBand ? pk_in_pk_penalty : pk_multi_bp_penalty;
+                case (LoopType::Pseudoknot):
+                    energy += node.pseudo_type == PseudoNestedType::InsideBand
+                                  ? pk_in_pk_penalty
+                                  : pk_multi_bp_penalty;
                     energy += pk_in_multi_penalty;
                     break;
                 default:
@@ -60,25 +62,30 @@ class PseudoknotFunctions {
         energy += unpaired_in_pk_penalty * node.number_of_exclusive_unpaired_bases;
         energy += nested_cr_penalty * node.number_of_crossband_children;
 
-        // offset is good for comparing against hfold
+        // Offset holds the sum of all the decimal places of stack_penalty and internal_penalty.
+        // Some prediction softwares round their values before summing them. This helps with
+        // matching their values
         double offset = 0;
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bp = band.base_pairs();
             for (size_t idx = 0; idx < bp.size() - 1; ++idx) {
                 if (bp[idx].is_stack(bp[idx + 1])) {
-                    double stack_penalty = pk_stack_penalty_x * vienna.stack_energy(bp[idx], bp[idx + 1], sequence);
+                    double stack_penalty =
+                        pk_stack_penalty_x * vienna.stack_energy(bp[idx], bp[idx + 1], sequence);
                     energy += stack_penalty;
                     offset += stack_penalty - std::trunc(stack_penalty);
                     continue;
                 }
-                double internal_penalty = pk_internal_penalty_x * vienna.internal_loop_energy(bp[idx], bp[idx + 1], sequence);
+                double internal_penalty =
+                    pk_internal_penalty_x *
+                    vienna.internal_loop_energy(bp[idx], bp[idx + 1], sequence);
                 energy += internal_penalty;
-                offset += internal_penalty - std::trunc(internal_penalty); 
+                offset += internal_penalty - std::trunc(internal_penalty);
             }
         }
         std::cout << "Offset: " << offset << std::endl;
 
-        return energy;
+        return energy - offset;
     }
 
    private:
@@ -99,7 +106,6 @@ class PseudoknotFunctions {
 // CAGGGGAUAUUUUUCUUACUUAGCCAAACCUCCACCAACUCCGCCUGCUGGGCAACAAUCCUGAAGUGCGAGAGGCAUUAUAUUGAAUCCUGGUUCCAUAUUUCGACGAUAAAGCCAGGCUGGCGGACGGACCGACAGCAUUGAGAAACACACAUUGAAGUAGCGGUGGUUCGAAGACUUACGCUGAUUUGCGGGAGACGCACUGUUACUAUCACGUCCUGUUAUGGUUACUUAUUAGCCAGAUCAAGAC
 // ..((((.......................))))......((((((.(((.(((....(((..(((.(((.....)))..((((.((((....)))).)))))))...)))...))).))).))))))[[..[[[.[[[[...[[[......[[.....((((((((((]].......]]]..]]]].....]]]....]])))))))))).....(((.((...((((((.....))))))...)).)))
 // -39.19
-
 
 // --------------------WORKING---------------------------
 

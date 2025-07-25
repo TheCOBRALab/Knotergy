@@ -3,6 +3,11 @@
 namespace knotergy {
 
 RNAProcessedEntry::RNAProcessedEntry(const RNAEntry& rna) : rna_{rna} {
+    if (rna_.sequence.size() != rna_.structure.size()) {
+        THROW_ERROR("RNA Sequence & Structure's lengths are miss-matched. Sequence length: " +
+                    std::to_string(rna_.sequence.size()) +
+                    " Structure: " + std::to_string(rna_.structure.size()));
+    }
     pairings_ = compute_pairings();
     closed_regions_ = compute_closed_regions();
     unpaired_prefix_sum_ = compute_unpaired_counts();
@@ -57,52 +62,58 @@ int RNAProcessedEntry::get_unpaired_count(ClosedRegion cr) const {
 }
 
 std::vector<size_t> RNAProcessedEntry::compute_pairings() {
-    std::stack<size_t> brackets;
-    std::stack<size_t> pseudoknots;
-    size_t j;
-    std::vector<size_t> pairings(rna_.size(), NULL_INDEX);
+    std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
 
+    std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '<'}};
+
+    std::unordered_map<char, char> valid_pairings = {{'A', 'U'}, {'U', 'A'}, {'G', 'C'},
+                                                     {'C', 'G'}, {'G', 'U'}, {'U', 'G'}};
+
+    std::vector<size_t> pairings(rna_.size(), NULL_INDEX);
+    std::unordered_map<char, std::vector<size_t>> stacks;
     for (size_t i = 0; i < rna_.size(); i++) {
-        switch (rna_.structure[i]) {
-            case '.':
-                break;
-            case '(':
-                brackets.push(i);
-                break;
-            case '[':
-                pseudoknots.push(i);
-                break;
-            case ')':
-                if (brackets.empty()) {
-                    throw std::runtime_error("Structure in RNAEntry is invalid. \nSequence: " +
-                                             rna_.sequence + "\nStructure: " + rna_.structure);
-                }
-                j = brackets.top();
-                brackets.pop();
-                pairings[i] = j;
-                pairings[j] = i;
-                break;
-            case ']':
-                if (pseudoknots.empty()) {
-                    throw std::runtime_error("Structure in RNAEntry is invalid. \nSequence: " +
-                                             rna_.sequence + "\nStructure: " + rna_.structure);
-                }
-                j = pseudoknots.top();
-                pseudoknots.pop();
-                pairings[i] = j;
-                pairings[j] = i;
-                break;
-            default:
-                throw std::runtime_error(
-                    "Character in RNAEntry's structure is invalid. \nInvalid Character: " +
-                    std::string(1, rna_.structure[i]) + "\nSequence: " + rna_.sequence +
-                    "\nStructure: " + rna_.structure);
+        char c = rna_.structure[i];
+
+        if (c == '.') continue;
+
+        // if open bracket
+        if (open_to_close.count(c)) {
+            stacks[c].push_back(i);
+            continue;
+        }
+
+        // if closing bracket
+        if (close_to_open.count(c)) {
+            char open = close_to_open[c];
+            std::vector<size_t>& stack = stacks[open];
+
+            if (stacks[open].empty()) {
+                THROW_ERROR("Invalid RNA structure: Bracket: '" + std::string(1, c) +
+                            "' at index: " + std::to_string(i) + " was never opened");
+            }
+            size_t j = stack.back();
+            stack.pop_back();
+            pairings[i] = j;
+            pairings[j] = i;
+            if (valid_pairings[rna_.sequence[i]] != rna_.sequence[j]) {
+                std::cerr << "Warning: Base Pair '" + std::string(1, rna_.sequence[i]) +
+                                 "' can't pair with " + std::string(1, rna_.sequence[j]) + '\''
+                          << std::endl;
+            }
+            continue;
+        }
+
+        THROW_ERROR("Invalid RNA structure: Invalid character '" + std::string(1, c) +
+                    "' in RNA structure (position " + std::to_string(i) + ')');
+    }
+
+    for (auto& [open, stack] : stacks) {
+        if (!stack.empty()) {
+            THROW_ERROR("Invalid RNA structure: opening bracket '" + std::string(1, open) +
+                        "' at index: " + std::to_string(stack.back()) + " was not closed");
         }
     }
-    if (!brackets.empty() || !pseudoknots.empty()) {
-        throw std::runtime_error("Unmatched opening brackets in RNA structure.\nSequence: " +
-                                 rna_.sequence + "\nStructure: " + rna_.structure);
-    }
+
     return pairings;
 }
 
@@ -143,6 +154,7 @@ std::vector<ClosedRegion> RNAProcessedEntry::compute_closed_regions() {
     }
     return closed_regions;
 }
+
 std::vector<int> RNAProcessedEntry::compute_unpaired_counts() {
     int count = 0;
     size_t n = rna_.size();

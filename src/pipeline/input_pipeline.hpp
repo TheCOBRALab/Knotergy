@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
@@ -19,7 +20,7 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
 
 void trim(std::string& s);
 [[nodiscard]] bool validate_sequence(const std::string& sequence);
-[[nodiscard]] bool validate_structure(const std::string& structure);
+[[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error = true);
 std::vector<RNAEntry> get_all_file_entries(const std::string& file);
 std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                      const std::string& restricted);

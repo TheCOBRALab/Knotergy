@@ -7,12 +7,12 @@
 
 namespace knotergy {
 
-struct BasePair  {
+struct BasePair {
     size_t i;
     size_t j;
 
-    BasePair () = default;
-    BasePair (size_t left_index, size_t right_index) : i{left_index}, j{right_index} {}
+    BasePair() = default;
+    BasePair(size_t left_index, size_t right_index) : i{left_index}, j{right_index} {}
     bool is_stack(BasePair child) const { return i + 1 == child.i && j - 1 == child.j; }
 };
 

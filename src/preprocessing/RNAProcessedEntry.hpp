@@ -5,6 +5,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "../pipeline/shared.hpp"
 #include "ClosedRegion.hpp"

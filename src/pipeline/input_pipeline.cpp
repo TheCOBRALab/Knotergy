@@ -104,10 +104,11 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
             current.sequence = line;
             state = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
-            if (!validate_structure(line)) {
-                throw std::runtime_error("Error: Structure is invalid for entry: " + current.name +
-                                         ". Line number: " + std::to_string(line_number));
-            }
+            // if (!validate_structure(line)) {
+            //     throw std::runtime_error("Error: Structure is invalid for entry: " + current.name
+            //     +
+            //                              ". Line number: " + std::to_string(line_number));
+            // }
             current.structure = line;
             state = ParserState::NAME;
         } else {
@@ -196,29 +197,53 @@ std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& input
  * @param structure The structure string to validate.
  * @return true if the structure is valid and non-empty; false otherwise.
  */
-[[nodiscard]] bool validate_structure(const std::string& structure) {
-    int paren = 0, square = 0;
-    for (char c : structure) {
-        switch (c) {
-            case '.':
-                break;
-            case '(':
-                ++paren;
-                break;
-            case ')':
-                if (--paren < 0) return false;
-                break;
-            case '[':
-                ++square;
-                break;
-            case ']':
-                if (--square < 0) return false;
-                break;
-            default:
+[[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error) {
+    if (structure.empty()) {
+        if (throw_error) {
+            THROW_ERROR("Invalid RNA structure: Structure is empty");
+        }
+        return false;
+    }
+
+    std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
+
+    std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '['}};
+
+    std::unordered_map<char, int> open_count = {{'(', 0}, {'[', 0}, {'{', 0}, {'<', 0}};
+
+    for (size_t i = 0; i < structure.size(); i++) {
+        char c = structure[i];
+
+        if (c == '.') continue;
+
+        if (open_to_close.count(c)) {
+            ++open_count[c];
+            continue;
+        }
+
+        if (close_to_open.count(c)) {
+            char open = close_to_open[c];
+            if (open_count[open] <= 0) {
+                if (throw_error) {
+                    THROW_ERROR("Invalid RNA structure: Bracket: '" + std::string(1, c) +
+                                "' at index: " + std::to_string(i) + " was never opened");
+                }
                 return false;
+            }
+            --open_count[c];
         }
     }
-    return !structure.empty() && paren == 0 && square == 0;
+
+    for (auto& [open, count] : open_count) {
+        if (count <= 0) {
+            if (throw_error) {
+                THROW_ERROR("Invalid RNA structure: opening bracket '" + std::string(1, open) +
+                            "' was not closed");
+            }
+            return false;
+        }
+    }
+    return true;
 }
 
 void load_energy_parameters(const std::string& paramFile, const std::string& seq) {

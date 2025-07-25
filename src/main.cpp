@@ -74,11 +74,11 @@ int main(int argc, char** argv) {
         knotergy::trim(structure);
     }
 
-    if (!structure.empty() && !knotergy::validate_structure(structure)) {
-        std::cout << "Error: Structure is empty or contains invalid character/s. Allowed: '.', "
-                     "'(',  ')', '[', ']'";
-        return 1;
-    }
+    // if (!structure.empty() && !knotergy::validate_structure(structure)) {
+    //     std::cout << "Error: Structure is empty or contains invalid character/s. Allowed: '.', "
+    //                  "'(',  ')', '[', ']'";
+    //     return 1;
+    // }
 
     if (sequence.length() != structure.length()) {
         std::cout << "Error: Input sequence and structure are not the same length";

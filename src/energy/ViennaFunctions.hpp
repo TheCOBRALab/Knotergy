@@ -65,7 +65,7 @@ class ViennaFunctions {
         return vrna_E_hairpin(size, pair_type, si1, sj1, loop_seq, P);
     }
 
-    int hairpin_energy(const BasePair& pair, const std::string& sequence){
+    int hairpin_energy(const BasePair& pair, const std::string& sequence) {
         return hairpin_energy(pair.i, pair.j, sequence);
     }
 
