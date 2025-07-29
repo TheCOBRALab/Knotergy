@@ -26,7 +26,7 @@ struct LoopNode {
     PseudoNestedType pseudo_type = PseudoNestedType::None;
     int number_of_exclusive_unpaired_bases = 0;
     int total_number_of_unpaired_bases = 0;  // children included
-    int number_of_children_inside_band = 0;
+    int number_of_insideband_children = 0;
     int number_of_crossband_children = 0;
     int number_of_unpaired_bases_in_crossband_children = 0;
 
@@ -84,7 +84,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "  number_of_exclusive_unpaired_bases: " << node.number_of_exclusive_unpaired_bases
        << "\n";
     os << "  total_number_of_unpaired_bases: " << node.total_number_of_unpaired_bases << "\n";
-    os << "  number_of_children_inside_band: " << node.number_of_children_inside_band << "\n";
+    os << "  number_of_children_inside_band: " << node.number_of_insideband_children << "\n";
     os << "  number_of_crossband_children: " << node.number_of_crossband_children << "\n";
     os << "  number_of_unpaired_bases_in_crossband_children: "
        << node.number_of_unpaired_bases_in_crossband_children << "\n";
