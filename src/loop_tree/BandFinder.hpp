@@ -22,12 +22,15 @@ class BandFinder {
         /* only pseudoknots need bands; leave the rest untouched */
         if (node->loop_type != LoopType::Pseudoknot) return;
 
+
+        const std::vector<std::shared_ptr<LoopNode>>& children = node->children;
+        const std::vector<Band>& bands = node->bands;
         size_t child_idx = 0;
         size_t band_idx = 0;
-        const std::vector<Band>& bands = node->bands;
-
-        while (child_idx < node->children.size()) {
-            std::shared_ptr<LoopNode>& child = node->children[child_idx];
+        
+        // checks if a child is exclusively in one band (InsideBand), or if its CrossBand 
+        while (child_idx < children.size()) {
+            std::shared_ptr<LoopNode> child = children[child_idx];
             child->pseudo_type = PseudoNestedType::CrossBand;
 
             // Prevent out-of-bounds in band lookup
@@ -36,12 +39,13 @@ class BandFinder {
                 continue;
             }
 
-            // Checks if it's exclusively in one band
+            // Checks if child is exclusively in one band
             if (node->bands[band_idx].nests(child->begin, child->end)) {
-                bool crosses_previous =
-                    (band_idx > 0) && bands[band_idx - 1].nests(child->begin, child->end);
-                bool crosses_next = (band_idx + 1 < bands.size()) &&
-                                    bands[band_idx + 1].nests(child->begin, child->end);
+                bool crosses_previous = 
+                (band_idx > 0) && bands[band_idx - 1].nests(child->begin, child->end);
+ 
+                bool crosses_next = 
+                (band_idx + 1) < bands.size() && bands[band_idx + 1].nests(child->begin, child->end);
 
                 if (!crosses_previous && !crosses_next) {
                     child->pseudo_type = PseudoNestedType::InsideBand;

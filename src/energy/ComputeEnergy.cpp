@@ -37,7 +37,7 @@ float ComputeEnergy::process_node(const LoopNode& node) {
                       << std::endl;
             break;
         case LoopType::Pseudoknot:
-            node_energy += pseudo.pseudoknot_energy(node, sequence_);
+            node_energy += pseudo.pseudoknot_energy(node, sequence_, round_);
             break;
         case LoopType::External:
             node_energy += vienna.external_energy(node.children, sequence_);

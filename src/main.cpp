@@ -15,6 +15,7 @@ void help() {
               << "  -i, --input <file>            Input file\n"
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
+              << "  -e  --round                   Rounds all decimal places in calculations"
               << "  -h, --help                    Show this help message\n";
 }
 
@@ -32,6 +33,7 @@ int main(int argc, char** argv) {
     std::string input_file = "";
     std::string output_file = "";
     std::string parameter_file = "";
+    bool round = false;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -46,6 +48,8 @@ int main(int argc, char** argv) {
             output_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-e" || arg == "--round") {
+            round = true;
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
@@ -115,7 +119,7 @@ int main(int argc, char** argv) {
             }
         }
         std::cout << std::endl;
-        knotergy::dostuff(current, parameter_file);
+        knotergy::dostuff(current, parameter_file, round);
     }
     return 0;
 }

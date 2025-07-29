@@ -94,5 +94,5 @@ void load_energy_parameters(const std::string& paramFile, const std::string& seq
 void load_energy_parameters(const std::string& paramFile);
 void load_energy_parameters();
 
-void dostuff(const RNAProcessedEntry& entry, std::string parameter_file);
+void dostuff(const RNAProcessedEntry& entry, std::string parameter_file, bool round = false);
 }  // namespace knotergy

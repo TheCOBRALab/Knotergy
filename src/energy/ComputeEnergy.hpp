@@ -6,8 +6,8 @@
 namespace knotergy {
 class ComputeEnergy {
    public:
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence)
-        : root_node_{root_node}, sequence_{sequence} {
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence, bool round = false)
+        : root_node_{root_node}, sequence_{sequence}, round_{round} {
         process_tree(*root_node_);
     };
 
@@ -20,6 +20,7 @@ class ComputeEnergy {
     std::shared_ptr<LoopNode> root_node_;
     const std::string& sequence_;
     float energy_ = 0.0f;
+    bool round_ = false;
     void process_tree(const LoopNode& root_node);
     float process_node(const LoopNode& node);
 };

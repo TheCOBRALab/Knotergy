@@ -235,7 +235,7 @@ void load_energy_parameters() {
     load_energy_parameters("");
 }
 
-void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file) {
+void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file, bool round) {
     load_energy_parameters(parameter_file, processed_rna.get_sequence());
     printf("Seq: %s \n", processed_rna.get_sequence().c_str());
     printf("Struct: %s \n", processed_rna.get_structure().c_str());
@@ -246,7 +246,7 @@ void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file)
     printf("\n-------------------------------\n Making the Loop Tree\n");
     LoopFactory factory(processed_rna);
     // factory.print_tree(true);
-    ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence());
+    ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), round);
     std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
 }
 

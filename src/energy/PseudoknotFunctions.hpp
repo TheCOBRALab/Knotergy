@@ -25,14 +25,14 @@ class PseudoknotFunctions {
     [[maybe_unused]] int pk_unpaired_in_multi_penalty = 12;  // unpaired bases in a multiloop that spans a band penalty
 
 
-    double pseudoknot_energy(const LoopNode& node, const std::string& sequence) {
+    double pseudoknot_energy(const LoopNode& node, const std::string& sequence, bool round = false) {
         double energy = 0;
 
         energy += init_penalty(node);
         energy += band_penalty * node.number_of_bands;
         energy += unpaired_in_pk_penalty * node.number_of_exclusive_unpaired_bases;
         energy += nested_cr_penalty * node.number_of_crossband_children;
-        energy += stack_and_internal_energy(node, sequence);
+        energy += stack_and_internal_energy(node, sequence, round);
 
         // energy += pk_in_pk_penalty * (node.number_of_bands - 2);
 
@@ -68,7 +68,7 @@ class PseudoknotFunctions {
         return energy;
     }
 
-    double stack_and_internal_energy(const LoopNode& node, const std::string& sequence) {
+    double stack_and_internal_energy(const LoopNode& node, const std::string& sequence, bool round) {
         double energy = 0;
         double offset = 0;
 
@@ -93,8 +93,13 @@ class PseudoknotFunctions {
             }
         }
 
-        std::cout << "Offset: " << offset << std::endl;
-        return energy - offset;
+        if (round){
+            std::cout << "Offset: " << offset << std::endl;
+            return energy - offset;
+        }
+
+        return energy;
+        
     }
 };
 
