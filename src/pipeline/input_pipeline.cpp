@@ -20,36 +20,13 @@ extern "C" {
 
 namespace knotergy {
 
-/**
- * @brief Trims leading and trailing whitespace from a string.
- *
- * This function modifies the input string in-place to remove any leading
- * and trailing whitespace characters, including spaces, tabs, newlines,
- * carriage returns, form feeds, and vertical tabs.
- *
- * @param s The string to be trimmed.
- */
+// Trims leading and trailing whitespace from a string
 void trim(std::string& s) {
     s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
     s.erase(s.find_last_not_of(" \t\n\r\f\v") + 1);
 }
 
-/**
- * @brief Parses RNA entries from a file in FASTA format
- *
- * Each entry is expected to consist of three lines in the following order:
- * - Name line starting with '>'
- * - RNA sequence line (ACGTU only)
- * - Structure line (dot-bracket notation)
- *
- * If any line is malformed or a required field is missing, an exception is thrown.
- *
- * @param file Path to the input file containing RNA entries.
- * @return A vector of RNAEntry objects parsed from the file.
- *
- * @throws std::runtime_error if the file does not exist, is unreadable,
- *         or contains malformed data.
- */
+// Gets all inputs from a file in FASTA format
 std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
     if (!std::filesystem::exists(file)) {
         throw std::runtime_error("Error: Input file not found: " + file);
@@ -129,22 +106,12 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
     return entries;
 }
 
-/**
- * @brief Collects all RNA input entries from console input and/or file.
- *
- * This function combines inputs from both user-supplied sequences and
- * file-based entries. If both are provided, all are included.
- *
- * @param input_file Path to input file (optional, can be empty).
- * @param sequence A raw RNA sequence string (optional, can be empty).
- * @param structure Optional structure string associated with the raw sequence.
- * @return A vector of all collected RNAEntry objects.
- *
- * @throws std::runtime_error if both the file and console inputs are empty
- */
+// Collects all RNA input entries from console input and/or file.
 std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::string& sequence,
                                      const std::string& structure) {
     std::vector<RNAEntry> entries;
+    
+    // get console input
     if (!sequence.empty()) {
         if (sequence.size() != structure.size()) {
             THROW_ERROR("Input sequence and structure are not the same length.\nSequence length: " +
@@ -153,8 +120,11 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
         }
         entries.emplace_back("Console Sequence", sequence, structure);
     }
+
+    // get file inputs
     if (!input_file.empty()) {
         std::vector<RNAEntry> file_entries = get_all_file_entries(input_file);
+        // move values into entries (avoids deep copies). Keeps console as first entry
         entries.insert(entries.end(), std::make_move_iterator(file_entries.begin()),
                        std::make_move_iterator(file_entries.end()));
     }
@@ -171,15 +141,8 @@ std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& input
     return processed_inputs;
 }
 
-/**
- * @brief Validates that an RNA sequence contains only valid characters.
- *
- * Accepted characters are A, C, G, U, and T.
- *
- * @param sequence The RNA sequence to validate.
- * @return true if the sequence is valid and non-empty; false otherwise.
- */
-[[nodiscard]] bool validate_sequence(const std::string& sequence) {
+// ensures sequence only has valid characters
+bool validate_sequence(const std::string& sequence) {
     for (char c : sequence) {
         if (!(c == 'G' || c == 'C' || c == 'A' || c == 'U' || c == 'T')) {
             return false;
@@ -188,15 +151,7 @@ std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& input
     return !sequence.empty();
 }
 
-/**
- * @brief Validates the structure string for RNA using dot-bracket notation.
- *
- * The function ensures that parentheses and square brackets are correctly matched and balanced.
- * Accepted characters: '.', '(', ')', '[', ']'.
- *
- * @param structure The structure string to validate.
- * @return true if the structure is valid and non-empty; false otherwise.
- */
+// ensures structure is balanced
 [[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error) {
     if (structure.empty()) {
         if (throw_error) {
