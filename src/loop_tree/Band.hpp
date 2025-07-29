@@ -24,6 +24,7 @@ class Band {
    public:
     Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings)
         : left_border_{lb}, left_inner_{li}, right_inner_{ri}, right_border_{rb} {
+        // find all base pairs
         for (size_t idx = left_border_; idx <= left_inner_; ++idx) {
             size_t paired = pairings[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
