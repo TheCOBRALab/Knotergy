@@ -26,7 +26,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
 
-    BandFinder band_finder(processed_rna_.get_pairings());
+    BandFinder band_finder(processed_rna_);
 
     // Pop until node_stack.end() is the parent of current node
     // A node is only popped (and processed) after all of its children have been added.
@@ -61,7 +61,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 void LoopFactory::populate_node(LoopNode& node) {
     node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
     node.loop_type = find_loop_type(node);
-    BandFinder band_finder(processed_rna_.get_pairings());
+    BandFinder band_finder(processed_rna_);
     band_finder.annotate_bands(node);
     pseudo_nested_check(node);
 }

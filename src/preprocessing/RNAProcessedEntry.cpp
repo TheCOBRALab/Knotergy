@@ -10,7 +10,7 @@ RNAProcessedEntry::RNAProcessedEntry(const RNAEntry& rna) : rna_{rna} {
     }
     pairings_ = compute_pairings();
     closed_regions_ = compute_closed_regions();
-    closed_region_pairings_ = get_closed_region_pairings();
+    closed_region_pairings_ = compute_closed_region_pairings();
     unpaired_prefix_sum_ = compute_unpaired_counts();
 }
 
@@ -169,7 +169,7 @@ std::vector<ClosedRegion> RNAProcessedEntry::compute_closed_regions() {
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessedEntry::compute_closed_region_pairings() {
-    std::vector<size_t> closed_region_pairings;
+    std::vector<size_t> closed_region_pairings(rna_.size(), NULL_INDEX);
     for (ClosedRegion cr : closed_regions_){
         closed_region_pairings[cr.begin] = cr.end;
         closed_region_pairings[cr.end] = cr.begin;

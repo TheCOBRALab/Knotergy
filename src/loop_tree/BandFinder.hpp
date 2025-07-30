@@ -11,8 +11,10 @@ namespace knotergy {
 // walk one step along a perfect stack:  (i+1) pairs (j−1)
 class BandFinder {
    public:
-    BandFinder(const std::vector<size_t>& pairings)
-        : pairings_{pairings}, done_(pairings.size(), false) {};
+    BandFinder(const RNAProcessedEntry& processed_rna)
+        : pairings_{processed_rna.get_pairings()},
+          closed_region_pairings_{processed_rna.get_closed_region_pairings()},
+          done_(processed_rna.size(), false) {};
     
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(LoopNode& node) {
@@ -21,7 +23,6 @@ class BandFinder {
 
         /* only pseudoknots need bands; leave the rest untouched */
         if (node.loop_type != LoopType::Pseudoknot) return;
-
 
         const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
         const std::vector<Band>& bands = node.bands;
@@ -40,12 +41,12 @@ class BandFinder {
             }
 
             // Checks if child is exclusively in one band
-            if (node.bands[band_idx].nests(child->begin, child->end)) {
+            if (node.bands[band_idx].contains(child->begin, child->end)) {
                 bool crosses_previous = 
-                (band_idx > 0) && bands[band_idx - 1].nests(child->begin, child->end);
+                (band_idx > 0) && bands[band_idx - 1].contains(child->begin, child->end);
  
                 bool crosses_next = 
-                (band_idx + 1) < bands.size() && bands[band_idx + 1].nests(child->begin, child->end);
+                (band_idx + 1) < bands.size() && bands[band_idx + 1].contains(child->begin, child->end);
 
                 if (!crosses_previous && !crosses_next) {
                     child->pseudo_type = PseudoNestedType::InsideBand;
@@ -64,6 +65,7 @@ class BandFinder {
 
    private:
     const std::vector<size_t> pairings_;
+    const std::vector<size_t> closed_region_pairings_;
     std::vector<bool> done_;
 
     bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
@@ -71,9 +73,23 @@ class BandFinder {
         size_t i_tmp = i_prime + 1;
         size_t j_tmp = j_prime - 1;
 
-        /* skip unpaired positions on either side */
-        while (i_tmp <= right_bound && pairings_[i_tmp] == NULL_INDEX) ++i_tmp;
-        while (j_tmp > left_bound && pairings_[j_tmp] == NULL_INDEX) --j_tmp;
+        if (i_tmp > j_tmp){
+            return false;
+        }
+
+        while (i_tmp <= right_bound && ((pairings_[i_tmp] == NULL_INDEX) || closed_region_pairings_[i_tmp] != NULL_INDEX)){
+            if (closed_region_pairings_[i_tmp]!= NULL_INDEX && closed_region_pairings_[i_tmp] > i_tmp){
+                i_tmp = closed_region_pairings_[i_tmp];
+            }
+            ++i_tmp;
+        }
+
+        while (j_tmp > left_bound && (pairings_[j_tmp] == NULL_INDEX || closed_region_pairings_[j_tmp] != NULL_INDEX)){
+            if (closed_region_pairings_[j_tmp]!=NULL_INDEX && closed_region_pairings_[j_tmp] < j_tmp){
+                j_tmp = closed_region_pairings_[j_tmp];
+            }
+            --j_tmp;
+        }
 
         if (i_tmp < j_tmp && pairings_[i_tmp] == j_tmp) {  // still a canonical stack
             i_prime = i_tmp;
