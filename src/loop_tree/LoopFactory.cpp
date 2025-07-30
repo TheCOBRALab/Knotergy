@@ -18,7 +18,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Sort regions by starting index (ascending)
     size_t structure_length = processed_rna_.size();
     std::vector<ClosedRegion> sorted_closed_regions =
-        closed_region_bucket_sort(closed_regions, structure_length);
+        closed_region_bucket_sort(closed_regions);
 
     // Root node covers full structure [-1, structure_length]
     // Use NULL_INDEX for -1 (unsigned type)
@@ -116,24 +116,32 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     }
 }
 
-std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
-    const std::vector<ClosedRegion>& closed_regions, size_t structure_length) {
-    /*  one linear pass buckets the regions by their left index  */
-    std::vector<std::vector<ClosedRegion>> buckets(structure_length);
-    for (const ClosedRegion& cr : closed_regions) {
-        if (!buckets[cr.begin].empty()) {
-            throw std::runtime_error("Duplicate starting index `" + std::to_string(cr.begin) +
-                                     "` found in closed regions");
-        }
-        buckets[cr.begin].push_back(cr);
-    }
+std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vector<ClosedRegion>& closed_regions) {
+    // Map regions by their starting index
+    // Reserve capacity to avoid rehashing
+    std::unordered_map<size_t, ClosedRegion> index_to_region;
+    index_to_region.reserve(closed_regions.size());
 
-    /*  then walk the buckets left-to-right: O(n)  */
+    size_t min_index = NULL_INDEX;
+    size_t max_index = 0;
+
+    for (const ClosedRegion& cr : closed_regions) {
+        // Try inserting; .second is false if this start index already exists
+        if (!index_to_region.emplace(cr.begin, cr).second) {
+            THROW_ERROR("Duplicate starting index `" + std::to_string(cr.begin) + "` found in closed regions");
+        }
+        if (cr.begin < min_index) min_index = cr.begin;
+        if (cr.begin > max_index) max_index = cr.begin;
+    }   
+
     std::vector<ClosedRegion> sorted_regions;
     sorted_regions.reserve(closed_regions.size());
-    for (std::vector<ClosedRegion> b : buckets) {
-        for (ClosedRegion& cr : b) {
-            sorted_regions.push_back(cr);
+    
+    for (size_t i = min_index; i <= max_index; ++i){
+        // checks if bucket exists, then stores the cr from bucket into sorted_regions
+        auto it = index_to_region.find(i);
+        if (it != index_to_region.end()) {
+            sorted_regions.emplace_back(it->second);
         }
     }
 
