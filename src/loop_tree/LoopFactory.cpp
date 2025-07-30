@@ -16,14 +16,11 @@ LoopFactory::LoopFactory(const RNAProcessedEntry& processed_rna) : processed_rna
 // Children of a node are all stems directly nested inside the closed region
 void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Sort regions by starting index (ascending)
-    size_t structure_length = processed_rna_.size();
-    std::vector<ClosedRegion> sorted_closed_regions =
-        closed_region_bucket_sort(closed_regions);
+    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions);
 
     // Root node covers full structure [-1, structure_length]
     // Use NULL_INDEX for -1 (unsigned type)
-    // Indicies are out of bounds so the root node is always larger than any closed region inside
-    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, structure_length});
+    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
     root_node_->loop_type = LoopType::External;
 
     std::stack<std::shared_ptr<LoopNode>> node_stack;
@@ -37,22 +34,21 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     for (const ClosedRegion& closed_region : sorted_closed_regions) {
         while (node_stack.top()->end < closed_region.begin) {
             std::shared_ptr<LoopNode>& node = node_stack.top();
+            node->exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(*node);
             node->loop_type = find_loop_type(*node);
             band_finder.annotate_bands(node);
-            count_unpaired_bases_excluding_children(*node);
             pseudo_nested_check(*node);
             node_stack.pop();
         }
 
-        // Parent = parent of current node. Child = current node
-        // Creates child node and links it to its parent
+        // parent = parent of current node. child = current node
         std::shared_ptr<LoopNode>& parent = node_stack.top();
-        parent->children.emplace_back(std::make_shared<LoopNode>(closed_region));
-        std::shared_ptr<LoopNode>& child = parent->children.back();
-        child->parent = parent;  // May be unused
+        std::shared_ptr<LoopNode> child = std::make_shared<LoopNode>(closed_region);
+        child->parent = parent;
+        parent->children.emplace_back(child);
 
         // Gets the total unpaired base pairs within the closed region (including that of children)
-        child->total_number_of_unpaired_bases = processed_rna_.get_unpaired_count(closed_region);
+        child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(closed_region);
 
         node_stack.push(child);
     }
@@ -60,7 +56,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // process all remaining nodes
     while (node_stack.top()->begin != NULL_INDEX) {
         std::shared_ptr<LoopNode>& node = node_stack.top();
-        count_unpaired_bases_excluding_children(*node);
+        node->exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(*node);
         node->loop_type = find_loop_type(*node);
         band_finder.annotate_bands(node);
         pseudo_nested_check(*node);
@@ -68,12 +64,12 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     }
 }
 
-void LoopFactory::count_unpaired_bases_excluding_children(LoopNode& node) {
-    int total = node.total_number_of_unpaired_bases;
+int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
+    int total = node.total_unpaired_bases_count;
     for (std::shared_ptr<LoopNode> child : node.children) {
-        total -= child->total_number_of_unpaired_bases;
+        total -= child->total_unpaired_bases_count;
     }
-    node.number_of_exclusive_unpaired_bases = total;
+    return total;
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
@@ -158,7 +154,7 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
                              bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
-              << "  unpaired=" << node->number_of_exclusive_unpaired_bases
+              << "  unpaired=" << node->exclusive_unpaired_bases_count
               << "  children=" << node->children.size() << '\n';
 
     if (debug) {

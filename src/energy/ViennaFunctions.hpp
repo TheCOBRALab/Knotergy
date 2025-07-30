@@ -105,7 +105,7 @@ class ViennaFunctions {
         // penalties
         int energy = P->MLclosing;  // closing penalty
         energy += vrna_E_multibranch_stem(reverse_pair_type(pair_type), n3d, n5d, P);
-        energy += node.number_of_exclusive_unpaired_bases * P->MLbase;
+        energy += node.exclusive_unpaired_bases_count * P->MLbase;
 
         const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
         for (const std::shared_ptr<LoopNode>& child : children) {

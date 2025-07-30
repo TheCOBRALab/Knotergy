@@ -30,7 +30,7 @@ class PseudoknotFunctions {
 
         energy += init_penalty(node);
         energy += band_penalty * node.number_of_bands;
-        energy += unpaired_in_pk_penalty * node.number_of_exclusive_unpaired_bases;
+        energy += unpaired_in_pk_penalty * node.exclusive_unpaired_bases_count;
         energy += nested_cr_penalty * node.number_of_crossband_children;
         energy += stack_and_internal_energy(node, sequence, round);
 

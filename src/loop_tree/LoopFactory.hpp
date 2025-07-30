@@ -48,12 +48,14 @@ class LoopFactory {
      */
     void build_tree(const std::vector<ClosedRegion>& closed_regions);
 
+    int count_unpaired_bases_excluding_children(const LoopNode& node);
+
     LoopType find_loop_type(const LoopNode& node);
     void pseudo_nested_check(LoopNode& node);
     std::vector<ClosedRegion> closed_region_bucket_sort(const std::vector<ClosedRegion>& closed_regions);
 
     void annotate_bands(const std::shared_ptr<LoopNode>& node);
-    void count_unpaired_bases_excluding_children(LoopNode& node);
+    
 };
 
 }  // namespace knotergy
