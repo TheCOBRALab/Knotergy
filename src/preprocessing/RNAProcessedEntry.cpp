@@ -10,6 +10,7 @@ RNAProcessedEntry::RNAProcessedEntry(const RNAEntry& rna) : rna_{rna} {
     }
     pairings_ = compute_pairings();
     closed_regions_ = compute_closed_regions();
+    closed_region_pairings_ = get_closed_region_pairings();
     unpaired_prefix_sum_ = compute_unpaired_counts();
 }
 
@@ -38,6 +39,10 @@ const std::vector<size_t>& RNAProcessedEntry::get_pairings() const {
     return pairings_;
 }
 
+const std::vector<size_t>& RNAProcessedEntry::get_closed_region_pairings() const {
+    return closed_region_pairings_;
+}
+
 const std::vector<ClosedRegion>& RNAProcessedEntry::get_closed_regions() const {
     return closed_regions_;
 }
@@ -63,8 +68,15 @@ int RNAProcessedEntry::get_unpaired_count(ClosedRegion cr) const {
 
 std::vector<size_t> RNAProcessedEntry::compute_pairings() {
     std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
+    // std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '<'}};
 
-    std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '<'}};
+    // close to open is the opposite of open_to_close
+    // e.g. {'(', ')'} -> {')', '('}
+    std::unordered_map<char, char> close_to_open;
+    close_to_open.reserve(open_to_close.size());
+    for (const auto& pair : open_to_close) {
+        close_to_open.emplace(pair.second, pair.first);
+    }
 
     std::unordered_map<char, char> valid_pairings = {{'A', 'U'}, {'U', 'A'}, {'G', 'C'},
                                                      {'C', 'G'}, {'G', 'U'}, {'U', 'G'}};
@@ -153,6 +165,16 @@ std::vector<ClosedRegion> RNAProcessedEntry::compute_closed_regions() {
         }
     }
     return closed_regions;
+}
+
+// ([...)] = 6, -1, -1, -1, -1, -1, 0
+std::vector<size_t> RNAProcessedEntry::compute_closed_region_pairings() {
+    std::vector<size_t> closed_region_pairings;
+    for (ClosedRegion cr : closed_regions_){
+        closed_region_pairings[cr.begin] = cr.end;
+        closed_region_pairings[cr.end] = cr.begin;
+    }
+    return closed_region_pairings;
 }
 
 std::vector<int> RNAProcessedEntry::compute_unpaired_counts() {

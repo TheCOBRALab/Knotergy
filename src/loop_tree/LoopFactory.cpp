@@ -34,10 +34,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     for (const ClosedRegion& closed_region : sorted_closed_regions) {
         while (node_stack.top()->end < closed_region.begin) {
             std::shared_ptr<LoopNode>& node = node_stack.top();
-            node->exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(*node);
-            node->loop_type = find_loop_type(*node);
-            band_finder.annotate_bands(node);
-            pseudo_nested_check(*node);
+            populate_node(node);
             node_stack.pop();
         }
 
@@ -56,12 +53,21 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // process all remaining nodes
     while (node_stack.top()->begin != NULL_INDEX) {
         std::shared_ptr<LoopNode>& node = node_stack.top();
-        node->exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(*node);
-        node->loop_type = find_loop_type(*node);
-        band_finder.annotate_bands(node);
-        pseudo_nested_check(*node);
+        populate_node(node);
         node_stack.pop();
     }
+}
+
+void LoopFactory::populate_node(LoopNode& node) {
+    node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
+    node.loop_type = find_loop_type(node);
+    BandFinder band_finder(processed_rna_.get_pairings());
+    band_finder.annotate_bands(node);
+    pseudo_nested_check(node);
+}
+
+void LoopFactory::populate_node(const std::shared_ptr<LoopNode>& node){
+    populate_node(*node);
 }
 
 int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {

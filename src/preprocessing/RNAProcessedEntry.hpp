@@ -26,6 +26,7 @@ class RNAProcessedEntry {
     [[nodiscard]] const std::string& get_structure() const;
     [[nodiscard]] const std::vector<size_t>& get_pairings() const;
     [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const;
+    [[nodiscard]] const std::vector<size_t>& get_closed_region_pairings() const;
     [[nodiscard]] size_t size() const;
 
     // [from, to)
@@ -40,6 +41,9 @@ class RNAProcessedEntry {
     // Closed region = a region where every base that is opened is also closed
     // e.g. ((..))..([..)]. -> (0, 5), (1, 4), (8, 13)
     std::vector<ClosedRegion> closed_regions_;
+
+    // pairings represents the indicies where closed_regions is paired to to. e.g. ([...)] = [6, -1, -1, -1, -1, -1, 0]
+    std::vector<size_t> closed_region_pairings_;
 
     // Computes all the unpaired count as a prefix sum with an added 0 at the start
     // e.g. .(.). -> 0, 1, 1, 2, 2, 3
@@ -77,6 +81,7 @@ class RNAProcessedEntry {
     std::vector<size_t> compute_pairings();
 
     std::vector<ClosedRegion> compute_closed_regions();
+    std::vector<size_t> compute_closed_region_pairings();
 
     /**
      * @brief Creates a list indicating the number of unpaired bases up till that index

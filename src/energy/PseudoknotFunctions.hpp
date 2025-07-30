@@ -103,31 +103,6 @@ class PseudoknotFunctions {
     }
 };
 
-// int find_span_bands(const LoopNode& node){
-//     const std::vector<Band>& bands = node.bands;
-//     for (size_t i = 0; i < bands.size(); ++i){
-//         int cross_band_count = 0;
-//         for (size_t j = i + 1; j < bands.size(); ++j) {
-//             Band band = bands[i];
-//             Band cross_band = bands[j];
-//             if (band.left_inner() < cross_band.left_border() && band.right_border() < cross_band.right_inner()){
-//                 cross_band_count += 1; // check for children
-//                 continue;
-//             }
-//             if (cross_band.left_inner() < band.left_border() && cross_band.right_border() < band.right_inner()){
-//                 cross_band_count += 1;
-//                 continue;
-//             }
-//         }
-//         if (cross_band_count >= 2) {
-
-//         }
-//     }
-// }
-
-
-
-
 }  // namespace knotergy
 
 // Test Cases

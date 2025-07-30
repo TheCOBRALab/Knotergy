@@ -13,18 +13,18 @@ class BandFinder {
    public:
     BandFinder(const std::vector<size_t>& pairings)
         : pairings_{pairings}, done_(pairings.size(), false) {};
-
+    
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
-    void annotate_bands(const std::shared_ptr<LoopNode>& node) {
-        node->bands = find_bands_in_region(node->begin, node->end);
-        node->number_of_bands = static_cast<int>(node->bands.size());
+    void annotate_bands(LoopNode& node) {
+        node.bands = find_bands_in_region(node.begin, node.end);
+        node.number_of_bands = static_cast<int>(node.bands.size());
 
         /* only pseudoknots need bands; leave the rest untouched */
-        if (node->loop_type != LoopType::Pseudoknot) return;
+        if (node.loop_type != LoopType::Pseudoknot) return;
 
 
-        const std::vector<std::shared_ptr<LoopNode>>& children = node->children;
-        const std::vector<Band>& bands = node->bands;
+        const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
+        const std::vector<Band>& bands = node.bands;
         size_t child_idx = 0;
         size_t band_idx = 0;
         
@@ -40,7 +40,7 @@ class BandFinder {
             }
 
             // Checks if child is exclusively in one band
-            if (node->bands[band_idx].nests(child->begin, child->end)) {
+            if (node.bands[band_idx].nests(child->begin, child->end)) {
                 bool crosses_previous = 
                 (band_idx > 0) && bands[band_idx - 1].nests(child->begin, child->end);
  
@@ -56,6 +56,11 @@ class BandFinder {
             }
         }
     }
+
+    void annotate_bands(const std::shared_ptr<LoopNode>& node){
+        annotate_bands(*node);
+    }
+
 
    private:
     const std::vector<size_t> pairings_;
