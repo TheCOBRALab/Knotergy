@@ -141,9 +141,9 @@ std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vect
     
     for (size_t i = min_index; i <= max_index; ++i){
         // checks if bucket exists, then stores the cr from bucket into sorted_regions
-        auto it = index_to_region.find(i);
+        std::unordered_map<size_t, ClosedRegion>::iterator it = index_to_region.find(i);
         if (it != index_to_region.end()) {
-            sorted_regions.emplace_back(it->second);
+            sorted_regions.push_back(it->second);
         }
     }
 
