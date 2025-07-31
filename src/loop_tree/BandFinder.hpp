@@ -132,10 +132,16 @@ class BandFinder {
             for (size_t k = i; k <= i_prime; ++k) {
                 done_[k] = true;
                 if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
+                if (closed_region_pairings_[k]!= NULL_INDEX && closed_region_pairings_[k] > k){
+                    k = closed_region_pairings_[k];
+                }
             }
             for (size_t k = j_prime; k <= j; ++k) {
                 done_[k] = true;
                 if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
+                if (closed_region_pairings_[k]!= NULL_INDEX && closed_region_pairings_[k] > k){
+                    k = closed_region_pairings_[k];
+                }
             }
 
             i = i_prime;  // fast-forward
