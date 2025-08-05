@@ -11,14 +11,17 @@ namespace knotergy {
 // walk one step along a perfect stack:  (i+1) pairs (j−1)
 class BandFinder {
    public:
+    BandFinder(const std::vector<size_t>& pairings, const std::vector<size_t>& closed_region_pairings)
+        : pairings_{pairings},
+          closed_region_pairings_{closed_region_pairings},
+          done_(pairings.size(), false) {};
+
     BandFinder(const RNAProcessedEntry& processed_rna)
-        : pairings_{processed_rna.get_pairings()},
-          closed_region_pairings_{processed_rna.get_closed_region_pairings()},
-          done_(processed_rna.size(), false) {};
+        : BandFinder(processed_rna.get_pairings(), processed_rna.get_closed_region_pairings()) {};
     
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(LoopNode& node) {
-        node.bands = find_bands_in_region(node.begin, node.end);
+        node.bands = find_bands_in_region(node);
         node.number_of_bands = static_cast<int>(node.bands.size());
 
         /* only pseudoknots need bands; leave the rest untouched */
@@ -64,44 +67,50 @@ class BandFinder {
 
 
    private:
-    const std::vector<size_t> pairings_;
-    const std::vector<size_t> closed_region_pairings_;
+    const std::vector<size_t>& pairings_;
+    const std::vector<size_t>& closed_region_pairings_;
     std::vector<bool> done_;
 
-    bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
-                     const size_t& right_bound) {
-        size_t i_tmp = i_prime + 1;
-        size_t j_tmp = j_prime - 1;
+bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
+                        const size_t& right_bound) {
+            size_t i_tmp = i_prime + 1;
+            std::cout << "i: " << i_tmp << std::endl;
+            size_t j_tmp = j_prime - 1;
+            std::cout << "j: " << j_tmp << std::endl;
 
-        if (i_tmp > j_tmp){
+            /* skip unpaired positions on either side */
+            while (i_tmp <= right_bound && pairings_[i_tmp] == NULL_INDEX) {
+                std::cout << "Skip Forward: " << i_tmp << std::endl;
+                ++i_tmp;
+            }
+            while (j_tmp > left_bound && pairings_[j_tmp] == NULL_INDEX) {
+                std::cout << "Skip Backwards: " << i_tmp << std::endl;
+                --j_tmp;
+            }
+
+            if (i_tmp < j_tmp && pairings_[i_tmp] == j_tmp) {  // still a canonical stack
+                i_prime = i_tmp;
+                j_prime = j_tmp;
+                std::cout << "True" << std::endl;
+                return true;
+            }
+            std::cout << "False" << std::endl;
             return false;
         }
 
-        while (i_tmp <= right_bound && ((pairings_[i_tmp] == NULL_INDEX) || closed_region_pairings_[i_tmp] != NULL_INDEX)){
-            if (closed_region_pairings_[i_tmp]!= NULL_INDEX && closed_region_pairings_[i_tmp] > i_tmp){
-                i_tmp = closed_region_pairings_[i_tmp];
-            }
-            ++i_tmp;
-        }
-
-        while (j_tmp > left_bound && (pairings_[j_tmp] == NULL_INDEX || closed_region_pairings_[j_tmp] != NULL_INDEX)){
-            if (closed_region_pairings_[j_tmp]!=NULL_INDEX && closed_region_pairings_[j_tmp] < j_tmp){
-                j_tmp = closed_region_pairings_[j_tmp];
-            }
-            --j_tmp;
-        }
-
-        if (i_tmp < j_tmp && pairings_[i_tmp] == j_tmp) {  // still a canonical stack
-            i_prime = i_tmp;
-            j_prime = j_tmp;
-            return true;
-        }
-        return false;
-    }
-
     /*──────────────── find all bands inside [left, right] ────────────────────*/
-    std::vector<Band> find_bands_in_region(size_t left_bound, size_t right_bound) {
+    std::vector<Band> find_bands_in_region(LoopNode node) {
+        size_t left_bound = node.begin;
+        size_t right_bound = node.end;
         std::vector<Band> bands;
+        
+
+        if (node.loop_type != LoopType::Pseudoknot){
+            done_[right_bound] = true;
+            done_[left_bound] = true;
+            bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings_});
+            return bands;
+        }
 
         const size_t n = pairings_.size();
         if (right_bound >= n) {
@@ -113,17 +122,21 @@ class BandFinder {
              *                         – unpaired
              *                         – closing half
              *                         – pairs outside this region */
-            if (done_[i] || pairings_[i] == NULL_INDEX || pairings_[i] < i ||
+            if (pairings_[i] == NULL_INDEX || pairings_[i] < i ||
                 pairings_[i] > right_bound)
                 continue;
+            
+            if (closed_region_pairings_[i] != NULL_INDEX && i != left_bound){
+                i = closed_region_pairings_[i];
+                continue;
+            }
 
             size_t j = pairings_[i];
             size_t i_prime = i;
             size_t j_prime = j;
 
             // walks the stem until last base pair in the given region (finds i` and j`)
-            while (extend_stem(i_prime, j_prime, left_bound, right_bound)) {
-            }
+            while (extend_stem(i_prime, j_prime, left_bound, right_bound)) {}
 
             // stores entire band
             bands.push_back(Band{i, i_prime, j_prime, j, pairings_});
@@ -149,13 +162,13 @@ class BandFinder {
         return bands;
     }
 
-    std::vector<Band> find_bands_in_region(size_t start) {
-        return find_bands_in_region(start, pairings_.size() - 1);
-    }
+    // std::vector<Band> find_bands_in_region(size_t start) {
+    //     return find_bands_in_region(start, pairings_.size() - 1);
+    // }
 
-    std::vector<Band> find_bands_in_region() {
-        return find_bands_in_region(0, pairings_.size() - 1);
-    }
+    // std::vector<Band> find_bands_in_region() {
+    //     return find_bands_in_region(0, pairings_.size() - 1);
+    // }
 };
 
 }  // namespace knotergy

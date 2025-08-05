@@ -68,7 +68,6 @@ int RNAProcessedEntry::get_unpaired_count(ClosedRegion cr) const {
 
 std::vector<size_t> RNAProcessedEntry::compute_pairings() {
     std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
-    // std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '<'}};
 
     // close to open is the opposite of open_to_close
     // e.g. {'(', ')'} -> {')', '('}
