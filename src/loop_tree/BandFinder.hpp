@@ -11,13 +11,13 @@ namespace knotergy {
 // walk one step along a perfect stack:  (i+1) pairs (j−1)
 class BandFinder {
    public:
-    BandFinder(const std::vector<size_t>& pairings, const std::vector<size_t>& closed_region_pairings)
+    BandFinder(const std::vector<size_t>& pairings, const std::vector<size_t>& closed_regions_pairings)
         : pairings_{pairings},
-          closed_region_pairings_{closed_region_pairings},
+          closed_regions_pairings_{closed_regions_pairings},
           done_(pairings.size(), false) {};
 
     BandFinder(const RNAProcessedEntry& processed_rna)
-        : BandFinder(processed_rna.get_pairings(), processed_rna.get_closed_region_pairings()) {};
+        : BandFinder(processed_rna.get_pairings(), processed_rna.get_closed_regions_pairings()) {};
     
     /*──────────────── attach bands + pseudo-nest info to one node ────────────*/
     void annotate_bands(LoopNode& node) {
@@ -68,7 +68,7 @@ class BandFinder {
 
    private:
     const std::vector<size_t>& pairings_;
-    const std::vector<size_t>& closed_region_pairings_;
+    const std::vector<size_t>& closed_regions_pairings_;
     std::vector<bool> done_;
 
 bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
@@ -106,8 +106,6 @@ bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
         
 
         if (node.loop_type != LoopType::Pseudoknot){
-            done_[right_bound] = true;
-            done_[left_bound] = true;
             bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings_});
             return bands;
         }
@@ -126,8 +124,8 @@ bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
                 pairings_[i] > right_bound)
                 continue;
             
-            if (closed_region_pairings_[i] != NULL_INDEX && i != left_bound){
-                i = closed_region_pairings_[i];
+            if (closed_regions_pairings_[i] != NULL_INDEX && i != left_bound){
+                i = closed_regions_pairings_[i];
                 continue;
             }
 
@@ -140,23 +138,7 @@ bool extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
 
             // stores entire band
             bands.push_back(Band{i, i_prime, j_prime, j, pairings_});
-
-            /* mark every position that belongs to this band */
-            for (size_t k = i; k <= i_prime; ++k) {
-                done_[k] = true;
-                if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
-                if (closed_region_pairings_[k]!= NULL_INDEX && closed_region_pairings_[k] > k){
-                    k = closed_region_pairings_[k];
-                }
-            }
-            for (size_t k = j_prime; k <= j; ++k) {
-                done_[k] = true;
-                if (pairings_[k] != NULL_INDEX) done_[pairings_[k]] = true;
-                if (closed_region_pairings_[k]!= NULL_INDEX && closed_region_pairings_[k] > k){
-                    k = closed_region_pairings_[k];
-                }
-            }
-
+            
             i = i_prime;  // fast-forward
         }
         return bands;

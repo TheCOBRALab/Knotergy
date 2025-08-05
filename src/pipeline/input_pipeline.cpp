@@ -135,8 +135,8 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
 std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& inputs) {
     std::vector<RNAProcessedEntry> processed_inputs;
     processed_inputs.reserve(inputs.size());
-    for (RNAEntry input : inputs) {
-        processed_inputs.emplace_back(input);
+    for (RNAEntry rna : inputs) {
+        processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna)));
     }
     return processed_inputs;
 }

@@ -13,80 +13,54 @@
 namespace knotergy {
 
 class RNAProcessedEntry {
-   public:
-    // Constructor for RNAEntry with a name
-    explicit RNAProcessedEntry(const RNAEntry& rna);
-    explicit RNAProcessedEntry(std::string name, std::string sequence, std::string structure);
-    explicit RNAProcessedEntry(std::string sequence, std::string structure);
+    public:
+    explicit RNAProcessedEntry (
+            RNAEntry rna,
+            std::vector<size_t> pairings,
+            std::vector<ClosedRegion> closed_regions,
+            std::vector<size_t> closed_regions_pairings,
+            std::vector<int> unpaired_prefix_sum
+        ) : name_{rna.name},
+            sequence_{rna.sequence},
+            structure_{rna.structure},
+            pairings_{pairings},
+            closed_regions_{closed_regions},
+            closed_regions_pairings_{closed_regions_pairings},
+            unpaired_prefix_sum_{unpaired_prefix_sum} {}
 
-    RNAProcessedEntry() = default;
+            const std::string& get_name() const {return name_;}
+            const std::string& get_sequence() const {return sequence_;}
+            const std::string& get_structure() const {return structure_;}
+            const std::vector<size_t>& get_pairings() const {return pairings_;}
+            const std::vector<ClosedRegion>& get_closed_regions() const {return closed_regions_;}
+            const std::vector<size_t>& get_closed_regions_pairings() const {return closed_regions_pairings_;}
+            size_t size() const {return structure_.size();}
 
-    [[nodiscard]] const std::string& get_name() const;
-    [[nodiscard]] const std::string& get_sequence() const;
-    [[nodiscard]] const std::string& get_structure() const;
-    [[nodiscard]] const std::vector<size_t>& get_pairings() const;
-    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const;
-    [[nodiscard]] const std::vector<size_t>& get_closed_region_pairings() const;
-    [[nodiscard]] size_t size() const;
+            int get_unpaired_count(size_t from, size_t to) const {
+                if (from >= unpaired_prefix_sum_.size() || to > unpaired_prefix_sum_.size()) {
+                    throw std::out_of_range("Index out of range in get_unpaired_count");
+                }
 
-    // [from, to)
-    [[nodiscard]] int get_unpaired_count(size_t from, size_t to) const;
-    [[nodiscard]] int get_unpaired_count(ClosedRegion cr) const;
+                if (from >= to) return 0;
 
-   private:
-    // pairings represents the indicies where base is paired to. e.g. (..) = [3, -1, -1, 0]
-    std::vector<size_t> pairings_;
+                // Return the difference in unpaired counts between the two indices
+                return unpaired_prefix_sum_[to] - unpaired_prefix_sum_[from];
+            }
+            int get_unpaired_count(ClosedRegion closed_region) const {
+                return get_unpaired_count(closed_region.begin, closed_region.end);
+            }
+    
+    private : 
+    const std::string name_;
+    const std::string sequence_;
+    const std::string structure_;
+    const std::vector<size_t> pairings_;
+    const std::vector<ClosedRegion> closed_regions_;
+    const std::vector<size_t> closed_regions_pairings_;
+    const std::vector<int> unpaired_prefix_sum_;
 
-    // All closed and weakly closed regions
-    // Closed region = a region where every base that is opened is also closed
-    // e.g. ((..))..([..)]. -> (0, 5), (1, 4), (8, 13)
-    std::vector<ClosedRegion> closed_regions_;
+    
 
-    // pairings represents the indicies where closed_regions is paired to to. e.g. ([...)] = [6, -1, -1, -1, -1, -1, 0]
-    std::vector<size_t> closed_region_pairings_;
-
-    // Computes all the unpaired count as a prefix sum with an added 0 at the start
-    // e.g. .(.). -> 0, 1, 1, 2, 2, 3
-    // unpaired_prefix_sum_[j] - unpaired_prefix_sum_[i] = unpaired count in range [i,j)
-    std::vector<int> unpaired_prefix_sum_;
-
-    // RNA name, sequence and structure
-    RNAEntry rna_;
-
-    /**
-     * @brief Computes base pairings from the RNA secondary structure string.
-     *
-     * This function loops through a structure in dot-bracket notation
-     * It populates the vector `pairings` with the indicies of each pair
-     * for example
-     *  .(.[.).]..
-     *  -1, 5, -1, 7, -1, 1, -1, 3, -1, -1
-     *
-     * Supported brackets:
-     * - `()` for regular base pairs
-     * - `[]` for pseudoknots
-     *
-     * If the `structure` contains mismatched brackets, unrecognized characters, or is
-     * inconsistent with the length of `sequence`, this function throws a `std::runtime_error`.
-     *
-     * Warnings:
-     * - If `sequence` and `structure` differ in length, a warning is printed to `std::cerr`.
-     *
-     * Exceptions:
-     * - `std::runtime_error` if:
-     *   - Closing brackets have no matching opener
-     *   - Invalid characters are encountered
-     *   - Opening brackets remain unmatched at the end
-     */
-    std::vector<size_t> compute_pairings();
-
-    std::vector<ClosedRegion> compute_closed_regions();
-    std::vector<size_t> compute_closed_region_pairings();
-
-    /**
-     * @brief Creates a list indicating the number of unpaired bases up till that index
-     */
-    std::vector<int> compute_unpaired_counts();
 };
 
 }  // namespace knotergy
