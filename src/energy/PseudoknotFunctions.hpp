@@ -101,8 +101,8 @@ class PseudoknotFunctions {
                     int stack_energy = vienna.stack_energy(bp[idx], bp[idx + 1], sequence);
                     double stack_penalty = pk_stack_penalty_x * stack_energy;
                     energy += stack_penalty;
-                    offset += stack_penalty - std::trunc(stack_penalty);
-                    std::cout << "Stack penalty: "<< std::trunc(stack_penalty) << std::endl;
+                    if (round) offset += stack_penalty - std::round(stack_penalty);
+                    std::cout << "Stack penalty: "<< stack_penalty << std::endl;
                     continue;
                 }
 
@@ -110,8 +110,8 @@ class PseudoknotFunctions {
                 int internal_energy = vienna.internal_loop_energy(bp[idx], bp[idx + 1], sequence);
                 double internal_penalty = pk_internal_penalty_x * internal_energy;
                 energy += internal_penalty;
-                offset += internal_penalty - std::trunc(internal_penalty);
-                std::cout << "Internal penalty: "<< std::trunc(internal_penalty) << std::endl;
+                if (round) offset += internal_penalty - std::round(internal_penalty);
+                std::cout << "Internal penalty: "<< internal_penalty << std::endl;
             }
         }
 
@@ -129,22 +129,10 @@ class PseudoknotFunctions {
 
 // Test Cases
 
-// UUAAAAGGGAUGCCUCUCCUGUUCAUCUUGUGGAGAAGCAUUCGAUAAGGUCAUCAUAAUGGGUCCAGCUUUGCGACCUGGCGAGAUUAGUCAGGAAAAUGUGAAGUGGGUCUUCGCUUUCCA
-// .......((((((.((((([[...[[[[[[[))))).)))))).]]]]]]]...]]....(((.((.(((((((..((((((.......)))))).....))))))).)).))).........
-// -27.99
-
-// AUCCAUGCGAAGAACUAUGGAUCUCUGAAUGUUUUCGGUACAUUUCGGUGGUCCUUUAACGCCUUCCUUUGUGACACCAC
-// .[[[[...[[[[......[[[[....((((((.......)))))).((((]]]]........]]]]...]].]]))))..
-// ..........................((((((.......)))))).((((........................))))..
-
-// -8.98
-
 // CAGGGGAUAUUUUUCUUACUUAGCCAAACCUCCACCAACUCCGCCUGCUGGGCAACAAUCCUGAAGUGCGAGAGGCAUUAUAUUGAAUCCUGGUUCCAUAUUUCGACGAUAAAGCCAGGCUGGCGGACGGACCGACAGCAUUGAGAAACACACAUUGAAGUAGCGGUGGUUCGAAGACUUACGCUGAUUUGCGGGAGACGCACUGUUACUAUCACGUCCUGUUAUGGUUACUUAUUAGCCAGAUCAAGAC
 // ..((((.......................))))......((((((.(((.(((....(((..(((.(((.....)))..((((.((((....)))).)))))))...)))...))).))).))))))[[..[[[.[[[[...[[[......[[.....((((((((((]].......]]]..]]]].....]]]....]])))))))))).....(((.((...((((((.....))))))...)).)))
 // -39.19
 
-// GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC
-// (((((((x(((((xxxx)))))x........x)))))))xxx........
 
 // --------------------WORKING---------------------------
 
@@ -157,3 +145,9 @@ class PseudoknotFunctions {
 // GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC
 // (((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]
 // hfold: -25.86, Knotergy: -25.89
+
+// AUCCAUGCGAAGAACUAUGGAUCUCUGAAUGUUUUCGGUACAUUUCGGUGGUCCUUUAACGCCUUCCUUUGUGACACCAC
+// .[[[[...[[[[......[[[[....((((((.......)))))).((((]]]]........]]]]...]].]]))))..
+// ..........................((((((.......)))))).((((........................))))..
+
+// HFold: -8.98, Knotergy: -8.98
