@@ -25,13 +25,11 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
-
-    BandFinder band_finder(processed_rna_);
-
-    // Pop until node_stack.end() is the parent of current node
-    // A node is only popped (and processed) after all of its children have been added.
-    // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
+    
     for (const ClosedRegion& closed_region : sorted_closed_regions) {
+        // Pop until node_stack.end() is the parent of current node
+        // A node is only popped (and processed) after all of its children have been added.
+        // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
         while (node_stack.top()->end < closed_region.begin) {
             std::shared_ptr<LoopNode>& node = node_stack.top();
             populate_node(node);
@@ -61,8 +59,9 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 void LoopFactory::populate_node(LoopNode& node) {
     node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
     node.loop_type = find_loop_type(node);
-    BandFinder band_finder(processed_rna_);
-    band_finder.annotate_bands(node);
+    node.bands = BandFinder::find_bands(node, processed_rna_.get_pairings(), processed_rna_.get_closed_regions_pairings());
+    node.number_of_bands = static_cast<int>(node.bands.size());
+    label_pseudonested_children(node);
     pseudo_nested_check(node);
 }
 
@@ -118,6 +117,44 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     }
 }
 
+void LoopFactory::label_pseudonested_children(LoopNode& node) {
+        /* only pseudoknots need bands; leave the rest untouched */
+        if (node.loop_type != LoopType::Pseudoknot) return;
+
+        const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
+        const std::vector<Band>& bands = node.bands;
+        size_t child_idx = 0;
+        size_t band_idx = 0;
+        
+        // checks if a child is exclusively in one band (InsideBand), or if its CrossBand 
+        while (child_idx < children.size()) {
+            std::shared_ptr<LoopNode> child = children[child_idx];
+            child->pseudo_type = PseudoNestedType::CrossBand;
+
+            // Prevent out-of-bounds in band lookup
+            if (band_idx >= bands.size()) {
+                ++child_idx;
+                continue;
+            }
+
+            // Checks if child is exclusively in one band
+            if (node.bands[band_idx].contains(child->begin, child->end)) {
+                bool crosses_previous = 
+                (band_idx > 0) && bands[band_idx - 1].contains(child->begin, child->end);
+ 
+                bool crosses_next = 
+                (band_idx + 1) < bands.size() && bands[band_idx + 1].contains(child->begin, child->end);
+
+                if (!crosses_previous && !crosses_next) {
+                    child->pseudo_type = PseudoNestedType::InsideBand;
+                }
+                ++child_idx;  // Done with this child, move to next
+            } else {
+                ++band_idx;
+            }
+        }
+    }
+
 std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vector<ClosedRegion>& closed_regions) {
     // Map regions by their starting index
     // Reserve capacity to avoid rehashing
@@ -134,7 +171,7 @@ std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vect
         }
         if (cr.begin < min_index) min_index = cr.begin;
         if (cr.begin > max_index) max_index = cr.begin;
-    }   
+    }
 
     std::vector<ClosedRegion> sorted_regions;
     sorted_regions.reserve(closed_regions.size());
