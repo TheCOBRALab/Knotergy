@@ -81,8 +81,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     }
     os << "\n";
 
-    os << "  exclusive_unpaired_bases_count: " << node.exclusive_unpaired_bases_count
-       << "\n";
+    os << "  exclusive_unpaired_bases_count: " << node.exclusive_unpaired_bases_count << "\n";
     os << "  total_unpaired_bases_count: " << node.total_unpaired_bases_count << "\n";
     os << "  number_of_children_inside_band: " << node.number_of_insideband_children << "\n";
     os << "  number_of_crossband_children: " << node.number_of_crossband_children << "\n";

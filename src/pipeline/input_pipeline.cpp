@@ -110,7 +110,7 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
 std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::string& sequence,
                                      const std::string& structure) {
     std::vector<RNAEntry> entries;
-    
+
     // get console input
     if (!sequence.empty()) {
         if (sequence.size() != structure.size()) {
@@ -246,7 +246,8 @@ void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file,
     printf("\n-------------------------------\n Making the Loop Tree\n");
     LoopFactory factory(processed_rna);
     factory.print_tree(true);
-    ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round);
+    ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(),
+                                    processed_rna, round);
     std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
 }
 

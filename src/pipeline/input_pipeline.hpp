@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
@@ -19,7 +19,6 @@ namespace knotergy {
  */
 enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
 
-
 /**
  * @brief Trims leading and trailing whitespace from a string.
  *
@@ -30,7 +29,6 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
  * @param s The string to be trimmed.
  */
 void trim(std::string& s);
-
 
 /**
  * @brief Parses RNA entries from a file in FASTA format
@@ -50,7 +48,6 @@ void trim(std::string& s);
  */
 [[nodiscard]] std::vector<RNAEntry> get_all_file_entries(const std::string& file);
 
-
 /**
  * @brief Collects all RNA input entries from console input and/or file.
  *
@@ -65,9 +62,8 @@ void trim(std::string& s);
  * @throws std::runtime_error if both the file and console inputs are empty
  */
 [[nodiscard]] std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
-                                     const std::string& restricted);
+                                                   const std::string& restricted);
 
-                                
 [[nodiscard]] std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& inputs);
 
 /**

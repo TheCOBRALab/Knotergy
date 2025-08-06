@@ -1,14 +1,15 @@
 #pragma once
-#include "../preprocessing/RNAProcessedEntry.hpp"
 #include "../loop_tree/LoopNode.hpp"
+#include "../preprocessing/RNAProcessedEntry.hpp"
 #include "PseudoknotFunctions.hpp"
 #include "ViennaFunctions.hpp"
 
 namespace knotergy {
 class ComputeEnergy {
    public:
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence, RNAProcessedEntry processed_rna, bool round = false)
-        : root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round}{
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence,
+                  RNAProcessedEntry processed_rna, bool round = false)
+        : root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round} {
         process_tree(*root_node_);
     };
 

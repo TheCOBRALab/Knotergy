@@ -37,9 +37,7 @@ class Band {
         return (idx >= left_border_ && idx <= left_inner_) ||
                (idx >= right_inner_ && idx <= right_border_);
     }
-    bool contains(size_t idx, size_t idx2) const {
-        return contains(idx) && contains(idx2); 
-    }
+    bool contains(size_t idx, size_t idx2) const { return contains(idx) && contains(idx2); }
 
     bool nests(size_t idx) const { return (idx > left_inner_ && idx < right_inner_); }
 
