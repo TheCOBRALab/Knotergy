@@ -7,8 +7,9 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
                                          const std::vector<size_t>& pairings,
                                          const std::vector<size_t>& cr_pairings) {
     std::vector<Band> bands;
-    std::vector<size_t> next_bp;
-    std::vector<size_t> prev_bp;
+
+    // std::unordered_map<size_t, size_t> next_valid_bp = generate_next_bp_map(left_bound, right_bound, pairings, cr_pairings);
+    // std::unordered_map<size_t, size_t> prev_valid_bp = generate_prev_bp_map(left_bound, right_bound, pairings, cr_pairings);
 
     if (loop_type != LoopType::Pseudoknot) {
         bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings});
@@ -22,8 +23,8 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
 
     for (size_t i = left_bound; i <= right_bound; ++i) {
         /* skip anything that is   – unpaired
-         *                      – closing half
-         *                      – pairs outside this region */
+         *                         – closing half
+         *                         – pairs outside this region */
         if (pairings[i] == NULL_INDEX || pairings[i] < i || pairings[i] > right_bound) continue;
 
         // if nested closed region, skip
@@ -48,9 +49,8 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
     return bands;
 }
 
-std::vector<Band> BandFinder::find_bands(const LoopNode& node, const std::vector<size_t>& pairings,
-                                         const std::vector<size_t>& cr_pairings) {
-    return find_bands(node.begin, node.end, node.loop_type, pairings, cr_pairings);
+std::vector<Band> BandFinder::find_bands(const LoopNode& node, const RNAProcessedEntry& processed_rna) {
+    return find_bands(node.begin, node.end, node.loop_type, processed_rna.get_pairings(), processed_rna.get_closed_regions_pairings());
 }
 
 bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime, const size_t& left_bound,
@@ -79,4 +79,23 @@ bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime, const size_t& lef
     std::cout << "False" << std::endl;
     return false;
 }
+
+std::unordered_map<size_t, size_t> const BandFinder::generate_next_bp_map(const size_t& left_bound,
+                                                                          const size_t& right_bound,
+                                                                          const std::vector<size_t>& pairings,
+                                                                          const std::vector<size_t>& cr_pairings){
+    std::unordered_map<size_t, size_t> next_bp_map;
+    next_bp_map.reserve(static_cast<size_t>(lrint(right_bound-left_bound)));
+    for (size_t i = 0; i <= right_bound; ++i){
+        if (cr_pairings[i] != NULL_INDEX && i != left_bound) {
+            i = cr_pairings[i];
+            continue;
+        }
+
+    }
+}
+std::unordered_map<size_t, size_t> const BandFinder::generate_next_bp_map(const LoopNode& node, const RNAProcessedEntry& processed_entry){
+
+}
+
 }  // namespace knotergy

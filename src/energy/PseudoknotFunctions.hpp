@@ -33,22 +33,23 @@ class PseudoknotFunctions {
 
     double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
                              RNAProcessedEntry processed_rna, bool round = false) {
+        
+        // Unpaired within bands are already included in stack_and_internal_energy
+        int unpaired = node.exclusive_unpaired_bases_count;
+        for (Band band : node.bands) {
+            unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
+            unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
+        }
+
         double energy = 0;
-        int real_unpaired = node.exclusive_unpaired_bases_count;
 
         energy += init_penalty(node);
-        for (Band band : node.bands) {
-            real_unpaired -=
-                processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
-            real_unpaired -=
-                processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
-        }
 
         energy += band_penalty * node.number_of_bands;
         std::cout << "Band penalty: " << band_penalty * node.number_of_bands << std::endl;
 
-        energy += unpaired_in_pk_penalty * real_unpaired;
-        std::cout << "Unpaired penalty: " << unpaired_in_pk_penalty * real_unpaired << std::endl;
+        energy += unpaired_in_pk_penalty * unpaired;
+        std::cout << "Unpaired penalty: " << unpaired_in_pk_penalty * unpaired << std::endl;
 
         energy += nested_cr_penalty * node.number_of_crossband_children;
         std::cout << "Nested penalty: " << nested_cr_penalty * node.number_of_crossband_children

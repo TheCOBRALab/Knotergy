@@ -17,9 +17,11 @@ struct BasePair {
 };
 
 // Visual representation of the band:
-// (((((((((((((((............)))))))))))))))
-// ^             ^            ^             ^
-// left_border   left_inner   right_inner   right_border
+// (((((((((((((((....[.......)))))))..))))))))....]
+// ^             ^            ^               ^
+// left_border   left_inner   right_inner     right_border
+
+// non-pseudoknots don't have bands
 class Band {
    public:
     Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings)
