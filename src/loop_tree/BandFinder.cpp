@@ -2,6 +2,8 @@
 
 namespace knotergy {
 
+
+
 std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t& right_bound,
                                          const LoopType& loop_type,
                                          const std::vector<size_t>& pairings,
@@ -80,22 +82,43 @@ bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime, const size_t& lef
     return false;
 }
 
-std::unordered_map<size_t, size_t> const BandFinder::generate_next_bp_map(const size_t& left_bound,
+std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const BandFinder::generate_aux_band_list(const size_t& left_bound,
                                                                           const size_t& right_bound,
                                                                           const std::vector<size_t>& pairings,
                                                                           const std::vector<size_t>& cr_pairings){
-    std::unordered_map<size_t, size_t> next_bp_map;
-    next_bp_map.reserve(static_cast<size_t>(lrint(right_bound-left_bound)));
-    for (size_t i = 0; i <= right_bound; ++i){
+    if (right_bound < left_bound) return std::make_pair(nullptr, nullptr);
+
+    size_t start_idx = left_bound;
+
+    while (pairings[start_idx] == NULL_INDEX){
+        ++start_idx;
+    }
+    
+    std::shared_ptr<LinkedList> start = std::make_shared<LinkedList>(start_idx);
+    std::shared_ptr<LinkedList> current = start;
+
+    for (size_t i = start_idx + 1; i <= right_bound; ++i){
+
+        if (pairings[i] != NULL_INDEX){
+            continue;
+        }
+
         if (cr_pairings[i] != NULL_INDEX && i != left_bound) {
             i = cr_pairings[i];
             continue;
         }
 
+        std::shared_ptr<LinkedList> new_base = std::make_shared<LinkedList>(i);
+        new_base->prev = current;
+        current->next = new_base;
+        current = new_base;
     }
-}
-std::unordered_map<size_t, size_t> const BandFinder::generate_next_bp_map(const LoopNode& node, const RNAProcessedEntry& processed_entry){
 
+    std::shared_ptr<LinkedList> end = current;
+    return std::make_pair(start, end);
+}
+std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const BandFinder::generate_aux_band_list(const LoopNode& node, const RNAProcessedEntry& processed_entry){
+    return generate_aux_band_list(node.begin, node.end, processed_entry.get_pairings(), processed_entry.get_closed_regions_pairings());
 }
 
 }  // namespace knotergy

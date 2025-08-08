@@ -1,9 +1,19 @@
 #pragma once
 #include <iostream>
+#include <utility>
 
 #include "LoopNode.hpp"
 #include "../preprocessing/RNAProcessedEntry.hpp"
 namespace knotergy {
+
+struct LinkedList {
+    size_t value = NULL_INDEX;
+    std::shared_ptr<LinkedList> next;
+    std::weak_ptr<LinkedList> prev;
+
+    LinkedList(size_t v): value{v} {};
+};
+
 class BandFinder {
    public:
     BandFinder();
@@ -22,18 +32,11 @@ class BandFinder {
                             const size_t& right_bound,
                             const std::vector<size_t>& pairings);
 
-    static std::unordered_map<size_t, size_t> const generate_next_bp_map(const size_t& left_bound,
+    static std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const generate_aux_band_list(const size_t& left_bound,
                                                                    const size_t& right_bound,
                                                                    const std::vector<size_t>& pairings,
                                                                    const std::vector<size_t>& cr_pairings);
 
-    static std::unordered_map<size_t, size_t> const generate_next_bp_map(const LoopNode& node, const RNAProcessedEntry& processed_entry);
-
-    static std::unordered_map<size_t, size_t> const generate_prev_bp_map(const size_t& left_bound,
-                                                                   const size_t& right_bound,
-                                                                   const std::vector<size_t>& pairings,
-                                                                   const std::vector<size_t>& cr_pairings);
-
-    static std::unordered_map<size_t, size_t> const generate_prev_bp_map(const LoopNode& node, const RNAProcessedEntry& processed_entry);
-};
+    static std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const generate_aux_band_list(const LoopNode& node, const RNAProcessedEntry& processed_entry);
+    };
 }  // namespace knotergy

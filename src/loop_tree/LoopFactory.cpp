@@ -31,13 +31,13 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // A node is only popped (and processed) after all of its children have been added.
         // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
         while (node_stack.top()->end < closed_region.begin) {
-            std::shared_ptr<LoopNode>& node = node_stack.top();
+            std::shared_ptr<LoopNode> node = node_stack.top();
             populate_node(node);
             node_stack.pop();
         }
 
         // parent = parent of current node. child = current node
-        std::shared_ptr<LoopNode>& parent = node_stack.top();
+        std::shared_ptr<LoopNode> parent = node_stack.top();
         std::shared_ptr<LoopNode> child = std::make_shared<LoopNode>(closed_region);
         child->parent = parent;
         parent->children.emplace_back(child);
