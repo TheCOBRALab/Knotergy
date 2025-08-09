@@ -6,12 +6,15 @@
 #include "../preprocessing/RNAProcessedEntry.hpp"
 namespace knotergy {
 
-struct LinkedList {
+struct Aux_Band {
     size_t value = NULL_INDEX;
-    std::shared_ptr<LinkedList> next;
-    std::weak_ptr<LinkedList> prev;
-
-    LinkedList(size_t v): value{v} {};
+    size_t prev = NULL_INDEX;
+    size_t next = NULL_INDEX;
+    
+    Aux_Band() = default;  
+    Aux_Band (size_t v) : value{v} {}
+    Aux_Band (size_t v, size_t p) : value{v}, prev{p} {}
+    Aux_Band (size_t v, size_t p, size_t n) : value{v}, prev{p}, next{n} {}
 };
 
 class BandFinder {
@@ -28,15 +31,14 @@ class BandFinder {
    private:
     static bool extend_stem(size_t& i_prime,
                             size_t& j_prime,
-                            const size_t& left_bound,
-                            const size_t& right_bound,
+                            const std::unordered_map<size_t, Aux_Band>& aux_bands,
                             const std::vector<size_t>& pairings);
 
-    static std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const generate_aux_band_list(const size_t& left_bound,
+    static std::unordered_map<size_t, Aux_Band> const generate_Aux_Band_list(const size_t& left_bound,
                                                                    const size_t& right_bound,
                                                                    const std::vector<size_t>& pairings,
                                                                    const std::vector<size_t>& cr_pairings);
 
-    static std::pair<std::shared_ptr<LinkedList>, std::shared_ptr<LinkedList>> const generate_aux_band_list(const LoopNode& node, const RNAProcessedEntry& processed_entry);
+    static std::unordered_map<size_t, Aux_Band> const generate_Aux_Band_list(const LoopNode& node, const RNAProcessedEntry& processed_entry);
     };
 }  // namespace knotergy
