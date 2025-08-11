@@ -11,7 +11,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
     std::vector<Band> bands;
 
     if (loop_type != LoopType::Pseudoknot) {
-        bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings});
+        bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
         return bands;
     }
 
@@ -47,7 +47,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
         }
 
         // stores entire band
-        bands.push_back(Band{i, i_prime, j_prime, j, pairings});
+        bands.push_back(Band{i, i_prime, j_prime, j, pairings, cr_pairings});
 
         i = i_prime;  // fast-forward
     }

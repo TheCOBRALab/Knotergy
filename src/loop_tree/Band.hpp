@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <ostream>
 #include <vector>
+#include <algorithm>
 
 #include "../pipeline/shared.hpp"
 
@@ -24,10 +25,28 @@ struct BasePair {
 // non-pseudoknots don't have bands
 class Band {
    public:
-    Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings)
+    Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings, const std::vector<size_t>& cr_pairings)
         : left_border_{lb}, left_inner_{li}, right_inner_{ri}, right_border_{rb} {
+        
+        if (std::max({pairings[lb], pairings[li], pairings[ri], pairings[rb]}) == NULL_INDEX){
+            THROW_ERROR("One or more indices are not base-pairs");
+        }
+
+        if (pairings[lb] != rb || pairings[li] != ri){
+            THROW_ERROR("Incorrect pairings in Band");
+        }
+
         // find all base pairs
-        for (size_t idx = left_border_; idx <= left_inner_; ++idx) {
+        base_pairs_.emplace_back(left_border_, pairings[left_border_]);
+        for (size_t idx = left_border_ + 1; idx <= left_inner_; ++idx) {
+            
+            // skip closed regions
+            if (cr_pairings[idx] != NULL_INDEX){
+                idx = cr_pairings[idx];
+                continue;
+            }
+            
+            // add base pair
             size_t paired = pairings[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
                 base_pairs_.emplace_back(idx, paired);
