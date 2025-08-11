@@ -12,9 +12,9 @@
 #include "RNAEntry.hpp"
 namespace knotergy {
 
-class RNAProcessedEntry {
+class ProcessedRNAEntry {
    public:
-    explicit RNAProcessedEntry(RNAEntry rna, std::vector<size_t> pairings,
+    explicit ProcessedRNAEntry(RNAEntry rna, std::vector<size_t> pairings,
                                std::vector<ClosedRegion> closed_regions,
                                std::vector<size_t> closed_regions_pairings,
                                std::vector<int> unpaired_prefix_sum)

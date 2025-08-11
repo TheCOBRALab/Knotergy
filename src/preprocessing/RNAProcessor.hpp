@@ -4,12 +4,12 @@
 
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
-#include "RNAProcessedEntry.hpp"
+#include "ProcessedRNAEntry.hpp"
 namespace knotergy {
 class RNAProcessor {
    public:
     RNAProcessor();
-    static RNAProcessedEntry process_rna(RNAEntry rna);
+    static ProcessedRNAEntry process_rna(RNAEntry rna);
 
    private:
     static std::vector<size_t> compute_pairings(RNAEntry rna);

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../preprocessing/RNAProcessedEntry.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "LoopNode.hpp"
 
 namespace knotergy {
 class LoopFactory {
    public:
-    LoopFactory(const RNAProcessedEntry& processed_rna);
+    LoopFactory(const ProcessedRNAEntry& processed_rna);
 
     std::shared_ptr<LoopNode> get_root_node() { return root_node_; };
 
@@ -14,7 +14,7 @@ class LoopFactory {
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
-    const RNAProcessedEntry& processed_rna_;
+    const ProcessedRNAEntry& processed_rna_;
     std::shared_ptr<LoopNode> root_node_;
     size_t structure_length_;
 

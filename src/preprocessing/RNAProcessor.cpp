@@ -1,13 +1,13 @@
 #include "RNAProcessor.hpp"
 
 namespace knotergy {
-RNAProcessedEntry RNAProcessor::process_rna(RNAEntry rna) {
+ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
     std::vector<size_t> pairings = compute_pairings(rna);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_closed_regions_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
-    return RNAProcessedEntry{std::move(rna), std::move(pairings), std::move(closed_regions),
+    return ProcessedRNAEntry{std::move(rna), std::move(pairings), std::move(closed_regions),
                              std::move(cr_pairings), std::move(unpaired_prefix_sum)};
 };
 

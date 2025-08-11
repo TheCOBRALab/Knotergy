@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "../preprocessing/RNAEntry.hpp"
-#include "../preprocessing/RNAProcessedEntry.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"
 #include "shared.hpp"
 
@@ -64,7 +64,7 @@ void trim(std::string& s);
 [[nodiscard]] std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                                    const std::string& restricted);
 
-[[nodiscard]] std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& inputs);
+[[nodiscard]] std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs);
 
 /**
  * @brief Validates that an RNA sequence contains only valid characters.
@@ -91,5 +91,5 @@ void load_energy_parameters(const std::string& paramFile, const std::string& seq
 void load_energy_parameters(const std::string& paramFile);
 void load_energy_parameters();
 
-void dostuff(const RNAProcessedEntry& entry, std::string parameter_file, bool round = false);
+void dostuff(const ProcessedRNAEntry& entry, std::string parameter_file, bool round = false);
 }  // namespace knotergy

@@ -8,7 +8,7 @@
 
 namespace knotergy {
 
-LoopFactory::LoopFactory(const RNAProcessedEntry& processed_rna) : processed_rna_{processed_rna} {
+LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna_{processed_rna} {
     build_tree(processed_rna.get_closed_regions());
 }
 

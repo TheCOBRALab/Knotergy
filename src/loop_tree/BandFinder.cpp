@@ -54,7 +54,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
     return bands;
 }
 
-std::vector<Band> BandFinder::find_bands(const LoopNode& node, const RNAProcessedEntry& processed_rna) {
+std::vector<Band> BandFinder::find_bands(const LoopNode& node, const ProcessedRNAEntry& processed_rna) {
     return find_bands(node.begin, node.end, node.loop_type, processed_rna.get_pairings(), processed_rna.get_closed_regions_pairings());
 }
 
@@ -131,7 +131,7 @@ std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(const
 
     return band_links;
 }
-std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(const LoopNode& node, const RNAProcessedEntry& processed_entry){
+std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(const LoopNode& node, const ProcessedRNAEntry& processed_entry){
     return generate_band_links(node.begin, node.end, processed_entry.get_pairings(), processed_entry.get_closed_regions_pairings());
 }
 

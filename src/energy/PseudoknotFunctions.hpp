@@ -32,7 +32,7 @@ class PseudoknotFunctions {
     [[maybe_unused]] int pk_unpaired_in_multi_penalty = 12;
 
     double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
-                             RNAProcessedEntry processed_rna, bool round = false) {
+                             ProcessedRNAEntry processed_rna, bool round = false) {
         
         // Unpaired within bands are already included in stack_and_internal_energy
         int unpaired = node.exclusive_unpaired_bases_count;

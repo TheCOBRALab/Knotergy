@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "LoopNode.hpp"
-#include "../preprocessing/RNAProcessedEntry.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
 namespace knotergy {
 
 struct BandLink {
@@ -21,7 +21,7 @@ class BandFinder {
                                         const std::vector<size_t>& pairings,
                                         const std::vector<size_t>& cr_pairings);
 
-    static std::vector<Band> find_bands(const LoopNode& node, const RNAProcessedEntry& processed_rna);
+    static std::vector<Band> find_bands(const LoopNode& node, const ProcessedRNAEntry& processed_rna);
 
    private:
     static bool extend_stem(size_t& i_prime,
@@ -34,6 +34,6 @@ class BandFinder {
                                                                    const std::vector<size_t>& pairings,
                                                                    const std::vector<size_t>& cr_pairings);
 
-    static std::unordered_map<size_t, BandLink> const generate_band_links(const LoopNode& node, const RNAProcessedEntry& processed_entry);
+    static std::unordered_map<size_t, BandLink> const generate_band_links(const LoopNode& node, const ProcessedRNAEntry& processed_entry);
     };
 }  // namespace knotergy

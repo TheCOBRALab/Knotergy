@@ -10,7 +10,7 @@
 #include "../energy/ComputeEnergy.hpp"
 #include "../loop_tree/LoopFactory.hpp"
 #include "../preprocessing/RNAEntry.hpp"
-#include "../preprocessing/RNAProcessedEntry.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "shared.hpp"
 
 extern "C" {
@@ -132,8 +132,8 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::s
     return entries;
 }
 
-std::vector<RNAProcessedEntry> process_inputs(const std::vector<RNAEntry>& inputs) {
-    std::vector<RNAProcessedEntry> processed_inputs;
+std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs) {
+    std::vector<ProcessedRNAEntry> processed_inputs;
     processed_inputs.reserve(inputs.size());
     for (RNAEntry rna : inputs) {
         processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna)));
@@ -235,7 +235,7 @@ void load_energy_parameters() {
     load_energy_parameters("");
 }
 
-void dostuff(const RNAProcessedEntry& processed_rna, std::string parameter_file, bool round) {
+void dostuff(const ProcessedRNAEntry& processed_rna, std::string parameter_file, bool round) {
     load_energy_parameters(parameter_file, processed_rna.get_sequence());
     printf("Seq: %s \n", processed_rna.get_sequence().c_str());
     printf("Struct: %s \n", processed_rna.get_structure().c_str());
