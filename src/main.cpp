@@ -16,9 +16,12 @@ void help() {
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
               << "  -e  --round                   Rounds all decimal places in calculations"
-              << "  -h, --help                    Show this help message\n";
+              << "  -h, --help                    Show this help message\n"
+              << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
+              << "  -f, --mod-file                Modified base parameter file\n";
 }
 
+// cleans white space from arg
 std::string get_trimmed_arg(int& i, int argc, char** argv) {
     if (i + 1 >= argc) return "";
     std::string value = argv[++i];
@@ -33,6 +36,8 @@ int main(int argc, char** argv) {
     std::string input_file = "";
     std::string output_file = "";
     std::string parameter_file = "";
+    std::string modifications = "7I6P9D";
+    std::string mod_param_file = "";
     bool round = false;
 
     // ------------------------- Parse Through Flags -----------------------
@@ -48,7 +53,11 @@ int main(int argc, char** argv) {
             output_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-e" || arg == "--round") {
+        } else if (arg == "-e" || arg == "--modifications") {
+            modifications = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-m" || arg == "--mod-file") {
+            mod_param_file = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-f" || arg == "--round") {
             round = true;
         } else if (arg == "-h" || arg == "--help") {
             help();
@@ -101,6 +110,13 @@ int main(int argc, char** argv) {
         std::cerr << "Parameter file not found: " << parameter_file << std::endl;
         return 1;
     }
+
+    if (!mod_param_file.empty() && !std::filesystem::exists(mod_param_file)) {
+        std::cerr << "Modified bases parameter file not found: " << mod_param_file << std::endl;
+        return 1;
+    }
+
+
 
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs =

@@ -12,7 +12,7 @@
 #include <vector>
 
 float pipeline(std::string sequence, std::string structure){
-    knotergy::load_energy_parameters();
+    knotergy::ViennaParams::load_energy_parameters();
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);

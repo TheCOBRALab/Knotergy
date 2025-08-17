@@ -7,6 +7,7 @@
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"
+#include "load_params.hpp"
 #include "shared.hpp"
 
 namespace knotergy {
@@ -86,10 +87,6 @@ void trim(std::string& s);
  * @return true if the structure is valid and non-empty; false otherwise.
  */
 [[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error = true);
-
-void load_energy_parameters(const std::string& paramFile, const std::string& seq);
-void load_energy_parameters(const std::string& paramFile);
-void load_energy_parameters();
 
 void dostuff(const ProcessedRNAEntry& entry, std::string parameter_file, bool round = false);
 }  // namespace knotergy

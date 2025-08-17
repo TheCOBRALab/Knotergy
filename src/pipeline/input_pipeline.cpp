@@ -13,10 +13,7 @@
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "shared.hpp"
 
-extern "C" {
-// used for load_energy_parameters
-#include <ViennaRNA/params/io.h>
-}
+
 
 namespace knotergy {
 
@@ -201,42 +198,8 @@ bool validate_sequence(const std::string& sequence) {
     return true;
 }
 
-void load_energy_parameters(const std::string& paramFile, const std::string& seq) {
-    if (!paramFile.empty()) {
-        if (std::filesystem::exists(paramFile)) {
-            int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
-            if (!loaded) {
-                throw std::runtime_error("Failed to load parameter file: " + paramFile);
-            }
-            std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
-            return;
-        } else {
-            std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
-        }
-    } else {
-        std::cerr << "Warning: No parameter file provided." << std::endl;
-    }
-
-    // Default fallback based on sequence
-    if (seq.find('T') != std::string::npos) {
-        std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
-        vrna_params_load_DNA_Mathews2004();
-    } else {
-        std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
-        vrna_params_load_RNA_Turner2004();
-    }
-}
-
-void load_energy_parameters(const std::string& paramFile) {
-    load_energy_parameters(paramFile, "");
-}
-
-void load_energy_parameters() {
-    load_energy_parameters("");
-}
-
 void dostuff(const ProcessedRNAEntry& processed_rna, std::string parameter_file, bool round) {
-    load_energy_parameters(parameter_file, processed_rna.get_sequence());
+    ViennaParams::load_energy_parameters(parameter_file, processed_rna.get_sequence());
     printf("Seq: %s \n", processed_rna.get_sequence().c_str());
     printf("Struct: %s \n", processed_rna.get_structure().c_str());
     printf("Size: %ld \n", processed_rna.size());
@@ -250,5 +213,4 @@ void dostuff(const ProcessedRNAEntry& processed_rna, std::string parameter_file,
                                     processed_rna, round);
     std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
 }
-
 }  // namespace knotergy
