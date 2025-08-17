@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "../preprocessing/RNAEntry.hpp"
@@ -70,12 +71,14 @@ void trim(std::string& s);
 /**
  * @brief Validates that an RNA sequence contains only valid characters.
  *
- * Accepted characters are A, C, G, U, and T.
+ * Accepted characters are A, C, G, U, T & all modified bases
  *
  * @param sequence The RNA sequence to validate.
- * @return true if the sequence is valid and non-empty; false otherwise.
+ * @param valid_seq_chars Valid chars including modified bases
+ * @throws std::runtime_error if the sequence contains invalid characters.
+ * @return None
  */
-[[nodiscard]] bool validate_sequence(const std::string& sequence);
+void validate_sequence(const std::string& sequence, const std::unordered_set<char>& valid_seq_chars);
 
 void dostuff(const ProcessedRNAEntry& entry, std::string parameter_file, bool round = false);
 }  // namespace knotergy

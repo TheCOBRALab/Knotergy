@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 
 #include "pipeline/input_pipeline.hpp"
 #include "preprocessing/RNAEntry.hpp"
@@ -68,6 +69,9 @@ int main(int argc, char** argv) {
         }
     }
 
+    std::unordered_set<char> valid_seq_chars(modifications.begin(), modifications.end());
+    valid_seq_chars.insert({'A', 'U', 'C', 'G', 'T'});
+
     // ------------------------- Validate Inputs -----------------------
     if (sequence.empty() && input_file.empty()) {
         std::cout << "Sequence : ";
@@ -75,23 +79,11 @@ int main(int argc, char** argv) {
         knotergy::trim(sequence);
     }
 
-    if (!sequence.empty() && !knotergy::validate_sequence(sequence)) {
-        std::cout << "Error: Sequence is empty or contains invalid character/s. Allowed: G, C, "
-                     "A, U, T";
-        return 1;
-    }
-
     if (structure.empty() && input_file.empty()) {
         std::cout << "Structure: ";
         std::cin >> structure;
         knotergy::trim(structure);
     }
-
-    // if (!structure.empty() && !knotergy::validate_structure(structure)) {
-    //     std::cout << "Error: Structure is empty or contains invalid character/s. Allowed: '.', "
-    //                  "'(',  ')', '[', ']'";
-    //     return 1;
-    // }
 
     if (sequence.length() != structure.length()) {
         std::cout << "Error: Input sequence and structure are not the same length";
@@ -106,11 +98,13 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    knotergy::trim(parameter_file);
     if (!parameter_file.empty() && !std::filesystem::exists(parameter_file)) {
         std::cerr << "Parameter file not found: " << parameter_file << std::endl;
         return 1;
     }
 
+    knotergy::trim(mod_param_file);
     if (!mod_param_file.empty() && !std::filesystem::exists(mod_param_file)) {
         std::cerr << "Modified bases parameter file not found: " << mod_param_file << std::endl;
         return 1;
@@ -119,13 +113,14 @@ int main(int argc, char** argv) {
 
 
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<knotergy::RNAEntry> inputs =
-        knotergy::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs);
 
     for (const knotergy::ProcessedRNAEntry& current : processed_inputs) {
         std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
                   << "\nStructure: " << current.get_structure() << std::endl;
+        
+        knotergy::validate_sequence(sequence, valid_seq_chars);
 
         for (size_t n : current.get_pairings()) {
             if (n == knotergy::NULL_INDEX) {

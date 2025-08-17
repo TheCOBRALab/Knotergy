@@ -11,7 +11,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
                              std::move(cr_pairings), std::move(unpaired_prefix_sum)};
 };
 
-std::vector<size_t> RNAProcessor::compute_pairings(RNAEntry rna) {
+std::vector<size_t> RNAProcessor::compute_pairings(RNAEntry& rna) {
     std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
     std::unordered_map<char, char> valid_pairings = {{'A', 'U'}, {'U', 'A'}, {'G', 'C'},
                                                      {'C', 'G'}, {'G', 'U'}, {'U', 'G'}};
@@ -83,7 +83,7 @@ std::vector<size_t> RNAProcessor::compute_pairings(RNAEntry rna) {
     return pairings;
 }
 
-std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_t> pairings) {
+std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_t>& pairings) {
     std::vector<ClosedRegion> closed_regions;
     std::stack<ClosedRegion> stack;
     const size_t n = pairings.size();
@@ -123,7 +123,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessor::compute_closed_regions_pairings(
-    std::vector<ClosedRegion> closed_regions, size_t rna_size) {
+    std::vector<ClosedRegion>& closed_regions, const size_t& rna_size) {
     std::vector<size_t> closed_regions_pairings(rna_size, NULL_INDEX);
     for (ClosedRegion cr : closed_regions) {
         if (cr.end >= rna_size) THROW_ERROR("rna_size is too small");
@@ -133,7 +133,7 @@ std::vector<size_t> RNAProcessor::compute_closed_regions_pairings(
     return closed_regions_pairings;
 }
 
-std::vector<int> RNAProcessor::compute_unpaired_counts(std::vector<size_t> pairings) {
+std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>& pairings) {
     int count = 0;
     size_t n = pairings.size();
     std::vector<int> unpaired_prefix_sum;

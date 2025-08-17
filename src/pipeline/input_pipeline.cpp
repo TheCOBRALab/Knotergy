@@ -13,8 +13,6 @@
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "shared.hpp"
 
-
-
 namespace knotergy {
 
 // Trims leading and trailing whitespace from a string
@@ -71,10 +69,6 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
             current.name = line.substr(1);
             state = ParserState::SEQUENCE;
         } else if (state == ParserState::SEQUENCE) {
-            if (!validate_sequence(line)) {
-                THROW_ERROR("Error: Sequence is invalid for entry: " + current.name +
-                                         ". Line number: " + std::to_string(line_number));
-            }
             current.sequence = line;
             state = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
@@ -134,14 +128,18 @@ std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& input
 }
 
 // ensures sequence only has valid characters
-bool validate_sequence(const std::string& sequence) {
+void validate_sequence(const std::string& sequence, const std::unordered_set<char>& valid_seq_chars) {
     for (char c : sequence) {
-        if (!(c == 'G' || c == 'C' || c == 'A' || c == 'U' || c == 'T')) {
-            return false;
+        if (valid_seq_chars.find(c) == valid_seq_chars.end()) {
+            THROW_ERROR("Invalid Char : " + std::string(1, c) + " in sequence: " + sequence);
+            // std::cerr << "Invalid Char : " << c << " in sequence: " << sequence << std::endl;
         }
     }
-    return !sequence.empty();
+    if (sequence.empty()) {
+        THROW_ERROR("Sequence is empty");
+    }
 }
+
 
 void dostuff(const ProcessedRNAEntry& processed_rna, std::string parameter_file, bool round) {
     ViennaParams::load_energy_parameters(parameter_file, processed_rna.get_sequence());
