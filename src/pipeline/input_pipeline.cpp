@@ -26,12 +26,12 @@ void trim(std::string& s) {
 // Gets all inputs from a file in FASTA format
 std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
     if (!std::filesystem::exists(file)) {
-        throw std::runtime_error("Error: Input file not found: " + file);
+        THROW_ERROR("Error: Input file not found: " + file);
     }
 
     std::ifstream in(file);
     if (!in.is_open()) {
-        throw std::runtime_error("Error: Unable to open file: " + file);
+        THROW_ERROR("Error: Unable to open file: " + file);
     }
 
     std::string line;
@@ -48,7 +48,7 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
         // Name and Uninitialized must start with a header line indicator
         if ((state == ParserState::NAME || state == ParserState::UNINITIALIZED) &&
             (line[0] != '>')) {
-            throw std::runtime_error("Error: Expected '>' at the beginning of the line: " + line +
+            THROW_ERROR("Error: Expected '>' at the beginning of the line: " + line +
                                      ". Line number: " + std::to_string(line_number));
         }
 
@@ -56,12 +56,12 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
         if (line[0] == '>') {
             if (state != ParserState::UNINITIALIZED) {
                 if (current.sequence.empty() || current.structure.empty()) {
-                    throw std::runtime_error(
+                    THROW_ERROR(
                         "Error: Sequence and/or structure are empty for entry: " + current.name +
                         ". Line number: " + std::to_string(line_number));
                 }
                 if (current.sequence.size() != current.structure.size()) {
-                    throw std::runtime_error(
+                    THROW_ERROR(
                         "Error: Sequence and structure are not the same length in entry: " +
                         current.name + ". Line number: " + std::to_string(line_number));
                 }
@@ -72,22 +72,17 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
             state = ParserState::SEQUENCE;
         } else if (state == ParserState::SEQUENCE) {
             if (!validate_sequence(line)) {
-                throw std::runtime_error("Error: Sequence is invalid for entry: " + current.name +
+                THROW_ERROR("Error: Sequence is invalid for entry: " + current.name +
                                          ". Line number: " + std::to_string(line_number));
             }
             current.sequence = line;
             state = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
-            // if (!validate_structure(line)) {
-            //     throw std::runtime_error("Error: Structure is invalid for entry: " + current.name
-            //     +
-            //                              ". Line number: " + std::to_string(line_number));
-            // }
             current.structure = line;
             state = ParserState::NAME;
         } else {
             // Should never reach here
-            throw std::runtime_error("Error: Unexpected state. Line number: " +
+            THROW_ERROR("Error: Unexpected state. Line number: " +
                                      std::to_string(line_number));
         }
     }
@@ -96,7 +91,7 @@ std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
     if (!current.name.empty() && !current.name.empty() && !current.structure.empty()) {
         entries.push_back(current);
     } else if (!current.name.empty() && (current.sequence.empty() || current.structure.empty())) {
-        throw std::runtime_error("Error: Sequence and/or structure are empty for entry: " +
+        THROW_ERROR("Error: Sequence and/or structure are empty for entry: " +
                                  current.name + ". Line number: " + std::to_string(line_number));
     }
 
@@ -146,56 +141,6 @@ bool validate_sequence(const std::string& sequence) {
         }
     }
     return !sequence.empty();
-}
-
-// ensures structure is balanced
-[[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error) {
-    if (structure.empty()) {
-        if (throw_error) {
-            THROW_ERROR("Invalid RNA structure: Structure is empty");
-        }
-        return false;
-    }
-
-    std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
-
-    std::unordered_map<char, char> close_to_open = {{')', '('}, {']', '['}, {'}', '{'}, {'>', '['}};
-
-    std::unordered_map<char, int> open_count = {{'(', 0}, {'[', 0}, {'{', 0}, {'<', 0}};
-
-    for (size_t i = 0; i < structure.size(); i++) {
-        char c = structure[i];
-
-        if (c == '.') continue;
-
-        if (open_to_close.count(c)) {
-            ++open_count[c];
-            continue;
-        }
-
-        if (close_to_open.count(c)) {
-            char open = close_to_open[c];
-            if (open_count[open] <= 0) {
-                if (throw_error) {
-                    THROW_ERROR("Invalid RNA structure: Bracket: '" + std::string(1, c) +
-                                "' at index: " + std::to_string(i) + " was never opened");
-                }
-                return false;
-            }
-            --open_count[c];
-        }
-    }
-
-    for (auto& [open, count] : open_count) {
-        if (count <= 0) {
-            if (throw_error) {
-                THROW_ERROR("Invalid RNA structure: opening bracket '" + std::string(1, open) +
-                            "' was not closed");
-            }
-            return false;
-        }
-    }
-    return true;
 }
 
 void dostuff(const ProcessedRNAEntry& processed_rna, std::string parameter_file, bool round) {

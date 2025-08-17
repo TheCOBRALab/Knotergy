@@ -77,16 +77,5 @@ void trim(std::string& s);
  */
 [[nodiscard]] bool validate_sequence(const std::string& sequence);
 
-/**
- * @brief Validates the structure string for RNA using dot-bracket notation.
- *
- * The function ensures that parentheses and square brackets are correctly matched and balanced.
- * Accepted characters: '.', '(', ')', '[', ']'.
- *
- * @param structure The structure string to validate.
- * @return true if the structure is valid and non-empty; false otherwise.
- */
-[[nodiscard]] bool validate_structure(const std::string& structure, bool throw_error = true);
-
 void dostuff(const ProcessedRNAEntry& entry, std::string parameter_file, bool round = false);
 }  // namespace knotergy
