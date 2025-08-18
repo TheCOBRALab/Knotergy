@@ -83,6 +83,7 @@ std::vector<size_t> RNAProcessor::compute_pairings(RNAEntry& rna) {
     return pairings;
 }
 
+// uses interval merging.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_t>& pairings) {
     std::vector<ClosedRegion> closed_regions;
     std::stack<ClosedRegion> stack;
@@ -92,23 +93,23 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_
         size_t bp = pairings[i];
         if (bp == NULL_INDEX) continue;  // unpaired
 
-        // ───── OPENING BASE: i < bp ────────────────────────────
+        // ───── OPENING BASE: i = open, bp = close ───────────────────────────
         if (i < bp) {
             stack.push({i, bp});
             continue;
         }
 
-        // ───── CLOSING BASE: bp < i ────────────────────────────
+        // ───── CLOSING BASE: i = close, bp = open ───────────────────────────
         size_t largest_right = i;  // rightmost boundary seen
 
         // if crossing (pseudoknotted), find right end of closed region
-        while (!stack.empty() && stack.top().begin > bp) {
+        while (stack.top().begin > bp && !stack.empty()) {
             largest_right = std::max(largest_right, stack.top().end);
             stack.pop();
         }
 
-        if (stack.empty()) continue;  // if unbalanced (should never happen)
-
+        if (stack.empty()) THROW_ERROR("Unbalanced parentheses\n");
+        
         // extend region if needed
         stack.top().end = std::max(largest_right, stack.top().end);
 
@@ -120,6 +121,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(std::vector<size_
     }
     return closed_regions;
 }
+
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessor::compute_closed_regions_pairings(
