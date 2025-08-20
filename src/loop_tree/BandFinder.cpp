@@ -63,8 +63,6 @@ bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime, const std::unorde
     if (band_links.find(i_prime) != band_links.end() && band_links.find(j_prime) != band_links.end()) {
         size_t i_tmp = band_links.at(i_prime).next;
         size_t j_tmp = band_links.at(j_prime).prev;
-        std::cout << "i_tmp: " << i_tmp << std::endl;
-        std::cout << "j_tmp: " << j_tmp << std::endl;
 
         if (i_tmp == NULL_INDEX || i_tmp >= j_tmp) {
             return false;  // no more extension possible
@@ -120,7 +118,6 @@ std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(const
             THROW_ERROR("Current key not found in band_links");
         }
         
-        std::cout << "Adding aux band for i: " << i << std::endl;
         band_links[current_key].next = i;
         band_links[i] = BandLink{i, current_key};
         current_key = i;

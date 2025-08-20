@@ -11,6 +11,7 @@ namespace knotergy {
 struct BasePair {
     size_t i;
     size_t j;
+    std::vector<BasePair> children;
 
     BasePair() = default;
     BasePair(size_t left_index, size_t right_index) : i{left_index}, j{right_index} {}
@@ -42,6 +43,7 @@ class Band {
             
             // skip closed regions
             if (cr_pairings[idx] != NULL_INDEX){
+                base_pairs_.back().children.emplace_back(idx, cr_pairings[idx]);
                 idx = cr_pairings[idx];
                 continue;
             }
