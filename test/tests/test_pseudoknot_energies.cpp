@@ -67,3 +67,19 @@ TEST(PseudoknottedEnergies, ExtendedPseudoknotWithInbandRounded) {
     float result = pipeline(sequence, structure, round);
     EXPECT_NEAR(result, -15.11, 0.001);
 }
+
+TEST(PseudoknottedEnergies, MultiLoopThatSpansABand) {
+    std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
+    std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
+    float result = pipeline(sequence, structure);
+    EXPECT_NEAR(result, -5.831, 0.009);
+}
+
+TEST(PseudoknottedEnergies, MultiLoopThatSpansABandRounded) {
+    std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
+    std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
+    bool round = true;
+    float result = pipeline(sequence, structure, round);
+    EXPECT_NEAR(result, -5.84, 0.001);
+}
+

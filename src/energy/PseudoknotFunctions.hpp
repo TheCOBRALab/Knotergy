@@ -36,9 +36,23 @@ class PseudoknotFunctions {
         
         // Unpaired within bands are already included in stack_and_internal_energy
         int unpaired = node.exclusive_unpaired_bases_count;
+        std::cout << "initial unpaired: " << unpaired << std::endl;
         for (Band band : node.bands) {
             unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
             unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
+
+            // std::cout << "Band: (" << band.left_border() << ", " << band.right_border() << ")" <<std::endl;
+            // std::cout << "Band: (" << band.left_inner() << ", " << band.right_inner() << ")" <<std::endl;
+            // std::cout << "Remove: " << processed_rna.get_unpaired_count(band.left_border(), band.left_inner()) << std::endl;
+            // std::cout << "Remove: " << processed_rna.get_unpaired_count(band.right_inner(), band.right_border()) << std::endl;
+        }
+
+        // these bases were removed twice (By using exclusive unpaired, and removing all base pairs in band)
+        // so we're re-adding them
+        for (std::shared_ptr<LoopNode> child : node.children){
+            if (child->pseudo_type == PseudoNestedType::InsideBand){
+                unpaired += child->total_unpaired_bases_count;
+            }
         }
 
         double energy = 0;
@@ -61,8 +75,7 @@ class PseudoknotFunctions {
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::InsideBand) {
                 energy += pk_multi_bp_penalty * c->number_of_bands;
-                std::cout << "PKMloop bp penalty: " << pk_multi_bp_penalty * c->number_of_bands
-                          << std::endl;
+                std::cout << "PKMloop bp penalty: " << pk_multi_bp_penalty * c->number_of_bands + 2 << std::endl;
             }
         }
 
@@ -105,7 +118,6 @@ class PseudoknotFunctions {
 
     [[nodiscard]] double loop_penalties(const LoopNode& node, const std::string& sequence, const ProcessedRNAEntry& processed_rna, bool round) {
         double energy = 0;
-        double offset = 0;
 
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bps = band.base_pairs();
@@ -143,9 +155,13 @@ class PseudoknotFunctions {
         return internal_penalty;
     }
 
-     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const ProcessedRNAEntry& processed_rna){
+     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, [[maybe_unused]] const std::string& sequence, const ProcessedRNAEntry& processed_rna){
         double multiloop_penalty = pk_multi_init_penalty;
         std::cout << "PKMLoop Init penalty: " << pk_multi_init_penalty << std::endl;
+
+        // for MLoop base pair, and nested basepair
+        multiloop_penalty += pk_multi_bp_penalty * 2;
+        std::cout << "PKMloop bp penalty: " << pk_multi_bp_penalty * 2 << std::endl;
 
         // get unpaired count
         int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
@@ -159,12 +175,12 @@ class PseudoknotFunctions {
         multiloop_penalty += pk_mloop_unpaired_energy;
         std::cout << "PKMLoop Unpaired penalty: " << pk_mloop_unpaired_energy << std::endl;
 
-        // get TerminalAU penalty
-        if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
-            (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
-                multiloop_penalty += vienna.get_parameters()->TerminalAU;
-                std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
-        }
+        // // get TerminalAU penalty
+        // if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
+        //     (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
+        //         multiloop_penalty += vienna.get_parameters()->TerminalAU;
+        //         std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
+        // }
 
         return multiloop_penalty;
     }
@@ -183,7 +199,7 @@ class PseudoknotFunctions {
 // AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
 // (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
 // 
-// -0.5
+// -0.74
 
 // AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC
 // (((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......
@@ -191,10 +207,12 @@ class PseudoknotFunctions {
 
 // 2 multiloops
 // AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
+// ((((xx(((xxxx)))xxx(((xxx(((xxx)))xxx(((xx.......xxx)))xxx)))xxx))))xxx.......
 // ((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
 // 5.13
 
 // AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU
+// ((((xxx(((xxx)))xxx((((...........))))xx))))xxxxxxxxxxxxxxxxx((((xxx((((...........))))xxxxx(((xxx)))xx))))
 // ((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..)))) 
 // -1.38
 
