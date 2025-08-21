@@ -112,64 +112,61 @@ class PseudoknotFunctions {
             const size_t n = bps.size();
             if (n < 2) THROW_ERROR("Less than 2 bands in pseudoknot");
 
+            // loops through each base pair in band (except last one)
             for (size_t idx = 0; idx + 1 < n; ++idx) {
                 const BasePair& bp = bps[idx];
                 const BasePair& next_bp = bps[idx + 1];
 
-                // stack energy
                 if (bp.is_stack(next_bp)) {
-                    energy += pk_stack_energy(bp, next_bp, sequence, round, offset);
-                    continue;
+                    energy += pk_stack_energy(bp, next_bp, sequence, round);
+                } else if (!bp.children.empty()) {
+                    energy += pk_multiloop_energy(bp, next_bp, sequence, processed_rna);
+                } else {
+                    energy += pk_internal_energy(bp, next_bp, sequence, round);
                 }
-
-                if (!bp.children.empty()){
-                    energy += pk_multi_init_penalty;
-                    std::cout << "PKMLoop Init penalty: " << pk_multi_init_penalty << std::endl;
-
-                    // get unpaired count
-                    int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
-                    unpaired += processed_rna.get_unpaired_count(next_bp.j, bp.j);
-                    for (BasePair child_bp : bp.children){
-                        unpaired -= processed_rna.get_unpaired_count(child_bp.i, child_bp.j);
-                    }
-
-                    // get unpaired penalty
-                    int pk_mloop_unpaired_energy = unpaired * pk_unpaired_in_multi_penalty;
-                    energy += pk_mloop_unpaired_energy;
-                    std::cout << "PKMLoop Unpaired penalty: " << pk_mloop_unpaired_energy << std::endl;
-
-                    // get TerminalAU penalty
-                    if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
-                        (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
-                            energy += vienna.get_parameters()->TerminalAU;
-                            std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
-                    }
-                    continue;
-                }
-
-                // internal loop energy
-                energy += pk_internal_energy(bp, next_bp, sequence, round, offset);
             }
         }
-     
-        if (round) std::cout << "Offset: " << offset << std::endl;
-        return round ? (energy - offset) : energy;
+        return energy;
     }
 
-    [[nodiscard]] double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round, double& offset){
-        int stack_energy = vienna.stack_energy(bp, next_bp, sequence);
-        double stack_penalty = pk_stack_penalty_x * stack_energy;
-        if (round) offset += stack_penalty - std::round(stack_penalty);
+    [[nodiscard]] double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
+        double stack_penalty = vienna.stack_energy(bp, next_bp, sequence) * pk_stack_penalty_x ;
+        if (round) stack_penalty = std::round(stack_penalty);
         std::cout << "Stack penalty: " << stack_penalty << std::endl;
         return stack_penalty;
     }
 
-    [[nodiscard]] double pk_internal_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round, double& offset){
-        int internal_energy = vienna.internal_loop_energy(bp, next_bp, sequence);
-        double internal_penalty = pk_internal_penalty_x * internal_energy;
-        if (round) offset += internal_penalty - std::round(internal_penalty);
+    [[nodiscard]] double pk_internal_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
+        double internal_penalty = vienna.internal_loop_energy(bp, next_bp, sequence) * pk_internal_penalty_x ;
+        if (round) internal_penalty = std::round(internal_penalty);
         std::cout << "Internal penalty: " << internal_penalty << std::endl;
         return internal_penalty;
+    }
+
+     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const ProcessedRNAEntry& processed_rna){
+        double multiloop_penalty = pk_multi_init_penalty;
+        std::cout << "PKMLoop Init penalty: " << pk_multi_init_penalty << std::endl;
+
+        // get unpaired count
+        int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
+        unpaired += processed_rna.get_unpaired_count(next_bp.j, bp.j);
+        for (BasePair child_bp : bp.children){
+            unpaired -= processed_rna.get_unpaired_count(child_bp.i, child_bp.j);
+        }
+
+        // get unpaired penalty
+        int pk_mloop_unpaired_energy = unpaired * pk_unpaired_in_multi_penalty;
+        multiloop_penalty += pk_mloop_unpaired_energy;
+        std::cout << "PKMLoop Unpaired penalty: " << pk_mloop_unpaired_energy << std::endl;
+
+        // get TerminalAU penalty
+        if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
+            (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
+                multiloop_penalty += vienna.get_parameters()->TerminalAU;
+                std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
+        }
+
+        return multiloop_penalty;
     }
 
 };
