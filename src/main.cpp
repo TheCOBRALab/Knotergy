@@ -17,9 +17,9 @@ void help() {
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
               << "  -e  --round                   Rounds all decimal places in calculations"
-              << "  -h, --help                    Show this help message\n"
               << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
-              << "  -f, --mod-file                Modified base parameter file\n";
+              << "  -f, --mod-file                Modified base parameter file\n"
+              << "  -h, --help                    Show this help message\n";
 }
 
 // cleans white space from arg
@@ -54,12 +54,12 @@ int main(int argc, char** argv) {
             output_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-e" || arg == "--modifications") {
-            modifications = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-m" || arg == "--mod-file") {
-            mod_param_file = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-f" || arg == "--round") {
+        } else if (arg == "-e" || arg == "--round") {
             round = true;
+        } else if (arg == "-m" || arg == "--modifications") {
+            modifications = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-f" || arg == "--mod-file") {
+            mod_param_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
