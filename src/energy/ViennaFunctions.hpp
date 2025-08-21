@@ -22,6 +22,8 @@ class ViennaFunctions {
     }
     ~ViennaFunctions() { free(P); }
 
+    const vrna_param_t* get_parameters() const {return P;};
+
     int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence) {
         if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
             std::cerr << "Invalid indices for stack energy calculation." << std::endl;

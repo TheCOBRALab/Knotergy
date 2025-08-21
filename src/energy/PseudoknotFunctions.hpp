@@ -58,13 +58,13 @@ class PseudoknotFunctions {
         
         energy += loop_penalties(node, sequence, processed_rna, round);
 
-        // for (std::shared_ptr<LoopNode> c : node.children) {
-        //     if (c->pseudo_type == PseudoNestedType::InsideBand) {
-        //         energy += pk_multi_bp_penalty * c->number_of_bands;
-        //         std::cout << "multi bp penalty: " << pk_multi_bp_penalty * c->number_of_bands
-        //                   << std::endl;
-        //     }
-        // }
+        for (std::shared_ptr<LoopNode> c : node.children) {
+            if (c->pseudo_type == PseudoNestedType::InsideBand) {
+                energy += pk_multi_bp_penalty * c->number_of_bands;
+                std::cout << "PKMloop bp penalty: " << pk_multi_bp_penalty * c->number_of_bands
+                          << std::endl;
+            }
+        }
 
         // energy += pk_in_pk_penalty * (node.number_of_bands - 2);
 
@@ -109,7 +109,10 @@ class PseudoknotFunctions {
 
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bps = band.base_pairs();
-            for (size_t idx = 0; idx < bps.size() - 1; ++idx) {
+            const size_t n = bps.size();
+            if (n < 2) THROW_ERROR("Less than 2 bands in pseudoknot");
+
+            for (size_t idx = 0; idx + 1 < n; ++idx) {
                 const BasePair& bp = bps[idx];
                 const BasePair& next_bp = bps[idx + 1];
 
@@ -120,16 +123,27 @@ class PseudoknotFunctions {
                 }
 
                 if (!bp.children.empty()){
-                    int pk_mloop_energy = pk_multi_init_penalty;
+                    energy += pk_multi_init_penalty;
+                    std::cout << "PKMLoop Init penalty: " << pk_multi_init_penalty << std::endl;
+
+                    // get unpaired count
                     int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
                     unpaired += processed_rna.get_unpaired_count(next_bp.j, bp.j);
                     for (BasePair child_bp : bp.children){
                         unpaired -= processed_rna.get_unpaired_count(child_bp.i, child_bp.j);
                     }
-                    int pk_mloop_up_energy = unpaired * pk_unpaired_in_multi_penalty;
-                    std::cout << "PKMLoop Unpaired penalty: " << unpaired << std::endl;
-                    energy += pk_mloop_energy;
-                    std::cout << "PKMLoop penalty: " << pk_mloop_energy << std::endl;
+
+                    // get unpaired penalty
+                    int pk_mloop_unpaired_energy = unpaired * pk_unpaired_in_multi_penalty;
+                    energy += pk_mloop_unpaired_energy;
+                    std::cout << "PKMLoop Unpaired penalty: " << pk_mloop_unpaired_energy << std::endl;
+
+                    // get TerminalAU penalty
+                    if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
+                        (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
+                            energy += vienna.get_parameters()->TerminalAU;
+                            std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
+                    }
                     continue;
                 }
 
@@ -137,13 +151,9 @@ class PseudoknotFunctions {
                 energy += pk_internal_energy(bp, next_bp, sequence, round, offset);
             }
         }
-
-        if (round) {
-            std::cout << "Offset: " << offset << std::endl;
-            return energy - offset;
-        }
-
-        return energy;
+     
+        if (round) std::cout << "Offset: " << offset << std::endl;
+        return round ? (energy - offset) : energy;
     }
 
     [[nodiscard]] double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round, double& offset){
@@ -174,7 +184,8 @@ class PseudoknotFunctions {
 
 // 1 multiloop
 // AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
-// (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]] 
+// (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
+// 
 // -0.5
 
 // AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC
