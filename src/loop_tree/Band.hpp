@@ -18,6 +18,12 @@ struct BasePair {
     bool is_stack(BasePair child) const { return i + 1 == child.i && j - 1 == child.j; }
 };
 
+// === Operator overload for printing ===
+inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
+    os << "(" << bp.i << ", " << bp.j << ")";
+    return os;
+}
+
 // Visual representation of the band:
 // (((((((((((((((....[.......)))))))..))))))))....]
 // ^             ^            ^               ^
@@ -91,3 +97,4 @@ inline std::ostream& operator<<(std::ostream& os, const Band& band) {
 }
 
 }  // namespace knotergy
+

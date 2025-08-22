@@ -107,11 +107,11 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     if (node.loop_type != LoopType::Pseudoknot) return;
 
     for (std::shared_ptr<LoopNode> child_node : node.children) {
-        if (child_node->pseudo_type == PseudoNestedType::InsideBand) {
-            ++node.number_of_insideband_children;
-        } else if (child_node->pseudo_type == PseudoNestedType::CrossBand) {
-            ++node.number_of_crossband_children;
-            node.number_of_unpaired_bases_in_crossband_children +=
+        if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
+            ++node.number_of_withinband_children;
+        } else if (child_node->pseudo_type == PseudoNestedType::Nested) {
+            ++node.number_of_nested_children;
+            node.number_of_unpaired_bases_in_nested_children +=
                 static_cast<int>(child_node->end - child_node->begin - 1);
         }
     }
@@ -121,15 +121,15 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
-    const std::vector<Band>& bands = node.bands;
+    const std::vector<std::shared_ptr<LoopNode>>& children = node.children; // sorted by start index
+    const std::vector<Band>& bands = node.bands; // sorted by start index
     size_t child_idx = 0;
     size_t band_idx = 0;
 
-    // checks if a child is exclusively in one band (InsideBand), or if its CrossBand
+    // checks if a child is inside a bnd (WithinBand), or if its Nested
     while (child_idx < children.size()) {
         std::shared_ptr<LoopNode> child = children[child_idx];
-        child->pseudo_type = PseudoNestedType::CrossBand;
+        child->pseudo_type = PseudoNestedType::Nested;
 
         // Prevent out-of-bounds in band lookup
         if (band_idx >= bands.size()) {
@@ -139,15 +139,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
 
         // Checks if child is exclusively in one band
         if (node.bands[band_idx].contains(child->begin, child->end)) {
-            bool crosses_previous =
-                (band_idx > 0) && bands[band_idx - 1].contains(child->begin, child->end);
-
-            bool crosses_next = (band_idx + 1) < bands.size() &&
-                                bands[band_idx + 1].contains(child->begin, child->end);
-
-            if (!crosses_previous && !crosses_next) {
-                child->pseudo_type = PseudoNestedType::InsideBand;
-            }
+                child->pseudo_type = PseudoNestedType::WithinBand;
             ++child_idx;  // Done with this child, move to next
         } else {
             ++band_idx;

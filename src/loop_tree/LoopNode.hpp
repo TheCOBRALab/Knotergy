@@ -8,11 +8,11 @@
 
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
-enum class PseudoNestedType { None, InsideBand, CrossBand, InsideMultiloop };
-// Inside band (((..(...)..[[[...)))]]]
-// This hairpin     ^   ^ is nested in exactly one band, so it's InsideBand
-// Cross band  ((([[[..(...)...)))]]]
-// This hairpin        ^   ^ is nested in multiple bands, so it's CrossBand
+enum class PseudoNestedType { None, WithinBand, Nested};
+// Within Band (((..(...).(.[[[.)..)))]]]
+// This hairpin     ^   ^ is within a band
+// Nested      (((..(...).[[[...)))]]]
+// This hairpin     ^   ^ is nested inside a band
 
 struct LoopNode {
    public:
@@ -26,9 +26,9 @@ struct LoopNode {
     PseudoNestedType pseudo_type = PseudoNestedType::None;
     int exclusive_unpaired_bases_count = 0;
     int total_unpaired_bases_count = 0;  // children included
-    int number_of_insideband_children = 0;
-    int number_of_crossband_children = 0;
-    int number_of_unpaired_bases_in_crossband_children = 0;
+    int number_of_withinband_children = 0;
+    int number_of_nested_children = 0;
+    int number_of_unpaired_bases_in_nested_children = 0;
 
     std::weak_ptr<LoopNode> parent;
     std::vector<std::shared_ptr<LoopNode>> children;
@@ -69,24 +69,21 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
         case PseudoNestedType::None:
             os << "None";
             break;
-        case PseudoNestedType::InsideBand:
-            os << "InsideBand";
+        case PseudoNestedType::WithinBand:
+            os << "WithinBand";
             break;
-        case PseudoNestedType::CrossBand:
-            os << "CrossBand";
-            break;
-        case PseudoNestedType::InsideMultiloop:
-            os << "InsideMultiloop";
+        case PseudoNestedType::Nested:
+            os << "Nested";
             break;
     }
     os << "\n";
 
     os << "  exclusive_unpaired_bases_count: " << node.exclusive_unpaired_bases_count << "\n";
     os << "  total_unpaired_bases_count: " << node.total_unpaired_bases_count << "\n";
-    os << "  number_of_children_inside_band: " << node.number_of_insideband_children << "\n";
-    os << "  number_of_crossband_children: " << node.number_of_crossband_children << "\n";
-    os << "  number_of_unpaired_bases_in_crossband_children: "
-       << node.number_of_unpaired_bases_in_crossband_children << "\n";
+    os << "  number_of_children_inside_band: " << node.number_of_withinband_children << "\n";
+    os << "  number_of_nested_children: " << node.number_of_nested_children << "\n";
+    os << "  number_of_unpaired_bases_in_nested_children: "
+       << node.number_of_unpaired_bases_in_nested_children << "\n";
 
     os << "  number_of_bands: " << node.number_of_bands << "\n";
     os << "  bands:\n";
