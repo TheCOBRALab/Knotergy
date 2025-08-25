@@ -124,7 +124,6 @@ class PseudoknotFunctions {
             const std::vector<BasePair>& bps = band.base_pairs();
             const size_t n = bps.size();
             std::cout << band << std::endl;
-            if (n < 2) THROW_ERROR("Less than 2 bands in pseudoknot");
 
             // loops through each base pair in band (except last one)
             for (size_t idx = 0; idx + 1 < n; ++idx) {
@@ -215,7 +214,6 @@ class PseudoknotFunctions {
 // ..........................((((((.......)))))).((((........................))))..
 
 // HFold: -8.98, Knotergy: -8.98
-
 
 // 1 multiloop
 // AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC

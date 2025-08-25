@@ -85,7 +85,7 @@ TEST(PseudoknottedEnergies, MultiLoopThatSpansABandRounded) {
 
 TEST(PseudoknottedEnergies, MultiLoopThatSpansABand2) {
     std::string sequence  = "AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC";
-    std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
+    std::string structure = "(((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......";
     float result = pipeline(sequence, structure);
     EXPECT_NEAR(result, -5.748, 0.009);
 }
