@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 #include <stack>
+#include <unordered_set>
 
 #include "../loop_tree/BandFinder.hpp"
 
@@ -121,28 +122,25 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    const std::vector<std::shared_ptr<LoopNode>>& children = node.children; // sorted by start index
-    const std::vector<Band>& bands = node.bands; // sorted by start index
-    size_t child_idx = 0;
-    size_t band_idx = 0;
+    const std::vector<size_t>& cr_pairings = processed_rna_.get_closed_regions_pairings();
+    std::unordered_set<size_t> within_band_start_idx;
+    within_band_start_idx.reserve(node.children.size());
 
-    // checks if a child is inside a bnd (WithinBand), or if its Nested
-    while (child_idx < children.size()) {
-        std::shared_ptr<LoopNode> child = children[child_idx];
-        child->pseudo_type = PseudoNestedType::Nested;
-
-        // Prevent out-of-bounds in band lookup
-        if (band_idx >= bands.size()) {
-            ++child_idx;
-            continue;
+    for (const Band& band : node.bands){
+        for (size_t i = band.left_border() + 1; i <= band.left_inner(); ++i) {
+            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])){
+                    within_band_start_idx.emplace(i);
+                    i = cr_pairings[i];
+                    continue;
+            }
         }
+    }
 
-        // Checks if child is exclusively in one band
-        if (node.bands[band_idx].contains(child->begin, child->end)) {
-                child->pseudo_type = PseudoNestedType::WithinBand;
-            ++child_idx;  // Done with this child, move to next
+    for (std::shared_ptr<LoopNode> c : node.children){
+        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()){
+            c->pseudo_type = PseudoNestedType::WithinBand;
         } else {
-            ++band_idx;
+            c->pseudo_type = PseudoNestedType::Nested;
         }
     }
 }

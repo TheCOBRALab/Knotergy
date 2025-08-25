@@ -123,6 +123,7 @@ class PseudoknotFunctions {
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bps = band.base_pairs();
             const size_t n = bps.size();
+            std::cout << band << std::endl;
             if (n < 2) THROW_ERROR("Less than 2 bands in pseudoknot");
 
             // loops through each base pair in band (except last one)
@@ -192,30 +193,10 @@ class PseudoknotFunctions {
 
 // Test Cases
 
-// CAGGGGAUAUUUUUCUUACUUAGCCAAACCUCCACCAACUCCGCCUGCUGGGCAACAAUCCUGAAGUGCGAGAGGCAUUAUAUUGAAUCCUGGUUCCAUAUUUCGACGAUAAAGCCAGGCUGGCGGACGGACCGACAGCAUUGAGAAACACACAUUGAAGUAGCGGUGGUUCGAAGACUUACGCUGAUUUGCGGGAGACGCACUGUUACUAUCACGUCCUGUUAUGGUUACUUAUUAGCCAGAUCAAGAC
-// ..((((.......................))))......((((((.(((.(((....(((..(((.(((.....)))..((((.((((....)))).)))))))...)))...))).))).))))))[[..[[[.[[[[...[[[......[[.....((((((((((]].......]]]..]]]].....]]]....]])))))))))).....(((.((...((((((.....))))))...)).)))
-// -39.19
-
-// 1 multiloop
-// AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
-// (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
-// 
-// -0.74
-
-// AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC
-// (((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......
-// 0.13
-
-// 2 multiloops
-// AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
-// ((((xx(((xxxx)))xxx(((xxx(((xxx)))xxx(((xx.......xxx)))xxx)))xxx))))xxx.......
-// ((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
-// 5.13
-
 // AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU
 // ((((xxx(((xxx)))xxx((((...........))))xx))))xxxxxxxxxxxxxxxxx((((xxx((((...........))))xxxxx(((xxx)))xx))))
 // ((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..)))) 
-// -1.38
+// -1.86
 
 
 // --------------------WORKING---------------------------
@@ -234,3 +215,20 @@ class PseudoknotFunctions {
 // ..........................((((((.......)))))).((((........................))))..
 
 // HFold: -8.98, Knotergy: -8.98
+
+
+// 1 multiloop
+// AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
+// (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
+// 
+// -0.74
+
+// AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC
+// (((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......
+// 0.7
+
+// 2 multiloops
+// AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
+// ((((xx(((xxxx)))xxx(((xxx(((xxx)))xxx(((xx.......xxx)))xxx)))xxx))))xxx.......
+// ((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
+// 4.65
