@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
             }
         }
         std::cout << std::endl;
-        knotergy::dostuff(current, parameter_file, round);
+        knotergy::pipeline(current, parameter_file, round);
     }
     return 0;
 }
