@@ -29,7 +29,7 @@ class RNAProcessor {
     /// High-level pipeline that produces a processed entry from raw RNA input.
     static ProcessedRNAEntry process_rna(RNAEntry rna);
 
- /**
+    /**
      * @brief Compute base-pair indices from a structure string.
      *
      * Scans an RNA structure (dot-bracket notation) and returns, for each position i,
@@ -55,7 +55,6 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna);
 
     /**
-/**
      * @brief Identify all closed regions in the structure.
      *
      * Parses the base-pair vector returned by compute_pairings() and returns every closed region.
@@ -66,7 +65,7 @@ class RNAProcessor {
      */
     [[nodiscard]] static std::vector<ClosedRegion> compute_closed_regions(const std::vector<size_t>& pairings);
 
-/**
+    /**
      * @brief Build a partner-index vector for closed-region boundaries.
      *
      * Similar to RNAProcessor::compute_pairings(), but stores only the closed regions,
@@ -85,7 +84,7 @@ class RNAProcessor {
      */
     [[nodiscard]] static std::vector<size_t> compute_closed_regions_pairings(const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size);
 
-/**
+    /**
      * @brief Prefix-sum of unpaired-base counts.
      *
      * Computes a vector U of length (rna_size + 1) where:

@@ -49,6 +49,9 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
     ParserState state = ParserState::UNINITIALIZED;
     int line_number = 0;
 
+    // Loop through each line in the file, and is a state machine to parse entries
+    // Each entry consists of three lines: name, sequence, structure
+    // Each state expects a specific line format (e.g., name line starts with '>')
     while (std::getline(in, line)) {
         ++line_number;
         trim(line);

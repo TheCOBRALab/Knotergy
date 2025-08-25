@@ -12,8 +12,30 @@
 #include "RNAEntry.hpp"
 namespace knotergy {
 
+
+/**
+ * @brief Immutable representation of an RNA entry with precomputed structural annotations.
+ *
+ * A ProcessedRNAEntry bundles:
+ *  - The original RNA name, sequence, and structure string.
+ *  - Base-pair index mappings (see RNAProcessor::compute_pairings()).
+ *  - Closed regions and their boundary pairings (see RNAProcessor::compute_closed_regions()).
+ *  - A prefix-sum array for fast unpaired-base counts (see RNAProcessor::compute_unpaired_counts()).
+ *  - Unpaired base counts within specified regions.
+ *
+ * This object is typically created by RNAProcessor::process_rna() and then queried by downstream code.
+ */
 class ProcessedRNAEntry {
    public:
+   /**
+     * @brief Construct a ProcessedRNAEntry with precomputed annotations.
+     *
+     * @param rna Original RNA entry (provides name, sequence, and structure).
+     * @param pairings Base-pair indices for each position (NULL_INDEX for unpaired).
+     * @param closed_regions List of closed regions detected in the structure.
+     * @param closed_regions_pairings Partner indices for closed-region boundaries.
+     * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
+     */
     explicit ProcessedRNAEntry(RNAEntry rna, std::vector<size_t> pairings,
                                std::vector<ClosedRegion> closed_regions,
                                std::vector<size_t> closed_regions_pairings,
@@ -26,38 +48,65 @@ class ProcessedRNAEntry {
           closed_regions_pairings_{closed_regions_pairings},
           unpaired_prefix_sum_{unpaired_prefix_sum} {}
 
+    /// @return The RNA entry's name.
     const std::string& get_name() const { return name_; }
+    
+    /// @return The raw RNA sequence (string of nucleotides).
     const std::string& get_sequence() const { return sequence_; }
+
+    /// @return The raw RNA structure (dot-bracket notation).
     const std::string& get_structure() const { return structure_; }
+
+    /// Get the base-pair index vector. See RNAProcessor::compute_pairings() for details.
     const std::vector<size_t>& get_pairings() const { return pairings_; }
+
+    ///Get the list of closed regions. See RNAProcessor::compute_closed_regions() for details.
     const std::vector<ClosedRegion>& get_closed_regions() const { return closed_regions_; }
+
+    /// Get the partner indices for closed-region boundaries. See RNAProcessor::compute_closed_regions_pairings() for details.
     const std::vector<size_t>& get_closed_regions_pairings() const {
         return closed_regions_pairings_;
     }
+
+    /// @return The length of the RNA sequence/structure.
     size_t size() const { return structure_.size(); }
 
+    /**
+     * @brief Compute the number of unpaired bases in a half-open interval [from, to).
+     *
+     * Uses the prefix-sum vector computed at construction.
+     *
+     * @param from Start index (inclusive).
+     * @param to End index (exclusive).
+     * @return Number of unpaired bases between from and to.
+     * @throws std::out_of_range if indices are out of bounds.
+     */
     int get_unpaired_count(size_t from, size_t to) const {
         if (from >= unpaired_prefix_sum_.size() || to > unpaired_prefix_sum_.size()) {
             throw std::out_of_range("Index out of range in get_unpaired_count");
         }
-
         if (from >= to) return 0;
 
-        // Return the difference in unpaired counts between the two indices
         return unpaired_prefix_sum_[to] - unpaired_prefix_sum_[from];
     }
+
+    /**
+     * @brief Compute the number of unpaired bases inside a closed region.
+     *
+     * Equivalent to get_unpaired_count(region.begin, region.end).
+     */
     int get_unpaired_count(ClosedRegion closed_region) const {
         return get_unpaired_count(closed_region.begin, closed_region.end);
     }
 
    private:
-    const std::string name_;
-    const std::string sequence_;
-    const std::string structure_;
-    const std::vector<size_t> pairings_;
-    const std::vector<ClosedRegion> closed_regions_;
-    const std::vector<size_t> closed_regions_pairings_;
-    const std::vector<int> unpaired_prefix_sum_;
+    const std::string name_;                            ///< RNA entry name.
+    const std::string sequence_;                        ///< Raw RNA nucleotide sequence.
+    const std::string structure_;                       ///< Dot-bracket RNA structure string.
+    const std::vector<size_t> pairings_;                ///< Base-pair indices for each position.
+    const std::vector<ClosedRegion> closed_regions_;    ///< Closed regions detected in the structure.
+    const std::vector<size_t> closed_regions_pairings_; ///< Boundary partner indices for closed regions.
+    const std::vector<int> unpaired_prefix_sum_;        ///< Prefix-sum of unpaired-base counts.
 };
 
 }  // namespace knotergy
