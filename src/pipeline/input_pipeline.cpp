@@ -18,8 +18,9 @@
 namespace knotergy {
 
 
-// Collects all RNA input entries from console input and/or file.
-std::vector<RNAEntry> get_all_inputs(const std::string& input_file, const std::string& sequence,
+// Collects all RNA input entries from console and/or file.
+std::vector<RNAEntry> get_all_inputs(const std::string& input_file, 
+                                     const std::string& sequence,
                                      const std::string& structure) {
     std::vector<RNAEntry> entries;
 
@@ -67,7 +68,7 @@ void validate_sequence(const std::string& sequence, const std::unordered_set<cha
 }
 
 
-void pipeline(const ProcessedRNAEntry& processed_rna, std::string parameter_file, bool round) {
+void pipeline(const ProcessedRNAEntry& processed_rna, const std::string& parameter_file, const bool round) {
     ViennaParams::load_energy_parameters(parameter_file, processed_rna.get_sequence());
     printf("Seq: %s \n", processed_rna.get_sequence().c_str());
     printf("Struct: %s \n", processed_rna.get_structure().c_str());

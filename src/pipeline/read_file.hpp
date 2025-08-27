@@ -83,10 +83,10 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
             current.name = line.substr(1);
             state = ParserState::SEQUENCE;
         } else if (state == ParserState::SEQUENCE) {
-            current.sequence = line;
+            current.sequence = std::move(line);
             state = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
-            current.structure = line;
+            current.structure = std::move(line);
             state = ParserState::NAME;
         } else {
             // Should never reach here

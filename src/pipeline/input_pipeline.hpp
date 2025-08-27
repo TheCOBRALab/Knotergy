@@ -43,5 +43,5 @@ namespace knotergy {
  */
 void validate_sequence(const std::string& sequence, const std::unordered_set<char>& valid_seq_chars);
 
-void pipeline(const ProcessedRNAEntry& entry, std::string parameter_file, bool round = false);
+void pipeline(const ProcessedRNAEntry& entry, const std::string& parameter_file, const bool round = false);
 }  // namespace knotergy

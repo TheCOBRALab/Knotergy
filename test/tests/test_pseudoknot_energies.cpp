@@ -98,17 +98,32 @@ TEST(PseudoknottedEnergies, MultiLoopThatSpansABandRounded2) {
     EXPECT_NEAR(result, -5.77, 0.001);
 }
 
-TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABand2) {
+TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABand) {
     std::string sequence  = "AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     float result = pipeline(sequence, structure);
     EXPECT_NEAR(result, -0.189, 0.009);
 }
 
-TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded2) {
+TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded) {
     std::string sequence  = "AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     bool round = true;
     float result = pipeline(sequence, structure, "", round);
     EXPECT_NEAR(result, -0.2, 0.001);
+}
+
+TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABand2) {
+    std::string sequence  = "AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU";
+    std::string structure = "((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..))))";
+    float result = pipeline(sequence, structure);
+    EXPECT_NEAR(result, -11.422, 0.009);
+}
+
+TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded2) {
+    std::string sequence  = "AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU";
+    std::string structure = "((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..))))";
+    bool round = true;
+    float result = pipeline(sequence, structure, "", round);
+    EXPECT_NEAR(result, -11.44, 0.001);
 }

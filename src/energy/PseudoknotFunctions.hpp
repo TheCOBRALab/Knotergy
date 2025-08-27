@@ -161,7 +161,8 @@ class PseudoknotFunctions {
         double multiloop_penalty = pk_multi_init_penalty;
         std::cout << "PKMLoop Init penalty" << bp << ": " << pk_multi_init_penalty << std::endl;
 
-        // for MLoop base pair, and nested basepair
+        // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty
+        // We add the child base pairs at a different part of the energy calculation
         multiloop_penalty += pk_multi_bp_penalty * 2;
         std::cout << "PKMloop bp penalty" << bp << ": "<< pk_multi_bp_penalty * 2 << std::endl;
 

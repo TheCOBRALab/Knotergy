@@ -82,7 +82,7 @@ class RNAProcessor {
      *
      * @throws std::runtime_error If any closed-region index exceeds rna_size.
      */
-    [[nodiscard]] static std::vector<size_t> compute_closed_regions_pairings(const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size);
+    [[nodiscard]] static std::vector<size_t> compute_cr_pairings(const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size);
 
     /**
      * @brief Prefix-sum of unpaired-base counts.

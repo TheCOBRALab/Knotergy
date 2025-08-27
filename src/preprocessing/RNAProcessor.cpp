@@ -4,7 +4,7 @@ namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
     std::vector<size_t> pairings = compute_pairings(rna);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
-    std::vector<size_t> cr_pairings = compute_closed_regions_pairings(closed_regions, rna.size());
+    std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
     return ProcessedRNAEntry{std::move(rna), std::move(pairings), std::move(closed_regions),
@@ -83,37 +83,38 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
     return pairings;
 }
 
-// uses interval merging.
+// Computes all closed regions from a pairing list using an interval-merging stack algorithm.
+// Assumes properly balanced pairings.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector<size_t>& pairings) {
     std::vector<ClosedRegion> closed_regions;
     std::stack<ClosedRegion> stack;
     const size_t n = pairings.size();
 
     for (size_t i = 0; i < n; ++i) {
-        size_t bp = pairings[i];
-        if (bp == NULL_INDEX) continue;  // unpaired
+        size_t paired_idx = pairings[i];
+        if (paired_idx == NULL_INDEX) continue;
 
-        // ───── OPENING BASE: i = open, bp = close ───────────────────────────
-        if (i < bp) {
-            stack.push({i, bp});
+        if (i < paired_idx) {
+            // Opening base: push raw pair; its right boundary may be extended later.
+            stack.emplace(i, paired_idx);
             continue;
         }
 
-        // ───── CLOSING BASE: i = close, bp = open ───────────────────────────
-        size_t largest_right = i;  // rightmost boundary seen
+        const size_t open_idx = paired_idx; 
+        size_t largest_right = i;
 
-        // if crossing (pseudoknotted), find right end of closed region
-        while (stack.top().begin > bp && !stack.empty()) {
+        // Merge any nested regions whose start lies within (open, i]
+        while (stack.top().begin > open_idx && !stack.empty()) {
             largest_right = std::max(largest_right, stack.top().end);
             stack.pop();
         }
 
-        if (stack.empty()) THROW_ERROR("Unbalanced parentheses\n");
+        if (stack.empty()) THROW_ERROR("Unbalanced pairings\n");
         
-        // extend region if needed
+        // Extend region if any nested intervals were merged.
         stack.top().end = std::max(largest_right, stack.top().end);
 
-        // region finished?
+        // If this closing base ends the region, move it to result.
         if (i == stack.top().end) {
             closed_regions.push_back(stack.top());
             stack.pop();
@@ -124,7 +125,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector
 
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
-std::vector<size_t> RNAProcessor::compute_closed_regions_pairings(
+std::vector<size_t> RNAProcessor::compute_cr_pairings(
     const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size) {
     std::vector<size_t> closed_regions_pairings(rna_size, NULL_INDEX);
     for (ClosedRegion cr : closed_regions) {
