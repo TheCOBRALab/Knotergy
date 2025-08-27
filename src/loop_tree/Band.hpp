@@ -3,6 +3,7 @@
 #include <ostream>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include "../pipeline/shared.hpp"
 
@@ -21,6 +22,12 @@ struct BasePair {
 // === Operator overload for printing ===
 inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
     os << "(" << bp.i << ", " << bp.j << ")";
+    // if (!bp.children.empty()) {
+    //     os << "\n  Children: ";
+    //     for (const BasePair& child : bp.children) {
+    //         os << child << " ";
+    //     }
+    // }
     return os;
 }
 
@@ -58,6 +65,30 @@ class Band {
             size_t paired = pairings[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
                 base_pairs_.emplace_back(idx, paired);
+            }
+        }
+
+        // find remaining child base pairs on right side
+        size_t current_bp_idx = 0;
+        size_t next_swap_idx = NULL_INDEX;
+        
+        for (size_t idx = right_border_ - 1 ; idx > right_inner_; --idx) {
+            BasePair& current_bp = base_pairs_[current_bp_idx];
+            if (next_swap_idx > right_inner_){
+                next_swap_idx = base_pairs_[current_bp_idx + 1].j;
+            }
+
+            if (idx == next_swap_idx){
+                ++current_bp_idx;
+                continue;
+            }
+            
+            // skip closed regions
+            if (cr_pairings[idx] != NULL_INDEX){
+                idx = cr_pairings[idx];
+                current_bp.children.emplace_back(idx, cr_pairings[idx]);
+                if (idx == 0) break;
+                continue;
             }
         }
     }

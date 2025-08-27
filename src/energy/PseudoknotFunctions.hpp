@@ -36,7 +36,7 @@ class PseudoknotFunctions {
         
         // Unpaired within bands are already included in stack_and_internal_energy
         int unpaired = node.exclusive_unpaired_bases_count;
-        std::cout << "initial unpaired: " << unpaired << std::endl;
+        // std::cout << "initial unpaired: " << unpaired << std::endl;
         for (Band band : node.bands) {
             unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
             unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
@@ -52,7 +52,7 @@ class PseudoknotFunctions {
         for (std::shared_ptr<LoopNode> child : node.children){
             if (child->pseudo_type == PseudoNestedType::WithinBand){
                 unpaired += child->total_unpaired_bases_count;
-                // std::cout << "Add up: " << child->total_unpaired_bases_count << std::endl;
+                std::cout << "Add up: " << child->total_unpaired_bases_count << std::endl;
             }
         }
 
@@ -76,7 +76,7 @@ class PseudoknotFunctions {
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::WithinBand) {
                 energy += pk_multi_bp_penalty * c->number_of_bands;
-                std::cout << "PKMloop bp penalty(" <<c->begin << ", " << c->end << "): " << pk_multi_bp_penalty * c->number_of_bands + 2 << std::endl;
+                std::cout << "PKMloop bp penalty(" <<c->begin << ", " << c->end << "): " << pk_multi_bp_penalty * c->number_of_bands << std::endl;
             }
         }
 
@@ -113,7 +113,7 @@ class PseudoknotFunctions {
             THROW_ERROR("Parent node of pseudoknot (" + std::to_string(node.begin) + ", " +
                         std::to_string(node.end) + ") has expired.");
         }
-        std::cout << "Init penalty: " << energy << std::endl;
+        std::cout << "Init penalty(" << node.begin << ", " << node.end << "): " << energy << std::endl;
         return energy;
     }
 
@@ -129,12 +129,13 @@ class PseudoknotFunctions {
             for (size_t idx = 0; idx + 1 < n; ++idx) {
                 const BasePair& bp = bps[idx];
                 const BasePair& next_bp = bps[idx + 1];
-
+                
                 if (bp.is_stack(next_bp)) {
                     energy += pk_stack_energy(bp, next_bp, sequence, round);
                 } else if (!bp.children.empty()) {
                     energy += pk_multiloop_energy(bp, next_bp, sequence, processed_rna);
                 } else {
+                    std::cout << bp << std::endl;
                     energy += pk_internal_energy(bp, next_bp, sequence, round);
                 }
             }
