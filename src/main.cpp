@@ -19,7 +19,10 @@ void help() {
               << "  -e  --round                   Rounds all decimal places in calculations"
               << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
               << "  -f, --mod-file                Modified base parameter file\n"
-              << "  -h, --help                    Show this help message\n";
+              << "  -f, --dangles                 Specify the dangle model to be used (base is 2)\n"
+              << "  -h, --help                    Show this help message\n"
+              ;
+
 }
 
 // cleans white space from arg
@@ -31,6 +34,20 @@ std::string get_trimmed_arg(int& i, int argc, char** argv) {
 }
 }  // namespace
 
+int get_numerical_arg(int& i, int argc, char** argv, int default_value = 0) {
+    std::string value_str = get_trimmed_arg(i, argc, argv);
+    if (value_str.empty()) return default_value;
+    try {
+        return std::stoi(value_str);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Invalid numerical argument: " << value_str << std::endl;
+        return default_value;
+    } catch (const std::out_of_range& e) {
+        std::cerr << "Numerical argument out of range: " << value_str << std::endl;
+        return default_value;
+    }
+}
+
 int main(int argc, char** argv) {
     std::string sequence = "";
     std::string structure = "";
@@ -40,6 +57,7 @@ int main(int argc, char** argv) {
     std::string modifications = "7I6P9D";
     std::string mod_param_file = "";
     bool round = false;
+    int  dangles = 2;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -57,9 +75,14 @@ int main(int argc, char** argv) {
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--modifications") {
+            std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
             modifications = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-f" || arg == "--mod-file") {
+            std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
             mod_param_file = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-d" || arg == "--dangles") {
+            std::cerr << "Dangles are not currently supported. This flag will be ignored." << std::endl;
+            dangles = get_numerical_arg(i, argc, argv, dangles);
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
