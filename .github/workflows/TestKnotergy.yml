@@ -19,7 +19,7 @@ jobs:
         build_type: [Release]
         include:
           - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
-          #- { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
           - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
           - { os: macos-13        , c_compiler: clang, cpp_compiler: clang++  }
     steps:
@@ -41,6 +41,7 @@ jobs:
         curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v${VIENNARNA_VERSION}/ViennaRNA-${VIENNARNA_VERSION}.tar.gz
         tar -xzf ViennaRNA-${VIENNARNA_VERSION}.tar.gz
         cd ViennaRNA-${VIENNARNA_VERSION}
+        sed -i.bak 's/::template go(/::template go<>(/' src/dlib-19.24/dlib/global_optimization/find_max_global.h
         ./configure --without-perl --prefix="${VIENNARNA_PREFIX}"
         CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
         make -j"$CORES"

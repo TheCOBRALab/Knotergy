@@ -11,6 +11,7 @@ namespace {
 void help() {
     std::cout << "Usage: ./Knotergy [options]\n"
               << "Options:\n"
+              << "  -h, --help                    Show this help message\n"
               << "  -s, --sequence <string>       RNA sequence\n"
               << "  -r, --structure <string>      Input structure\n"
               << "  -i, --input <file>            Input file\n"
@@ -19,9 +20,7 @@ void help() {
               << "  -e  --round                   Rounds all decimal places in calculations"
               << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
               << "  -f, --mod-file                Modified base parameter file\n"
-              << "  -f, --dangles                 Specify the dangle model to be used (base is 2)\n"
-              << "  -h, --help                    Show this help message\n"
-              ;
+              << "  -d, --dangles                 Specify the dangle model to be used (base is 2)\n";
 
 }
 
