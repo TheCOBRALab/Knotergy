@@ -135,7 +135,6 @@ int main(int argc, char** argv) {
     }
 
 
-
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs);
@@ -149,7 +148,7 @@ int main(int argc, char** argv) {
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round);
         std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
                   << "\nStructure: " << processed_rna.get_structure() << std::endl;
-        std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
+        printf("ENERGY: %.4f\n", energy_calculator.getEnergy());
     }
     return 0;
 }

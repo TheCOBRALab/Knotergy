@@ -36,8 +36,8 @@ constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
  * @param s The string to be trimmed.
  */
 inline void trim(std::string& s) {
-    s.erase(0, s.find_first_not_of(" \t\n\r\f\v"));
-    s.erase(s.find_last_not_of(" \t\n\r\f\v") + 1);
+    s.erase(0, s.find_first_not_of(" \t\n\r\f\v\""));
+    s.erase(s.find_last_not_of(" \t\n\r\f\v\"") + 1);
 }
 
 
