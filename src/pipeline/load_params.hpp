@@ -12,7 +12,7 @@ extern "C" {
 namespace knotergy{
     class ViennaParams {
        public:
-        static void load_energy_parameters(const std::string& paramFile, const std::string& seq) {
+        static void load_energy_parameters(const std::string& paramFile = "", const std::string& seq = "") {
             if (!paramFile.empty()) {
                 if (std::filesystem::exists(paramFile)) {
                     int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
@@ -36,14 +36,6 @@ namespace knotergy{
                 std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
                 vrna_params_load_RNA_Turner2004();
             }
-        }
-
-        static void load_energy_parameters(const std::string& paramFile) {
-            load_energy_parameters(paramFile, "");
-        }
-
-        static void load_energy_parameters() {
-            load_energy_parameters("");
         }
 
         static void load_modified_energy_parameters();

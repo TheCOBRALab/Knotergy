@@ -67,20 +67,4 @@ void validate_sequence(const std::string& sequence, const std::unordered_set<cha
     }
 }
 
-
-void pipeline(const ProcessedRNAEntry& processed_rna, const std::string& parameter_file, const bool round) {
-    ViennaParams::load_energy_parameters(parameter_file, processed_rna.get_sequence());
-    printf("Seq: %s \n", processed_rna.get_sequence().c_str());
-    printf("Struct: %s \n", processed_rna.get_structure().c_str());
-    printf("Size: %ld \n", processed_rna.size());
-    for (size_t i = 1; i < processed_rna.size(); ++i) {
-        // printf("%d ", entry.get_pairings()[i]);
-    }
-    printf("\n-------------------------------\n Making the Loop Tree\n");
-    LoopFactory factory(processed_rna);
-    // factory.print_tree(true);
-    ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(),
-                                    processed_rna, round);
-    std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
-}
 }  // namespace knotergy

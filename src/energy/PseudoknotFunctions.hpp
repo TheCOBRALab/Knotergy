@@ -59,29 +59,16 @@ class PseudoknotFunctions {
         double energy = 0;
 
         energy += init_penalty(node);
-
         energy += band_penalty * node.number_of_bands;
-        std::cout << "Band penalty(" << node.begin << ", " << node.end << "): " << band_penalty * node.number_of_bands << std::endl;
-
         energy += unpaired_in_pk_penalty * unpaired;
-        std::cout << "Unpaired penalty(" << unpaired << "): " << unpaired_in_pk_penalty * unpaired << std::endl;
-
         energy += nested_cr_penalty * node.number_of_nested_children;
-        std::cout << "Nested penalty(" << node.begin << ", " << node.end << "): "<< nested_cr_penalty * node.number_of_nested_children
-                  << std::endl;
-
-        
         energy += loop_penalties(node, sequence, processed_rna, round);
 
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::WithinBand) {
                 energy += pk_multi_bp_penalty * c->number_of_bands;
-                std::cout << "PKMloop bp penalty(" <<c->begin << ", " << c->end << "): " << pk_multi_bp_penalty * c->number_of_bands << std::endl;
             }
         }
-
-        // energy += pk_in_pk_penalty * (node.number_of_bands - 2);
-
         return energy;
     }
 
@@ -159,12 +146,10 @@ class PseudoknotFunctions {
 
      [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, [[maybe_unused]] const std::string& sequence, const ProcessedRNAEntry& processed_rna){
         double multiloop_penalty = pk_multi_init_penalty;
-        std::cout << "PKMLoop Init penalty" << bp << ": " << pk_multi_init_penalty << std::endl;
 
         // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty
         // We add the child base pairs at a different part of the energy calculation
         multiloop_penalty += pk_multi_bp_penalty * 2;
-        std::cout << "PKMloop bp penalty" << bp << ": "<< pk_multi_bp_penalty * 2 << std::endl;
 
         // get unpaired count
         int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
@@ -176,14 +161,6 @@ class PseudoknotFunctions {
         // get unpaired penalty
         int pk_mloop_unpaired_energy = unpaired * pk_unpaired_in_multi_penalty;
         multiloop_penalty += pk_mloop_unpaired_energy;
-        std::cout << "PKMLoop Unpaired penalty" << bp << ": " << pk_mloop_unpaired_energy << std::endl;
-
-        // // get TerminalAU penalty
-        // if ((sequence[bp.i] == 'A' && sequence[bp.j] == 'U') ||
-        //     (sequence[bp.i] == 'U' && sequence[bp.j] == 'A')){
-        //         multiloop_penalty += vienna.get_parameters()->TerminalAU;
-        //         std::cout << "PKMloop Terminal AU Penalty: " << vienna.get_parameters()->TerminalAU << std::endl;
-        // }
 
         return multiloop_penalty;
     }
@@ -191,44 +168,3 @@ class PseudoknotFunctions {
 };
 
 }  // namespace knotergy
-
-// Test Cases
-
-// AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU
-// ((((xxx(((xxx)))xxx((((...........))))xx))))xxxxxxxxxxxxxxxxx((((xxx((((...........))))xxxxx(((xxx)))xx))))
-// ((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..)))) 
-// -1.86
-
-
-// --------------------WORKING---------------------------
-
-// GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC
-// [[[[[.......((((((((((........]]]]]......))))))))))
-// -20.16 HFold, -20.19 Knotergy
-// HFold rounds every value, so it's off due to HFold's rounding error
-
-// GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC
-// (((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]
-// hfold: -25.86, Knotergy: -25.89
-
-// AUCCAUGCGAAGAACUAUGGAUCUCUGAAUGUUUUCGGUACAUUUCGGUGGUCCUUUAACGCCUUCCUUUGUGACACCAC
-// .[[[[...[[[[......[[[[....((((((.......)))))).((((]]]]........]]]]...]].]]))))..
-// ..........................((((((.......)))))).((((........................))))..
-
-// HFold: -8.98, Knotergy: -8.98
-
-// 1 multiloop
-// AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
-// (((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
-// 
-// -0.74
-
-// AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC
-// (((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......
-// 0.7
-
-// 2 multiloops
-// AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC
-// ((((xx(((xxxx)))xxx(((xxx(((xxx)))xxx(((xx.......xxx)))xxx)))xxx))))xxx.......
-// ((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]
-// 4.65

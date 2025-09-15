@@ -6,6 +6,8 @@
 #include "pipeline/input_pipeline.hpp"
 #include "preprocessing/RNAEntry.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
+#include "loop_tree/LoopFactory.hpp"
+#include "energy/ComputeEnergy.hpp"
 
 namespace {
 void help() {
@@ -137,22 +139,17 @@ int main(int argc, char** argv) {
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs);
+    knotergy::ViennaParams::load_energy_parameters(parameter_file);
 
-    for (const knotergy::ProcessedRNAEntry& current : processed_inputs) {
-        std::cout << "Name: " << current.get_name() << " Sequence: " << current.get_sequence()
-                  << "\nStructure: " << current.get_structure() << std::endl;
-        
+    //------------------------- Main Processing Loop -----------------------------
+    for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
         knotergy::validate_sequence(sequence, valid_seq_chars);
 
-        for (size_t n : current.get_pairings()) {
-            if (n == knotergy::NULL_INDEX) {
-                std::cout << -1 << " ";
-            } else {
-                std::cout << n << " ";
-            }
-        }
-        std::cout << std::endl;
-        knotergy::pipeline(current, parameter_file, round);
+        knotergy::LoopFactory factory(processed_rna);
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round);
+        std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
+                  << "\nStructure: " << processed_rna.get_structure() << std::endl;
+        std::cout << "ENERGY: " << energy_calculator.getEnergy() << std::endl;
     }
     return 0;
 }

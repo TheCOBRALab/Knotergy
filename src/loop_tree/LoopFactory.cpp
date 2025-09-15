@@ -144,12 +144,6 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     }
 
     for (std::shared_ptr<LoopNode> c : node.children){
-        // std::cout << "Child: (" << c->begin << ", " << c->end << ")" << std::endl;
-        // std::cout << "Within band starts: ";
-        for (size_t idx : within_band_start_idx){
-            std::cout << idx << " ";
-        }
-        std::cout << std::endl;
         if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()){
             c->pseudo_type = PseudoNestedType::WithinBand;
         } else {
