@@ -19,10 +19,10 @@ void help() {
               << "  -i, --input <file>            Input file\n"
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
-              << "  -e  --round                   Rounds all decimal places in calculations"
-              << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
-              << "  -f, --mod-file                Modified base parameter file\n"
-              << "  -d, --dangles                 Specify the dangle model to be used (base is 2)\n";
+              << "  -e  --round                   Rounds all decimal places in pseudoknot calculations";
+            //   << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
+            //   << "  -f, --mod-file                Modified base parameter file\n"
+            //   << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
 
 }
 
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     std::string modifications = "7I6P9D";
     std::string mod_param_file = "";
     bool round = false;
-    int  dangles = 2;
+    int  dangle = 2;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -81,9 +81,9 @@ int main(int argc, char** argv) {
         } else if (arg == "-f" || arg == "--mod-file") {
             std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
             mod_param_file = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-d" || arg == "--dangles") {
+        } else if (arg == "-d" || arg == "--dangle") {
             std::cerr << "Dangles are not currently supported. This flag will be ignored." << std::endl;
-            dangles = get_numerical_arg(i, argc, argv, dangles);
+            dangles = get_numerical_arg(i, argc, argv, dangle);
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
