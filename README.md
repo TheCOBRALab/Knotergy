@@ -4,14 +4,14 @@
 
 Knotergy computes the free energy of a given structure
 ## System Requirements
-HFold needs a 64bit Linux or macOS operating system to run
+Knotergy needs a 64bit Linux or macOS operating system to run
 
 ### Software Requirements:
 - CMake 3.15 or greater
 - ViennaRNA 2.7.0
 
 ### ViennaRNA package installation
-You will need to install ViennaRNA package in order to compile HFold
+You will need to install ViennaRNA package in order to compile Knotergy
 
 1. Download the ViennaRNA package from [ViennaRNA-2.7.0.tar.gz](https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz)
 or using the command-line 
@@ -50,7 +50,7 @@ For more details about ViennaRNA, see https://github.com/ViennaRNA/ViennaRNA
 ### CMake installation
 
 
-[CMake](https://cmake.org/install/) version 3.15 or greater must be installed in a way that HFold can find it.    
+[CMake](https://cmake.org/install/) version 3.15 or greater must be installed in a way that Knotergy can find it.    
 
 To check if your system already has CMake, run this in terminal:     
 ```
@@ -77,7 +77,7 @@ brew install cmake
 ``` 
 
 ## Install Knotergy
-1. [Download the repository](https://github.com/TheCOBRALab/HFold) either manually or using the command-line 
+1. [Download the repository](https://github.com/TheCOBRALab/Knotergy) either manually or using the command-line 
 ``` bash
 # using git
 git clone https://github.com/TheCOBRALab/Knotergy.git
