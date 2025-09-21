@@ -146,9 +146,9 @@ int main(int argc, char** argv) {
 
         knotergy::LoopFactory factory(processed_rna);
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round);
-        std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
-                  << "\nStructure: " << processed_rna.get_structure() << std::endl;
-        printf("ENERGY: %.4f\n", energy_calculator.getEnergy());
+        // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
+        //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
+        printf("\nENERGY: %.4f kcal/mol\n\n", energy_calculator.getEnergy());
     }
     return 0;
 }

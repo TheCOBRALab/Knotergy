@@ -52,7 +52,6 @@ class PseudoknotFunctions {
         for (std::shared_ptr<LoopNode> child : node.children){
             if (child->pseudo_type == PseudoNestedType::WithinBand){
                 unpaired += child->total_unpaired_bases_count;
-                std::cout << "Add up: " << child->total_unpaired_bases_count << std::endl;
             }
         }
 
@@ -100,7 +99,6 @@ class PseudoknotFunctions {
             THROW_ERROR("Parent node of pseudoknot (" + std::to_string(node.begin) + ", " +
                         std::to_string(node.end) + ") has expired.");
         }
-        std::cout << "Init penalty(" << node.begin << ", " << node.end << "): " << energy << std::endl;
         return energy;
     }
 
@@ -110,7 +108,6 @@ class PseudoknotFunctions {
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bps = band.base_pairs();
             const size_t n = bps.size();
-            std::cout << band << std::endl;
 
             // loops through each base pair in band (except last one)
             for (size_t idx = 0; idx + 1 < n; ++idx) {
@@ -122,7 +119,6 @@ class PseudoknotFunctions {
                 } else if (!bp.children.empty()) {
                     energy += pk_multiloop_energy(bp, next_bp, sequence, processed_rna);
                 } else {
-                    std::cout << bp << std::endl;
                     energy += pk_internal_energy(bp, next_bp, sequence, round);
                 }
             }
@@ -133,14 +129,12 @@ class PseudoknotFunctions {
     [[nodiscard]] double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
         double stack_penalty = vienna.stack_energy(bp, next_bp, sequence) * pk_stack_penalty_x ;
         if (round) stack_penalty = std::round(stack_penalty);
-        std::cout << "Stack penalty" << bp << ": "  << stack_penalty << std::endl;
         return stack_penalty;
     }
 
     [[nodiscard]] double pk_internal_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
         double internal_penalty = vienna.internal_loop_energy(bp, next_bp, sequence) * pk_internal_penalty_x ;
         if (round) internal_penalty = std::round(internal_penalty);
-        std::cout << "Internal penalty" << bp << ": " << internal_penalty << std::endl;
         return internal_penalty;
     }
 
