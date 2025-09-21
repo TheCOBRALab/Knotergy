@@ -56,7 +56,7 @@ class LoopFactory {
     void pseudo_nested_check(LoopNode& node);
     void label_pseudonested_children(LoopNode& node);
     std::vector<ClosedRegion> closed_region_bucket_sort(
-        const std::vector<ClosedRegion>& closed_regions);
+        const std::vector<ClosedRegion>& closed_regions, const size_t& structure_length);
     void annotate_bands(const std::shared_ptr<LoopNode>& node);
 };
 

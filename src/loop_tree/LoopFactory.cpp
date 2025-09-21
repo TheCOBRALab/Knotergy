@@ -17,7 +17,7 @@ LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna
 // Children of a node are all stems directly nested inside the closed region
 void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Sort regions by starting index (ascending)
-    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions);
+    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions, processed_rna_.size());
 
     // Root node covers full structure [-1, structure_length]
     // Use NULL_INDEX for -1 (unsigned type)
@@ -152,39 +152,34 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     }
 }
 
-std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
-    const std::vector<ClosedRegion>& closed_regions) {
-    // Map regions by their starting index
-    // Reserve capacity to avoid rehashing
-    std::unordered_map<size_t, ClosedRegion> index_to_region;
-    index_to_region.reserve(closed_regions.size());
-
-    size_t min_index = NULL_INDEX;
-    size_t max_index = 0;
-
-    for (const ClosedRegion& cr : closed_regions) {
-        // Try inserting; .second is false if this start index already exists
-        if (!index_to_region.emplace(cr.begin, cr).second) {
-            THROW_ERROR("Duplicate starting index `" + std::to_string(cr.begin) +
-                        "` found in closed regions");
+std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vector<ClosedRegion>& closed_regions,
+                                       const size_t& structure_length) {
+    // Map each possible 'begin' position to an index in closed_regions.
+    std::vector<size_t> begin_to_idx(structure_length, NULL_INDEX);
+                
+    for (size_t i = 0; i < closed_regions.size(); ++i) {
+        size_t begin = closed_regions[i].begin;
+        if (begin >= structure_length) {
+            THROW_ERROR("Begin `" + std::to_string(begin) +
+                                     "` out of range [0," + std::to_string(structure_length) + ")");
         }
-        if (cr.begin < min_index) min_index = cr.begin;
-        if (cr.begin > max_index) max_index = cr.begin;
+        if (begin_to_idx[begin] != SIZE_MAX) {
+            THROW_ERROR("Duplicate starting index `" + std::to_string(begin) +
+                                     "` found in closed regions");
+        }
+        begin_to_idx[begin] = i;
     }
 
-    std::vector<ClosedRegion> sorted_regions;
-    sorted_regions.reserve(closed_regions.size());
-
-    for (size_t i = min_index; i <= max_index; ++i) {
-        // checks if bucket exists, then stores the cr from bucket into sorted_regions
-        std::unordered_map<size_t, ClosedRegion>::iterator it = index_to_region.find(i);
-        if (it != index_to_region.end()) {
-            sorted_regions.push_back(it->second);
-        }
+    std::vector<ClosedRegion> sorted;
+    sorted.reserve(closed_regions.size());
+    for (size_t begin = 0; begin < structure_length; ++begin) {
+        const size_t idx = begin_to_idx[begin];
+        if (idx != SIZE_MAX) sorted.push_back(closed_regions[idx]);
     }
-
-    return sorted_regions;
+    return sorted;
 }
+
+
 
 void LoopFactory::print_tree(bool debug) const {
     for (const auto& child : root_node_->children) {
