@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-float pipeline(std::string sequence, std::string structure, std::string param_file = "") {
+float pipeline(std::string sequence, std::string structure, std::string param_file = "../../params/common/rna_turner2004.par") {
     knotergy::ViennaParams::load_energy_parameters(param_file);
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));

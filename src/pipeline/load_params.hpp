@@ -33,8 +33,19 @@ namespace knotergy{
                 std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
                 vrna_params_load_DNA_Mathews2004();
             } else {
-                std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
-                vrna_params_load_RNA_Turner2004();
+                // std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
+                // vrna_params_load_RNA_Turner2004();
+
+                const std::string default_path = "./params/common/rna_DirksPierce09.par";
+                std::cerr << "Defaulting to RNA parameters (Dirks&Pierce 2009)." << std::endl;
+                int loaded = vrna_params_load(default_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+                
+                // in case someone deletes the default param file 😭
+                if (!loaded) {
+                    std::cerr << ("Failed to load parameter file: " + default_path) << std::endl;
+                    std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
+                    vrna_params_load_RNA_Turner2004();
+                }
             }
         }
 
