@@ -97,12 +97,15 @@ int main(int argc, char** argv) {
     valid_seq_chars.insert({'A', 'U', 'C', 'G', 'T'});
 
     // ------------------------- Validate Inputs -----------------------
+
+    // Get sequence if not provided
     if (sequence.empty() && input_file.empty()) {
         std::cout << "Sequence : ";
         std::cin >> sequence;
         knotergy::trim(sequence);
     }
-
+    
+    // Get structure if not provided
     if (structure.empty() && input_file.empty()) {
         std::cout << "Structure: ";
         std::cin >> structure;
@@ -148,7 +151,7 @@ int main(int argc, char** argv) {
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round);
         // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
-        printf("\nENERGY: %.4f kcal/mol\n\n", energy_calculator.getEnergy());
+        printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
     }
     return 0;
 }
