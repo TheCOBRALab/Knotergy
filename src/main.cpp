@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
             mod_param_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
             std::cerr << "Dangles are not currently supported. This flag will be ignored." << std::endl;
-            dangles = get_numerical_arg(i, argc, argv, dangle);
+            dangle = get_numerical_arg(i, argc, argv, dangle);
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;

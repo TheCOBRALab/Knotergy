@@ -210,6 +210,25 @@ if (NOT VIENNARNA_INCLUDE_DIRECTORY)
     DOC "Path to ViennaRNA headers")
 endif()
 
+# If VIENNARNA_LIBRARY is a bare name (e.g. "RNA"), try to resolve to an absolute path.
+# If that fails, record likely link directories to use later.
+set(VIENNARNA_LINK_DIRS "")
+if (VIENNARNA_LIBRARY AND NOT IS_ABSOLUTE "${VIENNARNA_LIBRARY}")
+  find_library(_VIENNA_ABS NAMES ${VIENNARNA_LIBRARY} vrna RNA
+    HINTS $ENV{HOMEBREW_PREFIX} /opt/homebrew /usr/local /opt
+    PATH_SUFFIXES lib lib64)
+  if (_VIENNA_ABS)
+    set(VIENNARNA_LIBRARY "${_VIENNA_ABS}" CACHE FILEPATH "Path to ViennaRNA library" FORCE)
+  else()
+    set(VIENNARNA_LINK_DIRS
+      $ENV{HOMEBREW_PREFIX}/lib
+      /opt/homebrew/lib
+      /usr/local/lib
+      /opt/lib)
+    list(REMOVE_DUPLICATES VIENNARNA_LINK_DIRS)
+  endif()
+endif()
+
 message(STATUS "VIENNARNA_LIBRARY = ${VIENNARNA_LIBRARY}")
 message(STATUS "VIENNARNA_INCLUDE_DIRECTORY = ${VIENNARNA_INCLUDE_DIRECTORY}")
 
@@ -256,6 +275,10 @@ file(GLOB KnotergySources
 add_library(KnotergyLib ${KnotergySources})
 
 target_include_directories(KnotergyLib SYSTEM PUBLIC ${VIENNARNA_INCLUDE_DIRECTORY})
+# Add link directories if we couldn't resolve an absolute path earlier.
+if (VIENNARNA_LINK_DIRS)
+  target_link_directories(KnotergyLib PUBLIC ${VIENNARNA_LINK_DIRS})
+endif()
 target_link_libraries(KnotergyLib PUBLIC ${VIENNARNA_LIBRARY})
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
