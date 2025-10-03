@@ -135,8 +135,3 @@ Run `--help` for available options:
 ```bash
 ./build/Knotergy --help
 ```
-
-## Keywords
-
-RNA, RNA folding, pseudoknot, minimum-free-energy, MFE, ViennaRNA, bioinformatics, C++, cmake
-
