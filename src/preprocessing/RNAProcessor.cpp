@@ -1,4 +1,6 @@
 #include "RNAProcessor.hpp"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
@@ -12,9 +14,16 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
 };
 
 std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
-    std::unordered_map<char, char> open_to_close = {{'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}};
-    std::unordered_map<char, char> valid_pairings = {{'A', 'U'}, {'U', 'A'}, {'G', 'C'},
-                                                     {'C', 'G'}, {'G', 'U'}, {'U', 'G'}};
+    std::unordered_map<char, char> open_to_close = {
+        {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'},
+        {'A', 'a'}, {'B', 'b'}, {'C', 'c'}, {'D', 'd'}
+    };
+    std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
+        {'A', {'U'}},
+        {'U', {'A','G'}},
+        {'G', {'C','U'}},
+        {'C', {'G'}}
+    };
 
     // close to open is the opposite of open_to_close
     // e.g. {'(', ')'} -> {')', '('}
@@ -60,10 +69,9 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
             pairings[j] = i;
 
             // check if they're a valid pair
-            if (valid_pairings[rna.sequence[i]] != rna.sequence[j]) {
+            if (!valid_pairings[rna.sequence[j]].count(rna.sequence[i])) {
                 std::cerr << "Warning: Base Pair '" + std::string(1, rna.sequence[i]) +
-                                 "' can't pair with " + std::string(1, rna.sequence[j]) + '\''
-                          << std::endl;
+                                 "' can't pair with '" + std::string(1, rna.sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
             }
             continue;
         }
