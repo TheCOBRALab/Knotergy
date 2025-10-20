@@ -19,11 +19,11 @@ requirements:
     - libcxx       # [osx]
 
 about:
-  home: https://github.com/HosnaJabbari/Knotergy
+  home: https://github.com/TheCOBRALab/Knotergy
   summary: "Knotergy is an algorithm for evaluating pseudoknotted secondary structures of RNA."
   description: |
     Knotergy evaluates RNA secondary structure.
-  dev_url: https://github.com/HosnaJabbari/Knotergy
+  dev_url: https://github.com/TheCOBRALab/Knotergy
 
 extra:
   recipe-maintainers:
