@@ -1,0 +1,83 @@
+name: Conda Build & Upload
+
+on:
+  workflow_dispatch:
+  release: { types: [published] }
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13]
+        build_type: [Release]
+        include:
+          - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
+          - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
+          - { os: macos-13        , c_compiler: clang, cpp_compiler: clang++  }
+    steps:
+    - uses: actions/checkout@v4
+
+# -------------------- Conda Installation --------------------
+    - name: Set up Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        auto-activate-base: false
+        miniconda-version: latest
+        channels: conda-forge, defaults
+        channel-priority: strict
+        architecture: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
+
+    - name: Install conda-build & anaconda-client
+      run: |
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          arch=$(uname -m)
+          if [[ "$arch" == "arm64" ]]; then
+            echo "Detected macOS ARM64"
+            conda install -y conda-build anaconda-client clang_osx-arm64 clangxx_osx-arm64
+          else
+            echo "Detected macOS Intel"
+            conda install -y conda-build anaconda-client clang_osx-64 clangxx_osx-64
+          fi
+        else
+          echo "Detected Linux"
+          sudo apt-get update
+          sudo apt-get install -y libmpfr-dev libgsl-dev
+          conda install -y conda-build anaconda-client 
+        fi
+
+# -------------------- Build --------------------
+    - name: Build Conda Package
+      env:
+        CONDA_BLD_PATH: /tmp/bld
+      run: |
+        export CONDA_BLD_PATH=/tmp/conda-build
+        mkdir -p "$CONDA_BLD_PATH"
+        conda build ./conda_recipe --croot "$CONDA_BLD_PATH" \
+        --croot /tmp/bld
+
+    - name: Upload Package to Anaconda
+      if: success()
+      env:
+        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+      run: |
+        built_pkg=$(conda build ./conda_recipe --croot /tmp/bld --output)
+        echo "Built package: $built_pkg"
+        conda run -n base anaconda -t "$ANACONDA_API_TOKEN" upload \
+          --user COBRALab --label main --force "$built_pkg"
+    
+    - name: Get Knotergy version
+      id: knotergy_version
+      run: |
+        KNOTERGY_VERSION=$(grep -m1 version ./conda_recipe/meta.yaml | awk '{print $2}' | tr -d '"')
+        echo "KNOTERGY_VERSION=$KNOTERGY_VERSION" >> "$GITHUB_ENV"
+
+    - name: Install just-uploaded Knotergy
+      run: |
+        conda run -n base conda config --add channels conda-forge
+        conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} --no-channel-priority --override-channels -c cobralab
+        conda run -n base Knotergy --version
+  

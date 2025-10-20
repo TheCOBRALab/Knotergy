@@ -1,0 +1,34 @@
+package:
+  name: knotergy
+  version: "0.1.0"
+
+source:
+  - path: ..
+  
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - make
+    - cmake >=3.15
+  host:
+    - libstdcxx-ng # [linux]
+    - libcxx       # [osx]
+  run:
+    - libstdcxx-ng # [linux]
+    - libcxx       # [osx]
+
+about:
+  home: https://github.com/HosnaJabbari/Knotergy
+  summary: "Knotergy is an algorithm for evaluating pseudoknotted secondary structures of RNA."
+  description: |
+    Knotergy evaluates RNA secondary structure.
+  dev_url: https://github.com/HosnaJabbari/Knotergy
+
+extra:
+  recipe-maintainers:
+    - PointlessUser
+
+test:
+  commands:
+    - Knotergy --help
