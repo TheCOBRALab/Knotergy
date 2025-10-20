@@ -9,11 +9,14 @@
 #include "loop_tree/LoopFactory.hpp"
 #include "energy/ComputeEnergy.hpp"
 
+#define KNOTERGY_VERSION "0.1.1"
+
 namespace {
 void help() {
     std::cout << "Usage: ./Knotergy [options]\n"
               << "Options:\n"
               << "  -h, --help                    Show this help message\n"
+              << "  -V, --version                 Print version and exit\n"
               << "  -s, --sequence <string>       RNA sequence\n"
               << "  -r, --structure <string>      Input structure\n"
               << "  -i, --input <file>            Input file\n"
@@ -86,6 +89,9 @@ int main(int argc, char** argv) {
             dangle = get_numerical_arg(i, argc, argv, dangle);
         } else if (arg == "-h" || arg == "--help") {
             help();
+            return 0;
+        } else if (arg == "-v" || arg == "--version") {
+            std::cout << "Knotergy " << KNOTERGY_VERSION << std::endl;
             return 0;
         } else {
             std::cerr << "Unknown option or missing value: " << arg << std::endl;

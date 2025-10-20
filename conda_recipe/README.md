@@ -10,6 +10,8 @@
 - Run `conda install --use-local knotergy` to install (case sensitive)
 - Run `Knotergy --help` to insure it installed properly (case sensitive)
 
+If you want to delete the package, run `conda remove Knotergy`
+
 
 ## Automated Package Upload
 
