@@ -8,7 +8,7 @@
 #include "loop_tree/LoopFactory.hpp"
 #include "energy/ComputeEnergy.hpp"
 
-#define KNOTERGY_VERSION "0.1.1"
+#define KNOTERGY_VERSION "0.1.2"
 
 namespace {
 void help() {
