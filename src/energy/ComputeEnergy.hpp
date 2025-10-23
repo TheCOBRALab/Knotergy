@@ -9,9 +9,8 @@ class ComputeEnergy {
    public:
     ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence,
                   ProcessedRNAEntry processed_rna, bool round = false, int dangle = 2)
-        : root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round}, dangle_{dangle} {
+        : vienna(dangle), root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round} {
         process_tree(*root_node_);
-        vienna = ViennaFunctions(dangle_);
     };
 
     // Add methods to compute energy, etc.
@@ -25,7 +24,6 @@ class ComputeEnergy {
     ProcessedRNAEntry processed_rna_;
     float energy_ = 0.0f;
     bool round_ = false;
-    int dangle_;
     void process_tree(const LoopNode& root_node);
     float process_node(const LoopNode& node);
 };

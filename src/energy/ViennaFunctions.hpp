@@ -21,7 +21,7 @@ class ViennaFunctions {
         md.dangles = dangle;
         P = vrna_params(&md);
     }
-    ~ViennaFunctions() { free(P); }
+    ~ViennaFunctions() { if (P) free(P); }
 
     const vrna_param_t* get_parameters() const {return P;};
 
