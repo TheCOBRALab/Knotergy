@@ -2,7 +2,6 @@
 
 #include <string>
 #include <fstream>
-#include <filesystem>
 #include <iostream>
 #include "shared.hpp"
 #include "../preprocessing/RNAEntry.hpp"
@@ -34,7 +33,7 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
  *         or contains malformed data.
  */
 [[nodiscard]] std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
-    if (!std::filesystem::exists(file)) {
+    if (!file_exists(file)) {
         THROW_ERROR("Error: Input file not found: " + file);
     }
 

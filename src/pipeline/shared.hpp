@@ -3,6 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <sys/stat.h>
 
 namespace knotergy {
 class DetailedException : public std::runtime_error {
@@ -38,6 +39,12 @@ constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 inline void trim(std::string& s) {
     s.erase(0, s.find_first_not_of(" \t\n\r\f\v\""));
     s.erase(s.find_last_not_of(" \t\n\r\f\v\"") + 1);
+}
+
+// filesystem::exists not supported in older macOS Conda packages
+inline bool file_exists(const std::string& name) { 
+    struct stat buffer;
+    return (stat(name.c_str(), &buffer) == 0);
 }
 
 

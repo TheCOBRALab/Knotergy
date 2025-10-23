@@ -16,8 +16,9 @@ extern "C" {
 namespace knotergy {
 class ViennaFunctions {
    public:
-    ViennaFunctions() {
+    ViennaFunctions(int dangle = 2) {
         vrna_md_set_default(&md);
+        md.dangles = dangle;
         P = vrna_params(&md);
     }
     ~ViennaFunctions() { free(P); }
@@ -76,8 +77,7 @@ class ViennaFunctions {
         // c = child or nested bp
 
         if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
-            std::cerr << "Invalid indices for internal loop energy calculation." << std::endl;
-            return 0;
+            THROW_ERROR("Invalid indices for internal loop energy calculation."); // Add i, j, ci, cj to message
         }
 
         unsigned int n1 = static_cast<unsigned int>(ci - i - 1);
@@ -103,6 +103,10 @@ class ViennaFunctions {
         unsigned int pair_type = get_pair_type(sequence[i], sequence[j]);
         int n5d = vrna_nucleotide_encode(sequence[i + 1], &md);
         int n3d = vrna_nucleotide_encode(sequence[j - 1], &md);
+        if (md.dangles == 0) {
+            n5d = -1;
+            n3d = -1;
+        }
 
         // penalties
         int energy = P->MLclosing;  // closing penalty
@@ -116,9 +120,11 @@ class ViennaFunctions {
 
             unsigned int child_pair_type = get_pair_type(sequence[ci], sequence[cj]);
             int child_n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
-            int child_n3d =
-                cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
-
+            int child_n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
+            if (md.dangles == 0) {
+                child_n5d = -1;
+                child_n3d = -1;
+            }
             energy += vrna_E_multibranch_stem(child_pair_type, child_n5d, child_n3d, P);
         }
 
@@ -133,9 +139,11 @@ class ViennaFunctions {
             if (c->loop_type != LoopType::Pseudoknot) {
                 unsigned int pair_type = get_pair_type(sequence[c->begin], sequence[c->end]);
                 int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &md) : -1;
-                int n3d = c->end < sequence.size() - 1
-                              ? vrna_nucleotide_encode(sequence[c->end + 1], &md)
-                              : -1;
+                int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &md) : -1;
+                if (md.dangles == 0) {
+                    n5d = -1;
+                    n3d = -1;
+                }
                 energy += vrna_E_exterior_stem(pair_type, n5d, n3d, P);
             }
         }

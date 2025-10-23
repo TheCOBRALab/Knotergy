@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <filesystem>
 #include "shared.hpp"
 
 extern "C" {
@@ -14,7 +13,7 @@ namespace knotergy{
        public:
         static void load_energy_parameters(const std::string& paramFile = "", const std::string& seq = "") {
             if (!paramFile.empty()) {
-                if (std::filesystem::exists(paramFile)) {
+                if (file_exists(paramFile)) {
                     int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
                     if (!loaded) {
                         THROW_ERROR("Failed to load parameter file: " + paramFile);

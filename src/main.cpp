@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -36,8 +35,8 @@ std::string get_trimmed_arg(int& i, int argc, char** argv) {
     knotergy::trim(value);
     return value;
 }
-}  // namespace
 
+// converts arg to int, with default value if conversion fails
 int get_numerical_arg(int& i, int argc, char** argv, int default_value = 0) {
     std::string value_str = get_trimmed_arg(i, argc, argv);
     if (value_str.empty()) return default_value;
@@ -51,6 +50,9 @@ int get_numerical_arg(int& i, int argc, char** argv, int default_value = 0) {
         return default_value;
     }
 }
+
+}  // namespace
+
 
 int main(int argc, char** argv) {
     std::string sequence = "";
@@ -126,19 +128,19 @@ int main(int argc, char** argv) {
     }
 
     knotergy::trim(input_file);
-    if (!input_file.empty() && !std::filesystem::exists(input_file)) {
+    if (!input_file.empty() && !knotergy::file_exists(input_file)) {
         std::cerr << "Input file not found: " << input_file << std::endl;
         return 1;
     }
 
     knotergy::trim(parameter_file);
-    if (!parameter_file.empty() && !std::filesystem::exists(parameter_file)) {
+    if (!parameter_file.empty() && !knotergy::file_exists(parameter_file)) {
         std::cerr << "Parameter file not found: " << parameter_file << std::endl;
         return 1;
     }
 
     knotergy::trim(mod_param_file);
-    if (!mod_param_file.empty() && !std::filesystem::exists(mod_param_file)) {
+    if (!mod_param_file.empty() && !knotergy::file_exists(mod_param_file)) {
         std::cerr << "Modified bases parameter file not found: " << mod_param_file << std::endl;
         return 1;
     }

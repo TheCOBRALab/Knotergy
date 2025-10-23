@@ -8,7 +8,9 @@
 namespace knotergy {
 class PseudoknotFunctions {
    public:
-    PseudoknotFunctions() = default;
+    PseudoknotFunctions(int dangle = 2): dangle_(dangle) {
+        vienna = ViennaFunctions(dangle_);
+    };
     ~PseudoknotFunctions() = default;
 
     // Should be moved to private
@@ -73,6 +75,7 @@ class PseudoknotFunctions {
 
    private:
     ViennaFunctions vienna;
+    int dangle_;
 
     [[nodiscard]] double init_penalty(const LoopNode& node) {
         // initialization penalties
