@@ -48,5 +48,6 @@ class ViennaFunctions {
     unsigned int reverse_pair_type(unsigned int type) const;
 
     int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence);
+    int get_multi_dangle_1(const LoopNode& node, const std::string& sequence);
 };
 }  // namespace knotergy
