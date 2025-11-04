@@ -85,8 +85,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
     int energy = P->MLclosing; // closing penalty
     energy += node.exclusive_unpaired_bases_count * P->MLbase; // unpaired bases penalty
 
-    int n5d;
-    int n3d;
+    int n5d, n3d;
     switch (md.dangles){
         case 0:
             n5d = -1;
@@ -175,48 +174,8 @@ unsigned int ViennaFunctions::reverse_pair_type(unsigned int type) const {
 }
 
 int ViennaFunctions::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence) {
-
-    enum DangleIdx { None = 0, Left = 1, Right = 2, Both = 3 };
-    // constexpr int INF = INT_MAX >> 4; // Vienna stole the INF definition & I don't want to overwrite it :(
-
-    // no dangle, left dangle, right dangle & both dangles for each child
-    std::vector<std::array<int,4>> dangle_energies;
-    dangle_energies.reserve(children.size());
-
-    for (size_t i = 0; i < children.size(); ++i) {
-        const std::shared_ptr<LoopNode>& child = children[i];
-        const size_t& ci = child->begin, cj = child->end;
-
-        // Compute all dangle energies for this child
-        int n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
-        int n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
-        unsigned int pair_type = get_pair_type(sequence[ci], sequence[cj]);
-
-        std::array<int,4> d_energy;
-        d_energy[None] = vrna_E_exterior_stem(pair_type, -1,  -1,  P);
-        d_energy[Left] = vrna_E_exterior_stem(pair_type, n5d, -1,  P);
-        d_energy[Right] = vrna_E_exterior_stem(pair_type, -1,  n3d, P);
-        d_energy[Both] = vrna_E_exterior_stem(pair_type, n5d, n3d, P);
-        dangle_energies.push_back(d_energy);
-    }
-
-    std::vector<std::vector<size_t>> dangle_chains;
-    dangle_chains.reserve(children.size());
-    dangle_chains.push_back({0});
-    for (size_t i = 1; i < children.size(); ++i) {
-        const std::shared_ptr<LoopNode>& child = children[i];
-        const std::shared_ptr<LoopNode>& prev_child = children[i - 1];
-        if (child->loop_type == LoopType::Pseudoknot) {
-            continue;
-        }
-
-        // if there's 1 or no unpaired bases between children, they share or have no dangles
-        if (child->begin - prev_child->end <= 2) {
-            dangle_chains.back().push_back(i);
-        } else{
-            dangle_chains.push_back({i});
-        }
-    }
+    std::vector<std::array<int,4>> dangle_energies = populate_children_dangle_energies(children, sequence);
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
 
     enum TouchingRight {N = 0, Y = 1}; // No, Yes
     int dangle_energy = 0;
@@ -280,44 +239,72 @@ int ViennaFunctions::get_multi_dangle_1(const LoopNode& node, const std::string&
     }
 
     const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
-    size_t left = node.begin;
-    size_t right = node.end;
+    std::array<int,4> ml_dangle = populate_ml_dangle_energies(node, sequence);
+    std::vector<std::array<int,4>> dangle_energies = populate_children_dangle_energies(children, sequence, false);
+    
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
+    // std::array<int,2> prev_TR = {std::min(ml_dangle[None], ml_dangle[Left]), std::min(ml_dangle[Right], ml_dangle[Both])};
+}
 
-    // [no dangle, left dangle, right dangle, both dangles] for each child
-    std::vector<std::array<int,4>> dangle_energies;
-    enum DangleIdx { None = 0, Left = 1, Right = 2, Both = 3 };
-
-    std::array<int,4> closing_pair_dangles;
-    int n5d = vrna_nucleotide_encode(sequence[left + 1], &md);
-    int n3d = vrna_nucleotide_encode(sequence[right - 1], &md);
-    unsigned int pair_type = get_pair_type(sequence[left], sequence[right]);
+std::array<int,4> ViennaFunctions::populate_ml_dangle_energies(const LoopNode& node, const std::string& sequence) {
+    size_t pi = node.begin, pj = node.end;
+    std::array<int,4> ml_dangle; // closing pair dangles
+    int n5d = vrna_nucleotide_encode(sequence[pi + 1], &md);
+    int n3d = vrna_nucleotide_encode(sequence[pj - 1], &md);
+    unsigned int pair_type = get_pair_type(sequence[pi], sequence[pj]);
     unsigned int rev_pair_type = reverse_pair_type(pair_type);
 
-    closing_pair_dangles[None]  = vrna_E_multibranch_stem(rev_pair_type, -1,  -1,  P);
-    closing_pair_dangles[Left]  = vrna_E_multibranch_stem(rev_pair_type, -1,  n5d, P); // reversed for Closing pair
-    closing_pair_dangles[Right] = vrna_E_multibranch_stem(rev_pair_type, n3d, -1,  P); // reversed for Closing pair
-    closing_pair_dangles[Both]  = vrna_E_multibranch_stem(rev_pair_type, n3d, n5d, P);
-    
-    dangle_energies.reserve(children.size() + 1); // +1 for closing pair
+    ml_dangle[None]  = vrna_E_multibranch_stem(rev_pair_type, -1,  -1,  P);
+    ml_dangle[Left]  = vrna_E_multibranch_stem(rev_pair_type, -1,  n5d, P); 
+    ml_dangle[Right] = vrna_E_multibranch_stem(rev_pair_type, n3d, -1,  P); 
+    ml_dangle[Both]  = vrna_E_multibranch_stem(rev_pair_type, n3d, n5d, P);
+    return ml_dangle;
+}
+
+std::vector<std::array<int,4>> ViennaFunctions::populate_children_dangle_energies(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, const bool& is_external) {
+    std::vector<std::array<int,4>> dangle_energies;
+    int (*vrna_E_stem)(unsigned int, int, int, vrna_param_t*); 
+    vrna_E_stem = is_external ? vrna_E_exterior_stem : vrna_E_multibranch_stem;
+
     for (size_t i = 0; i < children.size(); ++i) {
         const std::shared_ptr<LoopNode>& child = children[i];
         const size_t& ci = child->begin, cj = child->end;
 
         // Compute all dangle energies for this child
-        int c_n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
-        int c_n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
+        int n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &md) : -1;
+        int n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &md) : -1;
         unsigned int pair_type = get_pair_type(sequence[ci], sequence[cj]);
 
         std::array<int,4> d_energy;
-        d_energy[None]  = vrna_E_multibranch_stem(pair_type, -1,    -1,    P);
-        d_energy[Left]  = vrna_E_multibranch_stem(pair_type, c_n5d, -1,    P);
-        d_energy[Right] = vrna_E_multibranch_stem(pair_type, -1,    c_n3d, P);
-        d_energy[Both]  = vrna_E_multibranch_stem(pair_type, c_n5d, c_n3d, P);
+        d_energy[None]  = vrna_E_stem(pair_type, -1,  -1,  P);
+        d_energy[Left]  = vrna_E_stem(pair_type, n5d, -1,  P);
+        d_energy[Right] = vrna_E_stem(pair_type, -1,  n3d, P);
+        d_energy[Both]  = vrna_E_stem(pair_type, n5d, n3d, P);
         dangle_energies.push_back(d_energy);
     }
-    
-    bool ml_touch_left  = (children.front()->begin - left <= 2);
-    bool ml_touch_right = (right - children.back()->end <= 2);
+    return dangle_energies;
 }
+
+std::vector<std::vector<size_t>> ViennaFunctions::get_dangle_chains(const std::vector<std::shared_ptr<LoopNode>>& children) {
+    std::vector<std::vector<size_t>> dangle_chains;
+    dangle_chains.reserve(children.size());
+    dangle_chains.push_back({0});
+    for (size_t i = 1; i < children.size(); ++i) {
+        const std::shared_ptr<LoopNode>& child = children[i];
+        const std::shared_ptr<LoopNode>& prev_child = children[i - 1];
+        if (child->loop_type == LoopType::Pseudoknot) {
+            continue;
+        }
+
+        // if there's 1 or no unpaired bases between children, they share or have no dangles
+        if (child->begin - prev_child->end <= 2) {
+            dangle_chains.back().push_back(i);
+        } else{
+            dangle_chains.push_back({i});
+        }
+    }
+    return dangle_chains;
+}
+
 
 } // namespace knotergy

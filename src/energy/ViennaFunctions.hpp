@@ -42,6 +42,7 @@ class ViennaFunctions {
    private:
     vrna_md_t md;
     vrna_param_t* P;
+    enum DangleIdx { None = 0, Left = 1, Right = 2, Both = 3 };
 
     unsigned int get_pair_type(const char& i, const char& j);
 
@@ -49,5 +50,8 @@ class ViennaFunctions {
 
     int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence);
     int get_multi_dangle_1(const LoopNode& node, const std::string& sequence);
+    std::vector<std::array<int,4>> populate_children_dangle_energies(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, const bool& is_external=true);
+    std::array<int,4> populate_ml_dangle_energies(const LoopNode& node, const std::string& sequence);
+    std::vector<std::vector<size_t>> get_dangle_chains(const std::vector<std::shared_ptr<LoopNode>>& children);
 };
 }  // namespace knotergy
