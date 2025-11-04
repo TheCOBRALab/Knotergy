@@ -10,13 +10,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
         build_type: [Release]
         include:
           - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
           - { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
           - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
-          - { os: macos-13        , c_compiler: clang, cpp_compiler: clang++  }
+          - { os: macos-15-intel  , c_compiler: clang, cpp_compiler: clang++  }
     steps:
     - uses: actions/checkout@v4
 
