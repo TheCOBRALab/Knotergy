@@ -1,6 +1,8 @@
 #include "ViennaDangles.hpp"
 
 namespace knotergy {
+enum DangleIdx { None = 0, Left = 1, Right = 2, Both = 3 };
+enum TouchingRight {N = 0, Y = 1};
 
 int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, vrna_md_t& md) {
     std::vector<std::array<int,4>> dangle_energies = populate_children_dangle_energies(children, sequence, md);
@@ -13,6 +15,7 @@ int ViennaDangles::get_multi_dangle_1(const LoopNode& node, const std::string& s
     bool is_external = false;
     std::vector<std::array<int,4>> dangle_energies = populate_children_dangle_energies(children, sequence, md, is_external);
     std::array<int,4> ml_dangle_energy = get_ml_dangle_energy(node, sequence, md);
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return 0;
 }
 
@@ -64,8 +67,6 @@ std::vector<std::array<int,4>> ViennaDangles::populate_children_dangle_energies(
     return dangle_energies;
 }
 
-
-
 std::vector<std::vector<size_t>> ViennaDangles::get_dangle_chains(const std::vector<std::shared_ptr<LoopNode>>& children) {
     std::vector<std::vector<size_t>> dangle_chains;
     dangle_chains.reserve(children.size());
@@ -87,64 +88,98 @@ std::vector<std::vector<size_t>> ViennaDangles::get_dangle_chains(const std::vec
     return dangle_chains;
 }
 
+int ViennaDangles::process_chain(
+                    const std::vector<size_t>& chain,
+                    const std::vector<std::shared_ptr<LoopNode>>& children,
+                    const std::vector<std::array<int,4>>& dangle_energies,
+                    const bool& disable_first_left_dangle,
+                    const bool& disable_first_right_dangle
+                ) {
+    int dangle_energy = 0;
+    std::array<int,2> prev_TR = {0, 0};
+    for (size_t idx : chain) {
+        const std::array<int,4>& energies = dangle_energies[idx];
+        std::array<int,2> touching_right = {INF, INF};
+
+        // Check if left or right dangle is possible based on adjacency (no unpaired bases in between)
+        bool no_left_dangle = idx != chain.front() && (children[idx]->begin - children[idx - 1]->end == 1);
+        bool no_right_dangle = idx != chain.back() && (children[idx + 1]->begin - children[idx]->end == 1);
+
+        // energies: no dangle, left dangle, right dangle, both dangles
+        int eNone = energies[None], eLeft = energies[Left], eRight = energies[Right], eBoth = energies[Both];
+
+        // Update touching_right based on previous state and current possibilities
+        if (no_left_dangle && no_right_dangle) {
+            touching_right[N] = prev_TR[N] + eNone;
+            // touching_right[1] = INF; // impossible
+        } else if (no_left_dangle) {
+            touching_right[N] = prev_TR[N] + eNone; // impossible case: prev[1] + eNone
+            touching_right[Y] = std::min({prev_TR[N] + eRight, prev_TR[Y] + eRight});
+        } else if (no_right_dangle) {
+            touching_right[N] = std::min({prev_TR[N] + eNone, prev_TR[N] + eLeft, prev_TR[Y] + eNone, prev_TR[Y] + eLeft});
+            // touching_right[1] = INF; // impossible
+        } else {
+            touching_right[N] = std::min({prev_TR[N] + eNone , prev_TR[N] + eLeft,  prev_TR[Y] + eNone});
+            touching_right[Y] = std::min({prev_TR[N] + eLeft , prev_TR[N] + eRight, prev_TR[Y] + eRight, prev_TR[N] + eBoth});
+        }
+        
+        // Sanity check for overflow
+        if ((touching_right[N] > INF) or (touching_right[Y] > INF)){
+            THROW_ERROR("Dangle energy overflow detected in external loop dangle calculation.");
+        }
+        prev_TR = touching_right;
+    }
+    return std::min(prev_TR[N], prev_TR[Y]);  
+}
 
 int ViennaDangles::process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
                     const std::vector<std::array<int,4>>& dangle_energies
                 ) {
-    enum TouchingRight {N = 0, Y = 1}; // No, Yes
     int dangle_energy = 0;
-    // choose best dangle configuration for each child
     for (const std::vector<size_t>& chain : dangle_chains) {
         if (chain.size() == 1) {
             size_t idx = chain[0];
             int min_energy = *std::min_element(dangle_energies[idx].begin(), dangle_energies[idx].end());
             dangle_energy += min_energy;
             continue;
-        }  else {
-            // Dynamic programming over the chain to find optimal dangle configuration
-            // prev_TR[0] = no right dangle on previous (Not touching right)
-            // prev_TR[1] = right dangle on previous (Touching right))
-            // touching_right[0] = no right dangle on current
-            // touching_right[1] = right dangle on current
-            std::array<int,2> prev_TR = {0, 0};
-            for (size_t idx : chain) {
-                const std::array<int,4>& energies = dangle_energies[idx];
-                std::array<int,2> touching_right = {INF, INF};
-
-                // Check if left or right dangle is possible based on adjacency (no unpaired bases in between)
-                bool no_left_dangle = idx != chain.front() && (children[idx]->begin - children[idx - 1]->end == 1);
-                bool no_right_dangle = idx != chain.back() && (children[idx + 1]->begin - children[idx]->end == 1);
-
-                // energies: no dangle, left dangle, right dangle, both dangles
-                int eNone = energies[None], eLeft = energies[Left], eRight = energies[Right], eBoth = energies[Both];
-
-                // Update touching_right based on previous state and current possibilities
-                if (no_left_dangle && no_right_dangle) {
-                    touching_right[N] = prev_TR[N] + eNone;
-                    // touching_right[1] = INF; // impossible
-                } else if (no_left_dangle) {
-                    touching_right[N] = prev_TR[N] + eNone; // impossible case: prev[1] + eNone
-                    touching_right[Y] = std::min({prev_TR[N] + eRight, prev_TR[Y] + eRight});
-                } else if (no_right_dangle) {
-                    touching_right[N] = std::min({prev_TR[N] + eNone, prev_TR[N] + eLeft, prev_TR[Y] + eNone, prev_TR[Y] + eLeft});
-                    // touching_right[1] = INF; // impossible
-                } else {
-                    touching_right[N] = std::min({prev_TR[N] + eNone , prev_TR[N] + eLeft,  prev_TR[Y] + eNone});
-                    touching_right[Y] = std::min({prev_TR[N] + eLeft , prev_TR[N] + eRight, prev_TR[Y] + eRight, prev_TR[N] + eBoth});
-                }
-                
-                // Sanity check for overflow
-                if ((touching_right[N] > INF) or (touching_right[Y] > INF)){
-                    THROW_ERROR("Dangle energy overflow detected in external loop dangle calculation.");
-                }
-
-                prev_TR = touching_right;
-            }
-            dangle_energy += std::min(prev_TR[N], prev_TR[Y]);    
+        } else {
+            dangle_energy += process_chain(chain, children, dangle_energies);
         }
     }
+    return dangle_energy;
+}
+
+int ViennaDangles::process_ml_chains(
+                    const std::vector<std::vector<size_t>>& dangle_chains,
+                    const std::vector<std::shared_ptr<LoopNode>>& children,
+                    const std::vector<std::array<int,4>>& dangle_energies,
+                    const LoopNode& node,
+                    const std::array<int,4> ml_dangle_energy
+                ) {
+    enum class ML_Type { None, Front, Back, Both, Loop};
+    ML_Type ml_type; // Placeholder for future use
+    bool front_dangle = children.front()->begin - node.begin <= 2;
+    bool back_dangle  = node.end - children.back()->end <= 2;
+
+    if (front_dangle && back_dangle && children.size() == 1){
+        ml_type = ML_Type::Loop;
+    } else if (front_dangle && back_dangle) {
+        ml_type = ML_Type::Both;
+    } else if (front_dangle) {
+        ml_type = ML_Type::Front;
+    } else if (back_dangle) {
+        ml_type = ML_Type::Back;
+    } else {
+        ml_type = ML_Type::None;
+    }
+
+    if (ml_type == ML_Type::None){
+        return *std::min_element(ml_dangle_energy.begin(), ml_dangle_energy.end()) + process_chains(dangle_chains, children, dangle_energies);
+    }
+    
+    int dangle_energy = 0;
     return dangle_energy;
 }
 
