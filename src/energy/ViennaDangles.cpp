@@ -19,7 +19,7 @@ int ViennaDangles::get_multi_dangle_1(const LoopNode& node, const std::string& s
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence, md, is_external);
     DangleSet ml_dangle_energy = get_ml_dangle_energy(node, sequence, md);
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
-    return 0;
+    return process_ml_chains(dangle_chains, children, dangle_energies, node, ml_dangle_energy);
 }
 
 DangleSet ViennaDangles::get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md){
@@ -31,9 +31,9 @@ DangleSet ViennaDangles::get_ml_dangle_energy(const LoopNode& node, const std::s
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[pi], sequence[pj], md);
     unsigned int rev_pair_type = ViennaUtils::reverse_pair_type(pair_type, md);
 
-    ml_dangle.no_dangle  = vrna_E_multibranch_stem(rev_pair_type, -1,  -1,  P);
-    ml_dangle.left_dangle  = vrna_E_multibranch_stem(rev_pair_type, -1,  n5d, P);
-    ml_dangle.right_dangle = vrna_E_multibranch_stem(rev_pair_type, n3d, -1,  P);
+    ml_dangle.no_dangle    = vrna_E_multibranch_stem(rev_pair_type, -1,  -1,  P);
+    ml_dangle.left_dangle  = vrna_E_multibranch_stem(rev_pair_type, n3d, -1,  P);
+    ml_dangle.right_dangle = vrna_E_multibranch_stem(rev_pair_type, -1,  n5d, P);
     ml_dangle.both_dangle  = vrna_E_multibranch_stem(rev_pair_type, n3d, n5d, P);
     if (P) free(P);
     return ml_dangle;
@@ -96,29 +96,42 @@ int ViennaDangles::process_chain(
                     const std::vector<std::shared_ptr<LoopNode>>& children,
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle,
-                    const bool& disable_first_right_dangle
+                    const bool& disable_last_right_dangle,
+                    std::array<int,2> prev_init
                 ) {
+    if (chain.size() == 1) {
+        if (disable_first_left_dangle && disable_last_right_dangle) {
+            return dangle_energies[chain.front()].no_dangle;
+        } else if (disable_first_left_dangle) {
+            return std::min(dangle_energies[chain.front()].no_dangle,
+                            dangle_energies[chain.front()].right_dangle);
+        } else if (disable_last_right_dangle) {
+            return std::min(dangle_energies[chain.front()].no_dangle,
+                            dangle_energies[chain.front()].left_dangle);
+        }
+        return dangle_energies[chain.front()].min();
+    }
     int dangle_energy = 0;
-    std::array<int,2> prev = {0, INF}; 
+    std::array<int,2> prev = prev_init; // default {0, INF}
     for (size_t idx : chain) {
         const DangleSet& energies = dangle_energies[idx];
         std::array<int,2> cur = {INF, INF};
 
         // Check if left or right dangle is possible based on adjacency (no unpaired bases in between)
-        bool no_left_dangle = idx != chain.front() && (children[idx]->begin - children[idx - 1]->end == 1);
-        bool no_right_dangle = idx != chain.back() && (children[idx + 1]->begin - children[idx]->end == 1);
+        bool disable_left_dangle = idx != chain.front() && contiguous_children(*children[idx], *children[idx - 1]) || (idx == chain.front() && disable_first_left_dangle);
+        bool disable_right_dangle = idx != chain.back() && contiguous_children(*children[idx], *children[idx + 1]) || (idx == chain.back() && disable_last_right_dangle);
 
         // energies: no dangle, left dangle, right dangle, both dangles
         int eNone = energies.no_dangle, eLeft = energies.left_dangle, eRight = energies.right_dangle, eBoth = energies.both_dangle;
 
         // Update touching_right based on previous state and current possibilities
-        if (no_left_dangle && no_right_dangle) {
+        if (disable_left_dangle && disable_right_dangle) {
             cur[RightFree] = prev[RightFree] + eNone;
             // cur[RightTaken] = INF; // impossible
-        } else if (no_left_dangle) {
-            cur[RightFree] = prev[RightFree] + eNone; // impossible case: prev[1] + eNone
+        } else if (disable_left_dangle) {
+            cur[RightFree] = prev[RightFree] + eNone; // impossible case: prev[RightTaken] + eNone
             cur[RightTaken] = std::min({prev[RightFree] + eRight, prev[RightTaken] + eRight});
-        } else if (no_right_dangle) {
+        } else if (disable_right_dangle) {
             cur[RightFree] = std::min({prev[RightFree] + eNone, prev[RightFree] + eLeft, prev[RightTaken] + eNone, prev[RightTaken] + eLeft});
             // cur[RightTaken] = INF; // impossible
         } else {
@@ -138,18 +151,20 @@ int ViennaDangles::process_chain(
 int ViennaDangles::process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
-                    const std::vector<DangleSet>& dangle_energies
+                    const std::vector<DangleSet>& dangle_energies,
+                    const bool& disable_first_left_dangle,
+                    const bool& disable_last_right_dangle,
+                    std::array<int,2> init
                 ) {
     int dangle_energy = 0;
+    bool first = true;
     for (const std::vector<size_t>& chain : dangle_chains) {
-        if (chain.size() == 1) {
-            size_t idx = chain[0];
-            int min_energy = dangle_energies[idx].min();
-            dangle_energy += min_energy;
+        if (first) {
+            first = false;
+            dangle_energy += process_chain(chain, children, dangle_energies, disable_first_left_dangle, false, init);
             continue;
-        } else {
-            dangle_energy += process_chain(chain, children, dangle_energies);
         }
+        dangle_energy += process_chain(chain, children, dangle_energies);
     }
     return dangle_energy;
 }
@@ -165,6 +180,9 @@ int ViennaDangles::process_ml_chains(
     ML_Type ml_type; // Placeholder for future use
     bool front_dangle = children.front()->begin - node.begin <= 2;
     bool back_dangle  = node.end - children.back()->end <= 2;
+    std::array<int,2> init = {0, 0}; 
+    init[RightFree]  = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.left_dangle);
+    init[RightTaken] = std::min(ml_dangle_energy.right_dangle, ml_dangle_energy.both_dangle);
 
     if (front_dangle && back_dangle && children.size() == 1){
         ml_type = ML_Type::Loop;
@@ -180,6 +198,22 @@ int ViennaDangles::process_ml_chains(
 
     if (ml_type == ML_Type::None){
         return ml_dangle_energy.min() + process_chains(dangle_chains, children, dangle_energies);
+    }
+
+    if (ml_type == ML_Type::Front){
+        if (contiguous(node.begin, children.front()->begin)){
+            return process_chains(dangle_chains, children, dangle_energies, true) + init[RightFree];
+        } else {
+            return process_chains(dangle_chains, children, dangle_energies, false, false, init);
+        }
+    }
+
+    if (ml_type == ML_Type::Back){
+        if (contiguous(node.end, children.back()->end)){
+            return process_chains(dangle_chains, children, dangle_energies, false,  true) + init[RightTaken];
+        } else {
+            return process_chains(dangle_chains, children, dangle_energies, false, false, init);
+        }
     }
     
     int dangle_energy = 0;

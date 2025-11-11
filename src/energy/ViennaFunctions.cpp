@@ -91,7 +91,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
             n3d = -1;
             break;
         case 1:
-            // return get_multi_dangle_1(node, sequence) + energy;
+            return ViennaDangles::get_multi_dangle_1(node, sequence, md) + energy;
         case 2:
             n5d = vrna_nucleotide_encode(sequence[i + 1], &md);
             n3d = vrna_nucleotide_encode(sequence[j - 1], &md);

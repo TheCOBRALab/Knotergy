@@ -38,7 +38,21 @@ namespace knotergy {
         static int get_multi_dangle_1(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
     
     private:
-        
+        // check if two indices or nodes are contiguous (touching)
+        static bool contiguous(size_t first, size_t second) noexcept {
+            return (first > second ? first - second : second - first) == 1;
+        }
+
+        // Returns true if two child nodes are directly adjacent in sequence.
+        // Assumes children are in 5'→3' order but handles reversed input defensively.
+        static bool contiguous_children(const LoopNode& first, const LoopNode& second) noexcept {
+            if (first.end < second.begin)
+                return contiguous(first.end, second.begin);
+            if (second.end < first.begin)
+                return contiguous(second.end, first.begin);
+            return false; // overlapping or nested, not adjacent
+        }
+
         static std::vector<DangleSet> populate_children_dangle_energies(
             const std::vector<std::shared_ptr<LoopNode>>& children,
             const std::string& sequence,
@@ -51,12 +65,16 @@ namespace knotergy {
                     const std::vector<std::shared_ptr<LoopNode>>& children,
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle = false,
-                    const bool& disable_first_right_dangle = false
+                    const bool& disable_last_right_dangle = false,
+                    std::array<int,2> prev_init = {0, INF}
                 );
         static int process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
-                    const std::vector<DangleSet>& dangle_energies
+                    const std::vector<DangleSet>& dangle_energies,
+                    const bool& disable_first_left_dangle = false,
+                    const bool& disable_last_right_dangle = false,
+                    std::array<int,2> init = {0, INF}
         );
 
         static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);

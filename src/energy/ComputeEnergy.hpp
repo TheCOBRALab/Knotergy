@@ -9,7 +9,7 @@ class ComputeEnergy {
    public:
     ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence,
                   ProcessedRNAEntry processed_rna, bool round = false, int dangle = 2)
-        : vienna(dangle), root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round} {
+        : vienna(dangle), pseudo(dangle), root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round} {
         process_tree(*root_node_);
     };
 
