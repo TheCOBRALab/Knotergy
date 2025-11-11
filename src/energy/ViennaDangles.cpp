@@ -177,13 +177,13 @@ int ViennaDangles::process_ml_chains(
                     const DangleSet ml_dangle_energy
                 ) {
     enum class ML_Type { None, Front, Back, Both, Loop};
-    ML_Type ml_type; // Placeholder for future use
+   
     bool front_dangle = children.front()->begin - node.begin <= 2;
     bool back_dangle  = node.end - children.back()->end <= 2;
-    std::array<int,2> init = {0, 0}; 
-    init[RightFree]  = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.left_dangle);
-    init[RightTaken] = std::min(ml_dangle_energy.right_dangle, ml_dangle_energy.both_dangle);
+    int best_left  = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.left_dangle);
+    int best_right = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.right_dangle);
 
+    ML_Type ml_type;
     if (front_dangle && back_dangle && children.size() == 1){
         ml_type = ML_Type::Loop;
     } else if (front_dangle && back_dangle) {
@@ -202,17 +202,17 @@ int ViennaDangles::process_ml_chains(
 
     if (ml_type == ML_Type::Front){
         if (contiguous(node.begin, children.front()->begin)){
-            return process_chains(dangle_chains, children, dangle_energies, true) + init[RightFree];
+            return process_chains(dangle_chains, children, dangle_energies, true) + best_left;
         } else {
-            return process_chains(dangle_chains, children, dangle_energies, false, false, init);
+            return process_chains(dangle_chains, children, dangle_energies, false, false, {ml_dangle_energy.no_dangle, best_left});
         }
     }
-
+    
     if (ml_type == ML_Type::Back){
         if (contiguous(node.end, children.back()->end)){
-            return process_chains(dangle_chains, children, dangle_energies, false,  true) + init[RightTaken];
+            return process_chains(dangle_chains, children, dangle_energies, false,  true) + best_right;
         } else {
-            return process_chains(dangle_chains, children, dangle_energies, false, false, init);
+            return process_chains(dangle_chains, children, dangle_energies, false, false, {ml_dangle_energy.no_dangle, best_right});
         }
     }
     
