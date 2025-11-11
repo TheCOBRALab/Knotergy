@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-
-
 TEST(RNAEntryBasics, populate) {
     std::string name = "Test Input";
     std::string sequence = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";

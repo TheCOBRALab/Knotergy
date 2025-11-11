@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-
+namespace {
 float pipeline(std::string sequence, std::string structure, std::string param_file = "../../params/common/rna_turner2004.par", bool round = false){
     knotergy::ViennaParams::load_energy_parameters(param_file);
     knotergy::RNAEntry rna(sequence, structure);
@@ -21,7 +21,7 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
 
     return energy.getEnergy();
 }
-
+}
 TEST(PseudoknottedEnergies, SimplePseudoknot) {
     std::string sequence  = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";

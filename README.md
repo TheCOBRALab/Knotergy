@@ -135,5 +135,3 @@ Run `--help` for available options:
 ```bash
 ./build/Knotergy --help
 ```
-echo -e "GGGAAAUCC\n
-        ((((((....)))....)))" | RNAeval
