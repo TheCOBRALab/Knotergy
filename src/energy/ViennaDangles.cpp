@@ -97,20 +97,9 @@ int ViennaDangles::process_chain(
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle,
                     const bool& disable_last_right_dangle,
-                    std::array<int,2> prev_init
+                    std::array<int,2> prev_init,
+                    std::array<int,2> end
                 ) {
-    if (chain.size() == 1) {
-        if (disable_first_left_dangle && disable_last_right_dangle) {
-            return dangle_energies[chain.front()].no_dangle;
-        } else if (disable_first_left_dangle) {
-            return std::min(dangle_energies[chain.front()].no_dangle,
-                            dangle_energies[chain.front()].right_dangle);
-        } else if (disable_last_right_dangle) {
-            return std::min(dangle_energies[chain.front()].no_dangle,
-                            dangle_energies[chain.front()].left_dangle);
-        }
-        return dangle_energies[chain.front()].min();
-    }
     int dangle_energy = 0;
     std::array<int,2> prev = prev_init; // default {0, INF}
     for (size_t idx : chain) {
@@ -154,17 +143,23 @@ int ViennaDangles::process_chains(
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle,
                     const bool& disable_last_right_dangle,
-                    std::array<int,2> init
+                    std::array<int,2> init,
+                    std::array<int,2> end
                 ) {
     int dangle_energy = 0;
-    bool first = true;
+    size_t chain_idx = 0;
     for (const std::vector<size_t>& chain : dangle_chains) {
-        if (first) {
-            first = false;
+        if (chain_idx == 0) {
             dangle_energy += process_chain(chain, children, dangle_energies, disable_first_left_dangle, false, init);
-            continue;
+            std::cout << "First chain processed. Current dangle energy: " << dangle_energy << " " << init[0] << " " << init[1] << std::endl;
+        } else if (chain_idx == dangle_chains.size() - 1) {
+            dangle_energy += process_chain(chain, children, dangle_energies, false, disable_last_right_dangle, {0, INF}, end);
+            std::cout << "Last chain processed. Current dangle energy: " << dangle_energy << " " << end[0] << " " << end[1] << std::endl;
+        } else {
+            dangle_energy += process_chain(chain, children, dangle_energies);
+            std::cout << "Intermediate chain processed. Current dangle energy: " << dangle_energy << std::endl;
         }
-        dangle_energy += process_chain(chain, children, dangle_energies);
+        ++chain_idx;
     }
     return dangle_energy;
 }
@@ -182,6 +177,12 @@ int ViennaDangles::process_ml_chains(
     bool back_dangle  = node.end - children.back()->end <= 2;
     int best_left  = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.left_dangle);
     int best_right = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.right_dangle);
+    std::array<int, 2> init = {ml_dangle_energy.no_dangle, ml_dangle_energy.min()};
+    std::array<int, 2> end  = {ml_dangle_energy.no_dangle, best_right};
+    std::cout << "ML Dangle Energies - No: " << ml_dangle_energy.no_dangle 
+              << ", Left: " << ml_dangle_energy.left_dangle 
+              << ", Right: " << ml_dangle_energy.right_dangle 
+              << ", Both: " << ml_dangle_energy.both_dangle << std::endl;
 
     ML_Type ml_type;
     if (front_dangle && back_dangle && children.size() == 1){
@@ -204,7 +205,7 @@ int ViennaDangles::process_ml_chains(
         if (contiguous(node.begin, children.front()->begin)){
             return process_chains(dangle_chains, children, dangle_energies, true) + best_left;
         } else {
-            return process_chains(dangle_chains, children, dangle_energies, false, false, {ml_dangle_energy.no_dangle, best_left});
+            return process_chains(dangle_chains, children, dangle_energies, false, false, init);
         }
     }
     
@@ -212,12 +213,16 @@ int ViennaDangles::process_ml_chains(
         if (contiguous(node.end, children.back()->end)){
             return process_chains(dangle_chains, children, dangle_energies, false,  true) + best_right;
         } else {
-            return process_chains(dangle_chains, children, dangle_energies, false, false, {ml_dangle_energy.no_dangle, best_right});
+            return std::min(process_chains(dangle_chains, children, dangle_energies, false, false) + best_left,
+                            process_chains(dangle_chains, children, dangle_energies, false, true)  + ml_dangle_energy.min()
+        ) ;
         }
     }
     
     int dangle_energy = 0;
     return dangle_energy;
 }
+// ./build/Knotergy -p ./params/common/rna_turner2004.par -s AAAAAAAAAUUUUUUUUAAAAUUUUUUU -r "(((..(((....)))..((...)).)))" -d 1
+// echo -e "AAAAAAAAAUUUUUUUUAAAAUUUUUUU\n(((..(((....)))..((...)).)))" | RNAeval -d 1
 
 }

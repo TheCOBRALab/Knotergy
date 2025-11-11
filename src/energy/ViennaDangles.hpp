@@ -66,7 +66,8 @@ namespace knotergy {
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle = false,
                     const bool& disable_last_right_dangle = false,
-                    std::array<int,2> prev_init = {0, INF}
+                    std::array<int,2> prev_init = {0, INF},
+                    std::array<int,2> end = {0, 0}
                 );
         static int process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
@@ -74,7 +75,8 @@ namespace knotergy {
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle = false,
                     const bool& disable_last_right_dangle = false,
-                    std::array<int,2> init = {0, INF}
+                    std::array<int,2> init = {0, INF},
+                    std::array<int,2> end = {0, 0}
         );
 
         static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
