@@ -1,7 +1,11 @@
 #include "ViennaDangles.hpp"
 
 namespace knotergy {
-enum TouchingRight {N = 0, Y = 1};
+
+enum TouchingRight {
+    RightFree = 0,
+    RightTaken = 1
+};
 
 int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, vrna_md_t& md) {
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence, md);
@@ -95,10 +99,10 @@ int ViennaDangles::process_chain(
                     const bool& disable_first_right_dangle
                 ) {
     int dangle_energy = 0;
-    std::array<int,2> prev_TR = {0, 0};
+    std::array<int,2> prev = {0, INF}; 
     for (size_t idx : chain) {
         const DangleSet& energies = dangle_energies[idx];
-        std::array<int,2> touching_right = {INF, INF};
+        std::array<int,2> cur = {INF, INF};
 
         // Check if left or right dangle is possible based on adjacency (no unpaired bases in between)
         bool no_left_dangle = idx != chain.front() && (children[idx]->begin - children[idx - 1]->end == 1);
@@ -109,26 +113,26 @@ int ViennaDangles::process_chain(
 
         // Update touching_right based on previous state and current possibilities
         if (no_left_dangle && no_right_dangle) {
-            touching_right[N] = prev_TR[N] + eNone;
-            // touching_right[1] = INF; // impossible
+            cur[RightFree] = prev[RightFree] + eNone;
+            // cur[RightTaken] = INF; // impossible
         } else if (no_left_dangle) {
-            touching_right[N] = prev_TR[N] + eNone; // impossible case: prev[1] + eNone
-            touching_right[Y] = std::min({prev_TR[N] + eRight, prev_TR[Y] + eRight});
+            cur[RightFree] = prev[RightFree] + eNone; // impossible case: prev[1] + eNone
+            cur[RightTaken] = std::min({prev[RightFree] + eRight, prev[RightTaken] + eRight});
         } else if (no_right_dangle) {
-            touching_right[N] = std::min({prev_TR[N] + eNone, prev_TR[N] + eLeft, prev_TR[Y] + eNone, prev_TR[Y] + eLeft});
-            // touching_right[1] = INF; // impossible
+            cur[RightFree] = std::min({prev[RightFree] + eNone, prev[RightFree] + eLeft, prev[RightTaken] + eNone, prev[RightTaken] + eLeft});
+            // cur[RightTaken] = INF; // impossible
         } else {
-            touching_right[N] = std::min({prev_TR[N] + eNone , prev_TR[N] + eLeft,  prev_TR[Y] + eNone});
-            touching_right[Y] = std::min({prev_TR[N] + eLeft , prev_TR[N] + eRight, prev_TR[Y] + eRight, prev_TR[N] + eBoth});
+            cur[RightFree] = std::min({prev[RightFree] + eNone , prev[RightFree] + eLeft,  prev[RightTaken] + eNone});
+            cur[RightTaken] = std::min({prev[RightFree] + eLeft , prev[RightFree] + eRight, prev[RightTaken] + eRight, prev[RightFree] + eBoth});
         }
         
         // Sanity check for overflow
-        if ((touching_right[N] > INF) or (touching_right[Y] > INF)){
+        if ((cur[RightFree] > INF) || (cur[RightTaken] > INF)) {
             THROW_ERROR("Dangle energy overflow detected in external loop dangle calculation.");
         }
-        prev_TR = touching_right;
+        prev = cur;
     }
-    return std::min(prev_TR[N], prev_TR[Y]);  
+    return std::min(prev[RightFree], prev[RightTaken]);
 }
 
 int ViennaDangles::process_chains(
