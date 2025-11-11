@@ -17,6 +17,19 @@ extern "C" {
 
 namespace knotergy {
 
+    struct DangleSet {
+    public:
+        DangleSet() : no_dangle(0), left_dangle(0), right_dangle(0), both_dangle(0) {}
+        int no_dangle;
+        int left_dangle;
+        int right_dangle;
+        int both_dangle;
+
+        int min() const {
+            return std::min({no_dangle, left_dangle, right_dangle, both_dangle});
+        }
+    };
+
     class ViennaDangles {
     public:
         ViennaDangles() = default;
@@ -26,7 +39,7 @@ namespace knotergy {
     
     private:
         
-        static std::vector<std::array<int,4>> populate_children_dangle_energies(
+        static std::vector<DangleSet> populate_children_dangle_energies(
             const std::vector<std::shared_ptr<LoopNode>>& children,
             const std::string& sequence,
             vrna_md_t& md,
@@ -36,23 +49,23 @@ namespace knotergy {
         static int process_chain(
                     const std::vector<size_t>& chain,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
-                    const std::vector<std::array<int,4>>& dangle_energies,
+                    const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle = false,
                     const bool& disable_first_right_dangle = false
                 );
         static int process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
-                    const std::vector<std::array<int,4>>& dangle_energies
+                    const std::vector<DangleSet>& dangle_energies
         );
 
-        static std::array<int,4> get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
+        static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
         static int process_ml_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,
-                    const std::vector<std::array<int,4>>& dangle_energies,
+                    const std::vector<DangleSet>& dangle_energies,
                     const LoopNode& node,
-                    const std::array<int,4> ml_dangle_energy
+                    const DangleSet ml_dangle_energy
                 );
     };
 } // namespace knotergy
