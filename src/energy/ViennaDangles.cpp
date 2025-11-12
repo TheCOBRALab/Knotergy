@@ -98,17 +98,16 @@ int ViennaDangles::process_chain(
                     const bool& disable_first_left_dangle,
                     const bool& disable_last_right_dangle,
                     std::array<int,2> prev_init,
-                    std::array<int,2> end
+                    [[maybe_unused]] std::array<int,2> end
                 ) {
-    int dangle_energy = 0;
     std::array<int,2> prev = prev_init; // default {0, INF}
     for (size_t idx : chain) {
         const DangleSet& energies = dangle_energies[idx];
         std::array<int,2> cur = {INF, INF};
 
         // Check if left or right dangle is possible based on adjacency (no unpaired bases in between)
-        bool disable_left_dangle = idx != chain.front() && contiguous_children(*children[idx], *children[idx - 1]) || (idx == chain.front() && disable_first_left_dangle);
-        bool disable_right_dangle = idx != chain.back() && contiguous_children(*children[idx], *children[idx + 1]) || (idx == chain.back() && disable_last_right_dangle);
+        bool disable_left_dangle = (idx != chain.front() && contiguous_children(*children[idx], *children[idx - 1])) || (idx == chain.front() && disable_first_left_dangle);
+        bool disable_right_dangle = (idx != chain.back() && contiguous_children(*children[idx], *children[idx + 1])) || (idx == chain.back() && disable_last_right_dangle);
 
         // energies: no dangle, left dangle, right dangle, both dangles
         int eNone = energies.no_dangle, eLeft = energies.left_dangle, eRight = energies.right_dangle, eBoth = energies.both_dangle;
@@ -178,7 +177,7 @@ int ViennaDangles::process_ml_chains(
     int best_left  = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.left_dangle);
     int best_right = std::min(ml_dangle_energy.no_dangle, ml_dangle_energy.right_dangle);
     std::array<int, 2> init = {ml_dangle_energy.no_dangle, ml_dangle_energy.min()};
-    std::array<int, 2> end  = {ml_dangle_energy.no_dangle, best_right};
+    [[maybe_unused]] std::array<int, 2> end  = {ml_dangle_energy.no_dangle, best_right};
     std::cout << "ML Dangle Energies - No: " << ml_dangle_energy.no_dangle 
               << ", Left: " << ml_dangle_energy.left_dangle 
               << ", Right: " << ml_dangle_energy.right_dangle 
