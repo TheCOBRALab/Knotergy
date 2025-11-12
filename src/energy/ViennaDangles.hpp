@@ -28,6 +28,14 @@ namespace knotergy {
         int min() const {
             return std::min({no_dangle, left_dangle, right_dangle, both_dangle});
         }
+
+        int best_left() const {
+            return std::min(no_dangle, left_dangle);
+        }
+
+        int best_right() const {
+            return std::min(no_dangle, right_dangle);
+        }
     };
 
     class ViennaDangles {
@@ -66,8 +74,8 @@ namespace knotergy {
                     const std::vector<DangleSet>& dangle_energies,
                     const bool& disable_first_left_dangle = false,
                     const bool& disable_last_right_dangle = false,
-                    std::array<int,2> prev_init = {0, INF},
-                    std::array<int,2> end = {0, 0}
+                    std::array<int,2> init = {0, INF},
+                    DangleSet closing = DangleSet()
                 );
         static int process_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
@@ -76,7 +84,7 @@ namespace knotergy {
                     const bool& disable_first_left_dangle = false,
                     const bool& disable_last_right_dangle = false,
                     std::array<int,2> init = {0, INF},
-                    std::array<int,2> end = {0, 0}
+                    DangleSet closing = DangleSet()
         );
 
         static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
