@@ -69,6 +69,57 @@ TEST(Dangles, external_simple_adjacent) {
     EXPECT_NEAR(d2, -17.60, 0.009);
 }
 
+TEST(Dangles, multiloop_left_dangle) {
+    std::string sequence  = "AAAAAAAAAUUUUUUUAAAAAUUUUUUU";
+    std::string structure = "(((.(((....)))..((...))..)))";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 15.10, 0.009);
+    EXPECT_NEAR(d1, 13.5, 0.009);
+    EXPECT_NEAR(d2, 12.9, 0.009);
+}
+
+TEST(Dangles, multiloop_left_dangle_chained) {
+    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string structure = "(((.(((....))).((...))..)))";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 15.10, 0.009);
+    EXPECT_NEAR(d1, 13.6, 0.009);
+    EXPECT_NEAR(d2, 12.9, 0.009);
+}
+
+TEST(Dangles, multiloop_left_touch) {
+    std::string sequence  = "AAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string structure = "((((((....))).((...))..)))";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 15.10, 0.009);
+    EXPECT_NEAR(d1, 14.4, 0.009);
+    EXPECT_NEAR(d2, 12.9, 0.009);
+}
+
+
+TEST(Dangles, multiloop_right_dangle) {
+    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string structure = "(((..(((....))).((...)).)))";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 15.10, 0.009);
+    EXPECT_NEAR(d1, 13.1, 0.009);
+    EXPECT_NEAR(d2, 12.4, 0.009);
+}
+
+TEST(Dangles, multiloop_right_touch) {
+    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
+    std::string structure = "(((..(((....))).((...)))))";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 15.10, 0.009);
+    EXPECT_NEAR(d1, 13.3, 0.009);
+    EXPECT_NEAR(d2, 12.4, 0.009);
+}
+
 // // echo -e "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))." | RNAeval -d 
 // TEST(Dangles, external_multiloop) {
 //     std::string sequence  = "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC";
