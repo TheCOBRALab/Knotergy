@@ -36,3 +36,6 @@
 
 # VSCode
 /.vscode/
+
+# macOS
+.DS_Store
