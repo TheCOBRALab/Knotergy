@@ -45,7 +45,7 @@ jobs:
         ./configure --without-perl --prefix="${VIENNARNA_PREFIX}"
         CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
         make -j"$CORES"
-        make install -j"$CORES"
+        make install
 
     # Expose headers & libs to the compiler / linker / CMake
     - name: Export ViennaRNA paths
