@@ -17,7 +17,7 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 ### Software Requirements
 
 * **CMake** ≥ 3.15
-* **ViennaRNA** = 2.7.0
+* **ViennaRNA** = 2.7.1
 
 ---
 
@@ -25,10 +25,10 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 
 Knotergy requires ViennaRNA to compile and run.
 
-1. **Download ViennaRNA 2.7.0:**
+1. **Download ViennaRNA 2.7.1:**
 
    ```bash
-   curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
+   curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.1/ViennaRNA-2.7.1.tar.gz
    ```
 
 2. **Install:**
@@ -42,7 +42,7 @@ Knotergy requires ViennaRNA to compile and run.
    sudo make install
    ```
 
-#### Common Installation Issues
+### Common Installation Issues
 
 * **No admin access:**
 
@@ -52,12 +52,6 @@ Knotergy requires ViennaRNA to compile and run.
   make -j$(nproc)              # Linux
   make -j$(sysctl -n hw.ncpu)  # macOS
   make install
-  ```
-
-* **Template error on some compilers (dlib fix):**
-
-  ```bash
-  sed -i.bak 's/::template go(/::template go<>(/' src/dlib-19.24/dlib/global_optimization/find_max_global.h
   ```
 
 For full details, see the [ViennaRNA GitHub repo](https://github.com/ViennaRNA/ViennaRNA).
@@ -122,7 +116,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build --parallel
 ```
 
-**One Line build & test:**
+**Build & Test (one liner):**
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cd build; ctest --output-on-failure; cd ..

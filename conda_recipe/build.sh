@@ -23,25 +23,9 @@ cd     build
 # ──────────────────────────────────────────────────────────────
 # 2 · Unpack ViennaRNA, patch and build ViennaRNA
 # ──────────────────────────────────────────────────────────────
-curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.0/ViennaRNA-2.7.0.tar.gz
-tar -xf  ./ViennaRNA-2.7.0.tar.gz
-cd   ViennaRNA-2.7.0
-
-# Bug fixes in dlib until ViennaRNA updates to a newer version
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # typedef with the standard UTF-32 code unit.
-    sed -i.bak 's/typedef uint32 unichar;/typedef char32_t unichar;/' \
-        src/dlib-19.24/dlib/unicode/unicode.h
-
-    # make the new type serialisable
-    sed -i.bak '/USE_DEFAULT_INT_SERIALIZATION_FOR(uint64)/a\
-    USE_DEFAULT_INT_SERIALIZATION_FOR(char32_t)
-    ' src/dlib-19.24/dlib/serialize.h
-
-    # “template” keyword.  Add the empty <> that upstream already has.
-    sed -i.bak 's/::template go(/::template go<>(/' \
-        src/dlib-19.24/dlib/global_optimization/find_max_global.h
-fi
+curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.1/ViennaRNA-2.7.1.tar.gz
+tar -xf  ./ViennaRNA-2.7.1.tar.gz
+cd   ViennaRNA-2.7.1
 
 ./configure --without-perl --without-python --prefix="${PREFIX}"
 make  -j"${CPU_COUNT}"
