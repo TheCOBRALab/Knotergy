@@ -103,7 +103,9 @@ class ProcessedRNAEntry {
 
    private:
     const std::string name_;                            // RNA entry name.
-    const std::string sequence_;                        // Raw RNA nucleotide sequence.
+    const std::string sequence_;                        // Unmodified RNA nucleotide sequence.
+    const std::vector<std::string_view> mod_sequence_;  // Modified RNA sequence.
+    const std::string raw_sequence_;                    // Raw RNA input sequence.
     const std::string structure_;                       // Dot-bracket RNA structure string.
     const std::vector<size_t> pairings_;                // Base-pair indices for each position.
     const std::vector<ClosedRegion> closed_regions_;    // All closed regions in the structure.

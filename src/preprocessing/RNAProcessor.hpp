@@ -102,5 +102,11 @@ class RNAProcessor {
      * @return std::vector<int> of size rna_size + 1 with cumulative unpaired counts.
      */
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(const std::vector<size_t>& pairings);
+
+    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(const RNAEntry& rna);
+
+    [[nodiscard]] static bool check_utf8_pattern(const std::string& s, size_t pos, const std::vector<unsigned char>& pattern) noexcept;
+
+    [[nodiscard]] static size_t bytes_to_read(const std::string& sequence, size_t index) noexcept; 
 };
 }  // namespace knotergy
