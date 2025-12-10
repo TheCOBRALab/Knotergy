@@ -25,7 +25,7 @@ namespace knotergy {
         int right_dangle;
         int both_dangle;
 
-        int min() const {
+        int best() const {
             return std::min({no_dangle, left_dangle, right_dangle, both_dangle});
         }
 

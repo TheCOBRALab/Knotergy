@@ -122,6 +122,12 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build --parallel
 ```
 
+**One Line build & test:**
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cd build; ctest --output-on-failure; cd ..
+```
+
 ---
 
 ## 4. Usage

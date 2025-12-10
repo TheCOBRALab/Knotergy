@@ -132,7 +132,7 @@ int ViennaDangles::process_chain(
         }
         prev = cur;
     }
-    return std::min(prev[RightFree] + closing.min(), prev[RightTaken] + closing.best_left());
+    return std::min(prev[RightFree] + closing.best(), prev[RightTaken] + closing.best_left());
 }
 
 int ViennaDangles::process_chains(
@@ -191,7 +191,7 @@ int ViennaDangles::process_ml_chains(
     }
 
     if (ml_type == ML_Type::None){
-        return closing.min() + process_chains(dangle_chains, children, dangle_energies);
+        return closing.best() + process_chains(dangle_chains, children, dangle_energies);
     } 
 
     bool disable_first_left_dangle = false;
@@ -201,18 +201,18 @@ int ViennaDangles::process_ml_chains(
 
     if (ml_type == ML_Type::Front){
         // ((....)..(....)...)
-        //  ^ closing pair is touching first child
+        // ^^ closing pair is touching first child
         if (contiguous(node.begin, children.front()->begin)){
             disable_first_left_dangle = true; // disables the left dangle on first child
             init = {closing.best_right(), INF}; // disables left dangle on closing pair
         } else {
             // (.(....)..(....)...)
             //  ^ closing pair exactly one unpaired base away from first child
-            init = {closing.best_right(), closing.min()};
+            init = {closing.best_right(), closing.best()};
         }
     } else if (ml_type == ML_Type::Back){
         // (...(....)..((....))
-        //                   ^ closing pair is touching last child
+        //                   ^^closing pair is touching last child
         if (contiguous(node.end, children.back()->end)){
             disable_last_right_dangle = true;
             init = {closing.best_left(), INF};
@@ -221,7 +221,7 @@ int ViennaDangles::process_ml_chains(
             //                    ^ closing pair exactly one unpaired base away from last child
             closing_set = closing;
         }
-    } else if (ml_type == ML_Type::Both){
+    } else if (ml_type == ML_Type::Both || ml_type == ML_Type::Loop){
         // ((....)..(....))
         //  ^          ^
         if (contiguous(node.begin, children.front()->begin) && contiguous(node.end, children.back()->end)){
@@ -230,24 +230,55 @@ int ViennaDangles::process_ml_chains(
             init = {closing.no_dangle, INF};
         } else if (contiguous(node.begin, children.front()->begin)){
             // ((....)..(.....).)
-            //  ^          ^
+            // ^^              ^ closing pair touching first child and last child is one base away
             disable_first_left_dangle = true;
-            init = {closing.best_left(), INF};
+            int chain1_energy = process_chains(
+                                        dangle_chains,
+                                        children,
+                                        dangle_energies,
+                                        disable_first_left_dangle,
+                                        disable_last_right_dangle,
+                                        {closing.no_dangle, INF}
+                                    );
+            disable_last_right_dangle = true;
+            int chain2_energy = process_chains(
+                                        dangle_chains,
+                                        children,
+                                        dangle_energies,
+                                        disable_first_left_dangle,
+                                        disable_last_right_dangle,
+                                        {closing.best_right(), INF}
+                                    );
+            
+            return std::min(chain1_energy, chain2_energy);
+            
         } else if (contiguous(node.end, children.back()->end)){
             // (.(....)..(....))
-            //  ^          ^
+            //  ^             ^^ closing pair one base away from first child and touching last child
             disable_last_right_dangle = true;
-            init = {closing.best_right(), INF};
+            init = {0, closing.best_left()};
         } else {
             // (.(....)..(.....).)
-            //  ^          ^
-            init = {closing.best_left() + closing.best_right(), closing.min()};
-        }
-    } else if (ml_type == ML_Type::Loop){
-        // ((....))
-        //  ^    ^
-        if (contiguous(node.begin, children.front()->begin) && contiguous(node.end, children.back()->end)){
-            return 0; // both dangles taken by the same child
+            //  ^               ^ closing pair one base away from both children
+            int chain1_energy = process_chains(
+                                        dangle_chains,
+                                        children,
+                                        dangle_energies,
+                                        disable_first_left_dangle,
+                                        disable_last_right_dangle,
+                                        {0, closing.best_left()}
+                                    );
+            disable_last_right_dangle = true;
+            int chain2_energy = process_chains(
+                                        dangle_chains,
+                                        children,
+                                        dangle_energies,
+                                        disable_first_left_dangle,
+                                        disable_last_right_dangle,
+                                        {0, closing.best()}
+                                    );
+            return std::min(chain1_energy, chain2_energy);
+            
         }
     }
 
@@ -268,3 +299,5 @@ int ViennaDangles::process_ml_chains(
 // echo -e "AAAAAAAAAUUUUUUUUAAAAUUUUUUU\n(((..(((....)))..((...)).)))" | RNAeval -d 1
 
 }
+
+// echo -e "AAAAAAUUUUUUUAAAAAAUUUUUU\n((((....))....((....)).))" | RNAeval
