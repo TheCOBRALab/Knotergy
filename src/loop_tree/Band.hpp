@@ -74,7 +74,7 @@ class Band {
         
         for (size_t idx = right_border_ - 1 ; idx > right_inner_; --idx) {
             BasePair& current_bp = base_pairs_[current_bp_idx];
-            if (next_swap_idx > right_inner_){
+            if ((current_bp_idx + 1 < base_pairs_.size()) && next_swap_idx > right_inner_){
                 next_swap_idx = base_pairs_[current_bp_idx + 1].j;
             }
 

@@ -113,7 +113,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector
         size_t largest_right = i;
 
         // Merge any nested regions whose start lies within (open, i]
-        while (stack.top().begin > open_idx && !stack.empty()) {
+        while (!stack.empty() && (stack.top().begin > open_idx)) {
             largest_right = std::max(largest_right, stack.top().end);
             stack.pop();
         }
@@ -171,9 +171,9 @@ std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(cons
         head += len;
     }
 
-    for (const std::string_view& sv : mod_sequence) {
-        std::cout << sv << '\n';
-    }
+    // for (const std::string_view& sv : mod_sequence) {
+    //     std::cout << sv << '\n';
+    // }
     return mod_sequence;
 };
 

@@ -21,10 +21,10 @@ void help() {
               << "  -i, --input <file>            Input file\n"
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
-              << "  -e  --round                   Rounds all decimal places in pseudoknot calculations";
+              << "  -e  --round                   Rounds all decimal places in pseudoknot calculations\n"
+              << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
             //   << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
             //   << "  -f, --mod-file                Modified base parameter file\n"
-            //   << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
 
 }
 
@@ -87,7 +87,6 @@ int main(int argc, char** argv) {
             std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
             mod_param_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
-            std::cerr << "Dangles are not currently supported. This flag will be ignored." << std::endl;
             dangle = get_numerical_arg(i, argc, argv, dangle);
         } else if (arg == "-h" || arg == "--help") {
             help();

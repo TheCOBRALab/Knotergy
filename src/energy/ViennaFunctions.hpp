@@ -23,7 +23,6 @@ class ViennaFunctions {
         vrna_md_set_default(&md);
         md.dangles = dangle;
         P = vrna_params(&md);
-        std::cout << "Initialized ViennaFunctions with dangle model: " << dangle << std::endl;
     }
     ~ViennaFunctions() { if (P) free(P); }
 
