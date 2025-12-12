@@ -36,12 +36,15 @@ class ProcessedRNAEntry {
      * @param closed_regions_pairings Partner indices for closed-region boundaries.
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
      */
-    explicit ProcessedRNAEntry(RNAEntry rna, std::vector<size_t> pairings,
+    explicit ProcessedRNAEntry(RNAEntry rna, std::vector<std::string_view> mod_sequence_views,
+                               std::vector<size_t> pairings,
                                std::vector<ClosedRegion> closed_regions,
                                std::vector<size_t> closed_regions_pairings,
                                std::vector<int> unpaired_prefix_sum)
         : name_{rna.name},
-          sequence_{rna.sequence},
+          raw_sequence_{rna.sequence},
+          mod_sequence_views_{mod_sequence_views},
+          sequence_{rna.sequence}, // TODO: use unmodified sequence
           structure_{rna.structure},
           pairings_{pairings},
           closed_regions_{closed_regions},
@@ -102,15 +105,15 @@ class ProcessedRNAEntry {
     }
 
    private:
-    const std::string name_;                            // RNA entry name.
-    const std::string sequence_;                        // Unmodified RNA nucleotide sequence.
-    const std::vector<std::string_view> mod_sequence_;  // Modified RNA sequence.
-    const std::string raw_sequence_;                    // Raw RNA input sequence.
-    const std::string structure_;                       // Dot-bracket RNA structure string.
-    const std::vector<size_t> pairings_;                // Base-pair indices for each position.
-    const std::vector<ClosedRegion> closed_regions_;    // All closed regions in the structure.
-    const std::vector<size_t> closed_regions_pairings_; // Closed regions boundary indicies.
-    const std::vector<int> unpaired_prefix_sum_;        // Prefix-sum of unpaired-base counts.
+    const std::string name_;                                  // RNA entry name.
+    const std::string sequence_;                              // Unmodified RNA nucleotide sequence.
+    const std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
+    const std::string raw_sequence_;                          // Raw RNA input sequence.
+    const std::string structure_;                             // Dot-bracket RNA structure string.
+    const std::vector<size_t> pairings_;                      // Base-pair indices for each position.
+    const std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
+    const std::vector<size_t> closed_regions_pairings_;       // Closed regions boundary indicies.
+    const std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
 };
 
 }  // namespace knotergy

@@ -10,8 +10,9 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
-    return ProcessedRNAEntry{std::move(rna), std::move(pairings), std::move(closed_regions),
-                             std::move(cr_pairings), std::move(unpaired_prefix_sum)};
+    return ProcessedRNAEntry{std::move(rna), std::move(mod_sequence), std::move(pairings),
+                             std::move(closed_regions), std::move(cr_pairings),
+                             std::move(unpaired_prefix_sum)};
 };
 
 std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
