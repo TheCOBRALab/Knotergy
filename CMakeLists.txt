@@ -5,10 +5,21 @@ project(Knotergy
     DESCRIPTION "Knotergy: A C++ library for computing energy values of pseudoknotted structures"
 )
 
+
 # Set the C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# ------------------------- External Dependencies ------------------------- 
+include(FetchContent)
+
+FetchContent_Declare(nlohmann_json
+  GIT_REPOSITORY https://github.com/nlohmann/json.git
+  GIT_TAG        v3.12.0
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 
 # ------------------------- Configurations -------------------------
 
@@ -279,7 +290,15 @@ target_include_directories(KnotergyLib SYSTEM PUBLIC ${VIENNARNA_INCLUDE_DIRECTO
 if (VIENNARNA_LINK_DIRS)
   target_link_directories(KnotergyLib PUBLIC ${VIENNARNA_LINK_DIRS})
 endif()
-target_link_libraries(KnotergyLib PUBLIC ${VIENNARNA_LIBRARY})
+
+# ------------------------- Link Libraries -------------------------
+target_link_libraries(KnotergyLib
+  PUBLIC
+    ${VIENNARNA_LIBRARY}
+    nlohmann_json::nlohmann_json
+)
+
+# ------------------------- Executable -------------------------
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
 
