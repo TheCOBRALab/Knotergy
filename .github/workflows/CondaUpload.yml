@@ -77,7 +77,6 @@ jobs:
 
     - name: Install just-uploaded Knotergy
       run: |
-        conda run -n base conda config --add channels conda-forge
-        conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} --no-channel-priority --override-channels -c cobralab
+        conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} --override-channels -c cobralab -c conda-forge
         conda run -n base Knotergy --version
   
