@@ -17,7 +17,7 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 ### Software Requirements
 
 * **CMake** ≥ 3.15
-* **ViennaRNA** = 2.7.1
+* **ViennaRNA** ≥ 2.7.0
 
 ---
 

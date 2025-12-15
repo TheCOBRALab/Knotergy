@@ -36,20 +36,23 @@ class ProcessedRNAEntry {
      * @param closed_regions_pairings Partner indices for closed-region boundaries.
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
      */
-    explicit ProcessedRNAEntry(RNAEntry rna, std::vector<std::string_view> mod_sequence_views,
-                               std::vector<size_t> pairings,
-                               std::vector<ClosedRegion> closed_regions,
-                               std::vector<size_t> closed_regions_pairings,
-                               std::vector<int> unpaired_prefix_sum)
-        : name_{rna.name},
-          raw_sequence_{rna.sequence},
-          mod_sequence_views_{mod_sequence_views},
-          sequence_{rna.sequence}, // TODO: use unmodified sequence
-          structure_{rna.structure},
-          pairings_{pairings},
-          closed_regions_{closed_regions},
-          closed_regions_pairings_{closed_regions_pairings},
-          unpaired_prefix_sum_{unpaired_prefix_sum} {}
+        explicit ProcessedRNAEntry(
+            RNAEntry rna,
+            std::vector<std::string_view> mod_sequence_views,
+            std::vector<size_t> pairings,
+            std::vector<ClosedRegion> closed_regions,
+            std::vector<size_t> closed_regions_pairings,
+            std::vector<int> unpaired_prefix_sum)
+            : name_{rna.name},
+            sequence_{rna.sequence},
+            mod_sequence_views_{mod_sequence_views},
+            raw_sequence_{rna.sequence},
+            structure_{rna.structure},
+            pairings_{pairings},
+            closed_regions_{closed_regions},
+            closed_regions_pairings_{closed_regions_pairings},
+            unpaired_prefix_sum_{unpaired_prefix_sum} {}
+
 
     /// @return The RNA entry's name.
     const std::string& get_name() const { return name_; }
