@@ -42,10 +42,25 @@ inline void trim(std::string& s) {
 }
 
 // filesystem::exists not supported in older macOS Conda packages
-inline bool file_exists(const std::string& name) { 
+inline bool file_exists(const std::string& name) {
     struct stat buffer;
     return (stat(name.c_str(), &buffer) == 0);
 }
 
+inline bool is_file(const std::string& name) {
+    struct stat buffer;
+    if (stat(name.c_str(), &buffer) != 0) {
+        return false;
+    }
+    return S_ISREG(buffer.st_mode);
+}
 
-}  // namespace knotergy
+inline bool is_directory(const std::string& name) {
+    struct stat buffer;
+    if (stat(name.c_str(), &buffer) != 0) {
+        return false;
+    }
+    return S_ISDIR(buffer.st_mode);
+}
+
+}  // namespace knotergy    

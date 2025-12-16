@@ -65,6 +65,8 @@ int main(int argc, char** argv) {
     bool round = false;
     int  dangle = 2;
 
+    // knotergy::ViennaParams::load_modified_energy_parameters("./params/modified_bases/rna_mod_inosine_parameters.json");
+
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
