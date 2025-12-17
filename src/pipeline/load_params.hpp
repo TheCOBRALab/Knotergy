@@ -76,7 +76,7 @@ namespace knotergy{
                     std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
                 }
             } else {
-                std::cerr << "Warning: No parameter file provided. ";
+                std::cerr << "No parameter file provided. ";
             }
 
             // Default fallback based on sequence
