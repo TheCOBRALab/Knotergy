@@ -5,6 +5,7 @@
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
 #include "ProcessedRNAEntry.hpp"
+#include "../pipeline/load_params.hpp"
 namespace knotergy {
 
 
@@ -27,7 +28,7 @@ class RNAProcessor {
     RNAProcessor();
 
     /// High-level pipeline that produces a processed entry from raw RNA input.
-    static ProcessedRNAEntry process_rna(RNAEntry rna);
+    static ProcessedRNAEntry process_rna(RNAEntry rna, const std::vector<modified_base_params>& modified_params = {});
 
     /**
      * @brief Compute base-pair indices from a structure string.

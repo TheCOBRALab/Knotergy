@@ -65,8 +65,6 @@ int main(int argc, char** argv) {
     bool round = false;
     int  dangle = 2;
 
-    // knotergy::ViennaParams::load_modified_energy_parameters("./params/modified_bases/rna_mod_inosine_parameters.json");
-
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -102,11 +100,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    std::unordered_set<char> valid_seq_chars(modifications.begin(), modifications.end());
-    valid_seq_chars.insert({'A', 'U', 'C', 'G', 'T'});
-
     // ------------------------- Validate Inputs -----------------------
-
     // Get sequence if not provided
     if (sequence.empty() && input_file.empty()) {
         std::cout << "Sequence : ";
@@ -146,16 +140,16 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    // ------------------------- Load Modified Base Parameters -----------------------
+    std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_file);
 
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs);
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs, modified_params);
     knotergy::ViennaParams::load_energy_parameters(parameter_file);
 
-    //------------------------- Main Processing Loop -----------------------------
+    //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
-        knotergy::validate_sequence(sequence, valid_seq_chars);
-
         knotergy::LoopFactory factory(processed_rna);
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round, dangle);
         // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()

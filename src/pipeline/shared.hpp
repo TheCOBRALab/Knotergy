@@ -4,6 +4,10 @@
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <cerrno>
+#include <cstring>
+#include <vector>
 
 namespace knotergy {
 class DetailedException : public std::runtime_error {
@@ -61,6 +65,30 @@ inline bool is_directory(const std::string& name) {
         return false;
     }
     return S_ISDIR(buffer.st_mode);
+}
+
+inline std::vector<std::string> list_files_in_dir(const std::string& dir) {
+    std::vector<std::string> out;
+
+    DIR* d = ::opendir(dir.c_str());
+    if (!d) {
+        // up to you: throw, or return empty
+        throw std::runtime_error("opendir failed: " + dir + " (" + std::strerror(errno) + ")");
+    }
+
+    while (dirent* e = ::readdir(d)) {
+        // skip . and ..
+        if (std::strcmp(e->d_name, ".") == 0 || std::strcmp(e->d_name, "..") == 0) continue;
+
+        std::string full = dir;
+        if (!full.empty() && full.back() != '/') full += '/';
+        full += e->d_name;
+
+        if (is_file(full)) out.push_back(full);
+    }
+
+    ::closedir(d);
+    return out;
 }
 
 }  // namespace knotergy    

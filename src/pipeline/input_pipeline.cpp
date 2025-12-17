@@ -45,26 +45,13 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file,
     return entries;
 }
 
-std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs) {
+std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs, const std::vector<modified_base_params>& modified_params) {
     std::vector<ProcessedRNAEntry> processed_inputs;
     processed_inputs.reserve(inputs.size());
     for (RNAEntry rna : inputs) {
-        processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna)));
+        processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna), modified_params));
     }
     return processed_inputs;
-}
-
-// ensures sequence only has valid characters
-void validate_sequence(const std::string& sequence, const std::unordered_set<char>& valid_seq_chars) {
-    for (char c : sequence) {
-        if (valid_seq_chars.find(c) == valid_seq_chars.end()) {
-            THROW_ERROR("Invalid Char : " + std::string(1, c) + " in sequence: " + sequence);
-            // std::cerr << "Invalid Char : " << c << " in sequence: " << sequence << std::endl;
-        }
-    }
-    if (sequence.empty()) {
-        THROW_ERROR("Sequence is empty");
-    }
 }
 
 }  // namespace knotergy

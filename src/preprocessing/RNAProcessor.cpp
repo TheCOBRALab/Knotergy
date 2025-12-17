@@ -3,7 +3,7 @@
 #include <unordered_set>
 
 namespace knotergy {
-ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna) {
+ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, [[maybe_unused]] const std::vector<modified_base_params>& modified_params) {
     std::vector<std::string_view> mod_sequence = compute_modified_sequence_views(rna);
     std::vector<size_t> pairings = compute_pairings(rna);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);

@@ -29,18 +29,7 @@ namespace knotergy {
 [[nodiscard]] std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
                                                    const std::string& restricted);
 
-[[nodiscard]] std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs);
-
-/**
- * @brief Validates that an RNA sequence contains only valid characters.
- *
- * Accepted characters are A, C, G, U, T & all modified bases
- *
- * @param sequence The RNA sequence to validate.
- * @param valid_seq_chars Valid chars including modified bases
- * @throws std::runtime_error if the sequence contains invalid characters.
- * @return None
- */
-void validate_sequence(const std::string& sequence, const std::unordered_set<char>& valid_seq_chars);
+[[nodiscard]] std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs,
+                                 const std::vector<modified_base_params>& modified_params = {});
 
 }  // namespace knotergy
