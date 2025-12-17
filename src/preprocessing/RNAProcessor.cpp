@@ -1,6 +1,7 @@
 #include "RNAProcessor.hpp"
 #include <unordered_map>
 #include <unordered_set>
+#include "uni_algo/ranges_grapheme.h" 
 
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, [[maybe_unused]] const std::vector<modified_base_params>& modified_params) {
@@ -160,88 +161,16 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
 };
 
 std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(const RNAEntry& rna) {
-    std::vector<std::string_view> mod_sequence;
-    mod_sequence.reserve(rna.sequence.size());
-    for (size_t head = 0; head < rna.sequence.size();) {
-        const size_t len = bytes_to_read(rna.sequence, head);
-        if (len == 0) {
-            ++head;
-            continue;
-        }
-        mod_sequence.emplace_back(std::string_view(&rna.sequence[head], len));
-        head += len;
+    std::vector<std::string_view> out;
+    out.reserve(rna.sequence.size()); // upper bound (bytes >= graphemes)
+
+    // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
+    for (std::string_view g : una::views::grapheme::utf8(rna.sequence)) {
+        out.push_back(g);
     }
 
-    // for (const std::string_view& sv : mod_sequence) {
-    //     std::cout << sv << '\n';
-    // }
-    return mod_sequence;
+    return out;
 };
 
-
-// Checks if the substring of s starting at pos matches the given byte pattern
-bool RNAProcessor::check_utf8_pattern(const std::string& s,
-                                 size_t pos,
-                                 const std::vector<unsigned char>& pattern) noexcept
-{
-    const size_t patternLen = pattern.size();
-    if (pos + patternLen > s.size()) return false;
-    for (size_t i = 0; i < patternLen; ++i)
-        if (static_cast<unsigned char>(s[pos + i]) != pattern[i]) return false;
-    return true;
-}
-
-// Returns number of bytes to read for the UTF-8 character starting at sequence[index]
-size_t RNAProcessor::bytes_to_read(const std::string& sequence, size_t index) noexcept {
-    const size_t n = sequence.size();
-    if (index >= n) return 0;
-    const unsigned char first = static_cast<unsigned char>(sequence[index]);
-
-    // Determine the number of bytes to read based on the first byte
-    size_t bytesToRead =
-        ((first & 0x80u) == 0x00u) ? 1 :
-        ((first & 0xE0u) == 0xC0u) ? 2 :
-        ((first & 0xF0u) == 0xE0u) ? 3 :
-        ((first & 0xF8u) == 0xF0u) ? 4 : 1;
-
-    // Ensure we don't read past the end of the string
-    if (bytesToRead > n - index) return n - index;
-
-    size_t pos = index + bytesToRead;
-
-    // Check for variation selectors and zero-width joiners
-    static const std::vector<unsigned char> ZWJ_BYTES  = {0xE2u, 0x80u, 0x8Du}; // U+200D
-    static const std::vector<unsigned char> VS15_BYTES = {0xEFu, 0xB8u, 0x8Eu}; // U+FE0E
-    static const std::vector<unsigned char> VS16_BYTES = {0xEFu, 0xB8u, 0x8Fu}; // U+FE0F
-    
-    // Skin tones e.g. 👍🏿 = 👍 + 🏿
-    if (index + bytesToRead + 4 <= n &&
-        static_cast<unsigned char>(sequence[index + bytesToRead]    )     == 0xF0u && 
-        static_cast<unsigned char>(sequence[index + bytesToRead + 1])     == 0x9Fu && 
-        static_cast<unsigned char>(sequence[index + bytesToRead + 2])     == 0x8Fu &&
-        static_cast<unsigned char>(sequence[index + bytesToRead + 3])     >= 0xBBu &&
-        static_cast<unsigned char>(sequence[index + bytesToRead + 3])     <= 0xBFu)
-    {
-        bytesToRead += 4;
-        pos += 4;
-    }
-    
-    // Variation Selectors (VS15, VS16) e.g. 😐︎ = 😐 + VS15; ❤️ = ❤ + VS16
-    if (check_utf8_pattern(sequence, pos, VS16_BYTES) ||
-        check_utf8_pattern(sequence, pos, VS15_BYTES)){
-        bytesToRead += VS16_BYTES.size();
-        pos += VS16_BYTES.size();
-    }
-
-    // Zero-width joiner (ZWJ) e.g. ❤️‍🩹 = ❤️ + ZWJ + 🩹
-    if (check_utf8_pattern(sequence, pos, ZWJ_BYTES)) {
-        bytesToRead += ZWJ_BYTES.size();
-        bytesToRead += bytes_to_read(sequence, pos + ZWJ_BYTES.size());
-        return bytesToRead;
-    }
-
-    if (bytesToRead > n - index) return n - index;
-    return bytesToRead;
-}
 
 }  // namespace knotergy
