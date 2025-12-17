@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
-    std::string mod_param_file = "";
+    std::string mod_param_file = "./params/modified_bases";
     bool round = false;
     int  dangle = 2;
 

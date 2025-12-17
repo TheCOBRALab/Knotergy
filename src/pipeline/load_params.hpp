@@ -101,6 +101,10 @@ namespace knotergy{
         }
 
         static std::vector<modified_base_params> load_modified_energy_parameters(const std::string& jsonFile) {
+            if (jsonFile.empty()) {
+                return {};
+            }
+            
             if (!file_exists(jsonFile)) {
                 THROW_ERROR("Modified parameters JSON file \"" + jsonFile + "\" not found.");
             }
@@ -166,7 +170,7 @@ namespace knotergy{
             }
             return supported_bases;
         }
-        
+
     private:
         static void warn_if_missing(const json& j, const std::string& key, const std::string& file)
         {
