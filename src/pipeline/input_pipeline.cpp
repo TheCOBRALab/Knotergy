@@ -26,11 +26,6 @@ std::vector<RNAEntry> get_all_inputs(const std::string& input_file,
 
     // get console input
     if (!sequence.empty()) {
-        if (sequence.size() != structure.size()) {
-            THROW_ERROR("Input sequence and structure are not the same length.\nSequence length: " +
-                        std::to_string(sequence.size()) +
-                        "\nStructure length: " + std::to_string(structure.size()));
-        }
         entries.emplace_back("Console Sequence", sequence, structure);
     }
 

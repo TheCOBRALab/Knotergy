@@ -47,13 +47,14 @@ class RNAProcessor {
      *   This evaluates to the maximum size_t value because size_t is unsigned.
      *
      * @param rna RNAEntry containing the structure to parse.
+     * @param unmodified_sequence The unmodified RNA sequence corresponding to the structure.
      * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's partner,
      *         or NULL_INDEX if i is unpaired.
      *
      * @throws std::runtime_error If the structure is malformed (e.g., unbalanced/mismatched brackets).
      * @warning Invalid base *types* (e.g., A–A) are reported via warnings but do not throw.
      */
-    [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna);
+    [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence);
 
     /**
      * @brief Identify all closed regions in the structure.
@@ -105,5 +106,12 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(const std::vector<size_t>& pairings);
 
     [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(const RNAEntry& rna);
+
+    [[nodiscard]] static std::string compute_unmodified_sequence(
+                                        const std::vector<std::string_view>& modified_sequence_views,
+                                        const std::vector<modified_base_params>& params,
+                                        const size_t rna_length
+                                    );
 };
+
 }  // namespace knotergy

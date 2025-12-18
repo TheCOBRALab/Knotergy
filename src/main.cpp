@@ -115,13 +115,6 @@ int main(int argc, char** argv) {
         knotergy::trim(structure);
     }
 
-    if (sequence.length() != structure.length()) {
-        std::cout << "Error: Input sequence and structure are not the same length";
-        std::cout << "\nSequence length: " << sequence.length()
-                  << ", Structure length: " << structure.length() << std::endl;
-        return 1;
-    }
-
     knotergy::trim(input_file);
     if (!input_file.empty() && !knotergy::file_exists(input_file)) {
         std::cerr << "Input file not found: " << input_file << std::endl;

@@ -38,13 +38,14 @@ class ProcessedRNAEntry {
      */
         explicit ProcessedRNAEntry(
             RNAEntry rna,
+            std::string unmodified_sequence,
             std::vector<std::string_view> mod_sequence_views,
             std::vector<size_t> pairings,
             std::vector<ClosedRegion> closed_regions,
             std::vector<size_t> closed_regions_pairings,
             std::vector<int> unpaired_prefix_sum)
             : name_{rna.name},
-            sequence_{rna.sequence},
+            sequence_{unmodified_sequence},
             mod_sequence_views_{mod_sequence_views},
             raw_sequence_{rna.sequence},
             structure_{rna.structure},

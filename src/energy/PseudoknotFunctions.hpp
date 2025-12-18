@@ -117,7 +117,7 @@ class PseudoknotFunctions {
                 if (bp.is_stack(next_bp)) {
                     energy += pk_stack_energy(bp, next_bp, sequence, round);
                 } else if (!bp.children.empty()) {
-                    energy += pk_multiloop_energy(bp, next_bp, sequence, processed_rna);
+                    energy += pk_multiloop_energy(bp, next_bp, processed_rna);
                 } else {
                     energy += pk_internal_energy(bp, next_bp, sequence, round);
                 }
@@ -138,7 +138,7 @@ class PseudoknotFunctions {
         return internal_penalty;
     }
 
-     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, [[maybe_unused]] const std::string& sequence, const ProcessedRNAEntry& processed_rna){
+     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, const ProcessedRNAEntry& processed_rna){
         double multiloop_penalty = pk_multi_init_penalty;
 
         // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty

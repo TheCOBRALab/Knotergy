@@ -29,7 +29,6 @@ struct RNAEntry {
         : RNAEntry("N/A", rna_sequence, rna_structure) {}
 
     size_t size() const {
-        assert(sequence.size() == structure.size() && "Sequence & structure must be the same length");
         return structure.size();
     }
 };

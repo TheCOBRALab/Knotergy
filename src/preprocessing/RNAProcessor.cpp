@@ -4,23 +4,40 @@
 #include "uni_algo/ranges_grapheme.h" 
 
 namespace knotergy {
-ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, [[maybe_unused]] const std::vector<modified_base_params>& modified_params) {
+ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
     std::vector<std::string_view> mod_sequence = compute_modified_sequence_views(rna);
-    std::vector<size_t> pairings = compute_pairings(rna);
+
+
+    // Ensure Sequence & Structure are the same length
+    if (mod_sequence.size() != rna.structure.size()) {
+        THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
+                    std::to_string(mod_sequence.size()) +
+                    "\nRNA length: " + std::to_string(rna.structure.size()));
+    }
+
+    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size());
+    std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
-    return ProcessedRNAEntry{std::move(rna), std::move(mod_sequence), std::move(pairings),
+    return ProcessedRNAEntry{std::move(rna), std::move(unmodified_sequence), std::move(mod_sequence), std::move(pairings),
                              std::move(closed_regions), std::move(cr_pairings),
                              std::move(unpaired_prefix_sum)};
 };
 
-std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
+std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence) {
     std::unordered_map<char, char> open_to_close = {
         {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'},
-        {'A', 'a'}, {'B', 'b'}, {'C', 'c'}, {'D', 'd'}
+        {'A', 'a'}, {'B', 'b'}, {'C', 'c'}, {'D', 'd'},
+        {'E', 'e'}, {'F', 'f'}, {'G', 'g'}, {'H', 'h'},
+        {'I', 'i'}, {'J', 'j'}, {'K', 'k'}, {'L', 'l'},
+        {'M', 'm'}, {'N', 'n'}, {'O', 'o'}, {'P', 'p'},
+        {'Q', 'q'}, {'R', 'r'}, {'S', 's'}, {'T', 't'},
+        {'U', 'u'}, {'V', 'v'}, {'W', 'w'}, {'X', 'x'},
+        {'Y', 'y'}, {'Z', 'z'}
     };
+
     std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
         {'A', {'U'}},
         {'U', {'A','G'}},
@@ -28,7 +45,7 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna) {
         {'C', {'G'}}
     };
 
-    // close to open is the opposite of open_to_close
+    // close_to_open is the opposite of open_to_close
     // e.g. {'(', ')'} -> {')', '('}
     std::unordered_map<char, char> close_to_open;
     close_to_open.reserve(open_to_close.size());
@@ -160,6 +177,8 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
     return unpaired_prefix_sum;
 };
 
+
+// grapheme is a user-perceived character, which may be multiple bytes
 std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(const RNAEntry& rna) {
     std::vector<std::string_view> out;
     out.reserve(rna.sequence.size()); // upper bound (bytes >= graphemes)
@@ -172,5 +191,59 @@ std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(cons
     return out;
 };
 
+std::string RNAProcessor::compute_unmodified_sequence(
+    const std::vector<std::string_view>& modified_sequence_views,
+    const std::vector<modified_base_params>& params,
+    const size_t rna_length
+) {
+
+    std::string unmodified_sequence;
+    unmodified_sequence.reserve(rna_length);
+
+    // map modified base to unmodified base for quick lookup
+    std::unordered_map<std::string_view, std::string> mod_to_unmod;
+    for (const modified_base_params& param : params) {
+        if (param.unmodified_base.empty()) {
+            THROW_ERROR("Modified base '" + param.modified_base + "' has empty unmodified mapping.");
+        }
+
+        mod_to_unmod[param.modified_base] = param.unmodified_base;
+    }
+
+    // lambda to check if a base is unmodified
+    auto is_unmod_base = [](std::string_view b) noexcept {
+        if (b.size() != 1) return false;
+        switch (b[0]) {
+            case 'A': case 'U': case 'G': case 'C': case 'T':
+                return true;
+            default:
+                return false;
+        }
+    };
+
+    // Convert modified sequence to unmodified sequence
+    for (const std::string_view& mod_base : modified_sequence_views) {
+        if (mod_base.empty()) {
+            THROW_ERROR("Empty base in modified sequence");
+        }
+
+        if (is_unmod_base(mod_base)) {
+            unmodified_sequence += std::string(mod_base);
+            continue;
+        }
+
+        // lookup modified -> unmodified
+        auto it = mod_to_unmod.find(mod_base);
+        if (it != mod_to_unmod.end()) {
+            unmodified_sequence += it->second;
+        } else {
+            THROW_ERROR("Modified base '" + std::string(mod_base) + "' at index " +
+                        std::to_string(unmodified_sequence.size()) +
+                        " has no unmodified mapping.");
+        }
+    }
+
+    return unmodified_sequence;
+}
 
 }  // namespace knotergy
