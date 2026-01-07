@@ -54,7 +54,7 @@ class RNAProcessor {
      * @throws std::runtime_error If the structure is malformed (e.g., unbalanced/mismatched brackets).
      * @warning Invalid base *types* (e.g., A–A) are reported via warnings but do not throw.
      */
-    [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence);
+    [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence, const std::vector<std::string_view>& mod_sequence = {});
 
     /**
      * @brief Identify all closed regions in the structure.

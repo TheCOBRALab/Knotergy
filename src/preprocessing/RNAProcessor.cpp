@@ -16,7 +16,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modi
     }
 
     std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size());
-    std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence);
+    std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
@@ -26,8 +26,8 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modi
                              std::move(unpaired_prefix_sum)};
 };
 
-std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence) {
-    std::unordered_map<char, char> open_to_close = {
+std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence, const std::vector<std::string_view>& mod_sequence) {
+    const std::unordered_map<char, char> open_to_close = {
         {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'},
         {'A', 'a'}, {'B', 'b'}, {'C', 'c'}, {'D', 'd'},
         {'E', 'e'}, {'F', 'f'}, {'G', 'g'}, {'H', 'h'},
@@ -38,11 +38,12 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const st
         {'Y', 'y'}, {'Z', 'z'}
     };
 
-    std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
+    const std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
         {'A', {'U'}},
         {'U', {'A','G'}},
         {'G', {'C','U'}},
-        {'C', {'G'}}
+        {'C', {'G'}},
+        {'T', {'A', 'T', 'G'}},
     };
 
     // close_to_open is the opposite of open_to_close
@@ -89,13 +90,20 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const st
             pairings[j] = i;
 
             // check if they're a valid pair
-            if (!valid_pairings[rna.sequence[j]].count(rna.sequence[i])) {
-                std::cerr << "Warning: Base Pair '" + std::string(1, rna.sequence[i]) +
-                                 "' can't pair with '" + std::string(1, rna.sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
+            if (!valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
+                if (mod_sequence.size() != rna.size()) { // if modified sequence not given or is invalid
+                    std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
+                                 "' can't pair with '" + std::string(1, unmodified_sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
+                }
+                else { // If modified sequence is given    
+                std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
+                                 "' can't pair with '" + std::string(mod_sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
+                }
             }
             continue;
         }
-
+        
+        // Not open, not close, not unpaired -> invalid character
         THROW_ERROR("Invalid RNA structure: Invalid character '" + std::string(1, c) +
                     "' in RNA structure (position " + std::to_string(i) + ')');
     }
