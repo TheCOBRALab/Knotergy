@@ -8,9 +8,9 @@ namespace knotergy {
 class ComputeEnergy {
    public:
     ComputeEnergy(std::shared_ptr<LoopNode> root_node, const std::string& sequence,
-                  ProcessedRNAEntry processed_rna, bool round = false, int dangle = 2)
+                  ProcessedRNAEntry processed_rna, bool round = false, int dangle = 2, bool verbose = false)
         : vienna(dangle), pseudo(dangle), root_node_{root_node}, sequence_{sequence}, processed_rna_{processed_rna}, round_{round} {
-        process_tree(*root_node_);
+        process_tree(*root_node_, verbose);
     };
 
     // Add methods to compute energy, etc.
@@ -24,7 +24,7 @@ class ComputeEnergy {
     ProcessedRNAEntry processed_rna_;
     float energy_ = 0.0f;
     bool round_ = false;
-    void process_tree(LoopNode& root_node);
+    void process_tree(LoopNode& root_node, bool verbose = false);
     float process_node(LoopNode& node);
 };
 

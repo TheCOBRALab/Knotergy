@@ -51,6 +51,7 @@ inline bool file_exists(const std::string& name) {
     return (stat(name.c_str(), &buffer) == 0);
 }
 
+// Check if path is a file
 inline bool is_file(const std::string& name) {
     struct stat buffer;
     if (stat(name.c_str(), &buffer) != 0) {
@@ -59,6 +60,7 @@ inline bool is_file(const std::string& name) {
     return S_ISREG(buffer.st_mode);
 }
 
+// Check if path is a directory
 inline bool is_directory(const std::string& name) {
     struct stat buffer;
     if (stat(name.c_str(), &buffer) != 0) {
@@ -67,6 +69,7 @@ inline bool is_directory(const std::string& name) {
     return S_ISDIR(buffer.st_mode);
 }
 
+// List files in a directory
 inline std::vector<std::string> list_files_in_dir(const std::string& dir) {
     std::vector<std::string> out;
 

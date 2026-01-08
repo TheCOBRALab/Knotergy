@@ -2,11 +2,11 @@
 
 namespace knotergy {
 
-void ComputeEnergy::process_tree(LoopNode& node) {
+void ComputeEnergy::process_tree(LoopNode& node, bool verbose) {
     energy_ += process_node(node);
-    // std::cout << node.energy_breakdown(sequence_.size());
+    if (verbose) std::cout << node.energy_breakdown(sequence_.size());
     for (std::shared_ptr<LoopNode> child : node.children) {
-        process_tree(*child);
+        process_tree(*child, verbose);
     }
     
 }

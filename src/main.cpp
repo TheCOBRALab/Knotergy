@@ -16,6 +16,7 @@ void help() {
               << "Options:\n"
               << "  -h, --help                    Show this help message\n"
               << "  -V, --version                 Print version and exit\n"
+              << "  -v, --verbose                 Enable verbose output\n"
               << "  -s, --sequence <string>       RNA sequence\n"
               << "  -r, --structure <string>      Input structure\n"
               << "  -i, --input <file>            Input file\n"
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
     std::string modifications = "7I6P9D";
     std::string mod_param_file = "./params/modified_bases";
     bool round = false;
+    bool verbose = false;
     int  dangle = 2;
 
     // ------------------------- Parse Through Flags -----------------------
@@ -91,9 +93,11 @@ int main(int argc, char** argv) {
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
-        } else if (arg == "-v" || arg == "--version") {
+        } else if (arg == "-V" || arg == "--version") {
             std::cout << "Knotergy " << KNOTERGY_VERSION << std::endl;
             return 0;
+        } else if (arg == "-v" || arg == "--verbose") {
+            verbose = true;
         } else {
             std::cerr << "Unknown option or missing value: " << arg << std::endl;
             return 1;
