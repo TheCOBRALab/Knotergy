@@ -34,8 +34,8 @@ Knotergy requires ViennaRNA to compile and run.
 2. **Install:**
 
    ```bash
-   tar -zxvf ViennaRNA-2.7.0.tar.gz
-   cd ViennaRNA-2.7.0
+   tar -zxvf ViennaRNA-2.7.1.tar.gz
+   cd ViennaRNA-2.7.1
    ./configure --without-perl
    sudo make -j$(nproc)              # Linux
    sudo make -j$(sysctl -n hw.ncpu)  # macOS
