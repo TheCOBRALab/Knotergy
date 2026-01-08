@@ -2,14 +2,16 @@
 
 namespace knotergy {
 
-void ComputeEnergy::process_tree(const LoopNode& node) {
+void ComputeEnergy::process_tree(LoopNode& node) {
     energy_ += process_node(node);
+    // std::cout << node.energy_breakdown(sequence_.size());
     for (std::shared_ptr<LoopNode> child : node.children) {
         process_tree(*child);
     }
+    
 }
 
-float ComputeEnergy::process_node(const LoopNode& node) {
+float ComputeEnergy::process_node(LoopNode& node) {
     double node_energy = 0.0;
     LoopType type = node.loop_type;
 
@@ -35,6 +37,7 @@ float ComputeEnergy::process_node(const LoopNode& node) {
             node_energy += vienna.external_energy(node.children, sequence_);
             break;
     }
+    node.energy = node_energy;
     return static_cast<float>(node_energy) / 100.0f;
 }
 

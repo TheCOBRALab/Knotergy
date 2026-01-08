@@ -24,7 +24,8 @@ class ComputeEnergy {
     ProcessedRNAEntry processed_rna_;
     float energy_ = 0.0f;
     bool round_ = false;
-    void process_tree(const LoopNode& root_node);
-    float process_node(const LoopNode& node);
+    void process_tree(LoopNode& root_node);
+    float process_node(LoopNode& node);
 };
+
 }  // namespace knotergy
