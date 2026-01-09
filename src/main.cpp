@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
         knotergy::LoopFactory factory(processed_rna);
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, round, dangle);
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, dangle, round, verbose);
         // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
         printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());

@@ -17,7 +17,8 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);
-    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence,processed_rna, round);
+    int dangle = 2;
+    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence, processed_rna, dangle, round);
 
     return energy.getEnergy();
 }

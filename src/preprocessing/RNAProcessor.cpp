@@ -218,17 +218,6 @@ std::string RNAProcessor::compute_unmodified_sequence(
         mod_to_unmod[param.modified_base] = param.unmodified_base;
     }
 
-    // lambda to check if a base is unmodified
-    auto is_unmod_base = [](std::string_view b) noexcept {
-        if (b.size() != 1) return false;
-        switch (b[0]) {
-            case 'A': case 'U': case 'G': case 'C': case 'T':
-                return true;
-            default:
-                return false;
-        }
-    };
-
     // Convert modified sequence to unmodified sequence
     for (const std::string_view& mod_base : modified_sequence_views) {
         if (mod_base.empty()) {
@@ -253,5 +242,16 @@ std::string RNAProcessor::compute_unmodified_sequence(
 
     return unmodified_sequence;
 }
+
+// Check if a base is unmodified
+bool RNAProcessor::is_unmod_base(const std::string_view& b) {
+    if (b.size() != 1) return false;
+    switch (b[0]) {
+        case 'A': case 'U': case 'G': case 'C': case 'T':
+            return true;
+        default:
+            return false;
+    }
+};
 
 }  // namespace knotergy

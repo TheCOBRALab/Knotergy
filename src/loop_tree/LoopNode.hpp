@@ -50,21 +50,22 @@ struct LoopNode {
     int number_of_bands;
     double energy = 0; // calculated in ComputeEnergy.cpp
 
-
+    // Generates a formatted string representing the energy breakdown of the loop
+    // Used for verbose output
     std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
 
         const unsigned short idx_w  = static_cast<unsigned short>(std::to_string(max_idx).size());
 
         // This is the *fixed* width of: "[<idx_w>, <idx_w>] "
-        const unsigned short range_w = 1 + idx_w + 2 + idx_w + 2; // '[' + a + ", " + b + "] "
+        const unsigned short range_w = static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2); // '[' + a + ", " + b + "] "
 
-        // Colored name padded (setw applies only to loop_name, not escape codes)
+        // Colored name padded
         out << "\x1b[36m"
             << std::left << loop_name(loop_type)
             << "\x1b[0m ";
 
-        // Range column
+        // Range column (i, j)
         if (loop_type == LoopType::External) {
             out << std::string(range_w, ' ');
         } else {

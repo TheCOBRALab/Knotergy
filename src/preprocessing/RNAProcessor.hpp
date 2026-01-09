@@ -112,6 +112,8 @@ class RNAProcessor {
                                         const std::vector<modified_base_params>& params,
                                         const size_t rna_length
                                     );
+                                    
+    [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
 };
 
 }  // namespace knotergy
