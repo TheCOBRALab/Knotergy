@@ -110,10 +110,24 @@ class RNAProcessor {
     [[nodiscard]] static std::string compute_unmodified_sequence(
                                         const std::vector<std::string_view>& modified_sequence_views,
                                         const std::vector<modified_base_params>& params,
-                                        const size_t rna_length
+                                        const size_t rna_length,
+                                        bool& has_modified_bases
                                     );
                                     
     [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
+
+    private:
+    // Lookup table for unmodified bases
+    static constexpr std::array<uint8_t, 256> unmod_lookup = [] {
+        std::array<uint8_t, 256> t{};
+        t[static_cast<unsigned char>('A')] = 1;
+        t[static_cast<unsigned char>('U')] = 1;
+        t[static_cast<unsigned char>('G')] = 1;
+        t[static_cast<unsigned char>('C')] = 1;
+        t[static_cast<unsigned char>('T')] = 1;
+        t[static_cast<unsigned char>('N')] = 1;
+        return t;
+    }();
 };
 
 }  // namespace knotergy

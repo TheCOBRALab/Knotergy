@@ -7,7 +7,6 @@ namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
     std::vector<std::string_view> mod_sequence = compute_modified_sequence_views(rna);
 
-
     // Ensure Sequence & Structure are the same length
     if (mod_sequence.size() != rna.structure.size()) {
         THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
@@ -15,7 +14,8 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modi
                     "\nRNA length: " + std::to_string(rna.structure.size()));
     }
 
-    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size());
+    bool has_modified_bases = !modified_params.empty(); // Is passed by reference and modified in compute_unmodified_sequence
+    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
     std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
@@ -23,7 +23,8 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modi
 
     return ProcessedRNAEntry{std::move(rna), std::move(unmodified_sequence), std::move(mod_sequence), std::move(pairings),
                              std::move(closed_regions), std::move(cr_pairings),
-                             std::move(unpaired_prefix_sum)};
+                             std::move(unpaired_prefix_sum),
+                             has_modified_bases};
 };
 
 std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence, const std::vector<std::string_view>& mod_sequence) {
@@ -44,6 +45,7 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const st
         {'G', {'C','U'}},
         {'C', {'G'}},
         {'T', {'A', 'T', 'G'}},
+        {'N', {}}
     };
 
     // close_to_open is the opposite of open_to_close
@@ -202,7 +204,8 @@ std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(cons
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views,
     const std::vector<modified_base_params>& params,
-    const size_t rna_length
+    const size_t rna_length,
+    bool& has_modified_bases
 ) {
 
     std::string unmodified_sequence;
@@ -227,6 +230,8 @@ std::string RNAProcessor::compute_unmodified_sequence(
         if (is_unmod_base(mod_base)) {
             unmodified_sequence += std::string(mod_base);
             continue;
+        } else {
+            has_modified_bases = true;
         }
 
         // lookup modified -> unmodified
@@ -243,15 +248,10 @@ std::string RNAProcessor::compute_unmodified_sequence(
     return unmodified_sequence;
 }
 
-// Check if a base is unmodified
+// Check if a base is unmodified (using lookup table for speed)
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
     if (b.size() != 1) return false;
-    switch (b[0]) {
-        case 'A': case 'U': case 'G': case 'C': case 'T':
-            return true;
-        default:
-            return false;
-    }
+    return unmod_lookup[static_cast<unsigned char>(b[0])] != 0;
 };
 
 }  // namespace knotergy

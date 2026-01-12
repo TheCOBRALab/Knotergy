@@ -43,23 +43,31 @@ class ProcessedRNAEntry {
             std::vector<size_t> pairings,
             std::vector<ClosedRegion> closed_regions,
             std::vector<size_t> closed_regions_pairings,
-            std::vector<int> unpaired_prefix_sum)
+            std::vector<int> unpaired_prefix_sum,
+            bool has_modified_bases)
             : name_{rna.name},
             sequence_{unmodified_sequence},
             mod_sequence_views_{mod_sequence_views},
-            raw_sequence_{rna.sequence},
+            raw_sequence_{std::move(rna.sequence)},
             structure_{rna.structure},
             pairings_{pairings},
             closed_regions_{closed_regions},
             closed_regions_pairings_{closed_regions_pairings},
-            unpaired_prefix_sum_{unpaired_prefix_sum} {}
+            unpaired_prefix_sum_{unpaired_prefix_sum},
+            has_modified_bases_{has_modified_bases} {}
 
 
     /// @return The RNA entry's name.
     const std::string& get_name() const { return name_; }
+
+    /// @return The raw RNA input sequence. (includes modified bases)
+    const std::string& get_raw_sequence() const { return raw_sequence_; }
     
-    /// @return The raw RNA sequence (string of nucleotides).
+    /// @return The unmodified RNA sequence (modified bases replaced with standard ones).
     const std::string& get_sequence() const { return sequence_; }
+
+    /// @return The modified RNA sequence (raw sequence split into string_views per base).
+    const std::vector<std::string_view>& get_modified_sequence() const { return mod_sequence_views_; }
 
     /// @return The raw RNA structure (dot-bracket notation).
     const std::string& get_structure() const { return structure_; }
@@ -74,6 +82,9 @@ class ProcessedRNAEntry {
     const std::vector<size_t>& get_closed_regions_pairings() const {
         return closed_regions_pairings_;
     }
+
+    /// @return Whether the RNA sequence contains modified bases.
+    bool has_modified_bases() const { return has_modified_bases_; }
 
     /// @return The length of the RNA sequence/structure.
     size_t size() const { return structure_.size(); }
@@ -112,12 +123,13 @@ class ProcessedRNAEntry {
     const std::string name_;                                  // RNA entry name.
     const std::string sequence_;                              // Unmodified RNA nucleotide sequence.
     const std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
-    const std::string raw_sequence_;                          // Raw RNA input sequence.
+    std::string raw_sequence_;                                // Raw RNA input sequence. (not const to allow move) (move required for string_view vector)
     const std::string structure_;                             // Dot-bracket RNA structure string.
     const std::vector<size_t> pairings_;                      // Base-pair indices for each position.
     const std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
     const std::vector<size_t> closed_regions_pairings_;       // Closed regions boundary indicies.
     const std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
+    const bool has_modified_bases_ = false;                   // Whether modified bases are present.
 };
 
 }  // namespace knotergy

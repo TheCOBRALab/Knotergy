@@ -16,7 +16,8 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);
-    knotergy::ComputeEnergy energy(factory.get_root_node(), sequence, processed_rna);
+    std::vector<knotergy::modified_base_params> mod_params; // empty for no modified bases
+    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, mod_params);
 
     return energy.getEnergy();
 }

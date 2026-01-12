@@ -25,7 +25,7 @@ void help() {
               << "  -e  --round                   Rounds all decimal places in pseudoknot calculations\n"
               << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
             //   << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
-            //   << "  -f, --mod-file                Modified base parameter file\n"
+            //   << "  -f, --mod-file                Modified base parameter file\n";
 
 }
 
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
-    std::string mod_param_file = "./params/modified_bases";
+    std::string mod_param_path = "./params/modified_bases";
     bool round = false;
     bool verbose = false;
     int  dangle = 2;
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
             modifications = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-f" || arg == "--mod-file") {
             std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
-            mod_param_file = get_trimmed_arg(i, argc, argv);
+            mod_param_path = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
         } else if (arg == "-h" || arg == "--help") {
@@ -131,14 +131,14 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    knotergy::trim(mod_param_file);
-    if (!mod_param_file.empty() && !knotergy::file_exists(mod_param_file)) {
-        std::cerr << "Modified bases parameter file not found: " << mod_param_file << std::endl;
+    knotergy::trim(mod_param_path);
+    if (!mod_param_path.empty() && !knotergy::file_exists(mod_param_path)) {
+        std::cerr << "Modified bases parameter file not found: " << mod_param_path << std::endl;
         return 1;
     }
 
     // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_file);
+    std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
 
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
         knotergy::LoopFactory factory(processed_rna);
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna.get_sequence(), processed_rna, dangle, round, verbose);
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, modified_params, dangle, round, verbose);
         // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
         printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
