@@ -10,6 +10,8 @@ using json = nlohmann::json;
 extern "C" {
 // used for load_energy_parameters
 #include <ViennaRNA/params/io.h>
+#include <ViennaRNA/model.h>
+#include <ViennaRNA/utils/basic.h>
 }
 
 namespace knotergy{
@@ -63,7 +65,16 @@ namespace knotergy{
 
     class ViennaParams {
        public:
-        static void load_energy_parameters(const std::string& paramFile = "", const std::string& seq = "") {
+        inline static vrna_md_t md{};    // model details
+        inline static vrna_param_t* P = nullptr; // parameters
+
+        ~ViennaParams() {
+            if (P) free(P);
+        }
+
+        static void load_energy_parameters(const std::string& paramFile = "", int dangle = 2, const std::string& seq = "") { //  (detecting DNA disabled)
+            vrna_md_set_default(&ViennaParams::md);
+            ViennaParams::md.dangles = dangle;
             if (!paramFile.empty()) {
                 if (file_exists(paramFile)) {
                     int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
@@ -71,6 +82,7 @@ namespace knotergy{
                         THROW_ERROR("Failed to load parameter file: " + paramFile);
                     }
                     std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
+                    ViennaParams::P = vrna_params(&ViennaParams::md);
                     return;
                 } else {
                     std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
@@ -80,7 +92,7 @@ namespace knotergy{
             }
 
             // Default fallback based on sequence
-            if (seq.find('T') != std::string::npos) {
+            if (seq.find('T') != std::string::npos) { //  (detect DNA but currently disabled)
                 std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
                 vrna_params_load_DNA_Mathews2004();
             } else {
@@ -98,6 +110,8 @@ namespace knotergy{
                     vrna_params_load_RNA_Turner2004();
                 }
             }
+            ViennaParams::P = vrna_params(&ViennaParams::md);
+            return;
         }
 
         static std::vector<modified_base_params> load_modified_energy_parameters(const std::string& jsonFile) {

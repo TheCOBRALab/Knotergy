@@ -13,13 +13,13 @@
 
 namespace {
 float pipeline(std::string sequence, std::string structure, std::string param_file = "../../params/common/rna_turner2004.par", bool round = false){
-    knotergy::ViennaParams::load_energy_parameters(param_file);
+    int dangle = 2;
+    knotergy::ViennaParams::load_energy_parameters(param_file, dangle);
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);
     std::vector<knotergy::modified_base_params> mod_params;  // empty for unmodified bases
-    int dangle = 2;
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, mod_params, dangle, round);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, mod_params, round);
 
     return energy.getEnergy();
 }

@@ -8,8 +8,8 @@
 namespace knotergy {
 class ComputeEnergy {
    public:
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, ProcessedRNAEntry processed_rna, std::vector<modified_base_params> mod_params = {}, int dangle = 2, bool round = false, bool verbose = false)
-        : vienna(dangle), pseudo(dangle), root_node_{root_node}, processed_rna_{processed_rna}, mod_params_{mod_params}, sequence_{processed_rna.get_sequence()}, round_{round} {
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, ProcessedRNAEntry processed_rna, std::vector<modified_base_params> mod_params = {}, bool round = false, bool verbose = false)
+        : root_node_{root_node}, processed_rna_{processed_rna}, mod_params_{mod_params}, sequence_{processed_rna.get_sequence()}, round_{round} {
         process_tree(*root_node_, verbose);
     };
 
@@ -17,7 +17,6 @@ class ComputeEnergy {
     float getEnergy() const { return energy_; };
 
    private:
-    ViennaFunctions vienna;
     PseudoknotFunctions pseudo;
     std::shared_ptr<LoopNode> root_node_;
     ProcessedRNAEntry processed_rna_;

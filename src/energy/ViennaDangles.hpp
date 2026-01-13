@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include "../loop_tree/LoopNode.hpp"
+#include "../pipeline/load_params.hpp"
 #include "ViennaUtils.hpp"
 
 extern "C" {
@@ -42,8 +43,8 @@ namespace knotergy {
     public:
         ViennaDangles() = default;
         ~ViennaDangles() = default;
-        static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, vrna_md_t& md);
-        static int get_multi_dangle_1(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
+        static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence);
+        static int get_multi_dangle_1(const LoopNode& node, const std::string& sequence);
     
     private:
         // check if two indices or nodes are contiguous (touching)
@@ -64,7 +65,6 @@ namespace knotergy {
         static std::vector<DangleSet> populate_children_dangle_energies(
             const std::vector<std::shared_ptr<LoopNode>>& children,
             const std::string& sequence,
-            vrna_md_t& md,
             const bool& is_external = true
         );
         static std::vector<std::vector<size_t>> get_dangle_chains(const std::vector<std::shared_ptr<LoopNode>>& children);
@@ -87,7 +87,7 @@ namespace knotergy {
                     DangleSet closing = DangleSet()
         );
 
-        static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence, vrna_md_t& md);
+        static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence);
         static int process_ml_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,

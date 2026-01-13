@@ -20,24 +20,24 @@ float ComputeEnergy::process_node(LoopNode& node) {
             auto [energy_found, energy_value] = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, mod_sequence, mod_params_);
 
             if (energy_found) {node_energy = energy_value;}
-            else {node_energy = vienna.stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);}
+            else {node_energy = ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);}
             }
             break;
         case LoopType::Hairpin:
-            node_energy = vienna.hairpin_energy(node.begin, node.end, sequence_);
+            node_energy = ViennaFunctions::hairpin_energy(node.begin, node.end, sequence_);
             break;
         case LoopType::Internal:
-            node_energy = vienna.internal_loop_energy(
+            node_energy = ViennaFunctions::internal_loop_energy(
                 node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             break;
         case LoopType::Multibranch:
-            node_energy = vienna.multibranch_energy(node, sequence_);
+            node_energy = ViennaFunctions::multibranch_energy(node, sequence_);
             break;
         case LoopType::Pseudoknot:
             node_energy = pseudo.pseudoknot_energy(node, sequence_, processed_rna_, round_);
             break;
         case LoopType::External:
-            node_energy = vienna.external_energy(node.children, sequence_);
+            node_energy = ViennaFunctions::external_energy(node.children, sequence_);
             break;
     }
     node.energy = node_energy;
