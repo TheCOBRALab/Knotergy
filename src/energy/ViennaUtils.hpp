@@ -1,5 +1,7 @@
 #pragma once
 
+// This file is separate from ViennaFunctions.hpp to avoid circular dependencies (ViennaDangles.hpp needs ViennaUtils.hpp)
+
 extern "C" {
 #include <ViennaRNA/sequences/alphabet.h>
 }

@@ -62,8 +62,8 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], ViennaParams::md);
     unsigned int pair_type2 = ViennaUtils::reverse_pair_type(ViennaUtils::get_pair_type(sequence[ci], sequence[cj], ViennaParams::md), ViennaParams::md);
-    int si1 = vrna_nucleotide_encode(sequence[i + 1], &ViennaParams::md);   // 5' mismatch of closing pair
-    int sj1 = vrna_nucleotide_encode(sequence[j - 1], &ViennaParams::md);   // 3' mismatch of closing pair
+    int si1 = vrna_nucleotide_encode(sequence[i + 1],  &ViennaParams::md);  // 5' mismatch of closing pair
+    int sj1 = vrna_nucleotide_encode(sequence[j - 1],  &ViennaParams::md);  // 3' mismatch of closing pair
     int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &ViennaParams::md);  // 5' mismatch of enclosed pair
     int sq1 = vrna_nucleotide_encode(sequence[cj + 1], &ViennaParams::md);  // 3' mismatch of enclosed pair
     return vrna_E_internal(n1, n2, pair_type, pair_type2, si1, sj1, sp1, sq1, ViennaParams::P);
@@ -144,9 +144,14 @@ int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>
     int energy = 0;
     for (std::shared_ptr<LoopNode> c : children) {
         if (c->loop_type != LoopType::Pseudoknot) {
+            // sanity check for indices
+            if (c->begin >= sequence.size() - 1 || c->end >= sequence.size()) {
+                THROW_ERROR("Invalid indices for external loop energy calculation.");
+            }
+            
             unsigned int pair_type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], ViennaParams::md);
-            int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md) : -1;
-            int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md) : -1;
+            int n5d = vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md);
+            int n3d = vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md);
             if (ViennaParams::md.dangles == 0) {
                 n5d = -1;
                 n3d = -1;

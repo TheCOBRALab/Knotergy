@@ -11,16 +11,19 @@ void ComputeEnergy::process_tree(LoopNode& node, bool verbose) {
 }
 
 float ComputeEnergy::process_node(LoopNode& node) {
-    double node_energy = 0.0;
+    double node_energy = INF;
     LoopType type = node.loop_type;
     const std::vector<std::string_view>& mod_sequence = processed_rna_.get_modified_sequence();
 
     switch (type) {
         case LoopType::Stack: {
-            auto [energy_found, energy_value] = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, mod_sequence, mod_params_);
-
-            if (energy_found) {node_energy = energy_value;}
-            else {node_energy = ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);}
+            // Check for modified base stacking energy
+            if (processed_rna_.has_modified_bases()) {
+                node_energy = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, mod_sequence, mod_params_);
+            }
+            // Fallback to standard stacking energy if no modified energy found
+            if (node_energy == INF) {
+                node_energy = ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             }
             break;
         case LoopType::Hairpin:
@@ -39,6 +42,8 @@ float ComputeEnergy::process_node(LoopNode& node) {
         case LoopType::External:
             node_energy = ViennaFunctions::external_energy(node.children, sequence_);
             break;
+        default:
+            THROW_ERROR("Unknown loop type encountered during energy computation: " + std::to_string(static_cast<int>(type)));
     }
     node.energy = node_energy;
     return static_cast<float>(node_energy) / 100.0f;
