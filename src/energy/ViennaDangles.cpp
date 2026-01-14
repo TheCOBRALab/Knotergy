@@ -62,14 +62,9 @@ std::vector<DangleSet> ViennaDangles::populate_children_dangle_energies(
         const std::shared_ptr<LoopNode>& child = children[i];
         const size_t& ci = child->begin, cj = child->end;
 
-        // Sanity check for sequence bounds
-        if (ci > sequence.size() - 1 || cj > sequence.size() - 1) {
-            THROW_ERROR("Child indices out of bounds in dangle energy calculation.");
-        }
-
         // Convert child nucleotides to numerical encoding for ViennaRNA (-1 for out of bounds)
-        int n5d = vrna_nucleotide_encode(sequence[ci - 1], &ViennaParams::md);
-        int n3d = vrna_nucleotide_encode(sequence[cj + 1], &ViennaParams::md);
+        int n5d = ci > 0 ? vrna_nucleotide_encode(sequence[ci - 1], &ViennaParams::md) : -1;
+        int n3d = cj < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[cj + 1], &ViennaParams::md) : -1;
         unsigned int pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], ViennaParams::md);
 
         // Store the four dangle energy options for this child

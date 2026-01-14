@@ -44,6 +44,7 @@ float ComputeEnergy::process_node(LoopNode& node) {
             break;
         default:
             THROW_ERROR("Unknown loop type encountered during energy computation: " + std::to_string(static_cast<int>(type)));
+        }
     }
     node.energy = node_energy;
     return static_cast<float>(node_energy) / 100.0f;

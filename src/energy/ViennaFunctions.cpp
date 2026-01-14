@@ -145,13 +145,9 @@ int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>
     for (std::shared_ptr<LoopNode> c : children) {
         if (c->loop_type != LoopType::Pseudoknot) {
             // sanity check for indices
-            if (c->begin >= sequence.size() - 1 || c->end >= sequence.size()) {
-                THROW_ERROR("Invalid indices for external loop energy calculation.");
-            }
-            
             unsigned int pair_type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], ViennaParams::md);
-            int n5d = vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md);
-            int n3d = vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md);
+            int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md) : -1;
+            int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md) : -1;
             if (ViennaParams::md.dangles == 0) {
                 n5d = -1;
                 n3d = -1;
