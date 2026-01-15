@@ -37,8 +37,6 @@ double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::s
         std::vector<std::string_view> modified = ModifiedBasesFunctions::modified_bases({c->begin, c->end}, mod_sequence);
         if (modified.empty()) continue;
 
-        std::string key = ModifiedBasesFunctions::join_string_views({c->begin, c->end}, mod_sequence);
-
         unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
         int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md) : -1;
         int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md) : -1;
@@ -49,30 +47,45 @@ double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::s
         }
 
         if (n5d >= 0 && n3d >= 0) {
+            std::string mismatch_key = ModifiedBasesFunctions::join_string_views({c->begin, c->begin-1, c->end, c->end+1}, mod_sequence);
             for (const modified_base_params& param : mod_params) {
                 if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
 
-                auto it = param.mismatch_energies.find(key);
+                auto it = param.mismatch_energies.find(mismatch_key);
                 if (it != param.mismatch_energies.end()) {
                     energy += static_cast<double>(it->second) - ViennaParams::p->mismatchExt[type][n5d][n3d];
                 }
             }
         } else if (n5d >= 0) {
+            std::string dangle5_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->begin - 1}, mod_sequence);
             for (const modified_base_params& param : mod_params) {
                 if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
 
-                auto it = param.dangle5_energies.find(key);
+                auto it = param.dangle5_energies.find(dangle5_key);
                 if (it != param.dangle5_energies.end()) {
                     energy += static_cast<double>(it->second) - ViennaParams::p->dangle5[type][n5d];
                 }
             }
         } else if (n3d >= 0) {
+            std::string dangle3_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->end + 1}, mod_sequence);
             for (const modified_base_params& param : mod_params) {
                 if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
 
-                auto it = param.dangle3_energies.find(key);
+                auto it = param.dangle3_energies.find(dangle3_key);
                 if (it != param.dangle3_energies.end()) {
                     energy += static_cast<double>(it->second) - ViennaParams::p->dangle3[type][n3d];
+                }
+            }
+        }
+
+        if (type > 2){
+            std::string terminal_key = ModifiedBasesFunctions::join_string_views({c->end, c->begin}, mod_sequence);
+            for (const modified_base_params& param : mod_params) {
+                if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
+
+                auto it = param.terminal_energies.find(terminal_key);
+                if (it != param.terminal_energies.end()) {
+                    energy += static_cast<double>(it->second) - ViennaParams::p->TerminalAU;
                 }
             }
         }

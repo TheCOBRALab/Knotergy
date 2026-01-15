@@ -38,7 +38,11 @@ float ComputeEnergy::process_node(LoopNode& node) {
             node_energy = pseudo.pseudoknot_energy(node, sequence_, processed_rna_, round_);
             break;
         case LoopType::External:
-            node_energy = ViennaFunctions::external_energy(node.children, sequence_);
+            if (processed_rna_.has_modified_bases()) {
+                node_energy = ModifiedBasesFunctions::find_mod_external_energy(node.children, sequence_, mod_sequence, mod_params_);
+            } else {
+                node_energy = ViennaFunctions::external_energy(node.children, sequence_);
+            }
             break;
         default:
             THROW_ERROR("Unknown loop type encountered during energy computation: " + std::to_string(static_cast<int>(type)));
