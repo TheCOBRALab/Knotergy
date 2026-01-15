@@ -34,10 +34,10 @@ DangleSet ViennaDangles::get_ml_dangle_energy(const LoopNode& node, const std::s
     int n3d = vrna_nucleotide_encode(sequence[pj - 1], &ViennaParams::md);
     unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[pi], sequence[pj]);
 
-    ml_dangle.no_dangle    = vrna_E_multibranch_stem(pair_type, -1,  -1,  ViennaParams::P);
-    ml_dangle.left_dangle  = vrna_E_multibranch_stem(pair_type, -1, n5d,  ViennaParams::P);
-    ml_dangle.right_dangle = vrna_E_multibranch_stem(pair_type, n3d, -1,  ViennaParams::P);
-    ml_dangle.both_dangle  = vrna_E_multibranch_stem(pair_type, n3d, n5d, ViennaParams::P);
+    ml_dangle.no_dangle    = vrna_E_multibranch_stem(pair_type, -1,  -1,  ViennaParams::p);
+    ml_dangle.left_dangle  = vrna_E_multibranch_stem(pair_type, -1, n5d,  ViennaParams::p);
+    ml_dangle.right_dangle = vrna_E_multibranch_stem(pair_type, n3d, -1,  ViennaParams::p);
+    ml_dangle.both_dangle  = vrna_E_multibranch_stem(pair_type, n3d, n5d, ViennaParams::p);
     return ml_dangle;
 }
 
@@ -68,10 +68,10 @@ std::vector<DangleSet> ViennaDangles::populate_children_dangle_energies(
 
         // Store the four dangle energy options for this child
         DangleSet d_energy;
-        d_energy.no_dangle    = vrna_E_stem(pair_type, -1,  -1,  ViennaParams::P);
-        d_energy.left_dangle  = vrna_E_stem(pair_type, n5d, -1,  ViennaParams::P);
-        d_energy.right_dangle = vrna_E_stem(pair_type, -1,  n3d, ViennaParams::P);
-        d_energy.both_dangle  = vrna_E_stem(pair_type, n5d, n3d, ViennaParams::P);
+        d_energy.no_dangle    = vrna_E_stem(pair_type, -1,  -1,  ViennaParams::p);
+        d_energy.left_dangle  = vrna_E_stem(pair_type, n5d, -1,  ViennaParams::p);
+        d_energy.right_dangle = vrna_E_stem(pair_type, -1,  n3d, ViennaParams::p);
+        d_energy.both_dangle  = vrna_E_stem(pair_type, n5d, n3d, ViennaParams::p);
         dangle_energies.push_back(d_energy);
     }
     return dangle_energies;

@@ -59,7 +59,7 @@ namespace knotergy {
 
                         auto it = param.mismatch_energies.find(key);
                         if (it != param.mismatch_energies.end()) {
-                            energy += static_cast<double>(it->second) - ViennaParams::P->mismatchExt[type][n5d][n3d];
+                            energy += static_cast<double>(it->second) - ViennaParams::p->mismatchExt[type][n5d][n3d];
                         }
                     }
                 } else if (n5d >= 0) {
@@ -68,7 +68,7 @@ namespace knotergy {
 
                         auto it = param.dangle5_energies.find(key);
                         if (it != param.dangle5_energies.end()) {
-                            energy += static_cast<double>(it->second) - ViennaParams::P->dangle5[type][n5d];
+                            energy += static_cast<double>(it->second) - ViennaParams::p->dangle5[type][n5d];
                         }
                     }
                 } else if (n3d >= 0) {
@@ -77,7 +77,7 @@ namespace knotergy {
 
                         auto it = param.dangle3_energies.find(key);
                         if (it != param.dangle3_energies.end()) {
-                            energy += static_cast<double>(it->second) - ViennaParams::P->dangle3[type][n3d];
+                            energy += static_cast<double>(it->second) - ViennaParams::p->dangle3[type][n3d];
                         }
                     }
                 }

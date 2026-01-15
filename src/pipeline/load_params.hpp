@@ -66,14 +66,14 @@ namespace knotergy{
     class ViennaParams {
        public:
         inline static vrna_md_t md{};    // model details
-        inline static vrna_param_t* P = nullptr; // parameters
+        inline static vrna_param_t* p = nullptr; // parameters
 
         ~ViennaParams() {
-            if (P) free(P);
+            if (p) free(p);
         }
 
         static void load_energy_parameters(const std::string& paramFile = "", int dangle = 2, const std::string& seq = "") { //  (detecting DNA disabled)
-            if (P) {free(P); P = nullptr;} // free previous params if reloading
+            if (p) {free(p); p = nullptr;} // free previous params if reloading
 
             vrna_md_set_default(&ViennaParams::md);
             ViennaParams::md.dangles = dangle;
@@ -84,7 +84,7 @@ namespace knotergy{
                         THROW_ERROR("Failed to load parameter file: " + paramFile);
                     }
                     std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
-                    ViennaParams::P = vrna_params(&ViennaParams::md);
+                    ViennaParams::p = vrna_params(&ViennaParams::md);
                     return;
                 } else {
                     std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
@@ -112,7 +112,7 @@ namespace knotergy{
                     vrna_params_load_RNA_Turner2004();
                 }
             }
-            ViennaParams::P = vrna_params(&ViennaParams::md);
+            ViennaParams::p = vrna_params(&ViennaParams::md);
             return;
         }
 
