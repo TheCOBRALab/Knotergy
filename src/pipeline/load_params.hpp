@@ -73,6 +73,8 @@ namespace knotergy{
         }
 
         static void load_energy_parameters(const std::string& paramFile = "", int dangle = 2, const std::string& seq = "") { //  (detecting DNA disabled)
+            if (P) {free(P); P = nullptr;} // free previous params if reloading
+
             vrna_md_set_default(&ViennaParams::md);
             ViennaParams::md.dangles = dangle;
             if (!paramFile.empty()) {
