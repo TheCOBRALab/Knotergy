@@ -24,6 +24,7 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
     return energy.getEnergy();
 }
 }
+
 TEST(PseudoknottedEnergies, SimplePseudoknot) {
     std::string sequence  = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";
@@ -38,7 +39,7 @@ TEST(PseudoknottedEnergies, SimplePseudoknotRounded) {
     std::string sequence  = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -33.42, 0.001);
@@ -59,8 +60,8 @@ TEST(PseudoknottedEnergies, PseudoknotWithInbandRounded) {
     std::string sequence  = "GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC";
     std::string structure = "(((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]";
     bool round = true;
-    
-    float result = pipeline(sequence, structure, "", round);
+
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -42.06, 0.001);
@@ -81,7 +82,7 @@ TEST(PseudoknottedEnergies, ExtendedPseudoknotWithInbandRounded) {
     std::string sequence  = "AUCCAUGCGAAGAACUAUGGAUCUCUGAAUGUUUUCGGUACAUUUCGGUGGUCCUUUAACGCCUUCCUUUGUGACACCAC";
     std::string structure = ".[[[[...[[[[......[[[[....((((((.......)))))).((((]]]]........]]]]...]].]]))))..";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -15.11, 0.001);
@@ -102,7 +103,7 @@ TEST(PseudoknottedEnergies, MultiLoopThatSpansABandRounded) {
     std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -5.84, 0.001);
@@ -123,7 +124,7 @@ TEST(PseudoknottedEnergies, MultiLoopThatSpansABandRounded2) {
     std::string sequence  = "AAAGGAAAGGGUUUGGGGGGGGGGGAAAGGGUUUGGGGGGGGGGGUUUGGGGGCCCCCCCCCCCCCCCCCC";
     std::string structure = "(((..(((...)))...[[[[[...(((...)))...[[[[[...)))......]]]]]]]]]].......";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -5.77, 0.001);
@@ -144,7 +145,7 @@ TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded) {
     std::string sequence  = "AAAAGGAAAGGGGUUUGGGAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "((((..(((....)))...(((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -0.2, 0.001);
@@ -165,7 +166,7 @@ TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded2) {
     std::string sequence  = "AAAAGGGAAAGGGUUUGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCCCCCCCCUUUUGGGGGAAAGGGUUUGGUUUU";
     std::string structure = "((((...(((...)))...(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]]]]]]])))).....(((...)))..))))";
     bool round = true;
-    float result = pipeline(sequence, structure, "", round);
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
 
     EXPECT_NEAR(result, -11.44, 0.001);
