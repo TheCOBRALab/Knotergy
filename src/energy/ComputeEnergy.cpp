@@ -19,10 +19,8 @@ float ComputeEnergy::process_node(LoopNode& node) {
         case LoopType::Stack: {
             // Check for modified base stacking energy
             if (processed_rna_.has_modified_bases()) {
-                node_energy = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, mod_sequence, mod_params_);
-            }
-            // Fallback to standard stacking energy if no modified energy found
-            if (node_energy == INF) {
+                node_energy = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_, mod_sequence, mod_params_);
+            } else {
                 node_energy = ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             }
             break;
