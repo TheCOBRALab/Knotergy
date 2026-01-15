@@ -9,12 +9,19 @@ enum TouchingRight {
     RightTaken = 1
 };
 
-// Calculate dangle energies for external loops (dangle type 1)
-int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence) {
-    std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence);
+// Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
+int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::vector<DangleSet>& dangle_energies) {
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_chains(dangle_chains, children, dangle_energies);
 }
+
+// Calculate dangle energies for external loops (dangle type 1)
+int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence) {
+    std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence);
+    return get_external_dangle_1(children, dangle_energies);
+}
+
+
 
 // Calculate dangle energies for multibranch loops (dangle type 1)
 int ViennaDangles::get_multi_dangle_1(const LoopNode& node, const std::string& sequence){

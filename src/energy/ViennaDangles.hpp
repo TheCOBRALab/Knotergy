@@ -44,7 +44,14 @@ namespace knotergy {
         ViennaDangles() = default;
         ~ViennaDangles() = default;
         static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence);
+        static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::vector<DangleSet>& dangle_energies);
         static int get_multi_dangle_1(const LoopNode& node, const std::string& sequence);
+
+        static std::vector<DangleSet> populate_children_dangle_energies(
+            const std::vector<std::shared_ptr<LoopNode>>& children,
+            const std::string& sequence,
+            const bool& is_external = true
+        );
     
     private:
         // check if two indices or nodes are contiguous (touching)
@@ -62,11 +69,6 @@ namespace knotergy {
             return false; // overlapping or nested, not adjacent
         }
 
-        static std::vector<DangleSet> populate_children_dangle_energies(
-            const std::vector<std::shared_ptr<LoopNode>>& children,
-            const std::string& sequence,
-            const bool& is_external = true
-        );
         static std::vector<std::vector<size_t>> get_dangle_chains(const std::vector<std::shared_ptr<LoopNode>>& children);
         static int process_chain(
                     const std::vector<size_t>& chain,
