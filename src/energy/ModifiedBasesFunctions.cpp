@@ -28,15 +28,52 @@ double ModifiedBasesFunctions::find_mod_stack_energy(
 }
 
 double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, std::vector<std::string_view> mod_sequence, const std::vector<modified_base_params>& mod_params) {
+    
+    // --------------- Dangle type 1 ---------------
     if (ViennaParams::md.dangles == 1) {
-        return INF; // TODO
+        std::vector<DangleSet> dangle_energies = ViennaDangles::populate_children_dangle_energies(children, sequence);
+        
+        for (size_t i = 0; i < children.size(); ++i) {
+            std::shared_ptr<LoopNode> c = children[i];
+            DangleSet& current_set = dangle_energies[i];
+            std::vector<std::string_view> modified = ModifiedBasesFunctions::modified_bases({c->begin, c->end}, mod_sequence);
+
+            unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
+            int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md) : -1;
+            int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md) : -1;
+
+            if (n5d >= 0 && n3d >= 0) {
+                std::string mismatch_key = ModifiedBasesFunctions::join_string_views({c->begin, c->begin-1, c->end, c->end+1}, mod_sequence);
+                current_set.both_dangle += static_cast<int>(ModifiedBasesFunctions::get_corrected_energy(mismatch_key, modified, mod_params, ViennaParams::p->mismatchExt[type][n5d][n3d]) * 100);
+            } 
+            if (n5d >= 0) {
+                std::string dangle5_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->begin - 1}, mod_sequence);
+                current_set.left_dangle += static_cast<int>(ModifiedBasesFunctions::get_corrected_energy(dangle5_key, modified, mod_params, ViennaParams::p->dangle5[type][n5d]) * 100);
+            } 
+            if (n3d >= 0) {
+                std::string dangle3_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->end + 1}, mod_sequence);
+                current_set.right_dangle += static_cast<int>(ModifiedBasesFunctions::get_corrected_energy(dangle3_key, modified, mod_params, ViennaParams::p->dangle3[type][n3d]) * 100);
+            }
+
+            if (type > 2){
+                std::string terminal_key = ModifiedBasesFunctions::join_string_views({c->end, c->begin}, mod_sequence);
+                int terminal_au = static_cast<int>(ModifiedBasesFunctions::get_corrected_energy(terminal_key, modified, mod_params, ViennaParams::p->TerminalAU) * 100);
+                current_set.no_dangle += terminal_au;
+                current_set.left_dangle += terminal_au;
+                current_set.right_dangle += terminal_au;
+                current_set.both_dangle += terminal_au;
+            }
+        }
+        
+        return ViennaDangles::get_external_dangle_1(children, dangle_energies);
     }
     
+    // --------------- No dangles or dangle type 2 ---------------
     double energy = ViennaFunctions::external_energy(children, sequence);
     for (std::shared_ptr<LoopNode> c : children) {
         std::vector<std::string_view> modified = ModifiedBasesFunctions::modified_bases({c->begin, c->end}, mod_sequence);
         if (modified.empty()) continue;
-
+        
         unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
         int n5d = c->begin > 0 ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md) : -1;
         int n3d = c->end < sequence.size() - 1 ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md) : -1;
@@ -48,46 +85,18 @@ double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::s
 
         if (n5d >= 0 && n3d >= 0) {
             std::string mismatch_key = ModifiedBasesFunctions::join_string_views({c->begin, c->begin-1, c->end, c->end+1}, mod_sequence);
-            for (const modified_base_params& param : mod_params) {
-                if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
-
-                auto it = param.mismatch_energies.find(mismatch_key);
-                if (it != param.mismatch_energies.end()) {
-                    energy += static_cast<double>(it->second) - ViennaParams::p->mismatchExt[type][n5d][n3d];
-                }
-            }
+            energy += ModifiedBasesFunctions::get_corrected_energy(mismatch_key, modified, mod_params, ViennaParams::p->mismatchExt[type][n5d][n3d]);
         } else if (n5d >= 0) {
             std::string dangle5_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->begin - 1}, mod_sequence);
-            for (const modified_base_params& param : mod_params) {
-                if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
-
-                auto it = param.dangle5_energies.find(dangle5_key);
-                if (it != param.dangle5_energies.end()) {
-                    energy += static_cast<double>(it->second) - ViennaParams::p->dangle5[type][n5d];
-                }
-            }
+            energy += ModifiedBasesFunctions::get_corrected_energy(dangle5_key, modified, mod_params, ViennaParams::p->dangle5[type][n5d]);
         } else if (n3d >= 0) {
             std::string dangle3_key  = ModifiedBasesFunctions::join_string_views({c->begin, c->end, c->end + 1}, mod_sequence);
-            for (const modified_base_params& param : mod_params) {
-                if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
-
-                auto it = param.dangle3_energies.find(dangle3_key);
-                if (it != param.dangle3_energies.end()) {
-                    energy += static_cast<double>(it->second) - ViennaParams::p->dangle3[type][n3d];
-                }
-            }
+            energy += ModifiedBasesFunctions::get_corrected_energy(dangle3_key, modified, mod_params, ViennaParams::p->dangle3[type][n3d]);
         }
 
         if (type > 2){
             std::string terminal_key = ModifiedBasesFunctions::join_string_views({c->end, c->begin}, mod_sequence);
-            for (const modified_base_params& param : mod_params) {
-                if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
-
-                auto it = param.terminal_energies.find(terminal_key);
-                if (it != param.terminal_energies.end()) {
-                    energy += static_cast<double>(it->second) - ViennaParams::p->TerminalAU;
-                }
-            }
+            energy += ModifiedBasesFunctions::get_corrected_energy(terminal_key, modified, mod_params, ViennaParams::p->TerminalAU);
         }
     }
 
@@ -118,6 +127,27 @@ std::string ModifiedBasesFunctions::join_string_views(std::initializer_list<size
     // Concatenate string views
     for (size_t idx : indices) key.append(mod_sequence[idx]);
     return key;
+}
+
+double ModifiedBasesFunctions::get_corrected_energy(const std::string& key, const std::vector<std::string_view>& modified, const std::vector<modified_base_params>& mod_params, double vienna_energy) {
+    unsigned int modified_found = 0;
+    for (const modified_base_params& param : mod_params) {
+        if (std::find(modified.begin(), modified.end(), param.modified_base) == modified.end()) continue;
+        ++modified_found;
+
+        // look for matching energy entry
+        auto it = param.stacking_energies.find(key);
+        if (it != param.stacking_energies.end()) {
+            return static_cast<double>(it->second) - vienna_energy;
+        }
+
+        // early exit if all modified bases have been found and no matches exist
+        if (modified_found >= modified.size()) {
+            break;
+        }
+    }
+
+    return 0.0;
 }
 
 }; // namespace knotergy

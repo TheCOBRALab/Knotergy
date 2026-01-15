@@ -22,6 +22,8 @@ namespace knotergy {
         static std::string join_string_views(std::initializer_list<size_t> indices, const std::vector<std::string_view>& mod_sequence);
 
         static double external_energy_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_params>& mod_params);
+
+        static double get_corrected_energy(const std::string& key, const std::vector<std::string_view>& modified, const std::vector<modified_base_params>& mod_params, double vienna_energy);
     };
 
 
