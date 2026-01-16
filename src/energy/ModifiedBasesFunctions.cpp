@@ -33,6 +33,7 @@ double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::s
     if (ViennaParams::md.dangles == 1) {
         std::vector<DangleSet> dangle_energies = ViennaDangles::populate_children_dangle_energies(children, sequence);
         
+        // Update existing dangle energies with modified base corrections
         for (size_t i = 0; i < children.size(); ++i) {
             std::shared_ptr<LoopNode> c = children[i];
             DangleSet& current_set = dangle_energies[i];
@@ -102,6 +103,34 @@ double ModifiedBasesFunctions::find_mod_external_energy(const std::vector<std::s
 
     return energy;
 }
+
+
+double ModifiedBasesFunctions::find_mod_multibranch_energy(const LoopNode& node, const std::string& sequence, std::vector<std::string_view> mod_sequence, const std::vector<modified_base_params>& mod_params) {
+    // double energy = ViennaFunctions::multibranch_energy(children, sequence);
+
+    // ------------------- Penalties -------------------
+    int energy = ViennaParams::p->MLclosing; // closing penalty
+    energy += node.exclusive_unpaired_bases_count * ViennaParams::p->MLbase; // unpaired bases penalty
+
+    if (ViennaParams::md.dangles == 1) {
+        return INF; // TODO
+    }
+    size_t i = node.begin;
+    size_t j = node.end;
+
+    unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j]);
+    auto [n5d, n3d] = ViennaUtils::encode_nucleotides(sequence[i + 1], sequence[j - 1]);
+
+    if (ViennaParams::md.dangles == 0) {
+        n5d = -1;
+        n3d = -1;
+    }
+
+    energy += vrna_E_multibranch_stem(pair_type, n3d, n5d, ViennaParams::p);
+
+
+}
+
 
 // Returns a vector of unique modified bases found at the specified indices
 std::vector<std::string_view> ModifiedBasesFunctions::modified_bases(std::initializer_list<size_t> indices, const std::vector<std::string_view>& mod_sequence) {

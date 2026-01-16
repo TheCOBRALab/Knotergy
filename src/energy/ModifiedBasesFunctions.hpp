@@ -13,7 +13,8 @@ namespace knotergy {
 
         static double find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, std::vector<std::string_view> mod_sequence, const std::vector<modified_base_params>& mod_params);
 
-
+        static double find_mod_multibranch_energy(const LoopNode& node, const std::string& sequence, std::vector<std::string_view> mod_sequence, const std::vector<modified_base_params>& mod_params);
+        
     private:
         // Returns a vector of unique modified bases found at the specified indices
         static std::vector<std::string_view> modified_bases(std::initializer_list<size_t> indices, const std::vector<std::string_view>& mod_sequence);
@@ -21,8 +22,7 @@ namespace knotergy {
         // Joins string views at specified indices into a single string
         static std::string join_string_views(std::initializer_list<size_t> indices, const std::vector<std::string_view>& mod_sequence);
 
-        static double external_energy_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_params>& mod_params);
-
+        // Returns the corrected energy for a given key and modified bases
         static double get_corrected_energy(const std::string& key, const std::vector<std::string_view>& modified, const std::vector<modified_base_params>& mod_params, double vienna_energy);
     };
 

@@ -74,9 +74,6 @@ int ViennaFunctions::internal_loop_energy(BasePair pair, BasePair child, const s
 }
 
 int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string& sequence) {
-    size_t i = node.begin;
-    size_t j = node.end;
-
     // ------------------- Penalties -------------------
     int energy = ViennaParams::p->MLclosing; // closing penalty
     energy += node.exclusive_unpaired_bases_count * ViennaParams::p->MLbase; // unpaired bases penalty
@@ -86,13 +83,17 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
         return ViennaDangles::get_multi_dangle_1(node, sequence) + energy;
     }
 
+    size_t i = node.begin;
+    size_t j = node.end;
+
     // ------------------ Closing Pair Energy ------------------
+    unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j]);
     auto [n5d, n3d] = ViennaUtils::encode_nucleotides(sequence[i + 1], sequence[j - 1]);
     if (ViennaParams::md.dangles == 0) {
         n5d = -1;
         n3d = -1;
     }
-    unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j]);
+   
     energy += vrna_E_multibranch_stem(pair_type, n3d, n5d, ViennaParams::p);
 
     // ------------------ Child Stems Energy ------------------
