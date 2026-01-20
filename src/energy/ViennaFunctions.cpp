@@ -80,7 +80,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 
     // ------------------ Dangle 1 Energy ------------------
     if (ViennaParams::md.dangles == 1) {
-        return ViennaDangles::get_multi_dangle_1(node, sequence) + energy;
+        return ViennaDangles::get_multibranch_dangle_1(node, sequence) + energy;
     }
 
     size_t i = node.begin;

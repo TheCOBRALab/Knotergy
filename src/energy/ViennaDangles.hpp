@@ -45,14 +45,16 @@ namespace knotergy {
         ~ViennaDangles() = default;
         static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence);
         static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children, const std::vector<DangleSet>& dangle_energies);
-        static int get_multi_dangle_1(const LoopNode& node, const std::string& sequence);
+        static int get_multibranch_dangle_1(const LoopNode& node, const std::string& sequence);
+        static int get_multibranch_dangle_1(const LoopNode& node, std::vector<DangleSet> dangle_energies, DangleSet closing);
 
         static std::vector<DangleSet> populate_children_dangle_energies(
             const std::vector<std::shared_ptr<LoopNode>>& children,
             const std::string& sequence,
             const bool& is_external = true
         );
-    
+
+        static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence);
     private:
         // check if two indices or nodes are contiguous (touching)
         static bool contiguous(size_t first, size_t second) noexcept {
@@ -89,7 +91,7 @@ namespace knotergy {
                     DangleSet closing = DangleSet()
         );
 
-        static DangleSet get_ml_dangle_energy(const LoopNode& node, const std::string& sequence);
+        
         static int process_ml_chains(
                     const std::vector<std::vector<size_t>>& dangle_chains,
                     const std::vector<std::shared_ptr<LoopNode>>& children,

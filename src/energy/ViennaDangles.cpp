@@ -24,11 +24,17 @@ int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopN
 
 
 // Calculate dangle energies for multibranch loops (dangle type 1)
-int ViennaDangles::get_multi_dangle_1(const LoopNode& node, const std::string& sequence){
+int ViennaDangles::get_multibranch_dangle_1(const LoopNode& node, const std::string& sequence){
     const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
     bool is_external = false;
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence, is_external);
     DangleSet closing = get_ml_dangle_energy(node, sequence);
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
+    return process_ml_chains(dangle_chains, children, dangle_energies, node, closing);
+}
+
+int ViennaDangles::get_multibranch_dangle_1(const LoopNode& node, std::vector<DangleSet> dangle_energies, DangleSet closing){
+    const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_ml_chains(dangle_chains, children, dangle_energies, node, closing);
 }
@@ -47,6 +53,9 @@ DangleSet ViennaDangles::get_ml_dangle_energy(const LoopNode& node, const std::s
     ml_dangle.both_dangle  = vrna_E_multibranch_stem(pair_type, n3d, n5d, ViennaParams::p);
     return ml_dangle;
 }
+
+
+
 
 // Precompute dangle energies for all children in the loop
 std::vector<DangleSet> ViennaDangles::populate_children_dangle_energies(

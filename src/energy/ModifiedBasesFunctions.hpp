@@ -24,6 +24,12 @@ namespace knotergy {
 
         // Returns the corrected energy for a given key and modified bases
         static double get_corrected_energy(const std::string& key, const std::vector<std::string_view>& modified, const std::vector<modified_base_params>& mod_params, double vienna_energy);
+
+
+        static double get_corrected_branch_energy(const LoopNode& node, unsigned int type, int n5d, int n3d, std::vector<std::string_view> modified, const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_params>& mod_params);
+
+
+        static DangleSet correct_dangle_set(const DangleSet& original, const std::shared_ptr<LoopNode>& c, unsigned int type, int n5d, int n3d, std::vector<std::string_view> modified, const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_params>& mod_params, bool is_external);
     };
 
 
