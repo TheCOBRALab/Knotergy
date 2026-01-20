@@ -45,53 +45,5 @@ inline void trim(std::string& s) {
     s.erase(s.find_last_not_of(" \t\n\r\f\v\"") + 1);
 }
 
-// filesystem::exists not supported in older macOS Conda packages
-inline bool file_exists(const std::string& name) {
-    struct stat buffer;
-    return (stat(name.c_str(), &buffer) == 0);
-}
-
-// Check if path is a file
-inline bool is_file(const std::string& name) {
-    struct stat buffer;
-    if (stat(name.c_str(), &buffer) != 0) {
-        return false;
-    }
-    return S_ISREG(buffer.st_mode);
-}
-
-// Check if path is a directory
-inline bool is_directory(const std::string& name) {
-    struct stat buffer;
-    if (stat(name.c_str(), &buffer) != 0) {
-        return false;
-    }
-    return S_ISDIR(buffer.st_mode);
-}
-
-// List files in a directory
-inline std::vector<std::string> list_files_in_dir(const std::string& dir) {
-    std::vector<std::string> out;
-
-    DIR* d = ::opendir(dir.c_str());
-    if (!d) {
-        // up to you: throw, or return empty
-        throw std::runtime_error("opendir failed: " + dir + " (" + std::strerror(errno) + ")");
-    }
-
-    while (dirent* e = ::readdir(d)) {
-        // skip . and ..
-        if (std::strcmp(e->d_name, ".") == 0 || std::strcmp(e->d_name, "..") == 0) continue;
-
-        std::string full = dir;
-        if (!full.empty() && full.back() != '/') full += '/';
-        full += e->d_name;
-
-        if (is_file(full)) out.push_back(full);
-    }
-
-    ::closedir(d);
-    return out;
-}
 
 }  // namespace knotergy    

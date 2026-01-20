@@ -1,39 +1,60 @@
-#pragma once
+#include "RNAInputManager.hpp"
 
-#include <string>
+
 #include <fstream>
 #include <iostream>
-#include "shared.hpp"
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+
+#include "../energy/ComputeEnergy.hpp"
+#include "../loop_tree/LoopFactory.hpp"
 #include "../preprocessing/RNAEntry.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
+#include "common.hpp"
+#include "FileUtils.hpp"
 
-namespace knotergy{
+namespace knotergy {
 
-/**
- * @brief Represents the parser's state during file processing.
- *
- * Used internally in get_all_file_entries() to track whether the parser
- * is currently reading a name, sequence, or structure.
- */
-enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
+// Collects all RNA input entries from console and/or file.
+std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_file, 
+                                     const std::string& sequence,
+                                     const std::string& structure) {
+    std::vector<RNAEntry> entries;
 
-/**
- * @brief Parses RNA entries from a file in FASTA format
- *
- * Each entry is expected to consist of three lines in the following order:
- * - Name line starting with '>'
- * - RNA sequence line (ACGTU only)
- * - Structure line (dot-bracket notation)
- *
- * If any line is malformed or a required field is missing, an exception is thrown.
- *
- * @param file Path to the input file containing RNA entries.
- * @return A vector of RNAEntry objects parsed from the file.
- *
- * @throws std::runtime_error if the file does not exist, is unreadable,
- *         or contains malformed data.
- */
-[[nodiscard]] std::vector<RNAEntry> get_all_file_entries(const std::string& file) {
-    if (!file_exists(file)) {
+    // get console input
+    if (!sequence.empty()) {
+        entries.emplace_back("Console Sequence", sequence, structure);
+    }
+
+    // get file inputs
+    if (!input_file.empty()) {
+        std::vector<RNAEntry> file_entries = RNAInputManager::get_all_FASTA_entries(input_file);
+        // move values into entries (avoids deep copies). Keeps console as first entry
+        entries.insert(entries.end(), std::make_move_iterator(file_entries.begin()),
+                       std::make_move_iterator(file_entries.end()));
+    }
+    if (entries.empty()) THROW_ERROR("No Input Data Given");
+    return entries;
+}
+
+std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector<RNAEntry>& inputs, const std::vector<modified_base_params>& modified_params) {
+    std::vector<ProcessedRNAEntry> processed_inputs;
+    processed_inputs.reserve(inputs.size());
+    for (RNAEntry rna : inputs) {
+        processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna), modified_params));
+    }
+    return processed_inputs;
+}
+
+// Parses RNA entries from a file in FASTA format
+[[nodiscard]] std::vector<RNAEntry> RNAInputManager::get_all_FASTA_entries(const std::string& file) {
+    // Represents the parser's state during file processing.
+    // Used to track if it's currently reading name, sequence, or structure.
+    enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
+
+    if (!FileUtils::file_exists(file)) {
         THROW_ERROR("Error: Input file not found: " + file);
     }
 
@@ -105,4 +126,4 @@ enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
     return entries;
 }
 
-}
+}  // namespace knotergy

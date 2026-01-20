@@ -2,7 +2,7 @@
 
 #include "../loop_tree/LoopNode.hpp"
 #include "../preprocessing/RNAEntry.hpp"
-#include "../pipeline/load_params.hpp"
+#include "../io/ViennaParams.hpp"
 #include "ViennaDangles.hpp"
 #include "ViennaUtils.hpp"
 #include <algorithm>

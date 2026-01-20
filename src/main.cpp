@@ -2,7 +2,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "pipeline/input_pipeline.hpp"
+#include "io/RNAInputManager.hpp"
 #include "preprocessing/RNAEntry.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "loop_tree/LoopFactory.hpp"
@@ -120,19 +120,19 @@ int main(int argc, char** argv) {
     }
 
     knotergy::trim(input_file);
-    if (!input_file.empty() && !knotergy::file_exists(input_file)) {
+    if (!input_file.empty() && !knotergy::FileUtils::file_exists(input_file)) {
         std::cerr << "Input file not found: " << input_file << std::endl;
         return 1;
     }
 
     knotergy::trim(parameter_file);
-    if (!parameter_file.empty() && !knotergy::file_exists(parameter_file)) {
+    if (!parameter_file.empty() && !knotergy::FileUtils::file_exists(parameter_file)) {
         std::cerr << "Parameter file not found: " << parameter_file << std::endl;
         return 1;
     }
 
     knotergy::trim(mod_param_path);
-    if (!mod_param_path.empty() && !knotergy::file_exists(mod_param_path)) {
+    if (!mod_param_path.empty() && !knotergy::FileUtils::file_exists(mod_param_path)) {
         std::cerr << "Modified bases parameter file not found: " << mod_param_path << std::endl;
         return 1;
     }
@@ -141,8 +141,8 @@ int main(int argc, char** argv) {
     std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
 
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<knotergy::RNAEntry> inputs = knotergy::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::process_inputs(inputs, modified_params);
+    std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, modified_params);
     knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
 
     //------------------------- Main Processing Loop ----------------------------

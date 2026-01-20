@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "../loop_tree/LoopNode.hpp"
-#include "../pipeline/load_params.hpp"
+#include "../io/ViennaParams.hpp"
 #include "ViennaFunctions.hpp"
 
 namespace knotergy {

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "../pipeline/shared.hpp"
+#include "../io/common.hpp"
 
 namespace knotergy {
 

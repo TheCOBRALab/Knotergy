@@ -1,11 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <array>
 
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
 #include "ProcessedRNAEntry.hpp"
-#include "../pipeline/load_params.hpp"
+#include "../io/ViennaParams.hpp"
 namespace knotergy {
 
 

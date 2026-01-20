@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../pipeline/shared.hpp"
+#include "../io/common.hpp"
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
 namespace knotergy {

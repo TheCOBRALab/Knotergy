@@ -3,7 +3,7 @@
 #include <vector>
 #include <array>
 #include "../loop_tree/LoopNode.hpp"
-#include "../pipeline/load_params.hpp"
+#include "../io/ViennaParams.hpp"
 #include "ViennaUtils.hpp"
 
 extern "C" {

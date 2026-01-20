@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <pipeline/shared.hpp>
-#include <pipeline/input_pipeline.hpp>
+#include <io/common.hpp>
+#include <io/RNAInputManager.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
