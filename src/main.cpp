@@ -7,6 +7,7 @@
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "loop_tree/LoopFactory.hpp"
 #include "energy/ComputeEnergy.hpp"
+#include "io/PseudoknotParams.hpp"
 
 #define KNOTERGY_VERSION "0.1.3"
 
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
     std::string mod_param_path = "./params/modified_bases";
+    std::string pseudo_param_file = "./params/pseudo/test_params.json";
     bool round = false;
     bool verbose = false;
     int  dangle = 2;
@@ -139,7 +141,7 @@ int main(int argc, char** argv) {
 
     // ------------------------- Load Modified Base Parameters -----------------------
     std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
-
+    
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, modified_params);

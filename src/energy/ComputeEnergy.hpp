@@ -2,6 +2,7 @@
 #include "../loop_tree/LoopNode.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"
+#include "../io/PseudoknotParams.hpp"
 #include "PseudoknotFunctions.hpp"
 #include "ViennaFunctions.hpp"
 
