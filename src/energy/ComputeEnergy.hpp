@@ -18,7 +18,6 @@ class ComputeEnergy {
     float getEnergy() const { return energy_; };
 
    private:
-    PseudoknotFunctions pseudo;
     std::shared_ptr<LoopNode> root_node_;
     ProcessedRNAEntry processed_rna_;
     std::vector<modified_base_params> mod_params_;

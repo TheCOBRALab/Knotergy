@@ -1,12 +1,12 @@
 {
   "pseudoknot_parameters": {
-    "name": "D&P",
+    "name": "DirksPierce09 pseudoknot params from HotKnotsV2",
     "pk_in_ext" : -138,
     "pk_in_mloop" : 1007,
     "pk_in_pk" : 1500,
     "band" : 246,
     "unpaired_in_pk": 6,
-    "nested_cr": 96,
+    "cr_in_pk": 96,
     "pk_stack_x": 0.89,
     "pk_internal_x": 0.74,
     "pk_mloop_init": 341,

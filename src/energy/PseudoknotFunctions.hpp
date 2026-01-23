@@ -5,34 +5,12 @@
 #include "../loop_tree/LoopNode.hpp"
 #include "../io/ViennaParams.hpp"
 #include "ViennaFunctions.hpp"
+#include "../io/PseudoknotParams.hpp"
 
 namespace knotergy {
 class PseudoknotFunctions {
    public:
-    PseudoknotFunctions() = default;
-    ~PseudoknotFunctions() = default;
-
-    // Should be moved to private
-    const int ext_pk_init_penalty = -138;  // exterior pseudoloop initialization penalty
-    const int pk_in_multi_penalty = 1007;  // pseudoknot in multiloop penalty
-    const int pk_in_pk_penalty = 1500;     // pseudoknot in pseudoloop penalty
-    const int band_penalty = 246;
-    const int unpaired_in_pk_penalty = 6;  // unpaired bases in pseudoknot penalty
-    const int nested_cr_penalty = 96;      // nested closed region penalty
-
-    // stacked pair that spans a band penalty multiplier (band_energy * penalty)
-    double pk_stack_penalty_x = 0.89;
-    // internal pair that spans a band penalty multiplier (internal_energy * penalty)
-    double pk_internal_penalty_x = 0.74;
-
-    // multiloop that spans a band penalty
-    int pk_multi_init_penalty = 341;
-    // base pair for multiloop that spans a band penalty
-    int pk_multi_bp_penalty = 56;
-    // unpaired bases in a multiloop that spans a band penalty
-    int pk_unpaired_in_multi_penalty = 12;
-
-    double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
+    static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
                              ProcessedRNAEntry processed_rna, bool round = false) {
         
         // Unpaired within bands are already included in stack_and_internal_energy
@@ -58,35 +36,35 @@ class PseudoknotFunctions {
 
         double energy = 0;
 
-        energy += init_penalty(node);
-        energy += band_penalty * node.number_of_bands;
-        energy += unpaired_in_pk_penalty * unpaired;
-        energy += nested_cr_penalty * node.number_of_nested_children;
-        energy += loop_penalties(node, sequence, processed_rna, round);
+        energy += PseudoknotFunctions::init_penalty(node);
+        energy += PseudoknotParams::pkp->band * node.number_of_bands;
+        energy += PseudoknotParams::pkp->unpaired_in_pk * unpaired;
+        energy += PseudoknotParams::pkp->cr_in_pk * node.number_of_nested_children;
+        energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, round);
 
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::WithinBand) {
-                energy += pk_multi_bp_penalty * c->number_of_bands;
+                energy += PseudoknotParams::pkp->pk_mloop_bp * c->number_of_bands;
             }
         }
         return energy;
     }
 
    private:
-    [[nodiscard]] double init_penalty(const LoopNode& node) {
+    [[nodiscard]] static double init_penalty(const LoopNode& node) {
         // initialization penalties
         double energy = 0;
         if (std::shared_ptr<LoopNode> parent = node.parent.lock()) {
             switch (parent->loop_type) {
                 case (LoopType::External):
-                    energy += ext_pk_init_penalty;
+                    energy += PseudoknotParams::pkp->pk_in_ext;
                     break;
                 case (LoopType::Multibranch):
-                    energy += pk_in_multi_penalty;
+                    energy += PseudoknotParams::pkp->pk_in_mloop;
                     break;
                 case (LoopType::Pseudoknot):
-                    energy += node.pseudo_type == PseudoNestedType::WithinBand ? pk_in_multi_penalty
-                                                                               : pk_in_pk_penalty;
+                    energy += node.pseudo_type == PseudoNestedType::WithinBand ? PseudoknotParams::pkp->pk_in_mloop
+                                                                               : PseudoknotParams::pkp->pk_in_pk;
                     break;
                 default:
                     std::cerr << "Warning: Parent of this node is not a pseudoknot, external, or "
@@ -101,7 +79,7 @@ class PseudoknotFunctions {
         return energy;
     }
 
-    [[nodiscard]] double loop_penalties(const LoopNode& node, const std::string& sequence, const ProcessedRNAEntry& processed_rna, bool round) {
+    [[nodiscard]] static double loop_penalties(const LoopNode& node, const std::string& sequence, const ProcessedRNAEntry& processed_rna, bool round) {
         double energy = 0;
 
         for (const Band& band : node.bands) {
@@ -114,35 +92,35 @@ class PseudoknotFunctions {
                 const BasePair& next_bp = bps[idx + 1];
                 
                 if (bp.is_stack(next_bp)) {
-                    energy += pk_stack_energy(bp, next_bp, sequence, round);
+                    energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, sequence, round);
                 } else if (!bp.children.empty()) {
-                    energy += pk_multiloop_energy(bp, next_bp, processed_rna);
+                    energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna);
                 } else {
-                    energy += pk_internal_energy(bp, next_bp, sequence, round);
+                    energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, sequence, round);
                 }
             }
         }
         return energy;
     }
 
-    [[nodiscard]] double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
-        double stack_penalty = ViennaFunctions::stack_energy(bp, next_bp, sequence) * pk_stack_penalty_x ;
+    [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
+        double stack_penalty = ViennaFunctions::stack_energy(bp, next_bp, sequence) * PseudoknotParams::pkp->pk_stack_x ;
         if (round) stack_penalty = std::round(stack_penalty);
         return stack_penalty;
     }
 
-    [[nodiscard]] double pk_internal_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
-        double internal_penalty = ViennaFunctions::internal_loop_energy(bp, next_bp, sequence) * pk_internal_penalty_x ;
+    [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp, const std::string& sequence, const bool& round){
+        double internal_penalty = ViennaFunctions::internal_loop_energy(bp, next_bp, sequence) * PseudoknotParams::pkp->pk_internal_x ;
         if (round) internal_penalty = std::round(internal_penalty);
         return internal_penalty;
     }
 
-     [[nodiscard]] double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, const ProcessedRNAEntry& processed_rna){
-        double multiloop_penalty = pk_multi_init_penalty;
+     [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp, const ProcessedRNAEntry& processed_rna){
+        double multiloop_penalty = PseudoknotParams::pkp->pk_mloop_init;
 
         // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty
         // We add the child base pairs at a different part of the energy calculation
-        multiloop_penalty += pk_multi_bp_penalty * 2;
+        multiloop_penalty += PseudoknotParams::pkp->pk_mloop_bp * 2;
 
         // get unpaired count
         int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
@@ -152,7 +130,7 @@ class PseudoknotFunctions {
         }
 
         // get unpaired penalty
-        int pk_mloop_unpaired_energy = unpaired * pk_unpaired_in_multi_penalty;
+        int pk_mloop_unpaired_energy = unpaired * PseudoknotParams::pkp->pk_mloop_unpaired;
         multiloop_penalty += pk_mloop_unpaired_energy;
 
         return multiloop_penalty;

@@ -23,10 +23,10 @@ void help() {
               << "  -i, --input <file>            Input file\n"
               << "  -o, --output <file>           Output file\n"
               << "  -p, --paramFile <file>        Parameter file\n"
-              << "  -e  --round                   Rounds all decimal places in pseudoknot calculations\n"
+              << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
+              << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
+              << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
               << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
-            //   << "  -m, --modifications           Chars used for modified bases (default=`7I6P9D')\n"
-            //   << "  -f, --mod-file                Modified base parameter file\n";
 
 }
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
     std::string mod_param_path = "./params/modified_bases";
-    std::string pseudo_param_file = "./params/pseudo/test_params.json";
+    std::string pseudo_param_file = "./params/pseudo/pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
     bool verbose = false;
     int  dangle = 2;
@@ -84,14 +84,13 @@ int main(int argc, char** argv) {
             parameter_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-e" || arg == "--round") {
             round = true;
-        } else if (arg == "-m" || arg == "--modifications") {
-            std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
-            modifications = get_trimmed_arg(i, argc, argv);
-        } else if (arg == "-f" || arg == "--mod-file") {
+        } else if (arg == "-m" || arg == "--mod-file") {
             std::cerr << "Modified bases are not currently supported. This flag will be ignored." << std::endl;
             mod_param_path = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
+        } else if ((arg == "-k" || arg == "--pk-paramFile") && argc >= i + 1) {
+            pseudo_param_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-h" || arg == "--help") {
             help();
             return 0;
@@ -141,6 +140,9 @@ int main(int argc, char** argv) {
 
     // ------------------------- Load Modified Base Parameters -----------------------
     std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+
+    // ------------------------- Load Pseudoknot Parameters -----------------------
+    knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
     
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
