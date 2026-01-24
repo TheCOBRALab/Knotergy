@@ -1,16 +1,16 @@
 #pragma once
 
 #include <algorithm>
+#include <iomanip>
 #include <memory>
 #include <sstream>
-#include <iomanip>
 
 #include "../loop_tree/Band.hpp"
 #include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
-enum class PseudoNestedType { None, WithinBand, Nested};
+enum class PseudoNestedType { None, WithinBand, Nested };
 // Within Band (((..(...).(.[[[.)..)))]]]
 // This hairpin     ^   ^ is within a band
 // Nested      (((..(...).[[[...)))]]]
@@ -18,12 +18,18 @@ enum class PseudoNestedType { None, WithinBand, Nested};
 
 static inline const char* loop_name(LoopType t) {
     switch (t) {
-        case LoopType::Stack:       return "Stack    loop";
-        case LoopType::Hairpin:     return "Hairpin  loop";
-        case LoopType::Internal:    return "Internal loop";
-        case LoopType::Multibranch: return "Multi    loop";
-        case LoopType::External:    return "External loop";
-        case LoopType::Pseudoknot:  return "Pseudo   loop";
+        case LoopType::Stack:
+            return "Stack    loop";
+        case LoopType::Hairpin:
+            return "Hairpin  loop";
+        case LoopType::Internal:
+            return "Internal loop";
+        case LoopType::Multibranch:
+            return "Multi    loop";
+        case LoopType::External:
+            return "External loop";
+        case LoopType::Pseudoknot:
+            return "Pseudo   loop";
     }
     return "Unknown  loop";
 }
@@ -38,8 +44,9 @@ struct LoopNode {
 
     LoopType loop_type;
     PseudoNestedType pseudo_type = PseudoNestedType::None;
-    int exclusive_unpaired_bases_count = 0; // unpaired bases in loop only
-    int total_unpaired_bases_count = 0;  // unpaired bases in loop + unpaired bases in nested children
+    int exclusive_unpaired_bases_count = 0;  // unpaired bases in loop only
+    int total_unpaired_bases_count =
+        0;  // unpaired bases in loop + unpaired bases in nested children
     int number_of_withinband_children = 0;
     int number_of_nested_children = 0;
     int number_of_unpaired_bases_in_nested_children = 0;
@@ -48,44 +55,37 @@ struct LoopNode {
     std::vector<std::shared_ptr<LoopNode>> children;
     std::vector<Band> bands;
     int number_of_bands;
-    double energy = 0; // calculated in ComputeEnergy.cpp
+    double energy = 0;  // calculated in ComputeEnergy.cpp
 
     // Generates a formatted string representing the energy breakdown of the loop
     // Used for verbose output
     std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
 
-        const unsigned short idx_w  = static_cast<unsigned short>(std::to_string(max_idx).size());
+        const unsigned short idx_w = static_cast<unsigned short>(std::to_string(max_idx).size());
 
         // This is the *fixed* width of: "[<idx_w>, <idx_w>] "
-        const unsigned short range_w = static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2); // '[' + a + ", " + b + "] "
+        const unsigned short range_w =
+            static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2);  // '[' + a + ", " + b + "] "
 
         // Colored name padded
-        out << "\x1b[36m"
-            << std::left << loop_name(loop_type)
-            << "\x1b[0m ";
+        out << "\x1b[36m" << std::left << loop_name(loop_type) << "\x1b[0m ";
 
         // Range column (i, j)
         if (loop_type == LoopType::External) {
             out << std::string(range_w, ' ');
         } else {
-            out << "("
-                << std::right << std::setw(idx_w) << begin
-                << ", "
-                << std::right << std::setw(idx_w) << end
-                << ") ";
+            out << "(" << std::right << std::setw(idx_w) << begin << ", " << std::right
+                << std::setw(idx_w) << end << ") ";
         }
 
         // Energy column
-        out << ": "
-            << std::right << std::setw(9) << std::fixed << std::setprecision(2) << energy
+        out << ": " << std::right << std::setw(9) << std::fixed << std::setprecision(2) << energy
             << "\n";
 
         return out.str();
     }
 };
-
-
 
 inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "LoopNode {\n";

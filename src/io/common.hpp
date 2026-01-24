@@ -1,12 +1,13 @@
 #pragma once
 
+#include <dirent.h>
+#include <sys/stat.h>
+
+#include <cerrno>
+#include <cstring>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <cerrno>
-#include <cstring>
 #include <vector>
 
 namespace knotergy {
@@ -45,5 +46,4 @@ inline void trim(std::string& s) {
     s.erase(s.find_last_not_of(" \t\n\r\f\v\"") + 1);
 }
 
-
-}  // namespace knotergy    
+}  // namespace knotergy

@@ -1,10 +1,13 @@
 #include "RNAProcessor.hpp"
+
 #include <unordered_map>
 #include <unordered_set>
-#include "uni_algo/ranges_grapheme.h" 
+
+#include "uni_algo/ranges_grapheme.h"
 
 namespace knotergy {
-ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
+ProcessedRNAEntry RNAProcessor::process_rna(
+    RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
     std::vector<std::string_view> mod_sequence = compute_modified_sequence_views(rna);
 
     // Ensure Sequence & Structure are the same length
@@ -14,39 +17,39 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const std::vector<modi
                     "\nRNA length: " + std::to_string(rna.structure.size()));
     }
 
-    bool has_modified_bases = !modified_params.empty(); // Is passed by reference and modified in compute_unmodified_sequence
-    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
+    bool has_modified_bases =
+        !modified_params
+             .empty();  // Is passed by reference and modified in compute_unmodified_sequence
+    std::string unmodified_sequence =
+        compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
     std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
-    return ProcessedRNAEntry{std::move(rna), std::move(unmodified_sequence), std::move(mod_sequence), std::move(pairings),
-                             std::move(closed_regions), std::move(cr_pairings),
+    return ProcessedRNAEntry{std::move(rna),
+                             std::move(unmodified_sequence),
+                             std::move(mod_sequence),
+                             std::move(pairings),
+                             std::move(closed_regions),
+                             std::move(cr_pairings),
                              std::move(unpaired_prefix_sum),
                              has_modified_bases};
 };
 
-std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence, const std::vector<std::string_view>& mod_sequence) {
+std::vector<size_t> RNAProcessor::compute_pairings(
+    const RNAEntry& rna, const std::string& unmodified_sequence,
+    const std::vector<std::string_view>& mod_sequence) {
     const std::unordered_map<char, char> open_to_close = {
-        {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'},
-        {'A', 'a'}, {'B', 'b'}, {'C', 'c'}, {'D', 'd'},
-        {'E', 'e'}, {'F', 'f'}, {'G', 'g'}, {'H', 'h'},
-        {'I', 'i'}, {'J', 'j'}, {'K', 'k'}, {'L', 'l'},
-        {'M', 'm'}, {'N', 'n'}, {'O', 'o'}, {'P', 'p'},
-        {'Q', 'q'}, {'R', 'r'}, {'S', 's'}, {'T', 't'},
-        {'U', 'u'}, {'V', 'v'}, {'W', 'w'}, {'X', 'x'},
-        {'Y', 'y'}, {'Z', 'z'}
-    };
+        {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}, {'A', 'a'}, {'B', 'b'},
+        {'C', 'c'}, {'D', 'd'}, {'E', 'e'}, {'F', 'f'}, {'G', 'g'}, {'H', 'h'},
+        {'I', 'i'}, {'J', 'j'}, {'K', 'k'}, {'L', 'l'}, {'M', 'm'}, {'N', 'n'},
+        {'O', 'o'}, {'P', 'p'}, {'Q', 'q'}, {'R', 'r'}, {'S', 's'}, {'T', 't'},
+        {'U', 'u'}, {'V', 'v'}, {'W', 'w'}, {'X', 'x'}, {'Y', 'y'}, {'Z', 'z'}};
 
     const std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
-        {'A', {'U'}},
-        {'U', {'A','G'}},
-        {'G', {'C','U'}},
-        {'C', {'G'}},
-        {'T', {'A', 'T', 'G'}},
-        {'N', {}}
-    };
+        {'A', {'U'}}, {'U', {'A', 'G'}},      {'G', {'C', 'U'}},
+        {'C', {'G'}}, {'T', {'A', 'T', 'G'}}, {'N', {}}};
 
     // close_to_open is the opposite of open_to_close
     // e.g. {'(', ')'} -> {')', '('}
@@ -93,18 +96,23 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const st
 
             // check if they're a valid pair
             if (!valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
-                if (mod_sequence.size() != rna.size()) { // if modified sequence not given or is invalid
+                if (mod_sequence.size() !=
+                    rna.size()) {  // if modified sequence not given or is invalid
                     std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
-                                 "' can't pair with '" + std::string(1, unmodified_sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
-                }
-                else { // If modified sequence is given    
-                std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
-                                 "' can't pair with '" + std::string(mod_sequence[j]) + "' at indices " + std::to_string(j) + ", " + std::to_string(i) << std::endl;
+                                     "' can't pair with '" +
+                                     std::string(1, unmodified_sequence[j]) + "' at indices " +
+                                     std::to_string(j) + ", " + std::to_string(i)
+                              << std::endl;
+                } else {  // If modified sequence is given
+                    std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
+                                     "' can't pair with '" + std::string(mod_sequence[j]) +
+                                     "' at indices " + std::to_string(j) + ", " + std::to_string(i)
+                              << std::endl;
                 }
             }
             continue;
         }
-        
+
         // Not open, not close, not unpaired -> invalid character
         THROW_ERROR("Invalid RNA structure: Invalid character '" + std::string(1, c) +
                     "' in RNA structure (position " + std::to_string(i) + ')');
@@ -123,7 +131,8 @@ std::vector<size_t> RNAProcessor::compute_pairings(const RNAEntry& rna, const st
 
 // Computes all closed regions from a pairing list using an interval-merging stack algorithm.
 // Assumes properly balanced pairings.
-std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector<size_t>& pairings) {
+std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
+    const std::vector<size_t>& pairings) {
     std::vector<ClosedRegion> closed_regions;
     std::stack<ClosedRegion> stack;
     const size_t n = pairings.size();
@@ -138,7 +147,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector
             continue;
         }
 
-        const size_t open_idx = paired_idx; 
+        const size_t open_idx = paired_idx;
         size_t largest_right = i;
 
         // Merge any nested regions whose start lies within (open, i]
@@ -148,7 +157,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector
         }
 
         if (stack.empty()) THROW_ERROR("Unbalanced pairings\n");
-        
+
         // Extend region if any nested intervals were merged.
         stack.top().end = std::max(largest_right, stack.top().end);
 
@@ -160,7 +169,6 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(const std::vector
     }
     return closed_regions;
 }
-
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessor::compute_cr_pairings(
@@ -187,11 +195,10 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
     return unpaired_prefix_sum;
 };
 
-
 // grapheme is a user-perceived character, which may be multiple bytes
 std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(const RNAEntry& rna) {
     std::vector<std::string_view> out;
-    out.reserve(rna.sequence.size()); // upper bound (bytes >= graphemes)
+    out.reserve(rna.sequence.size());  // upper bound (bytes >= graphemes)
 
     // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
     for (std::string_view g : una::views::grapheme::utf8(rna.sequence)) {
@@ -203,11 +210,8 @@ std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(cons
 
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views,
-    const std::vector<modified_base_params>& params,
-    const size_t rna_length,
-    bool& has_modified_bases
-) {
-
+    const std::vector<modified_base_params>& params, const size_t rna_length,
+    bool& has_modified_bases) {
     std::string unmodified_sequence;
     unmodified_sequence.reserve(rna_length);
 
@@ -215,7 +219,8 @@ std::string RNAProcessor::compute_unmodified_sequence(
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
     for (const modified_base_params& param : params) {
         if (param.unmodified_base.empty()) {
-            THROW_ERROR("Modified base '" + param.modified_base + "' has empty unmodified mapping.");
+            THROW_ERROR("Modified base '" + param.modified_base +
+                        "' has empty unmodified mapping.");
         }
 
         mod_to_unmod[param.modified_base] = param.unmodified_base;
@@ -240,8 +245,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
             unmodified_sequence += it->second;
         } else {
             THROW_ERROR("Modified base '" + std::string(mod_base) + "' at index " +
-                        std::to_string(unmodified_sequence.size()) +
-                        " has no unmodified mapping.");
+                        std::to_string(unmodified_sequence.size()) + " has no unmodified mapping.");
         }
     }
 

@@ -2,32 +2,32 @@
 #include <string>
 #include <unordered_set>
 
-#include "io/RNAInputManager.hpp"
-#include "preprocessing/RNAEntry.hpp"
-#include "preprocessing/ProcessedRNAEntry.hpp"
-#include "loop_tree/LoopFactory.hpp"
 #include "energy/ComputeEnergy.hpp"
 #include "io/PseudoknotParams.hpp"
+#include "io/RNAInputManager.hpp"
+#include "loop_tree/LoopFactory.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+#include "preprocessing/RNAEntry.hpp"
 
 #define KNOTERGY_VERSION "0.1.3"
 
 namespace {
 void help() {
-    std::cout << "Usage: ./Knotergy [options]\n"
-              << "Options:\n"
-              << "  -h, --help                    Show this help message\n"
-              << "  -V, --version                 Print version and exit\n"
-              << "  -v, --verbose                 Enable verbose output\n"
-              << "  -s, --sequence <string>       RNA sequence\n"
-              << "  -r, --structure <string>      Input structure\n"
-              << "  -i, --input <file>            Input file\n"
-              << "  -o, --output <file>           Output file\n"
-              << "  -p, --paramFile <file>        Parameter file\n"
-              << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
-              << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
-              << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
-              << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
-
+    std::cout
+        << "Usage: ./Knotergy [options]\n"
+        << "Options:\n"
+        << "  -h, --help                    Show this help message\n"
+        << "  -V, --version                 Print version and exit\n"
+        << "  -v, --verbose                 Enable verbose output\n"
+        << "  -s, --sequence <string>       RNA sequence\n"
+        << "  -r, --structure <string>      Input structure\n"
+        << "  -i, --input <file>            Input file\n"
+        << "  -o, --output <file>           Output file\n"
+        << "  -p, --paramFile <file>        Parameter file\n"
+        << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
+        << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
+        << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
+        << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
 }
 
 // cleans white space from arg
@@ -55,7 +55,6 @@ int get_numerical_arg(int& i, int argc, char** argv, int default_value = 0) {
 
 }  // namespace
 
-
 int main(int argc, char** argv) {
     std::string sequence = "";
     std::string structure = "";
@@ -67,7 +66,7 @@ int main(int argc, char** argv) {
     std::string pseudo_param_file = "./params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
     bool verbose = false;
-    int  dangle = 2;
+    int dangle = 2;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -111,7 +110,7 @@ int main(int argc, char** argv) {
         std::cin >> sequence;
         knotergy::trim(sequence);
     }
-    
+
     // Get structure if not provided
     if (structure.empty() && input_file.empty()) {
         std::cout << "Structure: ";
@@ -138,21 +137,26 @@ int main(int argc, char** argv) {
     }
 
     // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+    std::vector<knotergy::modified_base_params> modified_params =
+        knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
     knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
-    
+
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, modified_params);
+    std::vector<knotergy::RNAEntry> inputs =
+        knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
+        knotergy::RNAInputManager::process_inputs(inputs, modified_params);
     knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
 
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
         knotergy::LoopFactory factory(processed_rna);
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, modified_params, round, verbose);
-        // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " << processed_rna.get_sequence()
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna,
+                                                  modified_params, round, verbose);
+        // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " <<
+        // processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
         printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
     }

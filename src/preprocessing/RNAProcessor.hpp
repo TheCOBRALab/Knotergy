@@ -1,14 +1,13 @@
 #pragma once
 
-#include <vector>
 #include <array>
+#include <vector>
 
-#include "ClosedRegion.hpp"
-#include "RNAEntry.hpp"
-#include "ProcessedRNAEntry.hpp"
 #include "../io/ViennaParams.hpp"
+#include "ClosedRegion.hpp"
+#include "ProcessedRNAEntry.hpp"
+#include "RNAEntry.hpp"
 namespace knotergy {
-
 
 /**
  * @brief Utilities for parsing RNA secondary-structure strings.
@@ -29,7 +28,8 @@ class RNAProcessor {
     RNAProcessor();
 
     /// High-level pipeline that produces a processed entry from raw RNA input.
-    static ProcessedRNAEntry process_rna(RNAEntry rna, const std::vector<modified_base_params>& modified_params = {});
+    static ProcessedRNAEntry process_rna(
+        RNAEntry rna, const std::vector<modified_base_params>& modified_params = {});
 
     /**
      * @brief Compute base-pair indices from a structure string.
@@ -43,19 +43,23 @@ class RNAProcessor {
      *
      * Notes:
      * - Indices are 0-based.
-     * - Supported bracket pairs: (), [], {}, <>. Different bracket types may be nested or intermixed.
+     * - Supported bracket pairs: (), [], {}, <>. Different bracket types may be nested or
+     * intermixed.
      * - NULL_INDEX (defined as static_cast<size_t>(-1)) marks unpaired bases.
      *   This evaluates to the maximum size_t value because size_t is unsigned.
      *
      * @param rna RNAEntry containing the structure to parse.
      * @param unmodified_sequence The unmodified RNA sequence corresponding to the structure.
-     * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's partner,
-     *         or NULL_INDEX if i is unpaired.
+     * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's
+     * partner, or NULL_INDEX if i is unpaired.
      *
-     * @throws std::runtime_error If the structure is malformed (e.g., unbalanced/mismatched brackets).
+     * @throws std::runtime_error If the structure is malformed (e.g., unbalanced/mismatched
+     * brackets).
      * @warning Invalid base *types* (e.g., A–A) are reported via warnings but do not throw.
      */
-    [[nodiscard]] static std::vector<size_t> compute_pairings(const RNAEntry& rna, const std::string& unmodified_sequence, const std::vector<std::string_view>& mod_sequence = {});
+    [[nodiscard]] static std::vector<size_t> compute_pairings(
+        const RNAEntry& rna, const std::string& unmodified_sequence,
+        const std::vector<std::string_view>& mod_sequence = {});
 
     /**
      * @brief Identify all closed regions in the structure.
@@ -66,7 +70,8 @@ class RNAProcessor {
      * @param pairings Base-pair indices as returned by compute_pairings().
      * @return std::vector<ClosedRegion> containing all detected closed regions.
      */
-    [[nodiscard]] static std::vector<ClosedRegion> compute_closed_regions(const std::vector<size_t>& pairings);
+    [[nodiscard]] static std::vector<ClosedRegion> compute_closed_regions(
+        const std::vector<size_t>& pairings);
 
     /**
      * @brief Build a partner-index vector for closed-region boundaries.
@@ -81,11 +86,13 @@ class RNAProcessor {
      *
      * @param closed_regions All closed regions in the structure.
      * @param rna_size The total length of the structure (used to preallocate the result).
-     * @return std::vector<size_t> of length rna_size where entries are boundary partners or NULL_INDEX.
+     * @return std::vector<size_t> of length rna_size where entries are boundary partners or
+     * NULL_INDEX.
      *
      * @throws std::runtime_error If any closed-region index exceeds rna_size.
      */
-    [[nodiscard]] static std::vector<size_t> compute_cr_pairings(const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size);
+    [[nodiscard]] static std::vector<size_t> compute_cr_pairings(
+        const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size);
 
     /**
      * @brief Prefix-sum of unpaired-base counts.
@@ -104,20 +111,20 @@ class RNAProcessor {
      * @param pairings Base-pair indices from RNAProcessor::compute_pairings().
      * @return std::vector<int> of size rna_size + 1 with cumulative unpaired counts.
      */
-    [[nodiscard]] static std::vector<int> compute_unpaired_counts(const std::vector<size_t>& pairings);
+    [[nodiscard]] static std::vector<int> compute_unpaired_counts(
+        const std::vector<size_t>& pairings);
 
-    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(const RNAEntry& rna);
+    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(
+        const RNAEntry& rna);
 
     [[nodiscard]] static std::string compute_unmodified_sequence(
-                                        const std::vector<std::string_view>& modified_sequence_views,
-                                        const std::vector<modified_base_params>& params,
-                                        const size_t rna_length,
-                                        bool& has_modified_bases
-                                    );
-                                    
+        const std::vector<std::string_view>& modified_sequence_views,
+        const std::vector<modified_base_params>& params, const size_t rna_length,
+        bool& has_modified_bases);
+
     [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
 
-    private:
+   private:
     // Lookup table for unmodified bases
     static constexpr std::array<uint8_t, 256> unmod_lookup = [] {
         std::array<uint8_t, 256> t{};

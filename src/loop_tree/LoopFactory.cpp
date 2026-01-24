@@ -17,7 +17,8 @@ LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna
 // Children of a node are all stems directly nested inside the closed region
 void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Sort regions by starting index (ascending)
-    std::vector<ClosedRegion> sorted_closed_regions = closed_region_bucket_sort(closed_regions, processed_rna_.size());
+    std::vector<ClosedRegion> sorted_closed_regions =
+        closed_region_bucket_sort(closed_regions, processed_rna_.size());
 
     // Root node covers full structure [-1, structure_length]
     // Use NULL_INDEX for -1 (unsigned type)
@@ -126,25 +127,25 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     std::unordered_set<size_t> within_band_start_idx;
     within_band_start_idx.reserve(node.children.size());
 
-    for (const Band& band : node.bands){
+    for (const Band& band : node.bands) {
         for (size_t i = band.left_border() + 1; i <= band.left_inner(); ++i) {
-            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])){
-                    within_band_start_idx.emplace(i);
-                    i = cr_pairings[i];
-                    continue;
+            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])) {
+                within_band_start_idx.emplace(i);
+                i = cr_pairings[i];
+                continue;
             }
         }
         for (size_t i = band.right_inner() + 1; i <= band.right_border(); ++i) {
-            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])){
-                    within_band_start_idx.emplace(i);
-                    i = cr_pairings[i];
-                    continue;
+            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])) {
+                within_band_start_idx.emplace(i);
+                i = cr_pairings[i];
+                continue;
             }
         }
     }
 
-    for (std::shared_ptr<LoopNode> c : node.children){
-        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()){
+    for (std::shared_ptr<LoopNode> c : node.children) {
+        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()) {
             c->pseudo_type = PseudoNestedType::WithinBand;
         } else {
             c->pseudo_type = PseudoNestedType::Nested;
@@ -152,20 +153,20 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     }
 }
 
-std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vector<ClosedRegion>& closed_regions,
-                                       const size_t& structure_length) {
+std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
+    const std::vector<ClosedRegion>& closed_regions, const size_t& structure_length) {
     // Map each possible 'begin' position to an index in closed_regions.
     std::vector<size_t> begin_to_idx(structure_length, NULL_INDEX);
-                
+
     for (size_t i = 0; i < closed_regions.size(); ++i) {
         size_t begin = closed_regions[i].begin;
         if (begin >= structure_length) {
-            THROW_ERROR("Begin `" + std::to_string(begin) +
-                                     "` out of range [0," + std::to_string(structure_length) + ")");
+            THROW_ERROR("Begin `" + std::to_string(begin) + "` out of range [0," +
+                        std::to_string(structure_length) + ")");
         }
         if (begin_to_idx[begin] != SIZE_MAX) {
             THROW_ERROR("Duplicate starting index `" + std::to_string(begin) +
-                                     "` found in closed regions");
+                        "` found in closed regions");
         }
         begin_to_idx[begin] = i;
     }
@@ -178,8 +179,6 @@ std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(const std::vect
     }
     return sorted;
 }
-
-
 
 void LoopFactory::print_tree(bool debug) const {
     for (const auto& child : root_node_->children) {

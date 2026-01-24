@@ -1,22 +1,20 @@
 #pragma once
 
+#include <dirent.h>
+#include <sys/stat.h>
+
+#include <fstream>
+#include <stack>
 #include <string>
 #include <vector>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <stack>
-#include <fstream>
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "common.hpp"
 
-
-namespace knotergy
-{
+namespace knotergy {
 
 class FileUtils {
-    public:
-
+   public:
     // filesystem::exists not supported in older macOS Conda packages
     [[nodiscard]] static bool file_exists(const std::string& name);
 
@@ -26,8 +24,10 @@ class FileUtils {
     // Check if path is a directory
     [[nodiscard]] static bool is_directory(const std::string& name);
 
-    // Get files in a directory 
-    [[nodiscard]] static std::vector<std::string> get_files_in_dir(const std::string& dir, bool include_dirs = false, bool recursive = false);
+    // Get files in a directory
+    [[nodiscard]] static std::vector<std::string> get_files_in_dir(const std::string& dir,
+                                                                   bool include_dirs = false,
+                                                                   bool recursive = false);
 };
 
-} // namespace knotergy
+}  // namespace knotergy

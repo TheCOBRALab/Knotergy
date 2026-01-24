@@ -5,8 +5,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"
 #include "ViennaParams.hpp"
 #include "common.hpp"
@@ -15,7 +15,6 @@ namespace knotergy {
 
 class RNAInputManager {
    public:
-
     /**
      * @brief Collects all RNA input entries from console input and/or file.
      *
@@ -29,13 +28,15 @@ class RNAInputManager {
      *
      * @throws std::runtime_error if both the file and console inputs are empty
      */
-    [[nodiscard]] static std::vector<RNAEntry> get_all_inputs(const std::string& fileI, const std::string& seq,
-                                                    const std::string& restricted);
+    [[nodiscard]] static std::vector<RNAEntry> get_all_inputs(const std::string& fileI,
+                                                              const std::string& seq,
+                                                              const std::string& restricted);
 
-    [[nodiscard]] static std::vector<ProcessedRNAEntry> process_inputs(const std::vector<RNAEntry>& inputs,
-                                    const std::vector<modified_base_params>& modified_params = {});
+    [[nodiscard]] static std::vector<ProcessedRNAEntry> process_inputs(
+        const std::vector<RNAEntry>& inputs,
+        const std::vector<modified_base_params>& modified_params = {});
 
-    private:
+   private:
     /**
      * @brief Parses RNA entries from a file in FASTA format
      *
@@ -51,7 +52,7 @@ class RNAInputManager {
      *
      * @throws std::runtime_error if the file does not exist, is unreadable,
      *         or contains malformed data.
-    */
+     */
     [[nodiscard]] static std::vector<RNAEntry> get_all_FASTA_entries(const std::string& file);
 };
 }  // namespace knotergy

@@ -1,26 +1,24 @@
 #include "RNAInputManager.hpp"
 
-
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-
 #include "../energy/ComputeEnergy.hpp"
 #include "../loop_tree/LoopFactory.hpp"
-#include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "common.hpp"
+#include "../preprocessing/RNAEntry.hpp"
 #include "FileUtils.hpp"
+#include "common.hpp"
 
 namespace knotergy {
 
 // Collects all RNA input entries from console and/or file.
-std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_file, 
-                                     const std::string& sequence,
-                                     const std::string& structure) {
+std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_file,
+                                                      const std::string& sequence,
+                                                      const std::string& structure) {
     std::vector<RNAEntry> entries;
 
     // get console input
@@ -39,7 +37,8 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
     return entries;
 }
 
-std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector<RNAEntry>& inputs, const std::vector<modified_base_params>& modified_params) {
+std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(
+    const std::vector<RNAEntry>& inputs, const std::vector<modified_base_params>& modified_params) {
     std::vector<ProcessedRNAEntry> processed_inputs;
     processed_inputs.reserve(inputs.size());
     for (RNAEntry rna : inputs) {
@@ -49,7 +48,8 @@ std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector
 }
 
 // Parses RNA entries from a file in FASTA format
-[[nodiscard]] std::vector<RNAEntry> RNAInputManager::get_all_FASTA_entries(const std::string& file) {
+[[nodiscard]] std::vector<RNAEntry> RNAInputManager::get_all_FASTA_entries(
+    const std::string& file) {
     // Represents the parser's state during file processing.
     // Used to track if it's currently reading name, sequence, or structure.
     enum class ParserState { UNINITIALIZED, NAME, SEQUENCE, STRUCTURE };
@@ -81,21 +81,19 @@ std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector
         if ((state == ParserState::NAME || state == ParserState::UNINITIALIZED) &&
             (line[0] != '>')) {
             THROW_ERROR("Error: Expected '>' at the beginning of the line: " + line +
-                                     ". Line number: " + std::to_string(line_number));
+                        ". Line number: " + std::to_string(line_number));
         }
 
         // '>' is a header line indicator, indicating the start of a new entry
         if (line[0] == '>') {
             if (state != ParserState::UNINITIALIZED) {
                 if (current.sequence.empty() || current.structure.empty()) {
-                    THROW_ERROR(
-                        "Error: Sequence and/or structure are empty for entry: " + current.name +
-                        ". Line number: " + std::to_string(line_number));
+                    THROW_ERROR("Error: Sequence and/or structure are empty for entry: " +
+                                current.name + ". Line number: " + std::to_string(line_number));
                 }
                 if (current.sequence.size() != current.structure.size()) {
-                    THROW_ERROR(
-                        "Error: Sequence and structure are not the same length in entry: " +
-                        current.name + ". Line number: " + std::to_string(line_number));
+                    THROW_ERROR("Error: Sequence and structure are not the same length in entry: " +
+                                current.name + ". Line number: " + std::to_string(line_number));
                 }
                 entries.push_back(current);
                 current = {};
@@ -110,8 +108,7 @@ std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector
             state = ParserState::NAME;
         } else {
             // Should never reach here
-            THROW_ERROR("Error: Unexpected state. Line number: " +
-                                     std::to_string(line_number));
+            THROW_ERROR("Error: Unexpected state. Line number: " + std::to_string(line_number));
         }
     }
 
@@ -119,8 +116,8 @@ std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(const std::vector
     if (!current.name.empty() && !current.name.empty() && !current.structure.empty()) {
         entries.push_back(current);
     } else if (!current.name.empty() && (current.sequence.empty() || current.structure.empty())) {
-        THROW_ERROR("Error: Sequence and/or structure are empty for entry: " +
-                                 current.name + ". Line number: " + std::to_string(line_number));
+        THROW_ERROR("Error: Sequence and/or structure are empty for entry: " + current.name +
+                    ". Line number: " + std::to_string(line_number));
     }
 
     return entries;

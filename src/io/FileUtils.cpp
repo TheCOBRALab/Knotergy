@@ -1,8 +1,7 @@
 #include "FileUtils.hpp"
 
-namespace knotergy
-{
-    
+namespace knotergy {
+
 // filesystem::exists not supported in older macOS Conda packages
 bool FileUtils::file_exists(const std::string& name) {
     struct stat buffer;
@@ -27,8 +26,10 @@ bool FileUtils::is_directory(const std::string& name) {
     return S_ISDIR(buffer.st_mode);
 }
 
-// List files in a directory 
-[[nodiscard]] std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir, bool include_dirs, bool recursive) {
+// List files in a directory
+[[nodiscard]] std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir,
+                                                                   bool include_dirs,
+                                                                   bool recursive) {
     std::vector<std::string> out;
 
     std::stack<std::string> dirs_to_process;
@@ -40,7 +41,8 @@ bool FileUtils::is_directory(const std::string& name) {
 
         DIR* d = ::opendir(current_dir.c_str());
         if (!d) {
-            throw std::runtime_error("opendir failed: " + current_dir + " (" + std::strerror(errno) + ")");
+            throw std::runtime_error("opendir failed: " + current_dir + " (" +
+                                     std::strerror(errno) + ")");
         }
 
         // Read entries
@@ -54,15 +56,15 @@ bool FileUtils::is_directory(const std::string& name) {
             full_path += e->d_name;
 
             // add to list if it's a file
-            if (is_file(full_path) || (include_dirs && is_directory(full_path))) out.push_back(full_path);
+            if (is_file(full_path) || (include_dirs && is_directory(full_path)))
+                out.push_back(full_path);
             if (recursive && is_directory(full_path)) dirs_to_process.push(full_path);
         }
 
         ::closedir(d);
     }
-    
+
     return out;
 }
 
-
-} // namespace knotergy
+}  // namespace knotergy
