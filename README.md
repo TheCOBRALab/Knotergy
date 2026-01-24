@@ -17,8 +17,7 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 ### Software Requirements
 
 * **CMake** ≥ 3.15
-* **ViennaRNA** ≥ 2.7.0
-(Note: In ViennaRNA 2.7.2, only the first parameter file loaded is recognized during a single run.)
+* **ViennaRNA** 2.7.0 & 2.7.1
 ---
 
 ## 1. Install ViennaRNA
