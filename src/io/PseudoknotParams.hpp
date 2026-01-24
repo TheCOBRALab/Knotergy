@@ -2,6 +2,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <iostream>
 
 #include "FileUtils.hpp"
 #include "common.hpp"
