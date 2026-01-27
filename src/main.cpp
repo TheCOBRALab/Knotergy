@@ -25,7 +25,7 @@ void help() {
         << "  -o, --output <file>           Output file\n"
         << "  -p, --paramFile <file>        Parameter file\n"
         << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
-        << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
+        // << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
         << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
         << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
 }
@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--mod-file") {
+            std::cout << "Modified bases are not currently supported" << std::endl;
             mod_param_path = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);

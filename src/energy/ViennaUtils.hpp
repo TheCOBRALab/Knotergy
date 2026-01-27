@@ -23,6 +23,18 @@ class ViennaUtils {
         return std::make_tuple(encoded_i, encoded_j);
     }
 
+    static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j, const std::string& sequence) {
+        int encoded_i = i > 0 ? vrna_nucleotide_encode(sequence[i - 1], &ViennaParams::md) : -1;
+        int encoded_j = j + 1 < sequence.size() ? vrna_nucleotide_encode(sequence[j + 1], &ViennaParams::md) : -1;
+        return std::make_tuple(encoded_i, encoded_j);
+    }
+
+    static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j, const std::string& sequence) {
+        int encoded_i = vrna_nucleotide_encode(sequence[i + 1], &ViennaParams::md);
+        int encoded_j = vrna_nucleotide_encode(sequence[j - 1], &ViennaParams::md);
+        return std::make_tuple(encoded_i, encoded_j);
+    }
+
     static unsigned int get_pair_type(const char& i, const char& j) {
         auto [encoded_i, encoded_j] = ViennaUtils::encode_nucleotides(i, j);
         return vrna_get_ptype_md(encoded_i, encoded_j, &ViennaParams::md);

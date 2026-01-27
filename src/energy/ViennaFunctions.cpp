@@ -97,7 +97,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 
     // ------------------ Closing Pair Energy ------------------
     unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j]);
-    auto [n5d, n3d] = ViennaUtils::encode_nucleotides(sequence[i + 1], sequence[j - 1]);
+    auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(i, j, sequence);
     if (ViennaParams::md.dangles == 0) {
         n5d = -1;
         n3d = -1;
@@ -116,7 +116,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
         size_t cj = child->end;
         unsigned int child_pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj]);
         auto [child_n5d, child_n3d] =
-            ViennaUtils::encode_nucleotides(sequence[ci - 1], sequence[cj + 1]);
+            ViennaUtils::encode_outer_dangles(ci, cj, sequence);
 
         if (ViennaParams::md.dangles == 0) {
             child_n5d = -1;
@@ -131,29 +131,25 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 
 int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>>& children,
                                      const std::string& sequence) {
+
+    // ------------------ Dangle 1 Energy ------------------
     if (ViennaParams::md.dangles == 1) {
         return ViennaDangles::get_external_dangle_1(children, sequence);
     }
 
+    // ------------------ No dangles or dangle type 2 ------------------
     int energy = 0;
     for (std::shared_ptr<LoopNode> c : children) {
         if (c->loop_type != LoopType::Pseudoknot) {
-            unsigned int pair_type =
-                ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
+            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
 
             // Check for dangling ends at sequence boundaries (-1 indicates no dangle)
-            int n5d = c->begin > 0
-                          ? vrna_nucleotide_encode(sequence[c->begin - 1], &ViennaParams::md)
-                          : -1;
-            int n3d = c->end < sequence.size() - 1
-                          ? vrna_nucleotide_encode(sequence[c->end + 1], &ViennaParams::md)
-                          : -1;
+            auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, sequence);
 
             if (ViennaParams::md.dangles == 0) {
                 n5d = -1;
                 n3d = -1;
             }
-
             energy += vrna_E_exterior_stem(pair_type, n5d, n3d, ViennaParams::p);
         }
     }
