@@ -20,21 +20,21 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
     // // This makes no logical sense, but tests show that ViennaRNA uses either orientation if there's a modified base on the 5' side
     // // and only left orientation if modified base is only on 3' side
     // if (!unique_modified_bases_at_indices({i, ci}, mod_sequence).empty()) {
-    //     double e = get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    //     int e = get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
     //     if (e == unmod_energy) {
     //         e = get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
     //     }
     //     return e;
     // }
-    // return get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    // return get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
     
 
     
     // Get energy correction for modified bases (returns original energy if no modifications found)
     // Try the Vienna-defined ordering first, then the swapped orientation
-    int e = get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    int e = get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
     if (e == unmod_energy) {
-        e = get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+        e = get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
     }
 
     return e;
@@ -54,7 +54,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
     
     // Initialize energy with unmodified external energy
     // If dangles == 1, will be replaced later with corrected dangle energies so don't double count
-     int energy;
+     int energy = 0;
      if (ViennaParams::md.dangles != 1) {
          energy = ViennaFunctions::external_energy(children, sequence);
      }
@@ -141,7 +141,8 @@ int ModifiedBasesFunctions::get_mod_energy(
 
         // look for matching energy entry
         if (energy_lookup) {
-            if (auto it = energy_lookup->find(key); it != energy_lookup->end()) {
+            auto it = energy_lookup->find(key);
+            if (it != energy_lookup->end()) {
                 std::cout << "Modified base energy found for key: " << key << " -> " << it->second << " Diff: " << static_cast<int>(it->second * 100) - unmod_energy << std::endl;
                 return static_cast<int>(it->second * 100);
             }
@@ -152,8 +153,7 @@ int ModifiedBasesFunctions::get_mod_energy(
             break;
         }
     }
-    std::cout << "No modified base energy found for key: " << key << ", using unmodified energy: " << unmod_energy << std::endl;
-    std::cout << "ModLookup type: " << static_cast<int>(lookup_type) << std::endl;
+    std::cout << "No modified base energy found for key: " << key << ", using unmodified energy: " << unmod_energy << " ModLookup type: " << static_cast<int>(lookup_type) << std::endl;
     return static_cast<int>(unmod_energy);
 }
 

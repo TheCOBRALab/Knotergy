@@ -145,10 +145,8 @@ int main(int argc, char** argv) {
     knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
 
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<knotergy::RNAEntry> inputs =
-        knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
-        knotergy::RNAInputManager::process_inputs(inputs, modified_params);
+    std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, modified_params);
     knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
 
     //------------------------- Main Processing Loop ----------------------------

@@ -17,11 +17,8 @@ ProcessedRNAEntry RNAProcessor::process_rna(
                     "\nRNA length: " + std::to_string(rna.structure.size()));
     }
 
-    bool has_modified_bases =
-        !modified_params
-             .empty();  // Is passed by reference and modified in compute_unmodified_sequence
-    std::string unmodified_sequence =
-        compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
+    bool has_modified_bases = !modified_params.empty();  // Is passed by reference and modified in compute_unmodified_sequence
+    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
     std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
