@@ -8,8 +8,27 @@
 #include "ViennaFunctions.hpp"
 
 namespace knotergy {
+/**
+ * @brief Energy calculation functions for pseudoknotted RNA structures.
+ *
+ * This class implements the pseudoknot energy model, which includes penalties for
+ * pseudoknot initialization, bands, unpaired bases, and nested structures within
+ * pseudoknots. It uses modified ViennaRNA energies with pseudoknot-specific multipliers.
+ */
 class PseudoknotFunctions {
    public:
+    /**
+     * @brief Calculate the total energy of a pseudoknot loop.
+     *
+     * Computes initialization penalties, band penalties, unpaired base penalties,
+     * and loop-specific energies for a pseudoknotted structure.
+     *
+     * @param node The loop node representing the pseudoknot.
+     * @param sequence The RNA nucleotide sequence.
+     * @param processed_rna The processed RNA entry with structural information.
+     * @param round Whether to round energy values (default: false).
+     * @return Total pseudoknot energy in centicalories.
+     */
     static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
                                     const ProcessedRNAEntry& processed_rna, bool round = false) {
         // Unpaired within bands are already included in stack_and_internal_energy
@@ -52,6 +71,15 @@ class PseudoknotFunctions {
     }
 
    private:
+    /**
+     * @brief Calculate initialization penalty for a pseudoknot based on its parent loop type.
+     *
+     * Different penalties apply depending on whether the pseudoknot is in an external loop,
+     * multibranch loop, or nested within another pseudoknot.
+     *
+     * @param node The pseudoknot loop node.
+     * @return Initialization penalty in centicalories.
+     */
     [[nodiscard]] static double init_penalty(const LoopNode& node) {
         // initialization penalties
         double energy = 0;
@@ -81,6 +109,18 @@ class PseudoknotFunctions {
         return energy;
     }
 
+    /**
+     * @brief Calculate loop-specific energy penalties within a pseudoknot's bands.
+     *
+     * Processes each band and computes energies for stacked pairs, internal loops,
+     * and multiloops that span bands.
+     *
+     * @param node The pseudoknot loop node.
+     * @param sequence The RNA nucleotide sequence.
+     * @param processed_rna The processed RNA entry with structural information.
+     * @param round Whether to round energy values.
+     * @return Total loop penalties in centicalories.
+     */
     [[nodiscard]] static double loop_penalties(const LoopNode& node, const std::string& sequence,
                                                const ProcessedRNAEntry& processed_rna, bool round) {
         double energy = 0;
@@ -106,6 +146,17 @@ class PseudoknotFunctions {
         return energy;
     }
 
+    /**
+     * @brief Calculate stacking energy for base pairs in a pseudoknot band.
+     *
+     * Applies the pseudoknot stacking multiplier to the standard ViennaRNA stacking energy.
+     *
+     * @param bp The outer base pair.
+     * @param next_bp The inner (stacked) base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param round Whether to round the energy value.
+     * @return Stacking energy with pseudoknot multiplier in centicalories.
+     */
     [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const std::string& sequence, const bool& round) {
         double stack_penalty = ViennaFunctions::stack_energy(bp, next_bp, sequence) *
@@ -114,6 +165,17 @@ class PseudoknotFunctions {
         return stack_penalty;
     }
 
+    /**
+     * @brief Calculate internal loop energy for base pairs in a pseudoknot band.
+     *
+     * Applies the pseudoknot internal loop multiplier to the standard ViennaRNA internal loop energy.
+     *
+     * @param bp The outer base pair.
+     * @param next_bp The inner base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param round Whether to round the energy value.
+     * @return Internal loop energy with pseudoknot multiplier in centicalories.
+     */
     [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                    const std::string& sequence, const bool& round) {
         double internal_penalty = ViennaFunctions::internal_loop_energy(bp, next_bp, sequence) *
@@ -122,6 +184,16 @@ class PseudoknotFunctions {
         return internal_penalty;
     }
 
+    /**
+     * @brief Calculate multiloop energy nested between base pairs in a pseudoknot band.
+     *
+     * Computes pseudoknot-specific multiloop initialization, base pair, and unpaired penalties.
+     *
+     * @param bp The outer base pair.
+     * @param next_bp The inner base pair.
+     * @param processed_rna The processed RNA entry with structural information.
+     * @return Multiloop energy in centicalories.
+     */
     [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
                                                     const ProcessedRNAEntry& processed_rna) {
         double multiloop_penalty = PseudoknotParams::pkp->pk_mloop_init;

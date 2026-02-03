@@ -10,7 +10,16 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
+/**
+ * @brief Pseudoknot energy parameters.
+ *
+ * Contains all penalty parameters for computing pseudoknot energies, including
+ * initialization penalties, band penalties, and multipliers for different loop types.
+ */
 struct pk_param {
+    /**
+     * @brief Construct with default DirksPierce09 parameters from HotKnotsV2.
+     */
     pk_param()
         : name("DirksPierce09 pseudoknot params from HotKnotsV2"),
           pk_in_ext(-138),
@@ -25,6 +34,22 @@ struct pk_param {
           pk_mloop_bp(56),
           pk_mloop_unpaired(12) {}
 
+    /**
+     * @brief Construct with custom pseudoknot parameters.
+     *
+     * @param param_name Name of the parameter set.
+     * @param pk_ext Pseudoknot in exterior loop penalty.
+     * @param pk_multi Pseudoknot in multiloop penalty.
+     * @param pk_pk Pseudoknot in pseudoloop penalty.
+     * @param band_pen Band penalty.
+     * @param unpaired_pk Unpaired bases in pseudoknot penalty.
+     * @param cr_in_pk_pen Closed region nested in pseudoknot penalty.
+     * @param pk_stack_multiplier Stacked pair spanning band multiplier.
+     * @param pk_internal_multiplier Internal pair spanning band multiplier.
+     * @param pk_mloop_init_pen Multiloop spanning band initialization penalty.
+     * @param pk_mloop_bp_pen Base pair in multiloop spanning band penalty.
+     * @param pk_mloop_unpaired_pen Unpaired bases in multiloop spanning band penalty.
+     */
     pk_param(const std::string& param_name, int pk_ext, int pk_multi, int pk_pk, int band_pen,
              int unpaired_pk, int cr_in_pk_pen, double pk_stack_multiplier,
              double pk_internal_multiplier, int pk_mloop_init_pen, int pk_mloop_bp_pen,
@@ -42,24 +67,38 @@ struct pk_param {
           pk_mloop_bp(pk_mloop_bp_pen),
           pk_mloop_unpaired(pk_mloop_unpaired_pen) {}
 
-    const std::string name;
-    const int pk_in_ext;          // pseudoknot in exterior loop penalty
-    const int pk_in_mloop;        // pseudoknot in multiloop penalty
-    const int pk_in_pk;           // pseudoknot in pseudoloop penalty
-    const int band;               // band penalty
-    const int unpaired_in_pk;     // unpaired bases in pseudoknot penalty
-    const int cr_in_pk;           // closed region nested in pseudoknot penalty
-    const double pk_stack_x;      // stacked pair that spans a band penalty multiplier
-    const double pk_internal_x;   // internal pair that spans a band penalty multiplier
-    const int pk_mloop_init;      // multiloop that spans a band penalty
-    const int pk_mloop_bp;        // base pair for multiloop that spans a band penalty
-    const int pk_mloop_unpaired;  // unpaired bases in a multiloop that spans a band penalty
+    const std::string name;         ///< Parameter set name.
+    const int pk_in_ext;            ///< Pseudoknot in exterior loop penalty.
+    const int pk_in_mloop;          ///< Pseudoknot in multiloop penalty.
+    const int pk_in_pk;             ///< Pseudoknot in pseudoloop penalty.
+    const int band;                 ///< Band penalty.
+    const int unpaired_in_pk;       ///< Unpaired bases in pseudoknot penalty.
+    const int cr_in_pk;             ///< Closed region nested in pseudoknot penalty.
+    const double pk_stack_x;        ///< Stacked pair spanning band multiplier.
+    const double pk_internal_x;     ///< Internal pair spanning band multiplier.
+    const int pk_mloop_init;        ///< Multiloop spanning band initialization penalty.
+    const int pk_mloop_bp;          ///< Base pair in multiloop spanning band penalty.
+    const int pk_mloop_unpaired;    ///< Unpaired bases in multiloop spanning band penalty.
 };
 
+/**
+ * @brief Manages pseudoknot energy parameters.
+ *
+ * Provides static methods to load pseudoknot parameters from JSON files
+ * or use default parameters.
+ */
 class PseudoknotParams {
    public:
+    /// Shared pointer to current pseudoknot parameters.
     static inline std::shared_ptr<const pk_param> pkp = std::make_shared<const pk_param>();
 
+    /**
+     * @brief Load pseudoknot parameters from a JSON file.
+     *
+     * @param paramFile Path to JSON file with pseudoknot parameters.
+     * @return Loaded pk_param structure.
+     * @throws DetailedException if file not found or invalid.
+     */
     static const pk_param load_pk_param(
         const std::string& paramFile = "./params/common/pk_DirksPierce09_HotKnotsV2.json") {
         if (paramFile.empty()) {
@@ -78,6 +117,13 @@ class PseudoknotParams {
         return *PseudoknotParams::pkp;
     }
 
+    /**
+     * @brief Parse pseudoknot parameters from a JSON file.
+     *
+     * @param jsonFile Path to JSON file.
+     * @return Parsed pk_param structure.
+     * @throws DetailedException if file cannot be opened or parsed.
+     */
     [[nodiscard]] static const pk_param parse_pk_json(const std::string& jsonFile) {
         std::ifstream f(jsonFile);
         if (!f.is_open()) {
