@@ -13,6 +13,12 @@
 
 namespace knotergy {
 
+/**
+ * @brief Manages input of RNA sequences and structures from various sources.
+ *
+ * This class provides static methods to read RNA data from files (FASTA format)
+ * or command-line inputs, and to process them into ProcessedRNAEntry objects.
+ */
 class RNAInputManager {
    public:
     /**
@@ -21,17 +27,27 @@ class RNAInputManager {
      * This function combines inputs from both user-supplied sequences and
      * file-based entries. If both are provided, all are included.
      *
-     * @param input_file Path to input file (optional, can be empty).
-     * @param sequence A raw RNA sequence string (optional, can be empty).
-     * @param structure Optional structure string associated with the raw sequence.
+     * @param fileI Path to input file (optional, can be empty).
+     * @param seq A raw RNA sequence string (optional, can be empty).
+     * @param restricted Optional structure string associated with the raw sequence.
      * @return A vector of all collected RNAEntry objects.
      *
-     * @throws std::runtime_error if both the file and console inputs are empty
+     * @throws std::runtime_error if both the file and console inputs are empty.
      */
     [[nodiscard]] static std::vector<RNAEntry> get_all_inputs(const std::string& fileI,
                                                               const std::string& seq,
                                                               const std::string& restricted);
 
+    /**
+     * @brief Process RNA entries into ProcessedRNAEntry objects.
+     *
+     * Converts RNAEntry objects into ProcessedRNAEntry objects with precomputed
+     * structural annotations (pairings, closed regions, unpaired counts).
+     *
+     * @param inputs Vector of RNAEntry objects to process.
+     * @param modified_params Vector of modified base parameters (default: empty).
+     * @return Vector of ProcessedRNAEntry objects.
+     */
     [[nodiscard]] static std::vector<ProcessedRNAEntry> process_inputs(
         const std::vector<RNAEntry>& inputs,
         const std::vector<modified_base_params>& modified_params = {});
