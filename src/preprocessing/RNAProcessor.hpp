@@ -48,8 +48,9 @@ class RNAProcessor {
      * - NULL_INDEX (defined as static_cast<size_t>(-1)) marks unpaired bases.
      *   This evaluates to the maximum size_t value because size_t is unsigned.
      *
-     * @param rna RNAEntry containing the structure to parse.
+     * @param structure Dot-bracket RNA structure string.
      * @param unmodified_sequence The unmodified RNA sequence corresponding to the structure.
+     * @param mod_sequence The modified RNA sequence (raw sequence split into string_views per base).
      * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's
      * partner, or NULL_INDEX if i is unpaired.
      *
@@ -58,7 +59,22 @@ class RNAProcessor {
      * @warning Invalid base *types* (e.g., A–A) are reported via warnings but do not throw.
      */
     [[nodiscard]] static std::vector<size_t> compute_pairings(
-        const RNAEntry& rna, const std::string& unmodified_sequence,
+        const std::string& structure, const std::string& unmodified_sequence = "",
+        const std::vector<std::string_view>& mod_sequence = {});
+    
+    /**
+     * @brief Build a partner-index vector for closed-region boundaries.
+     *
+     * Similar to RNAProcessor::compute_pairings(), but stores only the closed regions,
+     * not every individual base pair.
+     * Example:
+     *   [ClosedRegion(0, 5), ClosedRegion(2,       4)] → [5, NULL_INDEX, 4, NULL_INDEX, 2, 0]
+     * This is useful for quickly skipping over already-processed closed regions.
+     * @param closed_regions All closed regions in the structure.
+     * @param rna_size The total length of the structure (used to preallocate the result).
+     **/
+    [[nodiscard]] static std::vector<size_t> compute_pairings(
+        const RNAEntry& rna, const std::string& unmodified_sequence = "",
         const std::vector<std::string_view>& mod_sequence = {});
 
     /**

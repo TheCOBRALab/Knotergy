@@ -32,7 +32,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(
 };
 
 std::vector<size_t> RNAProcessor::compute_pairings(
-    const RNAEntry& rna, const std::string& unmodified_sequence,
+    const std::string& structure, const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
     const std::unordered_map<char, char> open_to_close = {
         {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}, {'A', 'a'}, {'B', 'b'},
@@ -54,13 +54,13 @@ std::vector<size_t> RNAProcessor::compute_pairings(
     }
 
     // pre-allocate pairings
-    std::vector<size_t> pairings(rna.size(), NULL_INDEX);
+    std::vector<size_t> pairings(structure.size(), NULL_INDEX);
 
     // 1 stack for each open/close pair
     std::unordered_map<char, std::vector<size_t>> stacks;
 
-    for (size_t i = 0; i < rna.size(); i++) {
-        char c = rna.structure[i];
+    for (size_t i = 0; i < structure.size(); i++) {
+        char c = structure[i];
 
         // un-paired
         if (c == '.') continue;
@@ -89,19 +89,19 @@ std::vector<size_t> RNAProcessor::compute_pairings(
             pairings[j] = i;
 
             // check if they're a valid pair
-            if (!valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
-                if (mod_sequence.size() !=
-                    rna.size()) {  // if modified sequence not given or is invalid
-                    std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
-                                     "' can't pair with '" +
-                                     std::string(1, unmodified_sequence[j]) + "' at indices " +
-                                     std::to_string(j) + ", " + std::to_string(i)
-                              << std::endl;
-                } else {  // If modified sequence is given
+            if (unmodified_sequence.size() == structure.size() && !valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
+                // if modified sequence is provided, use that for warning
+                if (mod_sequence.size() == structure.size()) { 
+
                     std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
                                      "' can't pair with '" + std::string(mod_sequence[j]) +
                                      "' at indices " + std::to_string(j) + ", " + std::to_string(i)
                               << std::endl;
+                } else {  // If modified sequence is not provided, fall back to unmodified sequence
+                    std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
+                                 "' can't pair with '" + std::string(1, unmodified_sequence[j]) +
+                                 "' at indices " + std::to_string(j) + ", " + std::to_string(i)
+                                 << std::endl;
                 }
             }
             continue;
@@ -121,6 +121,12 @@ std::vector<size_t> RNAProcessor::compute_pairings(
     }
 
     return pairings;
+}
+
+std::vector<size_t> RNAProcessor::compute_pairings(
+    const RNAEntry& rna, const std::string& unmodified_sequence,
+    const std::vector<std::string_view>& mod_sequence) {
+    return compute_pairings(rna.structure, unmodified_sequence, mod_sequence);
 }
 
 // Computes all closed regions from a pairing list using an interval-merging stack algorithm.

@@ -6,54 +6,9 @@
 #include <vector>
 
 #include "../io/common.hpp"
+#include "BasePair.hpp"
 
 namespace knotergy {
-
-/**
- * @brief Represents a base pair in an RNA secondary structure.
- *
- * A base pair consists of two indices (i, j) where i < j, representing
- * positions in the RNA sequence that are paired together. Base pairs can
- * have child base pairs nested within them (for closed regions).
- */
-struct BasePair {
-    size_t i;  ///< 5' position of the base pair.
-    size_t j;  ///< 3' position of the base pair.
-    std::vector<BasePair> children;  ///< Nested base pairs (closed regions) within this pair.
-
-    BasePair() = default;
-
-    /**
-     * @brief Construct a base pair from two indices.
-     *
-     * @param left_index 5' position of the base pair.
-     * @param right_index 3' position of the base pair.
-     */
-    BasePair(size_t left_index, size_t right_index) : i{left_index}, j{right_index} {}
-
-    /**
-     * @brief Check if this base pair forms a stack with a child base pair.
-     *
-     * A stack occurs when the child base pair is immediately adjacent:
-     * (i, j) stacks with (i+1, j-1).
-     *
-     * @param child The potential child base pair.
-     * @return True if this forms a stack with the child.
-     */
-    bool is_stack(BasePair child) const { return i + 1 == child.i && j - 1 == child.j; }
-};
-
-// === Operator overload for printing ===
-inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
-    os << "(" << bp.i << ", " << bp.j << ")";
-    // if (!bp.children.empty()) {
-    //     os << "\n  Children: ";
-    //     for (const BasePair& child : bp.children) {
-    //         os << child << " ";
-    //     }
-    // }
-    return os;
-}
 
 // Visual representation of a band:
 // (((((..(...)..((((((((((....[.......)))))))..))))))))....]
@@ -75,6 +30,20 @@ inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
  */
 class Band {
    public:
+
+    /**
+     * @brief Construct a Band from boundary positions. 
+     * 
+     * A simple constructor without validation or base pair extraction.
+     *
+     * @param lb Left border position.
+     * @param li Left inner position.
+     * @param ri Right inner position.
+     * @param rb Right border position.
+     */
+    Band(size_t lb, size_t li, size_t ri, size_t rb)
+        : left_border_{lb}, left_inner_{li}, right_inner_{ri}, right_border_{rb} {}
+
     /**
      * @brief Construct a Band from boundary positions and pairing information.
      *
@@ -92,11 +61,15 @@ class Band {
     Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings,
          const std::vector<size_t>& cr_pairings)
         : left_border_{lb}, left_inner_{li}, right_inner_{ri}, right_border_{rb} {
-        if (std::max({pairings[lb], pairings[li], pairings[ri], pairings[rb]}) == NULL_INDEX) {
+        populate_base_pairs(pairings, cr_pairings);
+    }
+
+    void populate_base_pairs(const std::vector<size_t>& pairings, const std::vector<size_t>& cr_pairings) {
+        if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_], pairings[right_border_]}) == NULL_INDEX) {
             THROW_ERROR("One or more indices are not base-pairs");
         }
 
-        if (pairings[lb] != rb || pairings[li] != ri) {
+        if (pairings[left_border_] != right_border_ || pairings[left_inner_] != right_inner_) {
             THROW_ERROR("Incorrect pairings in Band");
         }
 

@@ -6,21 +6,22 @@ namespace knotergy {
 std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t& right_bound,
                                          const LoopType& loop_type,
                                          const std::vector<size_t>& pairings,
-                                         const std::vector<size_t>& cr_pairings) {
+                                         const std::vector<size_t>& cr_pairings, bool simple_bands) {
     std::vector<Band> bands;
     
     // Technically speaking, non-pseudoknotted loops don't have bands
-    // For the sake of this program, each base pair forms its own band
+    // For the sake of this program, each nonPK base pair forms its own band
     if (loop_type != LoopType::Pseudoknot) {
-        bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
+        bands.push_back(simple_bands ? 
+                        Band{left_bound, left_bound, right_bound, right_bound} :
+                        Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
         return bands;
     }
 
-    // validate bounds
     const size_t n = pairings.size();
     if (right_bound >= n) THROW_ERROR("Right bound exceeds the size of structure.");
 
-    // Generates a linked list of paired bases within the region
+    // Linked list pointing to potential band boundaries
     std::unordered_map<size_t, PairedBaseNode> paired_base_links = generate_paired_base_links(left_bound, right_bound, pairings, cr_pairings);
 
     if (paired_base_links.empty()) {
@@ -54,8 +55,10 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
         // Finds the full band that i and j belong to
         while (extend_stem(i_prime, j_prime, paired_base_links, pairings)) {}
 
-        // stores entire band
-        bands.push_back(Band{i, i_prime, j_prime, j, pairings, cr_pairings});
+        // stores entire bands
+        bands.push_back(simple_bands ? 
+            Band{i, i_prime, j_prime, j} :
+            Band{i, i_prime, j_prime, j, pairings, cr_pairings});
 
         i = i_prime;  // fast-forward to inner position (since everything in between is part of this band)
     }
@@ -103,7 +106,7 @@ bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime,
     }
 }
 
-// Linked list of base pair positions
+// Linked list of base pair positions (Skips unpaired and closed regions)
 std::unordered_map<size_t, PairedBaseNode> const BandFinder::generate_paired_base_links(
     const size_t& left_bound,
     const size_t& right_bound,

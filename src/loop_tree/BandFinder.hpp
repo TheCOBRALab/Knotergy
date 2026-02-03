@@ -33,7 +33,7 @@ struct PairedBaseNode {
  */
 class BandFinder {
    public:
-    BandFinder();
+    BandFinder() = default;
 
     /**
      * @brief Find all bands within a specified region of an RNA structure.
@@ -48,7 +48,7 @@ class BandFinder {
     static std::vector<Band> find_bands(const size_t& left_bound, const size_t& right_bound,
                                         const LoopType& loop_type,
                                         const std::vector<size_t>& pairings,
-                                        const std::vector<size_t>& cr_pairings);
+                                        const std::vector<size_t>& cr_pairings, bool simple_bands = false);
 
     /**
      * @brief Find all bands for a given loop node.
