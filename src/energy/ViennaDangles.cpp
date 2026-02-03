@@ -6,12 +6,6 @@ namespace knotergy {
 // State for if the previous pair in a chain took the right dangle
 enum TouchingRight { RightFree = 0, RightTaken = 1 };
 
-// Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
-int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                         const std::vector<DangleSet>& dangle_energies) {
-    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
-    return process_chains(dangle_chains, children, dangle_energies);
-}
 
 // Calculate dangle energies for external loops (dangle type 1)
 int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
@@ -20,12 +14,20 @@ int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopN
     return get_external_dangle_1(children, dangle_energies);
 }
 
+// Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
+int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
+                                         const std::vector<DangleSet>& dangle_energies) {
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
+    return process_chains(dangle_chains, children, dangle_energies);
+}
+
+
+
 // Calculate dangle energies for multibranch loops (dangle type 1)
 int ViennaDangles::get_multibranch_dangle_1(const LoopNode& node, const std::string& sequence) {
     const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
     bool is_external = false;
-    std::vector<DangleSet> dangle_energies =
-        populate_children_dangle_energies(children, sequence, is_external);
+    std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence, is_external);
     DangleSet closing = get_ml_dangle_energy(node, sequence);
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_ml_chains(dangle_chains, children, dangle_energies, node, closing);
@@ -111,6 +113,13 @@ std::vector<std::vector<size_t>> ViennaDangles::get_dangle_chains(
         } else {  // start new chain
             dangle_chains.push_back({i});
         }
+    }
+    for (const auto& chain : dangle_chains) {
+        std::cout << "Dangle chain: ";
+        for (size_t idx : chain) {
+            std::cout << idx << " ";
+        }
+        std::cout << std::endl;
     }
     return dangle_chains;
 }
@@ -202,9 +211,6 @@ int ViennaDangles::process_ml_chains(const std::vector<std::vector<size_t>>& dan
 
     bool front_dangle = children.front()->begin - node.begin <= 2;
     bool back_dangle = node.end - children.back()->end <= 2;
-    std::cout << "ML Dangle Energies - No: " << closing.no_dangle
-              << ", Left: " << closing.left_dangle << ", Right: " << closing.right_dangle
-              << ", Both: " << closing.both_dangle << std::endl;
 
     ML_Type ml_type;
     if (front_dangle && back_dangle && children.size() == 1) {

@@ -80,7 +80,7 @@ TEST(mod_nonpk, stack_0_dangles) {
 
 // echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
 // ./build/Knotergy -s "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))" -p ./params/common/rna_turner2004.par
-TEST(mod_nonpk, stack3_0_dangle) {
+TEST(mod_nonpk, external1_0_dangle) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
     std::string structure= "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
@@ -88,6 +88,18 @@ TEST(mod_nonpk, stack3_0_dangle) {
     EXPECT_NEAR(d0, -70.11, 0.001); // Turner 2004
     EXPECT_NEAR(d1, -70.11, 0.001); // Turner 2004
     EXPECT_NEAR(d2, -70.81, 0.001); // Turner 2004
+}
+
+// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC\n(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
+// ./build/Knotergy -p ./params/common/rna_turner2004.par -s "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r "(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))"
+TEST(mod_nonpk, external2_1_dangle) {
+    std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
+    std::string structure= "(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))";
+    auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+
+    // EXPECT_NEAR(d0, -68.83, 0.001); // Turner 2004
+    // EXPECT_NEAR(d1, -69.53, 0.001); // Turner 2004
+    EXPECT_NEAR(d2, -69.73, 0.001); // Turner 2004
 }
 
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
