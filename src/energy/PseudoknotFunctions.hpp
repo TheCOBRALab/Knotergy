@@ -11,7 +11,7 @@ namespace knotergy {
 class PseudoknotFunctions {
    public:
     static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
-                                    ProcessedRNAEntry processed_rna, bool round = false) {
+                                    const ProcessedRNAEntry& processed_rna, bool round = false) {
         // Unpaired within bands are already included in stack_and_internal_energy
         int unpaired = node.exclusive_unpaired_bases_count;
         // std::cout << "initial unpaired: " << unpaired << std::endl;

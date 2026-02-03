@@ -26,6 +26,17 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
 }
 }
 
+
+TEST(PseudoknottedEnergies, PK_small) {
+    std::string sequence  = "GGCC";
+    std::string structure = "[(])";
+    float result = pipeline(sequence, structure);
+    float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
+
+    EXPECT_NEAR(result, 3.5400, 0.009);
+    EXPECT_NEAR(dp_result, 3.5400, 0.009);
+}
+
 TEST(PseudoknottedEnergies, SimplePseudoknot) {
     std::string sequence  = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";

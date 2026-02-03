@@ -10,6 +10,7 @@
 #include "../io/common.hpp"
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
+#include "uni_algo/ranges_grapheme.h"
 namespace knotergy {
 
 /**
@@ -28,65 +29,153 @@ namespace knotergy {
  */
 class ProcessedRNAEntry {
    public:
+
     /**
      * @brief Construct a ProcessedRNAEntry with precomputed annotations.
-     *
-     * @param rna Original RNA entry (provides name, sequence, and structure).
+     * 
+     * @param name RNA entry name.
+     * @param raw_sequence Raw RNA input sequence (may include modified bases).
+     * @param structure Dot-bracket RNA structure string.
+     * @param unmodified_sequence The unmodified RNA sequence (modified bases replaced).
+     * @param mod_sequence_views The modified RNA sequence (raw sequence split into string_views per base).
      * @param pairings Base-pair indices for each position (NULL_INDEX for unpaired).
      * @param closed_regions List of closed regions detected in the structure.
      * @param closed_regions_pairings Partner indices for closed-region boundaries.
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
+     * @param has_modified_bases Whether the RNA sequence contains modified bases.
      */
-    explicit ProcessedRNAEntry(RNAEntry rna, std::string unmodified_sequence,
-                               std::vector<std::string_view> mod_sequence_views,
+    ProcessedRNAEntry(std::string name, std::string raw_sequence,
+                               std::string structure, std::string unmodified_sequence,
                                std::vector<size_t> pairings,
                                std::vector<ClosedRegion> closed_regions,
                                std::vector<size_t> closed_regions_pairings,
                                std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
-        : name_{rna.name},
-          sequence_{unmodified_sequence},
-          mod_sequence_views_{mod_sequence_views},
-          raw_sequence_{std::move(rna.sequence)},
-          structure_{rna.structure},
-          pairings_{pairings},
-          closed_regions_{closed_regions},
-          closed_regions_pairings_{closed_regions_pairings},
-          unpaired_prefix_sum_{unpaired_prefix_sum},
-          has_modified_bases_{has_modified_bases} {}
+        : name_{std::move(name)},
+          raw_sequence_{std::move(raw_sequence)},
+          structure_{std::move(structure)},
+          sequence_{std::move(unmodified_sequence)},
+          pairings_{std::move(pairings)},
+          closed_regions_{std::move(closed_regions)},
+          closed_regions_pairings_{std::move(closed_regions_pairings)},
+          unpaired_prefix_sum_{std::move(unpaired_prefix_sum)},
+          has_modified_bases_{has_modified_bases} {
+            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+          }
+
+    /**
+     * @brief Construct a ProcessedRNAEntry with precomputed annotations.
+     * 
+     * This is a convenience constructor that extracts name, sequence, and structure
+     * from an RNAEntry.
+     *
+     * @param rna Original RNAEntry (provides name, sequence, and structure).
+     * @param unmodified_sequence The unmodified RNA sequence (modified bases replaced).
+     * @param mod_sequence_views The modified RNA sequence (raw sequence split into string_views
+     * @param pairings Base-pair indices for each position (NULL_INDEX for unpaired).
+     * @param closed_regions List of closed regions detected in the structure.
+     * @param closed_regions_pairings Partner indices for closed-region boundaries.
+     * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
+     * @param has_modified_bases Whether the RNA sequence contains modified bases.
+     */
+    ProcessedRNAEntry(RNAEntry rna,
+                  std::string unmodified_sequence,
+                  std::vector<size_t> pairings,
+                  std::vector<ClosedRegion> closed_regions,
+                  std::vector<size_t> closed_regions_pairings,
+                  std::vector<int> unpaired_prefix_sum,
+                  bool has_modified_bases)
+    : ProcessedRNAEntry(std::move(rna.name),
+                        std::move(rna.sequence),
+                        std::move(rna.structure),
+                        std::move(unmodified_sequence),
+                        std::move(pairings),
+                        std::move(closed_regions),
+                        std::move(closed_regions_pairings),
+                        std::move(unpaired_prefix_sum),
+                        has_modified_bases) {}
+
+// Move constructor (ProcessedRNAEntry b = std::move(a);)
+ProcessedRNAEntry(ProcessedRNAEntry&& other) noexcept
+    : name_(std::move(other.name_)),
+      raw_sequence_(std::move(other.raw_sequence_)),
+      structure_(std::move(other.structure_)),
+      sequence_(std::move(other.sequence_)),
+      mod_sequence_views_(), // rebuild
+      pairings_(std::move(other.pairings_)),
+      closed_regions_(std::move(other.closed_regions_)),
+      closed_regions_pairings_(std::move(other.closed_regions_pairings_)),
+      unpaired_prefix_sum_(std::move(other.unpaired_prefix_sum_)),
+      has_modified_bases_(other.has_modified_bases_) {
+    mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+}
+
+// Move assignment operator (ProcessedRNAEntry a = std::move(b);)
+ProcessedRNAEntry& operator=(ProcessedRNAEntry&& other) noexcept {
+    if (this != &other) {
+        name_ = std::move(other.name_);
+        raw_sequence_ = std::move(other.raw_sequence_);
+        structure_ = std::move(other.structure_);
+        sequence_ = std::move(other.sequence_);
+        pairings_ = std::move(other.pairings_);
+        closed_regions_ = std::move(other.closed_regions_);
+        closed_regions_pairings_ = std::move(other.closed_regions_pairings_);
+        unpaired_prefix_sum_ = std::move(other.unpaired_prefix_sum_);
+        has_modified_bases_ = other.has_modified_bases_;
+
+        mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+    }
+    return *this;
+}
+
+// Copy constructor (deep copy) (ProcessedRNAEntry a = b;)
+ProcessedRNAEntry(const ProcessedRNAEntry& other)
+  : name_(other.name_),
+    raw_sequence_(other.raw_sequence_),
+    structure_(other.structure_),
+    sequence_(other.sequence_),
+    pairings_(other.pairings_),
+    closed_regions_(other.closed_regions_),
+    closed_regions_pairings_(other.closed_regions_pairings_),
+    unpaired_prefix_sum_(other.unpaired_prefix_sum_),
+    has_modified_bases_(other.has_modified_bases_) {
+  mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+}
+
 
     /// @return The RNA entry's name.
-    const std::string& get_name() const { return name_; }
+    [[nodiscard]] const std::string& get_name() const { return name_; }
 
     /// @return The raw RNA input sequence. (includes modified bases)
-    const std::string& get_raw_sequence() const { return raw_sequence_; }
+    [[nodiscard]] const std::string& get_raw_sequence() const { return raw_sequence_; }
+
+    /// @return The raw RNA structure (dot-bracket notation).
+    [[nodiscard]] const std::string& get_structure() const { return structure_; }
 
     /// @return The unmodified RNA sequence (modified bases replaced with standard ones).
-    const std::string& get_sequence() const { return sequence_; }
+    [[nodiscard]] const std::string& get_sequence() const { return sequence_; }
+
 
     /// @return The modified RNA sequence (raw sequence split into string_views per base).
-    const std::vector<std::string_view>& get_modified_sequence() const {
+    [[nodiscard]] const std::vector<std::string_view>& get_modified_sequence() const {
         return mod_sequence_views_;
     }
 
-    /// @return The raw RNA structure (dot-bracket notation).
-    const std::string& get_structure() const { return structure_; }
+    /// @return Base-pair indices for each position. See RNAProcessor::compute_pairings for details
+    [[nodiscard]] const std::vector<size_t>& get_pairings() const { return pairings_; }
 
-    /// Get the base-pair index vector. See RNAProcessor::compute_pairings() for details.
-    const std::vector<size_t>& get_pairings() const { return pairings_; }
+    /// @return List of closed regions. See RNAProcessor::compute_closed_regions for details
+    [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const { return closed_regions_; }
 
-    /// Get list of closed regions. See RNAProcessor::compute_closed_regions() for details.
-    const std::vector<ClosedRegion>& get_closed_regions() const { return closed_regions_; }
-
-    /// Get closed-region indicies. See RNAProcessor::compute_cr_pairings() for details.
-    const std::vector<size_t>& get_closed_regions_pairings() const {
+    /// Get closed-region indicies. See RNAProcessor::compute_cr_pairings for details
+    [[nodiscard]] const std::vector<size_t>& get_closed_regions_pairings() const {
         return closed_regions_pairings_;
     }
 
-    /// @return Whether the RNA sequence contains modified bases.
-    bool has_modified_bases() const { return has_modified_bases_; }
+    /// @return Whether the RNA sequence contains modified bases or not
+    [[nodiscard]] bool has_modified_bases() const { return has_modified_bases_; }
 
     /// @return The length of the RNA sequence/structure.
-    size_t size() const { return structure_.size(); }
+    [[nodiscard]] size_t size() const { return structure_.size(); }
 
     /**
      * @brief Compute the number of unpaired bases in a half-open interval [from, to).
@@ -100,7 +189,7 @@ class ProcessedRNAEntry {
      * @return Number of unpaired bases between from and to.
      * @throws std::out_of_range if indices are out of bounds.
      */
-    int get_unpaired_count(size_t from, size_t to) const {
+    [[nodiscard]] int get_unpaired_count(size_t from, size_t to) const {
         if (from >= unpaired_prefix_sum_.size() || to > unpaired_prefix_sum_.size()) {
             throw std::out_of_range("Index out of range in get_unpaired_count");
         }
@@ -114,22 +203,34 @@ class ProcessedRNAEntry {
      *
      * Equivalent to get_unpaired_count(region.begin, region.end).
      */
-    int get_unpaired_count(ClosedRegion closed_region) const {
+    [[nodiscard]] int get_unpaired_count(ClosedRegion closed_region) const {
         return get_unpaired_count(closed_region.begin, closed_region.end);
     }
 
+    // grapheme is a user-perceived character, which may be multiple bytes
+    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(const std::string& sequence) {
+        std::vector<std::string_view> out;
+        out.reserve(sequence.size());  // upper bound (bytes >= graphemes)
+
+        // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
+        for (std::string_view g : una::views::grapheme::utf8(sequence)) {
+            out.push_back(g);
+        }
+
+        return out;
+    };
+
    private:
-    const std::string name_;                                  // RNA entry name.
-    const std::string sequence_;                              // Unmodified RNA nucleotide sequence.
-    const std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
-    std::string raw_sequence_;  // Raw RNA input sequence. (not const to allow move) (move required
-                                // for string_view vector)
-    const std::string structure_;                        // Dot-bracket RNA structure string.
-    const std::vector<size_t> pairings_;                 // Base-pair indices for each position.
-    const std::vector<ClosedRegion> closed_regions_;     // All closed regions in the structure.
-    const std::vector<size_t> closed_regions_pairings_;  // Closed regions boundary indicies.
-    const std::vector<int> unpaired_prefix_sum_;         // Prefix-sum of unpaired-base counts.
-    const bool has_modified_bases_ = false;              // Whether modified bases are present.
+    std::string name_;                                  // RNA entry name.
+    std::string raw_sequence_;                          // Raw RNA input sequence
+    std::string structure_;                             // Dot-bracket RNA structure string.
+    std::string sequence_;                              // Unmodified RNA nucleotide sequence.
+    std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
+    std::vector<size_t> pairings_;                      // Base-pair indices for each position.
+    std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
+    std::vector<size_t> closed_regions_pairings_;       // Closed regions boundary indicies.
+    std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
+    bool has_modified_bases_ = false;                   // Whether modified bases are present.
 };
 
 }  // namespace knotergy

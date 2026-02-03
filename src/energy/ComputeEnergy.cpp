@@ -37,8 +37,7 @@ float ComputeEnergy::process_node(LoopNode& node) {
                 node_energy = ViennaFunctions::multibranch_energy(node, sequence_);
                 break;
             case LoopType::Pseudoknot:
-                node_energy =
-                    PseudoknotFunctions::pseudoknot_energy(node, sequence_, processed_rna_, round_);
+                node_energy = PseudoknotFunctions::pseudoknot_energy(node, sequence_, processed_rna_, round_);
                 break;
             case LoopType::External:
                 if (processed_rna_.has_modified_bases()) {

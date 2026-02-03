@@ -114,9 +114,6 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(
         const std::vector<size_t>& pairings);
 
-    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(
-        const RNAEntry& rna);
-
     [[nodiscard]] static std::string compute_unmodified_sequence(
         const std::vector<std::string_view>& modified_sequence_views,
         const std::vector<modified_base_params>& params, const size_t rna_length,

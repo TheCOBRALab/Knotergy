@@ -3,12 +3,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "uni_algo/ranges_grapheme.h"
-
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(
     RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
-    std::vector<std::string_view> mod_sequence = compute_modified_sequence_views(rna);
+    std::vector<std::string_view> mod_sequence = ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
 
     // Ensure Sequence & Structure are the same length
     if (mod_sequence.size() != rna.structure.size()) {
@@ -26,7 +24,6 @@ ProcessedRNAEntry RNAProcessor::process_rna(
 
     return ProcessedRNAEntry{std::move(rna),
                              std::move(unmodified_sequence),
-                             std::move(mod_sequence),
                              std::move(pairings),
                              std::move(closed_regions),
                              std::move(cr_pairings),
@@ -192,19 +189,6 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
     return unpaired_prefix_sum;
 };
 
-// grapheme is a user-perceived character, which may be multiple bytes
-std::vector<std::string_view> RNAProcessor::compute_modified_sequence_views(const RNAEntry& rna) {
-    std::vector<std::string_view> out;
-    out.reserve(rna.sequence.size());  // upper bound (bytes >= graphemes)
-
-    // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
-    for (std::string_view g : una::views::grapheme::utf8(rna.sequence)) {
-        out.push_back(g);
-    }
-
-    return out;
-};
-
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views,
     const std::vector<modified_base_params>& params, const size_t rna_length,
@@ -220,7 +204,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
                         "' has empty unmodified mapping.");
         }
 
-        mod_to_unmod[param.modified_base] = param.unmodified_base;
+        mod_to_unmod.emplace(param.modified_base, param.unmodified_base);
     }
 
     // Convert modified sequence to unmodified sequence
@@ -250,9 +234,12 @@ std::string RNAProcessor::compute_unmodified_sequence(
 }
 
 // Check if a base is unmodified (using lookup table for speed)
+#include <iostream>
+
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
     if (b.size() != 1) return false;
-    return unmod_lookup[static_cast<unsigned char>(b[0])] != 0;
-};
+    return unmod_lookup[(unsigned char)b[0]] != 0;
+}
+
 
 }  // namespace knotergy

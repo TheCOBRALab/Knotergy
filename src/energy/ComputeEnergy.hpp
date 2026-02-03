@@ -9,8 +9,8 @@
 namespace knotergy {
 class ComputeEnergy {
    public:
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, ProcessedRNAEntry processed_rna,
-                  std::vector<modified_base_params> mod_params = {}, bool round = false,
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna,
+                  const std::vector<modified_base_params>& mod_params = {}, bool round = false,
                   bool verbose = false)
         : root_node_{root_node},
           processed_rna_{processed_rna},
@@ -25,8 +25,8 @@ class ComputeEnergy {
 
    private:
     std::shared_ptr<LoopNode> root_node_;
-    ProcessedRNAEntry processed_rna_;
-    std::vector<modified_base_params> mod_params_;
+    const ProcessedRNAEntry& processed_rna_;
+    const std::vector<modified_base_params>& mod_params_;
     const std::string& sequence_;
     float energy_ = 0.0f;
     bool round_ = false;

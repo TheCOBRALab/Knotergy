@@ -30,6 +30,7 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     if (size < 3) {
         std::cerr << "Warning: Hairpin loop size is less than 3. Infinite Energy. Sequence: "
                   << sequence << " i: " << i << ", j: " << j << std::endl;
+        return INF;
     }
 
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j]);

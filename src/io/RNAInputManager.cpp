@@ -39,10 +39,12 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
 
 std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(
     const std::vector<RNAEntry>& inputs, const std::vector<modified_base_params>& modified_params) {
+
     std::vector<ProcessedRNAEntry> processed_inputs;
     processed_inputs.reserve(inputs.size());
-    for (RNAEntry rna : inputs) {
-        processed_inputs.emplace_back(RNAProcessor::process_rna(std::move(rna), modified_params));
+
+    for (const RNAEntry& rna : inputs) {
+        processed_inputs.emplace_back(RNAProcessor::process_rna(rna, modified_params));
     }
     return processed_inputs;
 }

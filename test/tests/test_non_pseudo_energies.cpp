@@ -25,6 +25,18 @@ float pipeline(std::string sequence, std::string structure, std::string param_fi
     return energy.getEnergy();
 }
 }
+
+// echo -e "AU\n()" | RNAeval
+TEST(NonPseudoKnottedEnergies, nonPK_small) {
+    std::string sequence = "AU";
+    std::string structure = "()";
+    float energy = pipeline(sequence, structure);
+    float dp_energy = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
+
+    EXPECT_NEAR(energy, 100000.50, 0.001); // Turner 2004
+    EXPECT_NEAR(dp_energy, 100000.50, 0.001); // Dirks & Pierce 2009
+}
+
 // echo -e "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC\n.(((((.........................)))))................" | RNAeval
 TEST(NonPseudoKnottedEnergies, BasicStack) {
     std::string sequence = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";

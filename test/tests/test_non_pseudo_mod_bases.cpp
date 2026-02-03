@@ -45,13 +45,24 @@ std::tuple<float, float, float> dangle_pipeline(
 }
 
 // echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
+TEST(mod_nonpk, small) {
+    std::string sequence = "6U";
+    std::string structure= "()";
+    auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 100000.0000, 0.001); // Turner 2004
+    EXPECT_NEAR(d1, 100000.0000, 0.001); // Turner 2004
+    EXPECT_NEAR(d2, 100000.0000, 0.001); // Turner 2004
+}
+
+// echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
 TEST(mod_nonpk, stack_0_dangles) {
     std::string sequence = "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU";
     std::string structure= "(((((((((((((((((((((......)))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-    // EXPECT_NEAR(d0, -13.25, 0.001); // Turner 2004
-    // EXPECT_NEAR(d1, -13.25, 0.001); // Turner 2004
+    EXPECT_NEAR(d0, -13.25, 0.001); // Turner 2004
+    EXPECT_NEAR(d1, -13.25, 0.001); // Turner 2004
     EXPECT_NEAR(d2, -13.25, 0.001); // Turner 2004
 }
 
@@ -67,13 +78,16 @@ TEST(mod_nonpk, stack_0_dangles) {
 // }
 
 
-// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/--mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
+// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
+// ./build/Knotergy -s "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))" -p ./params/common/rna_turner2004.par
 TEST(mod_nonpk, stack3_0_dangle) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
     std::string structure= "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-    // EXPECT_NEAR(d0, -13.63, 0.001); // Turner 2004
-    // EXPECT_NEAR(d1, -14.23, 0.001); // Turner 2004
+    EXPECT_NEAR(d0, -70.11, 0.001); // Turner 2004
+    EXPECT_NEAR(d1, -70.11, 0.001); // Turner 2004
     EXPECT_NEAR(d2, -70.81, 0.001); // Turner 2004
 }
+
+// echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
