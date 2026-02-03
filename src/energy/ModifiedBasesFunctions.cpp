@@ -71,7 +71,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
 
         // Get unique modified bases in this child
         std::vector<std::string_view> unique_mod_bases = unique_modified_bases_at_indices(indices, mod_sequence);
-        if (unique_mod_bases.empty()) {std::cout <<"empty"<< std::endl; continue;} // no modified bases in this child
+        if (unique_mod_bases.empty()) continue; // no modified bases in this child
 
         // Get pair type and encoded dangle nucleotides
         unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
