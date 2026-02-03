@@ -15,13 +15,19 @@ namespace knotergy {
  */
 enum class ModLookup { Stacking, Terminal, Mismatch, Dangle5, Dangle3 };
 
-/**
- * @brief Energy calculation functions for RNA structures with modified bases.
- *
- * This class provides methods to compute energy contributions when RNA sequences
- * contain modified nucleotides. It uses custom energy parameters for modified bases
- * while falling back to standard ViennaRNA calculations when appropriate.
- */
+// Stores the differences in energy contributions due to modified bases
+struct ModDiffs {
+   ModDiffs(int terminal_diff, int mismatch_diff, int n5d_diff, int n3d_diff):
+         terminalAU{terminal_diff},
+         mismatch{mismatch_diff},
+         n5d{n5d_diff},
+         n3d{n3d_diff} {}
+    const int terminalAU;
+    const int mismatch;
+    const int n5d;
+    const int n3d;
+};
+
 class ModifiedBasesFunctions {
    public:
     /**
@@ -91,42 +97,19 @@ class ModifiedBasesFunctions {
                                  const std::vector<modified_base_params>& mod_params,
                                  int unmod_energy, ModLookup lookup_type);
     
-    /**
-     * @brief Get the energy difference between modified and unmodified parameters.
-     *
-     * @param key The parameter key to look up.
-     * @param modified Vector of modified base identifiers.
-     * @param mod_params Vector of modified base parameters.
-     * @param unmod_energy The unmodified energy value.
-     * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
-     * @return Energy difference in centicalories.
-     */
-    static int get_mod_energy_difference(const std::string& key,
-                                       const std::vector<std::string_view>& modified,
-                                       const std::vector<modified_base_params>& mod_params,
-                                       int unmod_energy, ModLookup lookup_type);
+    static void modify_dangle_set( DangleSet& original_set, ModDiffs diffs);
    
-    /**
-     * @brief Modify a DangleSet with modified base energy parameters.
-     *
-     * Adjusts dangle energies in the set based on modified base parameters.
-     *
-     * @param original_set The DangleSet to modify (modified in place).
-     * @param c Shared pointer to the child loop node.
-     * @param type Pair type identifier.
-     * @param n5d 5' dangle nucleotide encoding.
-     * @param n3d 3' dangle nucleotide encoding.
-     * @param unique_mod_bases Vector of unique modified bases.
-     * @param mod_sequence The modified RNA sequence (grapheme views).
-     * @param mod_params Vector of modified base parameters.
-     * @param is_external Whether this is for an external loop.
-     */
-    static void modify_dangle_set( DangleSet& original_set,
-                                        const std::shared_ptr<LoopNode>& c, unsigned int type,
-                                        int n5d, int n3d, std::vector<std::string_view> unique_mod_bases,
-                                        const std::vector<std::string_view>& mod_sequence,
-                                        const std::vector<modified_base_params>& mod_params,
-                                        bool is_external);
+   // Returns the difference between modified and unmodified energy based on the lookup type and key
+    static int get_mod_energy_difference(const std::string& key,
+                                          const std::vector<std::string_view>& modified,
+                                          const std::vector<modified_base_params>& mod_params,
+                                          int unmod_energy, ModLookup lookup_type);
+   
+   static ModDiffs get_mod_dangle_energy_diffs(const std::shared_ptr<LoopNode>& c, const int n5d,
+                                               const int n3d, const unsigned int type, const unsigned int r_type,
+                                               const std::vector<std::string_view>& unique_mod_bases,
+                                               const std::vector<std::string_view>& mod_sequence,
+                                               const std::vector<modified_base_params>& mod_params, bool is_external) ;
 };
 
 }  // namespace knotergy
