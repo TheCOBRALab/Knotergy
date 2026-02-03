@@ -55,10 +55,10 @@ inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
     return os;
 }
 
-// Visual representation of the band:
-// (((((((((((((((....[.......)))))))..))))))))....]
-// ^             ^            ^               ^
-// left_border   left_inner   right_inner     right_border
+// Visual representation of a band:
+// (((((..(...)..((((((((((....[.......)))))))..))))))))....]
+// ^                       ^            ^               ^
+// left_border             left_inner   right_inner     right_border
 
 /**
  * @brief Represents a pseudoknot band in an RNA secondary structure.

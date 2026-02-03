@@ -7,12 +7,18 @@
 namespace knotergy {
 
 /**
- * @brief Linked structure for tracking band boundary connections.
+ * @brief Linked structure for tracking where the next paired base is.
  *
- * Used internally by BandFinder to maintain a linked list of band boundaries
- * during band detection.
+ * e.g.
+ * ((..[[..))..]]
+ * Linked list:
+ * 0 -> 1 -> 4 -> 5 -> 8 -> 9 -> 12 -> 13 -> NULL_INDEX
+ * 
+ * Each node contains the position value, previous position, and next position.
+ * This structure helps in navigating through base pairs when identifying bands.
+ * 
  */
-struct BandLink {
+struct PairedBaseNode {
     size_t value = NULL_INDEX;  ///< Position value.
     size_t prev = NULL_INDEX;   ///< Previous position in the linked list.
     size_t next = NULL_INDEX;   ///< Next position in the linked list.
@@ -70,7 +76,7 @@ class BandFinder {
      * @return True if the stem was successfully extended.
      */
     static bool extend_stem(size_t& i_prime, size_t& j_prime,
-                            const std::unordered_map<size_t, BandLink>& aux_bands,
+                            const std::unordered_map<size_t, PairedBaseNode>& aux_bands,
                             const std::vector<size_t>& pairings);
 
     /**
@@ -84,7 +90,7 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Map of band links indexed by position.
      */
-    static std::unordered_map<size_t, BandLink> const generate_band_links(
+    static std::unordered_map<size_t, PairedBaseNode> const generate_paired_base_links(
         const size_t& left_bound, const size_t& right_bound, const std::vector<size_t>& pairings,
         const std::vector<size_t>& cr_pairings);
 
@@ -97,7 +103,7 @@ class BandFinder {
      * @param processed_entry The processed RNA entry with pairing information.
      * @return Map of band links indexed by position.
      */
-    static std::unordered_map<size_t, BandLink> const generate_band_links(
+    static std::unordered_map<size_t, PairedBaseNode> const generate_paired_base_links(
         const LoopNode& node, const ProcessedRNAEntry& processed_entry);
 };
 }  // namespace knotergy

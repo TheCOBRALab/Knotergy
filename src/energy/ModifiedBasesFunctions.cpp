@@ -209,21 +209,21 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(const std::shared_p
     // Correct energies for dangling ends and mismatches
     if (n5d >=0 && n3d >=0) {
         std::string mismatch_key = join_string_views({c->begin, c->begin - 1, c->end, c->end + 1}, mod_sequence);
-        int unmod_energy = is_external ? ViennaParams::p->mismatchExt[r_type][n5d][n3d] : ViennaParams::p->mismatchM[r_type][n5d][n3d];
+        int unmod_energy = is_external ? ViennaParams::p->mismatchExt[type][n5d][n3d] : ViennaParams::p->mismatchM[r_type][n5d][n3d];
         diffMM = get_mod_energy_difference(mismatch_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Mismatch);
     }
 
     // Dangling 5' end only
     if (n5d >= 0) {
-        std::string dangle5_key = join_string_views({c->end, c->begin, c->begin - 1}, mod_sequence);
-        int unmod_energy = ViennaParams::p->dangle5[r_type][n5d];
+        std::string dangle5_key = join_string_views({c->begin, c->end, c->begin - 1}, mod_sequence);
+        int unmod_energy = ViennaParams::p->dangle5[type][n5d];
         diff5 = get_mod_energy_difference(dangle5_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Dangle5);
     } 
 
     // Dangling 3' end only
     if (n3d >= 0) {
-        std::string dangle3_key = join_string_views({c->end, c->begin, c->end + 1}, mod_sequence);
-        int unmod_energy = ViennaParams::p->dangle3[r_type][n3d];
+        std::string dangle3_key = join_string_views({c->begin, c->end, c->end + 1}, mod_sequence);
+        int unmod_energy = ViennaParams::p->dangle3[type][n3d];
         diff3 = get_mod_energy_difference(dangle3_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Dangle3);
     }
 

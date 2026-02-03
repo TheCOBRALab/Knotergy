@@ -2,93 +2,116 @@
 
 namespace knotergy {
 
+// Returns all bands within the specified region
 std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t& right_bound,
                                          const LoopType& loop_type,
                                          const std::vector<size_t>& pairings,
                                          const std::vector<size_t>& cr_pairings) {
     std::vector<Band> bands;
-
+    
+    // Technically speaking, non-pseudoknotted loops don't have bands
+    // For the sake of this program, each base pair forms its own band
     if (loop_type != LoopType::Pseudoknot) {
-        bands.push_back(
-            Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
+        bands.push_back(Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
         return bands;
     }
 
+    // validate bounds
     const size_t n = pairings.size();
-    if (right_bound >= n) {
-        THROW_ERROR("Right bound exceeds the size of structure.");
+    if (right_bound >= n) THROW_ERROR("Right bound exceeds the size of structure.");
+
+    // Generates a linked list of paired bases within the region
+    std::unordered_map<size_t, PairedBaseNode> paired_base_links = generate_paired_base_links(left_bound, right_bound, pairings, cr_pairings);
+
+    if (paired_base_links.empty()) {
+        return bands;  // No paired bases found? (should never happen)
     }
 
-    std::unordered_map<size_t, BandLink> band_links =
-        generate_band_links(left_bound, right_bound, pairings, cr_pairings);
-
-    if (band_links.empty()) {
-        return bands;  // No bands found
-    }
-
+    // Iterate through the region to find bands
     for (size_t i = left_bound; i <= right_bound; ++i) {
         /* skip anything that is   – unpaired
-         *                         – closing half
-         *                         – pairs outside this region */
-        if (pairings[i] == NULL_INDEX || pairings[i] < i || pairings[i] > right_bound) continue;
+         *                         – closing pair */
+        if (pairings[i] == NULL_INDEX || pairings[i] < i) continue;
 
-        // if nested closed region, skip
+        // pairing outside of closed region (means invalid input, region isn't really closed)
+        if (pairings[i] > right_bound) {
+            THROW_ERROR("Pairing outside of \"closed region\" detected." + std::to_string(i) +
+                        " pairs with " + std::to_string(pairings[i]) + " which is outside [" +
+                        std::to_string(left_bound) + ", " + std::to_string(right_bound) + "].");
+        }
+
+        // if nested closed region, skip (They were already processed and are not part of the pseudoknot)
         if (cr_pairings[i] != NULL_INDEX && i != left_bound) {
             i = cr_pairings[i];
             continue;
         }
 
-        size_t j = pairings[i];
-        size_t i_prime = i;
-        size_t j_prime = j;
+        size_t j = pairings[i]; // j is the paired base of i
+        size_t i_prime = i;     // will be left inner after extension
+        size_t j_prime = j;     // will be right inner after extension
 
         // walks the stem until last base pair in the given region (finds i` and j`)
-        while (extend_stem(i_prime, j_prime, band_links, pairings)) {
-        }
+        // Finds the full band that i and j belong to
+        while (extend_stem(i_prime, j_prime, paired_base_links, pairings)) {}
 
         // stores entire band
         bands.push_back(Band{i, i_prime, j_prime, j, pairings, cr_pairings});
 
-        i = i_prime;  // fast-forward
+        i = i_prime;  // fast-forward to inner position (since everything in between is part of this band)
     }
     return bands;
 }
 
-std::vector<Band> BandFinder::find_bands(const LoopNode& node,
-                                         const ProcessedRNAEntry& processed_rna) {
-    return find_bands(node.begin, node.end, node.loop_type, processed_rna.get_pairings(),
+// Convenience method for LoopNode
+std::vector<Band> BandFinder::find_bands(const LoopNode& node, const ProcessedRNAEntry& processed_rna) {
+    return find_bands(node.begin, node.end, node.loop_type,
+                      processed_rna.get_pairings(),
                       processed_rna.get_closed_regions_pairings());
 }
 
+// Extends the stem to find inner band positions
 bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime,
-                             const std::unordered_map<size_t, BandLink>& band_links,
+                             const std::unordered_map<size_t, PairedBaseNode>& paired_base_links,
                              const std::vector<size_t>& pairings) {
-    if (band_links.find(i_prime) != band_links.end() &&
-        band_links.find(j_prime) != band_links.end()) {
-        size_t i_tmp = band_links.at(i_prime).next;
-        size_t j_tmp = band_links.at(j_prime).prev;
-
-        if (i_tmp == NULL_INDEX || i_tmp >= j_tmp) {
-            return false;  // no more extension possible
+    if (paired_base_links.find(i_prime) != paired_base_links.end() &&
+        paired_base_links.find(j_prime) != paired_base_links.end()) {
+        
+        // get next positions in the linked list 
+        size_t i_tmp = paired_base_links.at(i_prime).next;
+        size_t j_tmp = paired_base_links.at(j_prime).prev;
+        
+        // i should be before j (terminate before they cross)
+        if (i_tmp >= j_tmp) {
+            return false;
         }
 
+        // sanity check
+        if (i_tmp == NULL_INDEX){
+            THROW_ERROR("PairedBaseNode points to NULL_INDEX. Index: " + std::to_string(i_prime));
+        }
+
+        // validate that they are indeed paired
         if (pairings[i_tmp] != j_tmp) {
             return false;  // not a valid base pair
         }
 
         i_prime = i_tmp;
         j_prime = j_tmp;
-        return true;  // extension successful
+        return true;  // extension successful, continue extending
     } else {
         return false;  // no aux band found for i or j
     }
 }
 
-std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(
-    const size_t& left_bound, const size_t& right_bound, const std::vector<size_t>& pairings,
+// Linked list of base pair positions
+std::unordered_map<size_t, PairedBaseNode> const BandFinder::generate_paired_base_links(
+    const size_t& left_bound,
+    const size_t& right_bound,
+    const std::vector<size_t>& pairings,
     const std::vector<size_t>& cr_pairings) {
-    if (right_bound < left_bound) return {};
 
+    if (right_bound < left_bound) return {};
+    
     if (pairings[left_bound] == NULL_INDEX) {
         THROW_ERROR("Left index is not a base-pair");
     }
@@ -96,13 +119,15 @@ std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(
         THROW_ERROR("Right index is not a base-pair");
     }
     if (cr_pairings[left_bound] != right_bound) {
-        THROW_ERROR("Left bound does not pair with right bound");
+        THROW_ERROR("Left bound and right bound do not form a closed region");
     }
 
-    std::unordered_map<size_t, BandLink> band_links;
-    band_links.emplace(left_bound, BandLink{left_bound});
-    size_t current_key = left_bound;
+    // create linked list of band positions
+    std::unordered_map<size_t, PairedBaseNode> paired_base_links;
+    paired_base_links.emplace(left_bound, PairedBaseNode{left_bound});
+    size_t prev_key = left_bound;
 
+    // Traverse the region to build links
     for (size_t i = left_bound + 1; i < right_bound; ++i) {
         // skip unpaired
         if (pairings[i] == NULL_INDEX) {
@@ -110,28 +135,31 @@ std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(
         }
 
         // skip closed regions
-        if (cr_pairings[i] != NULL_INDEX && i != left_bound) {
+        if (cr_pairings[i] != NULL_INDEX) {
             i = cr_pairings[i];
             continue;
         }
-
-        if (band_links.find(current_key) == band_links.end()) {
-            THROW_ERROR("Current key not found in band_links");
+        
+        auto it = paired_base_links.find(prev_key);
+        if (it == paired_base_links.end()) {
+            THROW_ERROR("Prev key not found in paired_base_links");
         }
 
-        band_links[current_key].next = i;
-        band_links[i] = BandLink{i, current_key};
-        current_key = i;
+        // link to next base-pair position
+        it->second.next = i;
+        paired_base_links[i] = PairedBaseNode{i, prev_key};
+        prev_key = i;
     }
-    // process last link
-    band_links[current_key].next = right_bound;
-    band_links[right_bound] = BandLink{right_bound, current_key};
 
-    return band_links;
+    // process last link
+    paired_base_links[prev_key].next = right_bound;
+    paired_base_links[right_bound] = PairedBaseNode{right_bound, prev_key};
+
+    return paired_base_links;
 }
-std::unordered_map<size_t, BandLink> const BandFinder::generate_band_links(
+std::unordered_map<size_t, PairedBaseNode> const BandFinder::generate_paired_base_links(
     const LoopNode& node, const ProcessedRNAEntry& processed_entry) {
-    return generate_band_links(node.begin, node.end, processed_entry.get_pairings(),
+    return generate_paired_base_links(node.begin, node.end, processed_entry.get_pairings(),
                                processed_entry.get_closed_regions_pairings());
 }
 
