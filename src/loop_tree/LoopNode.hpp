@@ -9,13 +9,26 @@
 #include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {
+/**
+ * @brief Enumeration of loop types in RNA secondary structures.
+ */
 enum class LoopType { Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
+
+/**
+ * @brief Enumeration of pseudoknot nesting types.
+ */
 enum class PseudoNestedType { None, WithinBand, Nested };
 // Within Band (((..(...).(.[[[.)..)))]]]
 // This hairpin     ^   ^ is within a band
 // Nested      (((..(...).[[[...)))]]]
 // This hairpin     ^   ^ is nested inside a band
 
+/**
+ * @brief Get a human-readable name for a loop type.
+ *
+ * @param t The loop type.
+ * @return String representation of the loop type.
+ */
 static inline const char* loop_name(LoopType t) {
     switch (t) {
         case LoopType::Stack:
@@ -34,31 +47,53 @@ static inline const char* loop_name(LoopType t) {
     return "Unknown  loop";
 }
 
+/**
+ * @brief Represents a node in the loop tree of an RNA secondary structure.
+ *
+ * Each LoopNode corresponds to a loop region in the RNA structure and contains
+ * information about its boundaries, type, nested children, pseudoknot bands,
+ * unpaired base counts, and computed energy. The loop tree is built by LoopFactory
+ * and processed by ComputeEnergy.
+ */
 struct LoopNode {
    public:
+    /**
+     * @brief Construct a LoopNode from a closed region.
+     *
+     * @param cr Closed region defining the loop boundaries.
+     */
     LoopNode(ClosedRegion cr) : begin{cr.begin}, end{cr.end} {}
+
+    /**
+     * @brief Default constructor for external loop (no boundaries).
+     */
     LoopNode() : begin{NULL_INDEX}, end{NULL_INDEX} {}
 
-    size_t begin;
-    size_t end;
+    size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
+    size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType loop_type;
-    PseudoNestedType pseudo_type = PseudoNestedType::None;
-    int exclusive_unpaired_bases_count = 0;  // unpaired bases in loop only
-    int total_unpaired_bases_count =
-        0;  // unpaired bases in loop + unpaired bases in nested children
-    int number_of_withinband_children = 0;
-    int number_of_nested_children = 0;
-    int number_of_unpaired_bases_in_nested_children = 0;
+    LoopType loop_type;                       ///< Type of this loop.
+    PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
+    int exclusive_unpaired_bases_count = 0;   ///< Unpaired bases only in this loop.
+    int total_unpaired_bases_count = 0;       ///< Unpaired bases in loop + nested children.
+    int number_of_withinband_children = 0;    ///< Count of children within pseudoknot bands.
+    int number_of_nested_children = 0;        ///< Count of nested children.
+    int number_of_unpaired_bases_in_nested_children = 0;  ///< Unpaired bases in nested children.
 
-    std::weak_ptr<LoopNode> parent;
-    std::vector<std::shared_ptr<LoopNode>> children;
-    std::vector<Band> bands;
-    int number_of_bands;
-    double energy = 0;  // calculated in ComputeEnergy.cpp
+    std::weak_ptr<LoopNode> parent;                  ///< Parent loop node (weak to avoid cycles).
+    std::vector<std::shared_ptr<LoopNode>> children; ///< Child loop nodes.
+    std::vector<Band> bands;                         ///< Pseudoknot bands (empty if not pseudoknotted).
+    int number_of_bands;                             ///< Number of bands in this loop.
+    double energy = 0;                               ///< Computed energy (set by ComputeEnergy).
 
-    // Generates a formatted string representing the energy breakdown of the loop
-    // Used for verbose output
+    /**
+     * @brief Generate a formatted string for energy breakdown output.
+     *
+     * Used for verbose output showing loop type, position range, and energy.
+     *
+     * @param max_idx Maximum index in the structure (for formatting width).
+     * @return Formatted string with loop information and energy.
+     */
     std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
 
@@ -87,6 +122,16 @@ struct LoopNode {
     }
 };
 
+/**
+ * @brief Stream insertion operator for LoopNode.
+ *
+ * Prints detailed information about the loop node including type, boundaries,
+ * unpaired base counts, bands, and children.
+ *
+ * @param os Output stream.
+ * @param node LoopNode to print.
+ * @return Reference to the output stream.
+ */
 inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "LoopNode {\n";
     os << "  begin: " << node.begin << "\n";

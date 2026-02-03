@@ -4,13 +4,48 @@
 #include "LoopNode.hpp"
 
 namespace knotergy {
+/**
+ * @brief Factory class for building loop tree representations of RNA secondary structures.
+ *
+ * LoopFactory constructs a hierarchical tree of LoopNode objects from a ProcessedRNAEntry.
+ * Each node represents a loop region (external, hairpin, internal, multibranch, or pseudoknot).
+ * The tree structure captures the nesting relationships between loops.
+ */
 class LoopFactory {
    public:
+    /**
+     * @brief Construct a LoopFactory and build the loop tree.
+     *
+     * Upon construction, immediately builds the complete loop tree from the
+     * processed RNA entry's closed regions.
+     *
+     * @param processed_rna The processed RNA entry containing structure and pairing information.
+     */
     LoopFactory(const ProcessedRNAEntry& processed_rna);
 
+    /**
+     * @brief Get the root node of the loop tree.
+     *
+     * The root node represents the external loop containing all other loops.
+     *
+     * @return Shared pointer to the root LoopNode.
+     */
     std::shared_ptr<LoopNode> get_root_node() { return root_node_; };
 
+    /**
+     * @brief Print the loop tree structure.
+     *
+     * @param debug Whether to include debug information in the output (default: false).
+     */
     void print_tree(bool debug = false) const;
+
+    /**
+     * @brief Print a loop tree node and its children recursively.
+     *
+     * @param node The node to print.
+     * @param depth Current depth in the tree (for indentation).
+     * @param debug Whether to include debug information (default: false).
+     */
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
@@ -48,15 +83,69 @@ class LoopFactory {
      */
     void build_tree(const std::vector<ClosedRegion>& closed_regions);
 
+    /**
+     * @brief Populate a loop node with type, unpaired counts, and band information.
+     *
+     * @param node The loop node to populate.
+     */
     void populate_node(LoopNode& node);
+
+    /**
+     * @brief Populate a loop node (shared pointer version).
+     *
+     * @param node Shared pointer to the loop node to populate.
+     */
     void populate_node(const std::shared_ptr<LoopNode>& node);
 
+    /**
+     * @brief Count unpaired bases in a loop, excluding those in child loops.
+     *
+     * @param node The loop node to analyze.
+     * @return Number of unpaired bases exclusive to this loop.
+     */
     int count_unpaired_bases_excluding_children(const LoopNode& node);
+
+    /**
+     * @brief Determine the loop type of a node.
+     *
+     * Classifies the loop as Stack, Hairpin, Internal, Multibranch, External, or Pseudoknot.
+     *
+     * @param node The loop node to classify.
+     * @return The determined LoopType.
+     */
     LoopType find_loop_type(const LoopNode& node);
+
+    /**
+     * @brief Check if a loop has pseudo-nested children and update pseudo_type.
+     *
+     * @param node The loop node to check (modified in place).
+     */
     void pseudo_nested_check(LoopNode& node);
+
+    /**
+     * @brief Label child nodes that are pseudo-nested or within bands.
+     *
+     * @param node The parent loop node containing children to label.
+     */
     void label_pseudonested_children(LoopNode& node);
+
+    /**
+     * @brief Bucket sort closed regions by their starting position.
+     *
+     * @param closed_regions Vector of closed regions to sort.
+     * @param structure_length Length of the RNA structure.
+     * @return Sorted vector of closed regions.
+     */
     std::vector<ClosedRegion> closed_region_bucket_sort(
         const std::vector<ClosedRegion>& closed_regions, const size_t& structure_length);
+
+    /**
+     * @brief Annotate a loop node with pseudoknot band information.
+     *
+     * Identifies and stores Band objects for pseudoknotted loops.
+     *
+     * @param node Shared pointer to the loop node to annotate.
+     */
     void annotate_bands(const std::shared_ptr<LoopNode>& node);
 };
 

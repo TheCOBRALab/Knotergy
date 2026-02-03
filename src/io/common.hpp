@@ -11,12 +11,35 @@
 #include <vector>
 
 namespace knotergy {
+/**
+ * @brief Custom exception class with detailed context information.
+ *
+ * Extends std::runtime_error to include file, line, and function information
+ * for easier debugging.
+ */
 class DetailedException : public std::runtime_error {
    public:
+    /**
+     * @brief Construct a detailed exception.
+     *
+     * @param message Error message.
+     * @param file Source file where error occurred.
+     * @param line Line number where error occurred.
+     * @param func Function name where error occurred.
+     */
     DetailedException(const std::string& message, const char* file, int line, const char* func)
         : std::runtime_error(format_message(message, file, line, func)) {}
 
    private:
+    /**
+     * @brief Format the error message with context.
+     *
+     * @param message Error message.
+     * @param file Source file.
+     * @param line Line number.
+     * @param func Function name.
+     * @return Formatted error message string.
+     */
     static std::string format_message(const std::string& message, const char* file, int line,
                                       const char* func) {
         std::ostringstream oss;
@@ -27,9 +50,10 @@ class DetailedException : public std::runtime_error {
     }
 };
 
+/// Macro to throw a DetailedException with current file, line, and function.
 #define THROW_ERROR(msg) throw DetailedException((msg), __FILE__, __LINE__, __func__)
 
-// Max size of size_t
+/// Maximum value of size_t, used as a sentinel for "no index" or "invalid index".
 constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
 
 /**
