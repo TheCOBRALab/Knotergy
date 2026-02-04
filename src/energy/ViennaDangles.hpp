@@ -83,10 +83,11 @@ class ViennaDangles {
      *
      * @param children Vector of child loop nodes in the external loop.
      * @param dangle_energies Precomputed dangle energies for each child.
+     * @param sequence_length Length of the RNA sequence.
      * @return Optimal dangle energy in centicalories.
      */
     static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                     const std::vector<DangleSet>& dangle_energies);
+                                     const std::vector<DangleSet>& dangle_energies, size_t sequence_length);
 
     /**
      * @brief Calculate optimal multibranch loop dangle energy.

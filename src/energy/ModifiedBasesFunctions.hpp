@@ -106,7 +106,7 @@ class ModifiedBasesFunctions {
                                           int unmod_energy, ModLookup lookup_type);
    
    static ModDiffs get_mod_dangle_energy_diffs(const std::shared_ptr<LoopNode>& c, const int n5d,
-                                               const int n3d, const unsigned int type, const unsigned int r_type,
+                                               const int n3d, const unsigned int type, [[maybe_unused]] const unsigned int r_type,
                                                const std::vector<std::string_view>& unique_mod_bases,
                                                const std::vector<std::string_view>& mod_sequence,
                                                const std::vector<modified_base_params>& mod_params, bool is_external) ;

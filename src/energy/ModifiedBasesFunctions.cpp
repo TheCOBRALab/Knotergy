@@ -17,19 +17,6 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
     std::string key_right = join_string_views({cj, j,  ci, i }, mod_sequence);
     std::string key_left  = join_string_views({i,  ci, j,  cj}, mod_sequence);
     
-    // // This makes no logical sense, but tests show that ViennaRNA uses either orientation if there's a modified base on the 5' side
-    // // and only left orientation if modified base is only on 3' side
-    // if (!unique_modified_bases_at_indices({i, ci}, mod_sequence).empty()) {
-    //     int e = get_mod_energy(key_right, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
-    //     if (e == unmod_energy) {
-    //         e = get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
-    //     }
-    //     return e;
-    // }
-    // return get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
-    
-
-    
     // Get energy correction for modified bases (returns original energy if no modifications found)
     // Try the Vienna-defined ordering first, then the swapped orientation
     int e = get_mod_energy(key_left, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
@@ -98,7 +85,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
      }
 
      if (ViennaParams::md.dangles == 1) {
-         energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets);
+         energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets, sequence.size());
      }
      return energy;
 }
@@ -204,12 +191,12 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(const std::shared_p
     int diffTerminal = 0; // terminal AU penalty
     int diffMM = 0; // both neighbors (terminal mismatch)
     int diff5 = 0; // 5' neighbor only
-    int diff3 = 0; // 3' neighbor only
+    int diff3 = 0; // 3' neighbor only  
     
     // Correct energies for dangling ends and mismatches
     if (n5d >=0 && n3d >=0) {
         std::string mismatch_key = join_string_views({c->begin, c->begin - 1, c->end, c->end + 1}, mod_sequence);
-        int unmod_energy = is_external ? ViennaParams::p->mismatchExt[type][n5d][n3d] : ViennaParams::p->mismatchM[r_type][n5d][n3d];
+        int unmod_energy = is_external ? ViennaParams::p->mismatchExt[type][n5d][n3d] : ViennaParams::p->mismatchM[type][n5d][n3d];
         diffMM = get_mod_energy_difference(mismatch_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Mismatch);
     }
 

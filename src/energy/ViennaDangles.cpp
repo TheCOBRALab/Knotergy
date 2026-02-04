@@ -7,20 +7,22 @@ namespace knotergy {
 enum TouchingRight { RightFree = 0, RightTaken = 1 };
 
 
+// Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
+int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
+                                         const std::vector<DangleSet>& dangle_energies, size_t sequence_length) {
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
+    bool disable_first_left_dangle = children.front()->begin == 0;  // external loop: no left dangle for first child
+    bool disable_last_right_dangle = children.back()->end == sequence_length - 1;  // no right dangle for last child
+    return process_chains(dangle_chains, children, dangle_energies, disable_first_left_dangle,
+                          disable_last_right_dangle);
+}
+
 // Calculate dangle energies for external loops (dangle type 1)
 int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
                                          const std::string& sequence) {
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence);
-    return get_external_dangle_1(children, dangle_energies);
+    return get_external_dangle_1(children, dangle_energies, sequence.size());
 }
-
-// Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
-int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                         const std::vector<DangleSet>& dangle_energies) {
-    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
-    return process_chains(dangle_chains, children, dangle_energies);
-}
-
 
 
 // Calculate dangle energies for multibranch loops (dangle type 1)
@@ -114,13 +116,13 @@ std::vector<std::vector<size_t>> ViennaDangles::get_dangle_chains(
             dangle_chains.push_back({i});
         }
     }
-    for (const auto& chain : dangle_chains) {
-        std::cout << "Dangle chain: ";
-        for (size_t idx : chain) {
-            std::cout << idx << " ";
-        }
-        std::cout << std::endl;
-    }
+    // for (const auto& chain : dangle_chains) {
+    //     std::cout << "Dangle chain: ";
+    //     for (size_t idx : chain) {
+    //         std::cout << idx << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
     return dangle_chains;
 }
 
@@ -138,15 +140,17 @@ int ViennaDangles::process_chain(const std::vector<size_t>& chain,
 
         // Check if left or right dangle is possible based on adjacency (no unpaired bases in
         // between)
-        bool disable_left_dangle =
+        bool disable_left_dangle = // no unpaired bases between previous and current child
             (idx != chain.front() && contiguous_children(*children[idx], *children[idx - 1])) ||
             (idx == chain.front() && disable_first_left_dangle);
-        bool disable_right_dangle =
+        bool disable_right_dangle = // no unpaired bases between current and next child
             (idx != chain.back() && contiguous_children(*children[idx], *children[idx + 1])) ||
             (idx == chain.back() && disable_last_right_dangle);
         // energies: no dangle, left dangle, right dangle, both dangles
-        int eNone = energies.no_dangle, eLeft = energies.left_dangle,
-            eRight = energies.right_dangle, eBoth = energies.both_dangle;
+        int eNone  = energies.no_dangle; 
+        int eLeft  = energies.left_dangle;
+        int eRight = energies.right_dangle;
+        int eBoth  = energies.both_dangle;
 
         // Update touching_right based on previous state and current possibilities
         if (disable_left_dangle && disable_right_dangle) {
