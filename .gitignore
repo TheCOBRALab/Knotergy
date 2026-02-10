@@ -40,8 +40,6 @@
 # macOS
 .DS_Store
 
-rna.ps
-dot.ps
-
 # ViennaRNA
 /ViennaRNA/
+*.ps

@@ -50,7 +50,7 @@ class RNAInputManager {
      */
     [[nodiscard]] static std::vector<ProcessedRNAEntry> process_inputs(
         const std::vector<RNAEntry>& inputs,
-        const std::vector<modified_base_params>& modified_params = {});
+        const std::vector<modified_base_param>& modified_params = {});
 
    private:
     /**

@@ -45,7 +45,7 @@ class ModifiedBasesFunctions {
     static int find_mod_stack_energy(const size_t& i, const size_t& j, const size_t& ci,
                                         const size_t& cj, std::string sequence,
                                         const std::vector<std::string_view>& mod_sequence,
-                                        const std::vector<modified_base_params>& mod_params);
+                                        const std::vector<modified_base_param>& mod_params);
     
     /**
      * @brief Calculate external loop energy with modified bases.
@@ -57,7 +57,7 @@ class ModifiedBasesFunctions {
      * @return External loop energy in centicalories, accounting for modified bases.
      */
     static int find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence,
-                                           const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_params>& mod_params);
+                                           const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_param>& mod_params);
 
    private:
     /**
@@ -94,7 +94,7 @@ class ModifiedBasesFunctions {
      */
     static int get_mod_energy(const std::string& key,
                                  const std::vector<std::string_view>& modified,
-                                 const std::vector<modified_base_params>& mod_params,
+                                 const std::vector<modified_base_param>& mod_params,
                                  int unmod_energy, ModLookup lookup_type);
     
     static void modify_dangle_set( DangleSet& original_set, ModDiffs diffs);
@@ -102,14 +102,14 @@ class ModifiedBasesFunctions {
    // Returns the difference between modified and unmodified energy based on the lookup type and key
     static int get_mod_energy_difference(const std::string& key,
                                           const std::vector<std::string_view>& modified,
-                                          const std::vector<modified_base_params>& mod_params,
+                                          const std::vector<modified_base_param>& mod_params,
                                           int unmod_energy, ModLookup lookup_type);
    
    static ModDiffs get_mod_dangle_energy_diffs(const std::shared_ptr<LoopNode>& c, const int n5d,
                                                const int n3d, const unsigned int type, [[maybe_unused]] const unsigned int r_type,
                                                const std::vector<std::string_view>& unique_mod_bases,
                                                const std::vector<std::string_view>& mod_sequence,
-                                               const std::vector<modified_base_params>& mod_params, bool is_external) ;
+                                               const std::vector<modified_base_param>& mod_params, bool is_external) ;
 };
 
 }  // namespace knotergy

@@ -23,7 +23,7 @@ namespace knotergy {
  * of modified nucleotides in RNA secondary structures. Parameters include
  * stacking, terminal, mismatch, and dangle energies.
  */
-struct modified_base_params {
+struct modified_base_param {
     /**
      * @brief Construct modified base parameters.
      *
@@ -43,7 +43,7 @@ struct modified_base_params {
      * @param dangle3_e 3' dangle energy parameters.
      * @param dangle3_h 3' dangle enthalpy parameters.
      */
-    modified_base_params(const std::string& mod_name, const std::string& unmod,
+    modified_base_param(const std::string& mod_name, const std::string& unmod,
                          const std::string& mod, const std::string& fallback,
                          const std::vector<std::string>& partners,
                          const std::map<std::string, float>& stacking,
@@ -120,18 +120,18 @@ class ViennaParams {
      * @brief Load modified base energy parameters from a file or directory.
      *
      * @param path Path to a JSON file or directory containing modified base parameter files.
-     * @return Vector of modified_base_params structures.
+     * @return Vector of modified_base_param structures.
      */
-    [[nodiscard]] static std::vector<modified_base_params> load_modified_energy_parameters(
+    [[nodiscard]] static std::vector<modified_base_param> load_modified_energy_parameters(
         const std::string& path);
 
     /**
      * @brief Parse a single modified base JSON parameter file.
      *
      * @param jsonFile Path to JSON file containing modified base parameters.
-     * @return modified_base_params structure with parsed parameters.
+     * @return modified_base_param structure with parsed parameters.
      */
-    [[nodiscard]] static modified_base_params parse_modified_base_json(const std::string& jsonFile);
+    [[nodiscard]] static modified_base_param parse_modified_base_json(const std::string& jsonFile);
 
    private:
     /**

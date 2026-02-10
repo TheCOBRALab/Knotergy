@@ -49,7 +49,7 @@ void ViennaParams::load_energy_parameters(const std::string& paramFile, int dang
     return;
 }
 
-std::vector<modified_base_params> ViennaParams::load_modified_energy_parameters(
+std::vector<modified_base_param> ViennaParams::load_modified_energy_parameters(
     const std::string& path) {
     if (path.empty()) {
         return {};
@@ -66,7 +66,7 @@ std::vector<modified_base_params> ViennaParams::load_modified_energy_parameters(
         all_files = FileUtils::get_files_in_dir(path);
     }
 
-    std::vector<modified_base_params> params_list;
+    std::vector<modified_base_param> params_list;
 
     for (const std::string& file : all_files) {
         if (file.size() >= 5 && file.substr(file.size() - 5) == ".json") {
@@ -77,7 +77,7 @@ std::vector<modified_base_params> ViennaParams::load_modified_energy_parameters(
     return params_list;
 }
 
-modified_base_params ViennaParams::parse_modified_base_json(const std::string& jsonFile) {
+modified_base_param ViennaParams::parse_modified_base_json(const std::string& jsonFile) {
     std::ifstream f(jsonFile);
     if (!f.is_open()) {
         THROW_ERROR("Error: Unable to open modified base parameter file: " + jsonFile);
@@ -91,7 +91,7 @@ modified_base_params ViennaParams::parse_modified_base_json(const std::string& j
     warn_if_missing(mod, "fallback", jsonFile);
     warn_if_missing(mod, "pairing_partners", jsonFile);
 
-    modified_base_params params(mod.value("name", ""), mod.value("unmodified", ""),
+    modified_base_param params(mod.value("name", ""), mod.value("unmodified", ""),
                                 mod.value("one_letter_code", ""), mod.value("fallback", ""),
                                 mod.value("pairing_partners", std::vector<std::string>{}),
                                 mod.value("stacking_energies", std::map<std::string, float>{}),

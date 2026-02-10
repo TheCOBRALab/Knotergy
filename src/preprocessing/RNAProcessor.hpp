@@ -29,7 +29,7 @@ class RNAProcessor {
 
     /// High-level pipeline that produces a processed entry from raw RNA input.
     static ProcessedRNAEntry process_rna(
-        RNAEntry rna, const std::vector<modified_base_params>& modified_params = {});
+        RNAEntry rna, const std::vector<modified_base_param>& modified_params = {});
 
     /**
      * @brief Compute base-pair indices from a structure string.
@@ -50,7 +50,7 @@ class RNAProcessor {
      *
      * @param structure Dot-bracket RNA structure string.
      * @param unmodified_sequence The unmodified RNA sequence corresponding to the structure.
-     * @param mod_sequence The modified RNA sequence (raw sequence split into string_views per base).
+     * @param mod_sequence Modified RNA sequence (raw sequence split into string_views per base).
      * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's
      * partner, or NULL_INDEX if i is unpaired.
      *
@@ -63,13 +63,11 @@ class RNAProcessor {
         const std::vector<std::string_view>& mod_sequence = {});
     
     /**
-     * @brief Build a partner-index vector for closed-region boundaries.
+     * @brief Compute base-pair indices from a structure string.
      *
-     * Similar to RNAProcessor::compute_pairings(), but stores only the closed regions,
-     * not every individual base pair.
-     * Example:
-     *   [ClosedRegion(0, 5), ClosedRegion(2,       4)] → [5, NULL_INDEX, 4, NULL_INDEX, 2, 0]
-     * This is useful for quickly skipping over already-processed closed regions.
+     * Convenience overload: extracts the structure from an RNAEntry and passes it to the main
+     * compute_pairings() method.
+     * 
      * @param closed_regions All closed regions in the structure.
      * @param rna_size The total length of the structure (used to preallocate the result).
      **/
@@ -82,6 +80,9 @@ class RNAProcessor {
      *
      * Parses the base-pair vector returned by compute_pairings() and returns every closed region.
      * See ClosedRegion.hpp for the definition and semantics of a closed region.
+     * 
+     * Example:
+     *  pairings = [3, NULL_INDEX, NULL_INDEX, 0] → closed_regions = [ClosedRegion(0, 3)]
      *
      * @param pairings Base-pair indices as returned by compute_pairings().
      * @return std::vector<ClosedRegion> containing all detected closed regions.
@@ -98,7 +99,8 @@ class RNAProcessor {
      * Example:
      *   [ClosedRegion(0, 5), ClosedRegion(2, 4)] → [5, NULL_INDEX, 4, NULL_INDEX, 2, 0]
      *
-     * This is useful for quickly skipping over already-processed closed regions.
+     * This is useful for quickly skipping over nested closed regions.
+     * (e.g. [0, 5] contains [2, 4], so when we reach index 2, we can jump directly to 4)
      *
      * @param closed_regions All closed regions in the structure.
      * @param rna_size The total length of the structure (used to preallocate the result).
@@ -130,11 +132,33 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(
         const std::vector<size_t>& pairings);
 
+    
+    /**
+     * @brief Compute the unmodified RNA sequence from the modified sequence and parameters.
+     * 
+     * This is necessary as the energy is first computed on the unmodified sequence,
+     * and then adjusted based on the modified bases.
+     * 
+     * Example:
+     * modified_sequence = ["6", "U", "G", "C", "P"] -> unmodified_sequence = "AUGCU"
+     */
     [[nodiscard]] static std::string compute_unmodified_sequence(
         const std::vector<std::string_view>& modified_sequence_views,
-        const std::vector<modified_base_params>& params, const size_t rna_length,
+        const std::vector<modified_base_param>& params, const size_t rna_length,
         bool& has_modified_bases);
-
+    
+    /**
+     * @brief Check if a base is an unmodified base (A, U, G, C, T, N).
+     * 
+     * This is used to validate the input and ensure that modified bases are properly handled.
+     * 
+     * Example:
+     * is_unmod_base("A") -> true
+     * is_unmod_base("6") -> false
+     * 
+     * @param base The base to check, as a string_view.
+     * @return true if the base is unmodified, false otherwise.
+     */
     [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
 
    private:

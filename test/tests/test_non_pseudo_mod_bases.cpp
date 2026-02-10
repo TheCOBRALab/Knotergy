@@ -20,7 +20,7 @@ float pipeline(std::string sequence, std::string structure, int dangle = 2,
     knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
     knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
     knotergy::RNAEntry rna(sequence, structure);
-    std::vector<knotergy::modified_base_params> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+    std::vector<knotergy::modified_base_param> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna), modified_params));
     knotergy::LoopFactory factory(processed_rna);
     

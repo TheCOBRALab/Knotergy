@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
     }
 
     // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_params> modified_params =
+    std::vector<knotergy::modified_base_param> modified_params =
         knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------

@@ -129,6 +129,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
 
     for (const Band& band : node.bands) {
         for (size_t i = band.left_border() + 1; i <= band.left_inner(); ++i) {
+            std::cout << band <<std::endl;
             if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])) {
                 within_band_start_idx.emplace(i);
                 i = cr_pairings[i];

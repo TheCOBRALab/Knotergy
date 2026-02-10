@@ -19,7 +19,7 @@ float get_energy(std::string sequence, std::string structure, int dangle, std::s
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);
-    std::vector<knotergy::modified_base_params> mod_params;  // empty for unmodified bases
+    std::vector<knotergy::modified_base_param> mod_params;  // empty for unmodified bases
     bool round = false;
     knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, mod_params, dangle, round);
 

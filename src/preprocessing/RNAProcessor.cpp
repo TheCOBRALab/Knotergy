@@ -2,10 +2,9 @@
 
 #include <unordered_map>
 #include <unordered_set>
-
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(
-    RNAEntry rna, const std::vector<modified_base_params>& modified_params) {
+    RNAEntry rna, const std::vector<modified_base_param>& modified_params) {
     std::vector<std::string_view> mod_sequence = ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
 
     // Ensure Sequence & Structure are the same length
@@ -197,14 +196,14 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
 
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views,
-    const std::vector<modified_base_params>& params, const size_t rna_length,
+    const std::vector<modified_base_param>& params, const size_t rna_length,
     bool& has_modified_bases) {
     std::string unmodified_sequence;
     unmodified_sequence.reserve(rna_length);
 
     // map modified base to unmodified base for quick lookup
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
-    for (const modified_base_params& param : params) {
+    for (const modified_base_param& param : params) {
         if (param.unmodified_base.empty()) {
             THROW_ERROR("Modified base '" + param.modified_base +
                         "' has empty unmodified mapping.");
@@ -243,7 +242,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
 #include <iostream>
 
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
-    if (b.size() != 1) return false;
+    if (b.size() != 1) return false; // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
     return unmod_lookup[(unsigned char)b[0]] != 0;
 }
 

@@ -138,7 +138,7 @@ ProcessedRNAEntry(const ProcessedRNAEntry& other)
     closed_regions_pairings_(other.closed_regions_pairings_),
     unpaired_prefix_sum_(other.unpaired_prefix_sum_),
     has_modified_bases_(other.has_modified_bases_) {
-  mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+    mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
 }
 
 
