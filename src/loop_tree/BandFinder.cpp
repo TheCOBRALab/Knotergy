@@ -76,34 +76,33 @@ std::vector<Band> BandFinder::find_bands(const LoopNode& node, const ProcessedRN
 bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime,
                              const std::unordered_map<size_t, PairedBaseNode>& paired_base_links,
                              const std::vector<size_t>& pairings) {
-    if (paired_base_links.find(i_prime) != paired_base_links.end() &&
-        paired_base_links.find(j_prime) != paired_base_links.end()) {
-        
-        // get next positions in the linked list 
-        size_t i_tmp = paired_base_links.at(i_prime).next;
-        size_t j_tmp = paired_base_links.at(j_prime).prev;
-        
-        // i should be before j (terminate before they cross)
-        if (i_tmp >= j_tmp) {
-            return false;
-        }
+    auto it_i = paired_base_links.find(i_prime);
+    if (it_i == paired_base_links.end()) return false;
 
-        // sanity check
-        if (i_tmp == NULL_INDEX){
-            THROW_ERROR("PairedBaseNode points to NULL_INDEX. Index: " + std::to_string(i_prime));
-        }
+    auto it_j = paired_base_links.find(j_prime);
+    if (it_j == paired_base_links.end()) return false;
 
-        // validate that they are indeed paired
-        if (pairings[i_tmp] != j_tmp) {
-            return false;  // not a valid base pair
-        }
-
-        i_prime = i_tmp;
-        j_prime = j_tmp;
-        return true;  // extension successful, continue extending
-    } else {
-        return false;  // no aux band found for i or j
+    size_t i_tmp = it_i->second.next;
+    size_t j_tmp = it_j->second.prev;
+                    
+    // i should be before j (terminate before they cross)
+    if (i_tmp >= j_tmp) {
+        return false;
     }
+
+    // sanity check
+    if (i_tmp == NULL_INDEX){
+        THROW_ERROR("PairedBaseNode points to NULL_INDEX. Index: " + std::to_string(i_prime));
+    }
+
+    // validate that they are indeed paired
+    if (pairings[i_tmp] != j_tmp) {
+        return false;  // not a valid base pair
+    }
+
+    i_prime = i_tmp;
+    j_prime = j_tmp;
+    return true;  // extension successful, continue extending
 }
 
 // Linked list of base pair positions (Skips unpaired and closed regions)
