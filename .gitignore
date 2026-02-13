@@ -43,3 +43,6 @@
 # ViennaRNA
 /ViennaRNA/
 *.ps
+
+# Mac Xcode
+*.trace
