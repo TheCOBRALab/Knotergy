@@ -43,7 +43,7 @@ class ModifiedBasesFunctions {
      * @return Stacking energy in centicalories, accounting for modified bases.
      */
     static int find_mod_stack_energy(const size_t& i, const size_t& j, const size_t& ci,
-                                        const size_t& cj, std::string sequence,
+                                        const size_t& cj, const std::string& sequence,
                                         const std::vector<std::string_view>& mod_sequence,
                                         const std::vector<modified_base_param>& mod_params);
     
