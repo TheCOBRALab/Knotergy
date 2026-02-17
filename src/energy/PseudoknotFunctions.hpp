@@ -13,7 +13,7 @@ namespace knotergy {
  *
  * This class implements the pseudoknot energy model, which includes penalties for
  * pseudoknot initialization, bands, unpaired bases, and nested structures within
- * pseudoknots. It uses modified ViennaRNA energies with pseudoknot-specific multipliers.
+ * pseudoknots.
  */
 class PseudoknotFunctions {
    public:
@@ -31,23 +31,18 @@ class PseudoknotFunctions {
      */
     static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
                                     const ProcessedRNAEntry& processed_rna, bool round = false) {
-        // Unpaired within bands are already included in stack_and_internal_energy
+                                        
         int unpaired = node.exclusive_unpaired_bases_count;
-        // std::cout << "initial unpaired: " << unpaired << std::endl;
+        
+        // remove unpaired bases within bands since they're already included in ViennaRNA's energy calculations for internal loops
         for (Band band : node.bands) {
             unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
             unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
-
-            // std::cout << "Band: (" << band.left_border() << ", " << band.right_border() << ")"
-            // <<std::endl; std::cout << "Band: (" << band.left_inner() << ", " <<
-            // band.right_inner() << ")" <<std::endl; std::cout << "Remove: " <<
-            // processed_rna.get_unpaired_count(band.left_border(), band.left_inner()) << std::endl;
-            // std::cout << "Remove: " << processed_rna.get_unpaired_count(band.right_inner(),
-            // band.right_border()) << std::endl;
         }
 
-        // these bases were removed twice (By using exclusive unpaired, and removing all base pairs
-        // in band) so we're re-adding them
+        // Previous loop removed ALL unpaired bases within bands, this includes base pairs of children that are within the band.
+        // Since the base pairs of all children were already removed in exclusive_unpaired_bases_count, we need to add them back
+        // due to double counting. We can identify these base pairs as the children that are within bands (pseudo_type == WithinBand)
         for (std::shared_ptr<LoopNode> child : node.children) {
             if (child->pseudo_type == PseudoNestedType::WithinBand) {
                 unpaired += child->total_unpaired_bases_count;
@@ -62,6 +57,9 @@ class PseudoknotFunctions {
         energy += PseudoknotParams::pkp->cr_in_pk * node.number_of_nested_children;
         energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, round);
 
+        // Children that are within a band are nested inside of a pseudoknotted multiloop
+        // Add the base pair penalty for each of these children based on the number of bands
+        // of the children
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::WithinBand) {
                 energy += PseudoknotParams::pkp->pk_mloop_bp * c->number_of_bands;
@@ -110,10 +108,10 @@ class PseudoknotFunctions {
     }
 
     /**
-     * @brief Calculate loop-specific energy penalties within a pseudoknot's bands.
+     * @brief Calculate loop-specific energy penalties in a pseudoknot.
      *
-     * Processes each band and computes energies for stacked pairs, internal loops,
-     * and multiloops that span bands.
+     * Iterates through each band in the pseudoknot and calculates stacking, internal loop, and multiloop
+     * energies for each base pair in the band. 
      *
      * @param node The pseudoknot loop node.
      * @param sequence The RNA nucleotide sequence.
@@ -136,10 +134,11 @@ class PseudoknotFunctions {
 
                 if (bp.is_stack(next_bp)) {
                     energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, sequence, round);
-                } else if (!bp.children.empty()) {
-                    energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna);
-                } else {
+                } else if (bp.children.empty()) {
+                    // if there's no nested structure between two base pairs of a band, it's an internal loop
                     energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, sequence, round);
+                } else {
+                    energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna);
                 }
             }
         }
@@ -161,8 +160,7 @@ class PseudoknotFunctions {
                                                 const std::string& sequence, const bool& round) {
         double stack_penalty = ViennaFunctions::stack_energy(bp, next_bp, sequence) *
                                PseudoknotParams::pkp->pk_stack_x;
-        if (round) stack_penalty = std::round(stack_penalty);
-        return stack_penalty;
+        return round ? std::round(stack_penalty) : stack_penalty;
     }
 
     /**
@@ -180,8 +178,8 @@ class PseudoknotFunctions {
                                                    const std::string& sequence, const bool& round) {
         double internal_penalty = ViennaFunctions::internal_loop_energy(bp, next_bp, sequence) *
                                   PseudoknotParams::pkp->pk_internal_x;
-        if (round) internal_penalty = std::round(internal_penalty);
-        return internal_penalty;
+
+        return round ? std::round(internal_penalty) : internal_penalty;
     }
 
     /**
@@ -202,11 +200,12 @@ class PseudoknotFunctions {
         // We add the child base pairs at a different part of the energy calculation
         multiloop_penalty += PseudoknotParams::pkp->pk_mloop_bp * 2;
 
-        // get unpaired count
+        // Get unpaired bases between the two base pairs of the multiloop
+        // then subtract any unpaired bases that are part of children
         int unpaired = processed_rna.get_unpaired_count(bp.i, next_bp.i);
         unpaired += processed_rna.get_unpaired_count(next_bp.j, bp.j);
-        for (BasePair child_bp : bp.children) {
-            unpaired -= processed_rna.get_unpaired_count(child_bp.i, child_bp.j);
+        for (ClosedRegion nested_cr : bp.children) {
+            unpaired -= processed_rna.get_unpaired_count(nested_cr.begin, nested_cr.end);
         }
 
         // get unpaired penalty

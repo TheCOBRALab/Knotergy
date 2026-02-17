@@ -113,8 +113,6 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
             ++node.number_of_withinband_children;
         } else if (child_node->pseudo_type == PseudoNestedType::Nested) {
             ++node.number_of_nested_children;
-            node.number_of_unpaired_bases_in_nested_children +=
-                static_cast<int>(child_node->end - child_node->begin - 1);
         }
     }
 }

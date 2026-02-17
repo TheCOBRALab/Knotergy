@@ -203,6 +203,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
 
     // map modified base to unmodified base for quick lookup
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
+    mod_to_unmod.reserve(params.size());
     for (const modified_base_param& param : params) {
         if (param.unmodified_base.empty()) {
             THROW_ERROR("Modified base '" + param.modified_base +
@@ -219,7 +220,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
         }
 
         if (is_unmod_base(mod_base)) {
-            unmodified_sequence += std::string(mod_base);
+            unmodified_sequence.append(mod_base);
             continue;
         } else {
             has_modified_bases = true;

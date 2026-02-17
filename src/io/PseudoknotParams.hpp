@@ -19,6 +19,8 @@ namespace knotergy {
 struct pk_param {
     /**
      * @brief Construct with default DirksPierce09 parameters from HotKnotsV2.
+     * 
+     * Hard coded values based on the original HotKnotsV2 implementation
      */
     pk_param()
         : name("DirksPierce09 pseudoknot params from HotKnotsV2"),

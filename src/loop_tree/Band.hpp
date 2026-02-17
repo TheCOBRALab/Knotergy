@@ -9,28 +9,24 @@
 #include "BasePair.hpp"
 
 namespace knotergy {
-
-// Visual representation of a band:
-// (((((..(...)..((((((((((....[.......)))))))..))))))))....]
-// ^                       ^            ^               ^
-// left_border             left_inner   right_inner     right_border
-
 /**
- * @brief Represents a pseudoknot band in an RNA secondary structure.
- *
- * A band is the structural feature of a pseudoknot where base pairs cross each other.
- * It consists of four key positions:
- * - left_border: Leftmost position of the band
- * - left_inner: Rightmost position of left arm
- * - right_inner: Leftmost position of right arm
- * - right_border: Rightmost position of the band
- *
+ * @brief Represents a pseudoknot band in an RNA secondary structure. 
+ * 
+ * Stores the four key positions that define the band.
+ * Stores every base pair that participates in the band
+ * each base pair also stores any nested closed regions that are contained within it.
+ * 
+ * Visual representation of a band:
+ * (((((..(...)..((((((((((....[.......)))))))..))))))))....]
+ * ^                       ^            ^               ^
+ * left_border             left_inner   right_inner     right_border
+ * 
  * The band contains all base pairs that participate in the pseudoknot crossing.
  * Non-pseudoknotted structures do not have bands.
  */
 class Band {
    public:
-
+    // ------------- Constructors -------------
     /**
      * @brief Construct a Band from boundary positions. 
      * 
@@ -64,7 +60,22 @@ class Band {
         populate_base_pairs(pairings, cr_pairings);
     }
 
+    // ------------------- Public methods -------------------
+    
+    /**
+     * @brief Finds all base pairs that participate in the band
+     * 
+     * Validates the band structure and extracts all base pairs that participate in the band
+     * and each base pair's nested closed region.
+     * 
+     * @param pairings Base-pair index mapping for the structure.
+     * @param cr_pairings Closed region pairing indices.
+     * 
+     * @throws DetailedException if band structure is invalid or if indices are not base pairs.
+     */
     void populate_base_pairs(const std::vector<size_t>& pairings, const std::vector<size_t>& cr_pairings) {
+        
+        // -------------- Validate band structure -------------
         if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_], pairings[right_border_]}) == NULL_INDEX) {
             THROW_ERROR("One or more indices are not base-pairs");
         }
@@ -73,39 +84,44 @@ class Band {
             THROW_ERROR("Incorrect pairings in Band");
         }
 
-        // find all base pairs
+        // -------------- Extract base pairs -------------
+
+        // find all consecutive base pairs on left side and their nested closed regions
         base_pairs_.emplace_back(left_border_, pairings[left_border_]);
         for (size_t idx = left_border_ + 1; idx <= left_inner_; ++idx) {
-            // skip closed regions
+
+            // skip closed regions and add them as children to the current base pair
             if (cr_pairings[idx] != NULL_INDEX) {
                 base_pairs_.back().children.emplace_back(idx, cr_pairings[idx]);
                 idx = cr_pairings[idx];
                 continue;
             }
 
-            // add base pair
+            // add base pair if it's part of the band
             size_t paired = pairings[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
                 base_pairs_.emplace_back(idx, paired);
             }
         }
 
-        // find remaining child base pairs on right side
+        // Find all nested closed regions on the right side of the band
+        // And add them as children to the correct base pair
         size_t current_bp_idx = 0;
-        size_t next_swap_idx = NULL_INDEX;
-
+        size_t next_bp_right_border = base_pairs_.size() > 1 ? base_pairs_[1].j : NULL_INDEX;
         for (size_t idx = right_border_ - 1; idx > right_inner_; --idx) {
             BasePair& current_bp = base_pairs_[current_bp_idx];
-            if ((current_bp_idx + 1 < base_pairs_.size()) && next_swap_idx > right_inner_) {
-                next_swap_idx = base_pairs_[current_bp_idx + 1].j;
-            }
 
-            if (idx == next_swap_idx) {
+            // When we reach the next pair in the band, we swap to the next base pair
+            if (idx == next_bp_right_border) {
                 ++current_bp_idx;
+                // If the next base pair is valid, we update the next_bp_right_border
+                if ((base_pairs_.size() > current_bp_idx + 1) && next_bp_right_border > right_inner_) {
+                    next_bp_right_border = base_pairs_[current_bp_idx + 1].j;
+                }
                 continue;
             }
 
-            // skip closed regions
+            // skip closed regions and add them as children to the current base pair
             if (cr_pairings[idx] != NULL_INDEX) {
                 idx = cr_pairings[idx];
                 current_bp.children.emplace_back(idx, cr_pairings[idx]);
@@ -116,9 +132,9 @@ class Band {
     }
 
     /**
-     * @brief Check if an index is within the band region.
+     * @brief Check if an index is within a band's borders (either in the left or right arm).
      *
-     * @param idx Sequence index to check.
+     * @param idx Index to check.
      * @return True if the index is in the left or right arm of the band.
      */
     bool contains(size_t idx) const {
@@ -127,18 +143,20 @@ class Band {
     }
 
     /**
-     * @brief Check if two indices are both within the band region.
+     * @brief Check if two indices are both within the borders of the band.
      *
-     * @param idx First sequence index.
-     * @param idx2 Second sequence index.
+     * @param idx First index.
+     * @param idx2 Second index.
      * @return True if both indices are in the band.
      */
     bool contains(size_t idx, size_t idx2) const { return contains(idx) && contains(idx2); }
 
     /**
      * @brief Check if an index is nested within the band (between inner positions).
+     * 
+     * Nests means not within the borders, but the area between the inner positions of the band
      *
-     * @param idx Sequence index to check.
+     * @param idx Index to check.
      * @return True if the index is between left_inner and right_inner.
      */
     bool nests(size_t idx) const { return (idx > left_inner_ && idx < right_inner_); }
@@ -146,8 +164,8 @@ class Band {
     /**
      * @brief Check if two indices are both nested within the band.
      *
-     * @param idx First sequence index.
-     * @param idx2 Second sequence index.
+     * @param idx First index.
+     * @param idx2 Second index.
      * @return True if both indices are nested within the band.
      */
     bool nests(size_t idx, size_t idx2) const { return nests(idx) && nests(idx2); }

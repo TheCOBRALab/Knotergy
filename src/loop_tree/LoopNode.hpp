@@ -76,9 +76,8 @@ struct LoopNode {
     PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
     int exclusive_unpaired_bases_count = 0;   ///< Unpaired bases only in this loop.
     int total_unpaired_bases_count = 0;       ///< Unpaired bases in loop + nested children.
-    int number_of_withinband_children = 0;    ///< Count of children within pseudoknot bands.
-    int number_of_nested_children = 0;        ///< Count of nested children.
-    int number_of_unpaired_bases_in_nested_children = 0;  ///< Unpaired bases in nested children.
+    [[maybe_unused]] int number_of_withinband_children = 0;    ///< Count of children within pseudoknot bands.
+    int number_of_nested_children = 0;        ///< Count of nested children. 
 
     std::weak_ptr<LoopNode> parent;                  ///< Parent loop node (weak to avoid cycles).
     std::vector<std::shared_ptr<LoopNode>> children; ///< Child loop nodes.
@@ -158,8 +157,6 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "  total_unpaired_bases_count: " << node.total_unpaired_bases_count << "\n";
     os << "  number_of_children_inside_band: " << node.number_of_withinband_children << "\n";
     os << "  number_of_nested_children: " << node.number_of_nested_children << "\n";
-    os << "  number_of_unpaired_bases_in_nested_children: "
-       << node.number_of_unpaired_bases_in_nested_children << "\n";
     os << "  number_of_bands: " << node.number_of_bands << "\n";
     os << "  bands:\n";
     for (const auto& band : node.bands) {
