@@ -58,11 +58,10 @@ class PseudoknotFunctions {
         energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, round);
 
         // Children that are within a band are nested inside of a pseudoknotted multiloop
-        // Add the base pair penalty for each of these children based on the number of bands
-        // of the children
+        // Add the base pair penalty for each child that is within a band
         for (std::shared_ptr<LoopNode> c : node.children) {
             if (c->pseudo_type == PseudoNestedType::WithinBand) {
-                energy += PseudoknotParams::pkp->pk_mloop_bp * c->number_of_bands;
+                energy += PseudoknotParams::pkp->pk_mloop_bp;
             }
         }
         return energy;

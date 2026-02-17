@@ -184,3 +184,24 @@ TEST(PseudoknottedEnergies, TwoMultiLoopsThatSpansABandRounded2) {
     EXPECT_NEAR(result, -11.44, 0.001);
     EXPECT_NEAR(dp_result, -1.8600, 0.001);
 }
+
+TEST(PseudoknottedEnergies, MultiloopThatSpansABandWithNestedPseudoknot) {
+    std::string sequence  = "AAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGUUUUUUUUUUUCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAGGGGGGGGGGGGGGGGUUUUUUUUUUUUUUUUUUUUUCCCCCCCCCCCCCCCC";
+    std::string structure = "((((((((((((((((((((([[[[[[[[[[[[[[[[[[[[)))))))))))]]]]]]]]]]]]]]]]]]]]((((((((((([[[[[[[[[[[[[[[[)))))))))))))))))))))]]]]]]]]]]]]]]]]";
+    float result = pipeline(sequence, structure);
+    float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
+
+    EXPECT_NEAR(result, -99.4670, 0.009);
+    EXPECT_NEAR(dp_result, -60.0667, 0.009);
+}
+
+TEST(PseudoknottedEnergies, MultiloopThatSpansABandWithNestedPseudoknotRounded) {
+    std::string sequence  = "AAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGUUUUUUUUUUUCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAGGGGGGGGGGGGGGGGUUUUUUUUUUUUUUUUUUUUUCCCCCCCCCCCCCCCC";
+    std::string structure = "((((((((((((((((((((([[[[[[[[[[[[[[[[[[[[)))))))))))]]]]]]]]]]]]]]]]]]]]((((((((((([[[[[[[[[[[[[[[[)))))))))))))))))))))]]]]]]]]]]]]]]]]";
+    bool round = true;
+    float result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
+    float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
+
+    EXPECT_NEAR(result, -99.54, 0.001);
+    EXPECT_NEAR(dp_result, -59.93, 0.001);
+}
