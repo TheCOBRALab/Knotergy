@@ -27,10 +27,11 @@ class PseudoknotFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @param processed_rna The processed RNA entry with structural information.
      * @param round Whether to round energy values (default: false).
+     * @param is_inf If the energy is infinite (distance between base pairs < 3)
      * @return Total pseudoknot energy in centicalories.
      */
     static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
-                                    const ProcessedRNAEntry& processed_rna, bool round = false) {
+                                    const ProcessedRNAEntry& processed_rna, bool& is_inf, bool round = false) {
                                         
         int unpaired = node.exclusive_unpaired_bases_count;
         
@@ -55,7 +56,7 @@ class PseudoknotFunctions {
         energy += PseudoknotParams::pkp->band * node.number_of_bands;
         energy += PseudoknotParams::pkp->unpaired_in_pk * unpaired;
         energy += PseudoknotParams::pkp->cr_in_pk * node.number_of_nested_children;
-        energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, round);
+        energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, round, is_inf);
 
         // Children that are within a band are nested inside of a pseudoknotted multiloop
         // Add the base pair penalty for each child that is within a band
@@ -119,12 +120,22 @@ class PseudoknotFunctions {
      * @return Total loop penalties in centicalories.
      */
     [[nodiscard]] static double loop_penalties(const LoopNode& node, const std::string& sequence,
-                                               const ProcessedRNAEntry& processed_rna, bool round) {
+                                               const ProcessedRNAEntry& processed_rna, bool round,
+                                               bool& is_inf) {
         double energy = 0;
 
         for (const Band& band : node.bands) {
             const std::vector<BasePair>& bps = band.base_pairs();
             const size_t n = bps.size();
+
+            // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
+            if (band.right_inner() - band.left_inner() < 4) {
+                std::cout << "Warning: Band with borders (" << band.left_border() << ", " << band.right_border()
+                << ") has less than 3 unpaired bases between its inner borders, resulting in infinite energy." << std::endl;
+                energy = INF;
+                is_inf = true;
+                continue;
+            }
 
             // loops through each base pair in band (except last one)
             for (size_t idx = 0; idx + 1 < n; ++idx) {
@@ -134,7 +145,7 @@ class PseudoknotFunctions {
                 if (bp.is_stack(next_bp)) {
                     energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, sequence, round);
                 } else if (bp.children.empty()) {
-                    // if there's no nested structure between two base pairs of a band, it's an internal loop
+                    // if no nested structure between two base pairs of a band, it's an internal loop
                     energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, sequence, round);
                 } else {
                     energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna);

@@ -36,7 +36,9 @@ class ComputeEnergy {
           mod_params_{mod_params},
           sequence_{processed_rna.get_sequence()},
           round_{round} {
-        process_tree(*root_node_, verbose);
+        
+        bool has_mod = processed_rna_.has_modified_bases();
+        has_mod ? process_modified_tree(*root_node_, verbose) : process_tree(*root_node_, verbose);
     };
 
     /**
@@ -45,6 +47,7 @@ class ComputeEnergy {
      * @return The total Gibbs free energy in centicalories (hundredths of kcal/mol).
      */
     float getEnergy() const { return energy_; };
+    bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
 
    private:
     std::shared_ptr<LoopNode> root_node_;
@@ -53,6 +56,7 @@ class ComputeEnergy {
     const std::string& sequence_;
     float energy_ = 0.0f;
     bool round_ = false;
+    bool infinite_energy_flag_ = false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
 
     /**
      * @brief Process the entire loop tree and calculate energies.
@@ -65,12 +69,34 @@ class ComputeEnergy {
     void process_tree(LoopNode& root_node, bool verbose = false);
 
     /**
+     * @brief Process the entire loop tree with modified base energy calculations.
+     *
+     * Recursively traverses the loop tree and computes energy for each node,
+     * using modified base parameters when applicable.
+     *
+     * @param root_node The root node of the loop tree to process.
+     * @param verbose Whether to print verbose energy breakdown (default: false).
+     */
+    void process_modified_tree(LoopNode& node, bool verbose);
+
+    /**
      * @brief Process a single loop node and compute its energy contribution.
      *
      * @param node The loop node to process.
      * @return The energy contribution of this node in centicalories.
      */
     float process_node(LoopNode& node);
+
+    /**
+      * @brief Process a single loop node with modified base energy calculations.
+      *
+      * This function computes the energy contribution of a loop node, taking into account
+      * any modified bases present in the sequence and using the appropriate energy parameters.
+      *
+      * @param node The loop node to process.
+      * @return The energy contribution of this node in centicalories.
+      */
+    float process_modified_node(LoopNode& node);
 };
 
 }  // namespace knotergy

@@ -56,18 +56,20 @@ class ViennaFunctions {
      * @param i 5' position of closing base pair.
      * @param j 3' position of closing base pair.
      * @param sequence The RNA nucleotide sequence.
+     * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
      * @return Hairpin loop energy in centicalories.
      */
-    static int hairpin_energy(size_t i, size_t j, const std::string& sequence);
+    static int hairpin_energy(size_t i, size_t j, const std::string& sequence, bool& is_inf);
 
     /**
      * @brief Calculate hairpin loop energy.
      *
      * @param pair The closing base pair of the hairpin loop.
      * @param sequence The RNA nucleotide sequence.
+     * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
      * @return Hairpin loop energy in centicalories.
      */
-    static int hairpin_energy(const BasePair& pair, const std::string& sequence);
+    static int hairpin_energy(const BasePair& pair, const std::string& sequence, bool& is_inf);
 
     /**
      * @brief Calculate internal loop or bulge energy.

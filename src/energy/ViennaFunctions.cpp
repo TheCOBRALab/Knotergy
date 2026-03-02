@@ -19,7 +19,8 @@ int ViennaFunctions::stack_energy(BasePair pair, BasePair child, const std::stri
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence);
 }
 
-int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& sequence) {
+int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& sequence, 
+                                    bool& is_inf) {
     if (j <= i || j >= sequence.size()) {
         std::cerr << "Invalid indices for hairpin energy calculation." << std::endl;
         return 0;
@@ -30,6 +31,7 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     if (size < 3) {
         std::cerr << "Warning: Hairpin loop size is less than 3. Infinite Energy. Sequence: "
                   << sequence << " i: " << i << ", j: " << j << std::endl;
+        is_inf = true;
         return INF;
     }
 
@@ -49,8 +51,9 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     return vrna_E_hairpin(size, pair_type, si1, sj1, loop_seq, ViennaParams::p);
 }
 
-int ViennaFunctions::hairpin_energy(const BasePair& pair, const std::string& sequence) {
-    return hairpin_energy(pair.i, pair.j, sequence);
+int ViennaFunctions::hairpin_energy(const BasePair& pair, const std::string& sequence, 
+                                    bool& is_inf) {
+    return hairpin_energy(pair.i, pair.j, sequence, is_inf);
 }
 
 int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,

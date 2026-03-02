@@ -11,46 +11,86 @@ void ComputeEnergy::process_tree(LoopNode& node, bool verbose) {
     }
 }
 
+void ComputeEnergy::process_modified_tree(LoopNode& node, bool verbose) {
+    energy_ += process_modified_node(node);
+    if (verbose) std::cout << node.energy_breakdown(sequence_.size());
+    for (std::shared_ptr<LoopNode> child : node.children) {
+        process_modified_tree(*child, verbose);
+    }
+}
+    
 float ComputeEnergy::process_node(LoopNode& node) {
-    double node_energy = INF;
-    LoopType type = node.loop_type;
-    const std::vector<std::string_view>& mod_sequence = processed_rna_.get_modified_sequence();
+    double node_energy;
+    LoopType loop_type = node.loop_type;
+    bool is_inf = false;
 
-    switch (type) {
-        case LoopType::Stack: {
-            // Check for modified base stacking energy
-            if (processed_rna_.has_modified_bases()) {
-                node_energy = ModifiedBasesFunctions::find_mod_stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_, mod_sequence, mod_params_);
-                break;
-            } 
-            node_energy = ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
+    switch (loop_type) {
+        case LoopType::Stack:
+            node_energy = ViennaFunctions::stack_energy(
+                node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_);
             break;
-            case LoopType::Hairpin:
-                node_energy = ViennaFunctions::hairpin_energy(node.begin, node.end, sequence_);
-                break;
-            case LoopType::Internal:
-                node_energy = ViennaFunctions::internal_loop_energy(
+        case LoopType::Hairpin:
+            node_energy = ViennaFunctions::hairpin_energy(node.begin, node.end, sequence_, is_inf);
+            break;
+        case LoopType::Internal:
+            node_energy = ViennaFunctions::internal_loop_energy(
+                node.begin, node.end, node.children[0]->begin, node.children[0]->end,
+                sequence_);
+            break;
+        case LoopType::Multibranch:
+            node_energy = ViennaFunctions::multibranch_energy(node, sequence_);
+            break;
+        case LoopType::Pseudoknot:
+            node_energy = PseudoknotFunctions::pseudoknot_energy(node, sequence_, processed_rna_, is_inf, round_);
+            break;
+        case LoopType::External:
+            node_energy = ViennaFunctions::external_energy(node.children, sequence_);
+            break;
+        default:
+            THROW_ERROR("Unknown loop type encountered during energy computation: " + std::to_string(static_cast<int>(loop_type)));
+    }
+
+    node.energy = node_energy;
+    node.is_inf = is_inf;
+    infinite_energy_flag_ = infinite_energy_flag_ || is_inf;
+    return static_cast<float>(node_energy) / 100.0f;
+}
+
+float ComputeEnergy::process_modified_node(LoopNode& node) {
+    double node_energy;
+    LoopType loop_type = node.loop_type;
+    const std::vector<std::string_view>& mod_sequence = processed_rna_.get_modified_sequence();
+    bool is_inf = false;
+
+    switch (loop_type) {
+        case LoopType::Stack:
+            node_energy = ModifiedBasesFunctions::find_mod_stack_energy(
+                node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_, mod_sequence, mod_params_);
+            break;
+        case LoopType::Hairpin:
+            node_energy = ViennaFunctions::hairpin_energy(node.begin, node.end, sequence_, is_inf);
+            break;
+        case LoopType::Internal:
+            node_energy = ViennaFunctions::internal_loop_energy(
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end,
                     sequence_);
-                break;
-            case LoopType::Multibranch:
-                node_energy = ViennaFunctions::multibranch_energy(node, sequence_);
-                break;
-            case LoopType::Pseudoknot:
-                node_energy = PseudoknotFunctions::pseudoknot_energy(node, sequence_, processed_rna_, round_);
-                break;
-            case LoopType::External:
-                if (processed_rna_.has_modified_bases()) {
-                    node_energy = ModifiedBasesFunctions::find_mod_external_energy(node.children, sequence_, mod_sequence, mod_params_);
-                    break;
-                }
-                node_energy = ViennaFunctions::external_energy(node.children, sequence_);
-                break;
-            default:
-                THROW_ERROR("Unknown loop type encountered during energy computation: " + std::to_string(static_cast<int>(type)));
-        }
+            break;
+        case LoopType::Multibranch:
+            node_energy = ViennaFunctions::multibranch_energy(node, sequence_);
+            break;
+        case LoopType::Pseudoknot:
+            node_energy = PseudoknotFunctions::pseudoknot_energy(node, sequence_, processed_rna_, is_inf, round_);
+            break;
+        case LoopType::External:
+            node_energy = ModifiedBasesFunctions::find_mod_external_energy(node.children, sequence_, mod_sequence, mod_params_);
+            break;
+        default:
+            THROW_ERROR("Unknown loop type encountered during modified energy computation: " + std::to_string(static_cast<int>(loop_type)));
     }
+
     node.energy = node_energy;
+    node.is_inf = is_inf;
+    infinite_energy_flag_ = infinite_energy_flag_ || is_inf;
     return static_cast<float>(node_energy) / 100.0f;
 }
 

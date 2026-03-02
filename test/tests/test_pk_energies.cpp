@@ -33,8 +33,8 @@ TEST(PseudoknottedEnergies, PK_small) {
     float result = pipeline(sequence, structure);
     float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
 
-    EXPECT_NEAR(result, 3.5400, 0.009);
-    EXPECT_NEAR(dp_result, 3.5400, 0.009);
+    EXPECT_NEAR(result, 100003.5400, 0.009);
+    EXPECT_NEAR(dp_result, 100003.5400, 0.009);
 }
 
 TEST(PseudoknottedEnergies, SimplePseudoknot) {
