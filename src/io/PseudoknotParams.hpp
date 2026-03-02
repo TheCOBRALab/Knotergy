@@ -114,7 +114,7 @@ class PseudoknotParams {
             THROW_ERROR("Pseudoknot parameters path \"" + paramFile + "\" is not a file.");
         }
 
-        std::cout << "Loading pseudoknot parameters from: " << paramFile << std::endl;
+        std::cout << "Pseudoknot Parameter File: " << paramFile << std::endl;
         PseudoknotParams::pkp = std::make_shared<const pk_param>(parse_pk_json(paramFile));
         return *PseudoknotParams::pkp;
     }

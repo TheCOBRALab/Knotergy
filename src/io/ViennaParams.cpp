@@ -25,7 +25,7 @@ void ViennaParams::load_energy_parameters(const std::string& paramFile, int dang
             std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
         }
     } else {
-        std::cerr << "No parameter file provided. ";
+        std::cerr << "No ViennaRNA parameter file provided. ";
     }
 
     // Default fallback based on sequence
