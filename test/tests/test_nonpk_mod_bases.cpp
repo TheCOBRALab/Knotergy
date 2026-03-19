@@ -17,14 +17,14 @@ float pipeline(std::string sequence, std::string structure, int dangle = 2,
                std::string pseudoknot_param_file = "../../params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json",
                std::string mod_param_path = "../../params/modified_bases") {
 
-    knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
-    knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
+    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
+    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
     knotergy::RNAEntry rna(sequence, structure);
     std::vector<knotergy::modified_base_param> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna), modified_params));
     knotergy::LoopFactory factory(processed_rna);
     
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, modified_params);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, modified_params);
 
     return energy.getEnergy();
 }

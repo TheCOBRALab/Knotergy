@@ -231,8 +231,8 @@ std::string RNAProcessor::compute_unmodified_sequence(
         if (it != mod_to_unmod.end()) {
             unmodified_sequence += it->second;
         } else {
-            THROW_ERROR("Modified base '" + std::string(mod_base) + "' at index " +
-                        std::to_string(unmodified_sequence.size()) + " has no unmodified mapping.");
+            THROW_ERROR("Base '" + std::string(mod_base) + "' at index " +
+                        std::to_string(unmodified_sequence.size()) + " is not a valid base (not found in modified params and is not a standard unmodified base)");
         }
     }
 

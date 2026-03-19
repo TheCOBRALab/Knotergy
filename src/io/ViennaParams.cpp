@@ -2,16 +2,13 @@
 
 namespace knotergy {
 
-void ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
-                                          const std::string& seq) {
-    if (p) {
-        free(p);
-        p = nullptr;
-    }  // free previous params if reloading
-
+vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
+                                                  const std::string& seq) {
+    vrna_md_param md_param{};
+    
     // Find user specified parameter file
-    vrna_md_set_default(&ViennaParams::md);
-    ViennaParams::md.dangles = dangle;
+    vrna_md_set_default(&md_param.md);
+    md_param.md.dangles = dangle;
     if (!paramFile.empty()) {
         if (FileUtils::file_exists(paramFile)) {
             int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
@@ -19,8 +16,8 @@ void ViennaParams::load_energy_parameters(const std::string& paramFile, int dang
                 THROW_ERROR("Failed to load parameter file: " + paramFile);
             }
             std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
-            ViennaParams::p = vrna_params(&ViennaParams::md);
-            return;
+            md_param.p = vrna_params(&md_param.md);
+            return md_param;
         } else {
             std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
         }
@@ -45,8 +42,8 @@ void ViennaParams::load_energy_parameters(const std::string& paramFile, int dang
             vrna_params_load_RNA_Turner2004();
         }
     }
-    ViennaParams::p = vrna_params(&ViennaParams::md);
-    return;
+    md_param.p = vrna_params(&md_param.md);
+    return md_param;
 }
 
 std::vector<modified_base_param> ViennaParams::load_modified_energy_parameters(
@@ -59,7 +56,7 @@ std::vector<modified_base_param> ViennaParams::load_modified_energy_parameters(
         THROW_ERROR("Modified parameters JSON file \"" + path + "\" not found.");
     }
 
-    std::vector<std::string> all_files;
+    string_list all_files;
     if (FileUtils::is_file(path)) {
         all_files.push_back(path);
     } else if (FileUtils::is_directory(path)) {
@@ -93,17 +90,17 @@ modified_base_param ViennaParams::parse_modified_base_json(const std::string& js
 
     modified_base_param params(mod.value("name", ""), mod.value("unmodified", ""),
                                 mod.value("one_letter_code", ""), mod.value("fallback", ""),
-                                mod.value("pairing_partners", std::vector<std::string>{}),
-                                mod.value("stacking_energies", std::map<std::string, float>{}),
-                                mod.value("stacking_enthalpies", std::map<std::string, float>{}),
-                                mod.value("terminal_energies", std::map<std::string, float>{}),
-                                mod.value("terminal_enthalpies", std::map<std::string, float>{}),
-                                mod.value("mismatch_energies", std::map<std::string, float>{}),
-                                mod.value("mismatch_enthalpies", std::map<std::string, float>{}),
-                                mod.value("dangle5_energies", std::map<std::string, float>{}),
-                                mod.value("dangle5_enthalpies", std::map<std::string, float>{}),
-                                mod.value("dangle3_energies", std::map<std::string, float>{}),
-                                mod.value("dangle3_enthalpies", std::map<std::string, float>{}));
+                                mod.value("pairing_partners", string_list{}),
+                                mod.value("stacking_energies", param_map{}),
+                                mod.value("stacking_enthalpies", param_map{}),
+                                mod.value("terminal_energies", param_map{}),
+                                mod.value("terminal_enthalpies", param_map{}),
+                                mod.value("mismatch_energies", param_map{}),
+                                mod.value("mismatch_enthalpies", param_map{}),
+                                mod.value("dangle5_energies", param_map{}),
+                                mod.value("dangle5_enthalpies", param_map{}),
+                                mod.value("dangle3_energies", param_map{}),
+                                mod.value("dangle3_enthalpies", param_map{}));
 
     return params;
 }

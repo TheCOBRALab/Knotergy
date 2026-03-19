@@ -45,6 +45,7 @@ class ModifiedBasesFunctions {
     static int find_mod_stack_energy(const size_t& i, const size_t& j, const size_t& ci,
                                         const size_t& cj, const std::string& sequence,
                                         const std::vector<std::string_view>& mod_sequence,
+                                        vrna_md_param& vp,
                                         const std::vector<modified_base_param>& mod_params);
     
     /**
@@ -57,7 +58,9 @@ class ModifiedBasesFunctions {
      * @return External loop energy in centicalories, accounting for modified bases.
      */
     static int find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence,
-                                           const std::vector<std::string_view>& mod_sequence, const std::vector<modified_base_param>& mod_params);
+                                           const std::vector<std::string_view>& mod_sequence,
+                                           vrna_md_param& vp,
+                                           const std::vector<modified_base_param>& mod_params);
 
    private:
     /**
@@ -109,6 +112,7 @@ class ModifiedBasesFunctions {
                                                const int n3d, const unsigned int type, [[maybe_unused]] const unsigned int r_type,
                                                const std::vector<std::string_view>& unique_mod_bases,
                                                const std::vector<std::string_view>& mod_sequence,
+                                                vrna_md_param& vp,
                                                const std::vector<modified_base_param>& mod_params, bool is_external) ;
 };
 

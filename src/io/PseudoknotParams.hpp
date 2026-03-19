@@ -83,6 +83,7 @@ struct pk_param {
     const int pk_mloop_unpaired;    ///< Unpaired bases in multiloop spanning band penalty.
 };
 
+
 /**
  * @brief Manages pseudoknot energy parameters.
  *
@@ -91,9 +92,6 @@ struct pk_param {
  */
 class PseudoknotParams {
    public:
-    /// Shared pointer to current pseudoknot parameters.
-    static inline std::shared_ptr<const pk_param> pkp = std::make_shared<const pk_param>();
-
     /**
      * @brief Load pseudoknot parameters from a JSON file.
      *
@@ -104,8 +102,10 @@ class PseudoknotParams {
     static const pk_param load_pk_param(
         const std::string& paramFile = "./params/common/pk_DirksPierce09_HotKnotsV2.json") {
         if (paramFile.empty()) {
+            std::cerr << "Warning: No pseudoknot parameter file provided. Using default parameters." << std::endl;
             return {};
         }
+        
         if (!FileUtils::file_exists(paramFile)) {
             THROW_ERROR("Pseudoknot parameters JSON file \"" + paramFile + "\" not found.");
         }
@@ -115,8 +115,8 @@ class PseudoknotParams {
         }
 
         std::cout << "Pseudoknot Parameter File: " << paramFile << std::endl;
-        PseudoknotParams::pkp = std::make_shared<const pk_param>(parse_pk_json(paramFile));
-        return *PseudoknotParams::pkp;
+        const pk_param pkp = parse_pk_json(paramFile);
+        return pkp;
     }
 
     /**

@@ -24,16 +24,21 @@ class ComputeEnergy {
      *
      * @param root_node Shared pointer to the root node of the loop tree.
      * @param processed_rna The processed RNA entry containing sequence and structure information.
+     * @param vienna_params ViennaRNA energy parameters.
+     * @param pseudo_params Pseudoknot energy parameters.
      * @param mod_params Vector of modified base parameters for computing energy with modified nucleotides.
      * @param round Whether to round energy values (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna,
-                  const std::vector<modified_base_param>& mod_params = {}, bool round = false,
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna, 
+                  vrna_md_param& vp, const knotergy::pk_param& pkp,
+                  const std::vector<modified_base_param>& mp = {}, bool round = false,
                   bool verbose = false)
         : root_node_{root_node},
           processed_rna_{processed_rna},
-          mod_params_{mod_params},
+          vp_{vp},
+          pkp_{pkp},
+          mp_{mp},
           sequence_{processed_rna.get_sequence()},
           round_{round} {
         
@@ -52,7 +57,9 @@ class ComputeEnergy {
    private:
     std::shared_ptr<LoopNode> root_node_;
     const ProcessedRNAEntry& processed_rna_;
-    const std::vector<modified_base_param>& mod_params_;
+    vrna_md_param& vp_;
+    const knotergy::pk_param& pkp_;
+    const std::vector<modified_base_param>& mp_;
     const std::string& sequence_;
     float energy_ = 0.0f;
     bool round_ = false;

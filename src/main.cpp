@@ -137,23 +137,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_param> modified_params =
-        knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+    // ------------------------- Load ViennaRNA Parameters -----------------------
+    knotergy::vrna_md_param vp =
+        knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
-    knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
+    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
+
+    // ------------------------- Load Modified Base Parameters -----------------------
+    std::vector<knotergy::modified_base_param> mp =
+        knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+
 
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, modified_params);
-    knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
-
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, mp);
+    
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
         knotergy::LoopFactory factory(processed_rna);
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna,
-                                                  modified_params, round, verbose);
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp, mp, round, verbose);
         // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " <<
         // processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;

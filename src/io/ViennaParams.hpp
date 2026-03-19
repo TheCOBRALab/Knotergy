@@ -14,7 +14,19 @@ extern "C" {
 #include <ViennaRNA/utils/basic.h>
 }
 
+using string_list = std::vector<std::string>;
+using param_map = std::map<std::string, float>;
+
 namespace knotergy {
+
+struct vrna_md_param {
+    ~vrna_md_param() {
+        if (p) free(p);
+    }
+    
+    vrna_md_t md{};     ///< ViennaRNA model details.
+    vrna_param_t* p{};  ///< ViennaRNA parameters.
+};  
 
 /**
  * @brief Parameters for modified RNA bases.
@@ -45,17 +57,17 @@ struct modified_base_param {
      */
     modified_base_param(const std::string& mod_name, const std::string& unmod,
                          const std::string& mod, const std::string& fallback,
-                         const std::vector<std::string>& partners,
-                         const std::map<std::string, float>& stacking,
-                         const std::map<std::string, float>& enthalpies,
-                         const std::map<std::string, float>& terminal_e,
-                         const std::map<std::string, float>& terminal_h,
-                         const std::map<std::string, float>& mismatch_e,
-                         const std::map<std::string, float>& mismatch_h,
-                         const std::map<std::string, float>& dangle5_e,
-                         const std::map<std::string, float>& dangle5_h,
-                         const std::map<std::string, float>& dangle3_e,
-                         const std::map<std::string, float>& dangle3_h)
+                         const string_list& partners,
+                         const param_map& stacking,
+                         const param_map& enthalpies,
+                         const param_map& terminal_e,
+                         const param_map& terminal_h,
+                         const param_map& mismatch_e,
+                         const param_map& mismatch_h,
+                         const param_map& dangle5_e,
+                         const param_map& dangle5_h,
+                         const param_map& dangle3_e,
+                         const param_map& dangle3_h)
         : name(mod_name),
           unmodified_base(unmod),
           modified_base(mod),
@@ -72,38 +84,31 @@ struct modified_base_param {
           dangle3_energies(dangle3_e),
           dangle3_enthalpies(dangle3_h) {}
 
-    const std::string name;                        ///< Modified base name.
-    const std::string unmodified_base;             ///< Unmodified base it replaces.
-    const std::string modified_base;               ///< Modified base representation.
-    const std::string fallback_base;               ///< Fallback base for calculations.
-    const std::vector<std::string> pairing_partners;  ///< Valid pairing partners.
-    const std::map<std::string, float> stacking_energies;      ///< Stacking energies.
-    const std::map<std::string, float> stacking_enthalpies;    ///< Stacking enthalpies.
-    const std::map<std::string, float> terminal_energies;      ///< Terminal mismatch energies.
-    const std::map<std::string, float> terminal_enthalpies;    ///< Terminal mismatch enthalpies.
-    const std::map<std::string, float> mismatch_energies;      ///< Mismatch energies.
-    const std::map<std::string, float> mismatch_enthalpies;    ///< Mismatch enthalpies.
-    const std::map<std::string, float> dangle5_energies;       ///< 5' dangle energies.
-    const std::map<std::string, float> dangle5_enthalpies;     ///< 5' dangle enthalpies.
-    const std::map<std::string, float> dangle3_energies;       ///< 3' dangle energies.
-    const std::map<std::string, float> dangle3_enthalpies;     ///< 3' dangle enthalpies.
+    const std::string name;                 ///< Modified base name.
+    const std::string unmodified_base;      ///< Unmodified base it replaces.
+    const std::string modified_base;        ///< Modified base representation.
+    const std::string fallback_base;        ///< Fallback base for calculations.
+    const string_list pairing_partners;     ///< Valid pairing partners.
+    const param_map stacking_energies;      ///< Stacking energies.
+    const param_map stacking_enthalpies;    ///< Stacking enthalpies.
+    const param_map terminal_energies;      ///< Terminal mismatch energies.
+    const param_map terminal_enthalpies;    ///< Terminal mismatch enthalpies.
+    const param_map mismatch_energies;      ///< Mismatch energies.
+    const param_map mismatch_enthalpies;    ///< Mismatch enthalpies.
+    const param_map dangle5_energies;       ///< 5' dangle energies.
+    const param_map dangle5_enthalpies;     ///< 5' dangle enthalpies.
+    const param_map dangle3_energies;       ///< 3' dangle energies.
+    const param_map dangle3_enthalpies;     ///< 3' dangle enthalpies.
 };
 
 /**
  * @brief Manages ViennaRNA energy parameters and model details.
  *
- * This class provides static methods to load and access ViennaRNA energy parameters,
+ * This class provides methods to load and access ViennaRNA energy parameters,
  * including support for custom parameter files and modified base parameters.
  */
 class ViennaParams {
    public:
-    inline static vrna_md_t md{};             ///< ViennaRNA model details.
-    inline static vrna_param_t* p = nullptr;  ///< ViennaRNA parameters.
-
-    ~ViennaParams() {
-        if (p) free(p);
-    }
-
     /**
      * @brief Load ViennaRNA energy parameters.
      *
@@ -113,8 +118,8 @@ class ViennaParams {
      * @param dangle Dangle model to use (0, 1, 2, or 3). Default is 2.
      * @param seq Optional sequence for parameter initialization.
      */
-    static void load_energy_parameters(const std::string& paramFile = "", int dangle = 2,
-                                       const std::string& seq = "");
+    static vrna_md_param load_energy_parameters(const std::string& paramFile = "", int dangle = 2,
+                             const std::string& seq = "");
 
     /**
      * @brief Load modified base energy parameters from a file or directory.

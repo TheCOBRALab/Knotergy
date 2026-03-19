@@ -5,10 +5,11 @@ namespace knotergy {
 int ModifiedBasesFunctions::find_mod_stack_energy(
     const size_t& i, const size_t& j, const size_t& ci, const size_t& cj, const std::string& sequence,
     const std::vector<std::string_view>& mod_sequence,
+    vrna_md_param& vp,
     const std::vector<modified_base_param>& mod_params) {
 
     // Get Vienna stacking energy for unmodified bases
-    int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence);
+    int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
     
     std::vector<std::string_view> unique_mod_bases = unique_modified_bases_at_indices({i, j, ci, cj}, mod_sequence);
     if (unique_mod_bases.empty()) return unmod_energy;
@@ -30,20 +31,21 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
 int ModifiedBasesFunctions::find_mod_external_energy(
     const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence,
     const std::vector<std::string_view>& mod_sequence,
+    vrna_md_param& vp,
     const std::vector<modified_base_param>& mod_params) {
     
     bool is_external = true;
     std::vector<DangleSet> all_dangle_sets;
 
-    if (ViennaParams::md.dangles == 1) {
-        all_dangle_sets = ViennaDangles::populate_children_dangle_energies(children, sequence, is_external);
+    if (vp.md.dangles == 1) {
+        all_dangle_sets = ViennaDangles::populate_children_dangle_energies(children, sequence, vp, is_external);
     }   
     
     // Initialize energy with unmodified external energy
     // If dangles == 1, will be replaced later with corrected dangle energies so don't double count
      int energy = 0;
-     if (ViennaParams::md.dangles != 1) {
-         energy = ViennaFunctions::external_energy(children, sequence);
+     if (vp.md.dangles != 1) {
+         energy = ViennaFunctions::external_energy(children, sequence, vp);
      }
 
      for (size_t i = 0; i < children.size(); ++i){
@@ -61,30 +63,30 @@ int ModifiedBasesFunctions::find_mod_external_energy(
         if (unique_mod_bases.empty()) continue; // no modified bases in this child
 
         // Get pair type and encoded dangle nucleotides
-        unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end]);
-        unsigned int r_type = ViennaUtils::reverse_pair_type(type);
-        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, sequence);
+        unsigned int type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], vp.md);
+        unsigned int r_type = ViennaUtils::reverse_pair_type(type, vp.md);
+        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, sequence, vp.md);
         
         // Get modified dangle and mismatch energy differences from unmodified energies
-        ModDiffs diffs = get_mod_dangle_energy_diffs(c, n5d, n3d, type, r_type, unique_mod_bases, mod_sequence, mod_params, is_external);
+        ModDiffs diffs = get_mod_dangle_energy_diffs(c, n5d, n3d, type, r_type, unique_mod_bases, mod_sequence, vp, mod_params, is_external);
 
-        if (ViennaParams::md.dangles == 2) {
+        if (vp.md.dangles == 2) {
             if (n5d >=0 && n3d >=0) energy += diffs.mismatch;
             else if (n5d >=0) energy += diffs.n5d;
             else if (n3d >=0) energy += diffs.n3d;
             if (type > 2) energy += diffs.terminalAU;
-        } else if (ViennaParams::md.dangles == 0) {
+        } else if (vp.md.dangles == 0) {
             if (type > 2) energy += diffs.terminalAU;
-        } else if (ViennaParams::md.dangles == 1) {
+        } else if (vp.md.dangles == 1) {
             DangleSet& current_set = all_dangle_sets[i];
             modify_dangle_set(current_set, diffs);
             continue;
         } else {
-            THROW_ERROR("Invalid dangle setting: " + std::to_string(ViennaParams::md.dangles));
+            THROW_ERROR("Invalid dangle setting: " + std::to_string(vp.md.dangles));
         }
      }
 
-     if (ViennaParams::md.dangles == 1) {
+     if (vp.md.dangles == 1) {
          energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets, sequence.size());
      }
      return energy;
@@ -185,6 +187,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(const std::shared_p
                                                const int n3d, const unsigned int type, [[maybe_unused]] const unsigned int r_type,
                                                const std::vector<std::string_view>& unique_mod_bases,
                                                const std::vector<std::string_view>& mod_sequence,
+                                               vrna_md_param& vp,
                                                const std::vector<modified_base_param>& mod_params, bool is_external) {
     
     // Stores the difference between modified and unmodified energies
@@ -196,28 +199,28 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(const std::shared_p
     // Correct energies for dangling ends and mismatches
     if (n5d >=0 && n3d >=0) {
         std::string mismatch_key = join_string_views({c->begin, c->begin - 1, c->end, c->end + 1}, mod_sequence);
-        int unmod_energy = is_external ? ViennaParams::p->mismatchExt[type][n5d][n3d] : ViennaParams::p->mismatchM[type][n5d][n3d];
+        int unmod_energy = is_external ? vp.p->mismatchExt[type][n5d][n3d] : vp.p->mismatchM[type][n5d][n3d];
         diffMM = get_mod_energy_difference(mismatch_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Mismatch);
     }
 
     // Dangling 5' end only
     if (n5d >= 0) {
         std::string dangle5_key = join_string_views({c->begin, c->end, c->begin - 1}, mod_sequence);
-        int unmod_energy = ViennaParams::p->dangle5[type][n5d];
+        int unmod_energy = vp.p->dangle5[type][n5d];
         diff5 = get_mod_energy_difference(dangle5_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Dangle5);
     } 
 
     // Dangling 3' end only
     if (n3d >= 0) {
         std::string dangle3_key = join_string_views({c->begin, c->end, c->end + 1}, mod_sequence);
-        int unmod_energy = ViennaParams::p->dangle3[type][n3d];
+        int unmod_energy = vp.p->dangle3[type][n3d];
         diff3 = get_mod_energy_difference(dangle3_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Dangle3);
     }
 
     // Terminal AU penalty
     if (type > 2) {
         std::string terminal_key = join_string_views({c->begin, c->end}, mod_sequence);
-        int unmod_energy = ViennaParams::p->TerminalAU;
+        int unmod_energy = vp.p->TerminalAU;
         diffTerminal = get_mod_energy_difference(terminal_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Terminal);
     }
     
