@@ -6,23 +6,21 @@ namespace knotergy {
 std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t& right_bound,
                                          const LoopType& loop_type,
                                          const std::vector<size_t>& pairings,
-                                         const std::vector<size_t>& cr_pairings, bool simple_bands) {
-    std::vector<Band> bands;
-    
-    // Technically speaking, non-pseudoknotted loops don't have bands
-    // For the sake of this program, each nonPK base pair forms its own band
-    if (loop_type != LoopType::Pseudoknot) {
-        bands.push_back(simple_bands ? 
-                        Band{left_bound, left_bound, right_bound, right_bound} :
-                        Band{left_bound, left_bound, right_bound, right_bound, pairings, cr_pairings});
-        return bands;
-    }
-
+                                         const std::vector<size_t>& cr_pairings) {
+    // sanity check bounds
     const size_t n = pairings.size();
     if (right_bound >= n) THROW_ERROR("Right bound exceeds the size of structure.");
 
+    // If not a pseudoknot, there are no bands to find (bands only exist in pseudoknots)
+    if (loop_type != LoopType::Pseudoknot) {
+        return {};
+    }
+
+    std::vector<Band> bands;
+
     // Linked list pointing to potential band boundaries
-    std::unordered_map<size_t, PairedBaseNode> paired_base_links = generate_paired_base_links(left_bound, right_bound, pairings, cr_pairings);
+    std::unordered_map<size_t, PairedBaseNode> paired_base_links = 
+                        generate_paired_base_links(left_bound, right_bound, pairings, cr_pairings);
 
     if (paired_base_links.empty()) {
         return bands;  // No paired bases found? (should never happen)
@@ -31,7 +29,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
     // Iterate through the region to find bands
     for (size_t i = left_bound; i <= right_bound; ++i) {
         /* skip anything that is   – unpaired
-         *                         – closing pair */
+         *                         – closing base */
         if (pairings[i] == NULL_INDEX || pairings[i] < i) continue;
 
         // pairing outside of closed region (means invalid input, region isn't really closed)
@@ -41,7 +39,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
                         std::to_string(left_bound) + ", " + std::to_string(right_bound) + "].");
         }
 
-        // if nested closed region, skip (They were already processed and are not part of the pseudoknot)
+        // if nested closed region, skip (They are not part of the pseudoknot)
         if (cr_pairings[i] != NULL_INDEX && i != left_bound) {
             i = cr_pairings[i];
             continue;
@@ -56,9 +54,7 @@ std::vector<Band> BandFinder::find_bands(const size_t& left_bound, const size_t&
         while (extend_stem(i_prime, j_prime, paired_base_links, pairings)) {}
 
         // stores entire bands
-        bands.push_back(simple_bands ? 
-            Band{i, i_prime, j_prime, j} :
-            Band{i, i_prime, j_prime, j, pairings, cr_pairings});
+        bands.push_back(Band{i, i_prime, j_prime, j, pairings, cr_pairings});
 
         i = i_prime;  // fast-forward to inner position (since everything in between is part of this band)
     }
@@ -76,12 +72,14 @@ std::vector<Band> BandFinder::find_bands(const LoopNode& node, const ProcessedRN
 bool BandFinder::extend_stem(size_t& i_prime, size_t& j_prime,
                              const std::unordered_map<size_t, PairedBaseNode>& paired_base_links,
                              const std::vector<size_t>& pairings) {
+
     auto it_i = paired_base_links.find(i_prime);
-    if (it_i == paired_base_links.end()) return false;
+    if (it_i == paired_base_links.end()) return false; // (should never happen if input is valid)
 
     auto it_j = paired_base_links.find(j_prime);
-    if (it_j == paired_base_links.end()) return false;
-
+    if (it_j == paired_base_links.end()) return false; // (should never happen if input is valid)
+    
+    // Jump to next paired base
     size_t i_tmp = it_i->second.next;
     size_t j_tmp = it_j->second.prev;
                     

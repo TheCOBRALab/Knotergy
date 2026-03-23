@@ -48,7 +48,7 @@ class BandFinder {
     static std::vector<Band> find_bands(const size_t& left_bound, const size_t& right_bound,
                                         const LoopType& loop_type,
                                         const std::vector<size_t>& pairings,
-                                        const std::vector<size_t>& cr_pairings, bool simple_bands = false);
+                                        const std::vector<size_t>& cr_pairings);
 
     /**
      * @brief Find all bands for a given loop node.
