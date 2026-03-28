@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
         // processed_rna.get_sequence()
         //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
         if (energy_calculator.getInfiniteEnergyFlag()) {
-            std::cout << "\nENERGY: inf (Invalid structure. Base pairs too close to form a loop)" << std::endl;
+            std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)" << std::endl;
         } else {
             printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
         }

@@ -131,10 +131,11 @@ class PseudoknotFunctions {
             const size_t n = bps.size();
 
             // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
-            if (band.right_inner() - band.left_inner() < 4) {
+            size_t size = band.right_inner() - band.left_inner() - 1;
+            if (vp.p->hairpin[size] == INF) {
                 std::cout << "Warning: Band with borders (" << band.left_border() << ", " << band.right_border()
-                << ") has less than 3 unpaired bases between its inner borders, resulting in infinite energy." << std::endl;
-                energy = INF;
+                << ") are too close (usually < 3 base pairs), resulting in infinite energy." << std::endl;
+                energy += INF;
                 is_inf = true;
                 continue;
             }
