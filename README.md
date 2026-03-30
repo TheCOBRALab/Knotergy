@@ -111,8 +111,7 @@ cmake --build build --parallel
 **Debug build:**
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel
 ```
 
 **Build & Test (one liner):**

@@ -6,6 +6,7 @@
 #include "../io/ViennaParams.hpp"
 #include "../loop_tree/LoopNode.hpp"
 #include "ViennaFunctions.hpp"
+#include "./ModifiedBasesFunctions.hpp"
 
 namespace knotergy {
 /**
@@ -30,9 +31,11 @@ class PseudoknotFunctions {
      * @param is_inf If the energy is infinite (distance between base pairs < 3)
      * @return Total pseudoknot energy in centicalories.
      */
-    static double pseudoknot_energy(const LoopNode& node, const std::string& sequence,
+    static double pseudoknot_energy(const LoopNode& node,
                                     const ProcessedRNAEntry& processed_rna,  
-                                    vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                    vrna_md_param& vp,
+                                    const std::vector<modified_base_param>& mp,
+                                    const pk_param& pkp,
                                     bool& is_inf, bool round = false) {
                                         
         int unpaired = node.exclusive_unpaired_bases_count;
@@ -58,7 +61,7 @@ class PseudoknotFunctions {
         energy += pkp.band * node.number_of_bands;
         energy += pkp.unpaired_in_pk * unpaired;
         energy += pkp.cr_in_pk * node.number_of_nested_children;
-        energy += PseudoknotFunctions::loop_penalties(node, sequence, processed_rna, vp, pkp, round, is_inf);
+        energy += PseudoknotFunctions::loop_penalties(node, processed_rna, vp, mp, pkp, round, is_inf);
 
         // Children that are within a band are nested inside of a pseudoknotted multiloop
         // Add the base pair penalty for each child that is within a band
@@ -121,9 +124,12 @@ class PseudoknotFunctions {
      * @param round Whether to round energy values.
      * @return Total loop penalties in centicalories.
      */
-    [[nodiscard]] static double loop_penalties(const LoopNode& node, const std::string& sequence,
-                                               const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
-                                               const knotergy::pk_param& pkp, bool round, bool& is_inf) {
+    [[nodiscard]] static double loop_penalties(const LoopNode& node,
+                                               const ProcessedRNAEntry& processed_rna, 
+                                               vrna_md_param& vp, 
+                                               const std::vector<modified_base_param>& mp,
+                                               const knotergy::pk_param& pkp, bool round, 
+                                               bool& is_inf) {
         double energy = 0;
 
         for (const Band& band : node.bands) {
@@ -146,10 +152,10 @@ class PseudoknotFunctions {
                 const BasePair& next_bp = bps[idx + 1];
 
                 if (bp.is_stack(next_bp)) {
-                    energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, sequence, vp, pkp, round);
+                    energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, processed_rna, vp, mp, pkp, round);
                 } else if (bp.children.empty()) {
                     // if no nested structure between two base pairs of a band, it's an internal loop
-                    energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, sequence, vp, pkp, round);
+                    energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, round);
                 } else {
                     energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
                 }
@@ -169,13 +175,20 @@ class PseudoknotFunctions {
      * @param round Whether to round the energy value.
      * @return Stacking energy with pseudoknot multiplier in centicalories.
      */
-    [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
-                                                const std::string& sequence,
+    [[nodiscard]] static double pk_stack_energy(const BasePair& bp, 
+                                                const BasePair& next_bp,
+                                                const ProcessedRNAEntry& processed_rna,
                                                 vrna_md_param& vp,
+                                                const std::vector<modified_base_param>& mp,
                                                 const knotergy::pk_param& pkp,
                                                 const bool& round) {
-        double stack_penalty = ViennaFunctions::stack_energy(bp, next_bp, sequence, vp) *
-                                                                                pkp.pk_stack_x;
+        
+        const std::string& sequence = processed_rna.get_sequence();
+        int stack_energy = processed_rna.has_modified_bases() ? 
+        ModifiedBasesFunctions::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp) :
+        ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
+
+        double stack_penalty = stack_energy * pkp.pk_stack_x;
         return round ? std::round(stack_penalty) : stack_penalty;
     }
 
@@ -191,10 +204,11 @@ class PseudoknotFunctions {
      * @return Internal loop energy with pseudoknot multiplier in centicalories.
      */
     [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
-                                                   const std::string& sequence, 
+                                                   const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp,
                                                    const knotergy::pk_param& pkp,
                                                    const bool& round) {
+        const std::string& sequence = processed_rna.get_sequence();
         double internal_penalty = ViennaFunctions::internal_loop_energy(bp, next_bp, sequence, vp) *
                                   pkp.pk_internal_x;
 

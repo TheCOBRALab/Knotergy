@@ -15,7 +15,8 @@ int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
     return vp.p->stack[type1][type2];
 }
 
-int ViennaFunctions::stack_energy(BasePair pair, BasePair child, const std::string& sequence, vrna_md_param& vp) {
+int ViennaFunctions::stack_energy(BasePair pair, BasePair child, const std::string& sequence, 
+                                  vrna_md_param& vp) {
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
@@ -85,7 +86,8 @@ int ViennaFunctions::internal_loop_energy(BasePair pair, BasePair child,
     return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
-int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string& sequence, vrna_md_param& vp) {
+int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string& sequence, 
+                                        vrna_md_param& vp) {
     // ------------------- Penalties -------------------
     int energy = vp.p->MLclosing;  // closing penalty
     energy +=
@@ -111,23 +113,17 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 
     // ------------------ Child Stems Energy ------------------
     for (const std::shared_ptr<LoopNode>& child : node.children) {
-        // if (child->loop_type == LoopType::Pseudoknot) {
-        //     energy += child->number_of_bands * P->MLintern[child_pair_type];
-        //     continue;
-        // }
-
         size_t ci = child->begin;
         size_t cj = child->end;
-        unsigned int child_pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
-        auto [child_n5d, child_n3d] =
-            ViennaUtils::encode_outer_dangles(ci, cj, sequence, vp.md);
+        unsigned int c_pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
+        auto [child_n5d, child_n3d] = ViennaUtils::encode_outer_dangles(ci, cj, sequence, vp.md);
 
         if (vp.md.dangles == 0) {
             child_n5d = -1;
             child_n3d = -1;
         }
 
-        energy += vrna_E_multibranch_stem(child_pair_type, child_n5d, child_n3d, vp.p);
+        energy += vrna_E_multibranch_stem(c_pair_type, child_n5d, child_n3d, vp.p);
     }
 
     return energy;
@@ -145,7 +141,8 @@ int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>
     int energy = 0;
     for (std::shared_ptr<LoopNode> c : children) {
         if (c->loop_type != LoopType::Pseudoknot) {
-            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], vp.md);
+            unsigned int pair_type = 
+                           ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], vp.md);
 
             // Check for dangling ends at sequence boundaries (-1 indicates no dangle)
             auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, sequence, vp.md);

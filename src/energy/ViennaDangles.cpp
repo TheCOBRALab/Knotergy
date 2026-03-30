@@ -29,6 +29,7 @@ int ViennaDangles::get_external_dangle_1(const std::vector<std::shared_ptr<LoopN
 int ViennaDangles::get_multibranch_dangle_1(const LoopNode& node, const std::string& sequence, vrna_md_param& vp) {
     const std::vector<std::shared_ptr<LoopNode>>& children = node.children;
     bool is_external = false;
+
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, sequence, vp, is_external);
     DangleSet closing = get_ml_dangle_energy(node, sequence, vp);
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
@@ -61,7 +62,9 @@ DangleSet ViennaDangles::get_ml_dangle_energy(const LoopNode& node, const std::s
 std::vector<DangleSet> ViennaDangles::populate_children_dangle_energies(
     const std::vector<std::shared_ptr<LoopNode>>& children, const std::string& sequence, vrna_md_param& vp,
     const bool& is_external) {
-    // stores the 4 dangle energy options for each child
+    
+    // stores the 4 dangle energy options for each child 
+    // (energy with no dangle, left dangle only, right dangle only, both dangles)
     std::vector<DangleSet> dangle_energies;
 
     // Function pointer to appropriate ViennaRNA dangle energy function
@@ -307,10 +310,6 @@ int ViennaDangles::process_ml_chains(const std::vector<std::vector<size_t>>& dan
     int dangle_energy = 0;
     return dangle_energy;
 }
-// ./build/Knotergy -p ./params/common/rna_turner2004.par -s AAAAAAAAAUUUUUUUUAAAAUUUUUUU -r
-// "(((..(((....)))..((...)).)))" -d 1 echo -e
-// "AAAAAAAAAUUUUUUUUAAAAUUUUUUU\n(((..(((....)))..((...)).)))" | RNAeval -d 1
 
 }  // namespace knotergy
 
-// echo -e "AAAAAAUUUUUUUAAAAAAUUUUUU\n((((....))....((....)).))" | RNAeval
