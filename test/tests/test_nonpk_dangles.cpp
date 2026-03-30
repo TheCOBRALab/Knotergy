@@ -203,13 +203,13 @@ TEST(Dangles, multiloop_loop_BDangle) {
     EXPECT_NEAR(d2, 12.40, 0.009);
 }
 
-// // echo -e "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))." | RNAeval -d 
-// TEST(Dangles, external_multiloop) {
-//     std::string sequence  = "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC";
-//     std::string structure = ".(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........))))))))).";
-//     auto [d0, d1, d2] = pipeline(sequence, structure);
+// echo -e "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))." | RNAeval -d 
+TEST(Dangles, external_multiloop) {
+    std::string sequence  = "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC";
+    std::string structure = ".(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........))))))))).";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
 
-//     EXPECT_NEAR(d0, -2.50, 0.009);
-//     EXPECT_NEAR(d1, -4.30, 0.009);
-//     EXPECT_NEAR(d2, -8.90, 0.009);
-// }
+    EXPECT_NEAR(d0, -2.50, 0.009);
+    EXPECT_NEAR(d1, -4.30, 0.009);
+    EXPECT_NEAR(d2, -8.90, 0.009);
+}
