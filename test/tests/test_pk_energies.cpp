@@ -109,11 +109,6 @@ TEST(PK_energies, LLType_Long_Turner) {
     EXPECT_NEAR(turner_rounded, -15.11, 0.001);
 }
 
-
-
-
-
-
 TEST(PK_energies, HLinType_DP) {
     std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
