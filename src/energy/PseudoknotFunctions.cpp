@@ -9,20 +9,20 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
                                               vrna_md_param& vp,
                                               const std::vector<modified_base_param>& mp,
-                                              const pk_param& pkp,
-                                              bool& is_inf,
-                                              bool round) {
+                                              const pk_param& pkp, bool& is_inf, bool round) {
     int unpaired = node.exclusive_unpaired_bases_count;
 
-    // remove unpaired bases within bands since they're already included in ViennaRNA's energy calculations for internal loops
+    // remove unpaired bases within bands since they're already included in ViennaRNA's energy
+    // calculations for internal loops
     for (Band band : node.bands) {
         unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
         unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
     }
 
-    // Previous loop removed ALL unpaired bases within bands, this includes base pairs of children that are within the band.
-    // Since the base pairs of all children were already removed in exclusive_unpaired_bases_count, we need to add them back
-    // due to double counting. We can identify these base pairs as the children that are within bands (pseudo_type == WithinBand)
+    // Previous loop removed ALL unpaired bases within bands, this includes base pairs of children
+    // that are within the band. Since the base pairs of all children were already removed in
+    // exclusive_unpaired_bases_count, we need to add them back due to double counting. We can
+    // identify these base pairs as the children that are within bands (pseudo_type == WithinBand)
     for (std::shared_ptr<LoopNode> child : node.children) {
         if (child->pseudo_type == PseudoNestedType::WithinBand) {
             unpaired += child->total_unpaired_bases_count;
@@ -60,9 +60,8 @@ double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::p
                 energy += pkp.pk_in_mloop;
                 break;
             case (LoopType::Pseudoknot):
-                energy += node.pseudo_type == PseudoNestedType::WithinBand
-                              ? pkp.pk_in_mloop
-                              : pkp.pk_in_pk;
+                energy += node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop
+                                                                           : pkp.pk_in_pk;
                 break;
             default:
                 std::cerr << "Warning: Parent of this node is not a pseudoknot, external, or "
@@ -81,8 +80,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
                                            const ProcessedRNAEntry& processed_rna,
                                            vrna_md_param& vp,
                                            const std::vector<modified_base_param>& mp,
-                                           const knotergy::pk_param& pkp,
-                                           bool round,
+                                           const knotergy::pk_param& pkp, bool round,
                                            bool& is_inf) {
     double energy = 0;
 
@@ -93,8 +91,10 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
         // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
         size_t size = band.right_inner() - band.left_inner() - 1;
         if (vp.p->hairpin[size] == INF) {
-            std::cout << "Warning: Band with borders (" << band.left_border() << ", " << band.right_border()
-                      << ") are too close (usually < 3 base pairs), resulting in infinite energy." << std::endl;
+            std::cout << "Warning: Band with borders (" << band.left_border() << ", "
+                      << band.right_border()
+                      << ") are too close (usually < 3 base pairs), resulting in infinite energy."
+                      << std::endl;
             energy += INF;
             is_inf = true;
             continue;
@@ -106,10 +106,12 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
             const BasePair& next_bp = bps[idx + 1];
 
             if (bp.is_stack(next_bp)) {
-                energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, processed_rna, vp, mp, pkp, round);
+                energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, processed_rna, vp, mp,
+                                                               pkp, round);
             } else if (bp.children.empty()) {
                 // if no nested structure between two base pairs of a band, it's an internal loop
-                energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, round);
+                energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, processed_rna, vp,
+                                                                  pkp, round);
             } else {
                 energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
             }
@@ -119,28 +121,25 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
     return energy;
 }
 
-double PseudoknotFunctions::pk_stack_energy(const BasePair& bp,
-                                            const BasePair& next_bp,
+double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                             const ProcessedRNAEntry& processed_rna,
                                             vrna_md_param& vp,
                                             const std::vector<modified_base_param>& mp,
-                                            const knotergy::pk_param& pkp,
-                                            bool round) {
+                                            const knotergy::pk_param& pkp, bool round) {
     const std::string& sequence = processed_rna.get_sequence();
 
-    int stack_energy = processed_rna.has_modified_bases()
-                           ? ModifiedBasesFunctions::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp)
-                           : ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
+    int stack_energy =
+        processed_rna.has_modified_bases()
+            ? ModifiedBasesFunctions::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp)
+            : ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
 
     double stack_penalty = stack_energy * pkp.pk_stack_x;
     return round ? std::round(stack_penalty) : stack_penalty;
 }
 
-double PseudoknotFunctions::pk_internal_energy(const BasePair& bp,
-                                               const BasePair& next_bp,
+double PseudoknotFunctions::pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp,
-                                               const knotergy::pk_param& pkp,
+                                               vrna_md_param& vp, const knotergy::pk_param& pkp,
                                                bool round) {
     const std::string& sequence = processed_rna.get_sequence();
     double internal_penalty =
@@ -149,8 +148,7 @@ double PseudoknotFunctions::pk_internal_energy(const BasePair& bp,
     return round ? std::round(internal_penalty) : internal_penalty;
 }
 
-double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp,
-                                                const BasePair& next_bp,
+double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
                                                 const knotergy::pk_param& pkp) {
     double multiloop_penalty = pkp.pk_mloop_init;

@@ -61,13 +61,13 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<size_t> compute_pairings(
         const std::string& structure, const std::string& unmodified_sequence = "",
         const std::vector<std::string_view>& mod_sequence = {});
-    
+
     /**
      * @brief Compute base-pair indices from a structure string.
      *
      * Convenience overload: extracts the structure from an RNAEntry and passes it to the main
      * compute_pairings() method.
-     * 
+     *
      * @param closed_regions All closed regions in the structure.
      * @param rna_size The total length of the structure (used to preallocate the result).
      **/
@@ -80,7 +80,7 @@ class RNAProcessor {
      *
      * Parses the base-pair vector returned by compute_pairings() and returns every closed region.
      * See ClosedRegion.hpp for the definition and semantics of a closed region.
-     * 
+     *
      * Example:
      *  pairings = [3, NULL_INDEX, NULL_INDEX, 0] → closed_regions = [ClosedRegion(0, 3)]
      *
@@ -132,13 +132,12 @@ class RNAProcessor {
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(
         const std::vector<size_t>& pairings);
 
-    
     /**
      * @brief Compute the unmodified RNA sequence from the modified sequence and parameters.
-     * 
+     *
      * This is necessary as the energy is first computed on the unmodified sequence,
      * and then adjusted based on the modified bases.
-     * 
+     *
      * Example:
      * modified_sequence = ["6", "U", "G", "C", "P"] -> unmodified_sequence = "AUGCU"
      */
@@ -146,16 +145,16 @@ class RNAProcessor {
         const std::vector<std::string_view>& modified_sequence_views,
         const std::vector<modified_base_param>& params, const size_t rna_length,
         bool& has_modified_bases);
-    
+
     /**
      * @brief Check if a base is an unmodified base (A, U, G, C, T, N).
-     * 
+     *
      * This is used to validate the input and ensure that modified bases are properly handled.
-     * 
+     *
      * Example:
      * is_unmod_base("A") -> true
      * is_unmod_base("6") -> false
-     * 
+     *
      * @param base The base to check, as a string_view.
      * @return true if the base is unmodified, false otherwise.
      */

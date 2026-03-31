@@ -5,7 +5,8 @@
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(
     RNAEntry rna, const std::vector<modified_base_param>& modified_params) {
-    std::vector<std::string_view> mod_sequence = ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
+    std::vector<std::string_view> mod_sequence =
+        ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
 
     // Ensure Sequence & Structure are the same length
     if (mod_sequence.size() != rna.structure.size()) {
@@ -15,18 +16,16 @@ ProcessedRNAEntry RNAProcessor::process_rna(
     }
 
     bool has_modified_bases = false;
-    std::string unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
+    std::string unmodified_sequence =
+        compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
     std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);
 
-    return ProcessedRNAEntry{std::move(rna),
-                             std::move(unmodified_sequence),
-                             std::move(pairings),
-                             std::move(closed_regions),
-                             std::move(cr_pairings),
-                             std::move(unpaired_prefix_sum),
+    return ProcessedRNAEntry{std::move(rna),         std::move(unmodified_sequence),
+                             std::move(pairings),    std::move(closed_regions),
+                             std::move(cr_pairings), std::move(unpaired_prefix_sum),
                              has_modified_bases};
 };
 
@@ -88,19 +87,20 @@ std::vector<size_t> RNAProcessor::compute_pairings(
             pairings[j] = i;
 
             // check if they're a valid pair
-            if (unmodified_sequence.size() == structure.size() && !valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
+            if (unmodified_sequence.size() == structure.size() &&
+                !valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
                 // if modified sequence is provided, use that for warning
-                if (mod_sequence.size() == structure.size()) { 
-
+                if (mod_sequence.size() == structure.size()) {
                     std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
                                      "' can't pair with '" + std::string(mod_sequence[j]) +
                                      "' at indices " + std::to_string(j) + ", " + std::to_string(i)
                               << std::endl;
                 } else {  // If modified sequence is not provided, fall back to unmodified sequence
                     std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
-                                 "' can't pair with '" + std::string(1, unmodified_sequence[j]) +
-                                 "' at indices " + std::to_string(j) + ", " + std::to_string(i)
-                                 << std::endl;
+                                     "' can't pair with '" +
+                                     std::string(1, unmodified_sequence[j]) + "' at indices " +
+                                     std::to_string(j) + ", " + std::to_string(i)
+                              << std::endl;
                 }
             }
             continue;
@@ -232,7 +232,9 @@ std::string RNAProcessor::compute_unmodified_sequence(
             unmodified_sequence += it->second;
         } else {
             THROW_ERROR("Base '" + std::string(mod_base) + "' at index " +
-                        std::to_string(unmodified_sequence.size()) + " is not a valid base (not found in modified params and is not a standard unmodified base)");
+                        std::to_string(unmodified_sequence.size()) +
+                        " is not a valid base (not found in modified params and is not a standard "
+                        "unmodified base)");
         }
     }
 
@@ -243,9 +245,9 @@ std::string RNAProcessor::compute_unmodified_sequence(
 #include <iostream>
 
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
-    if (b.size() != 1) return false; // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
-    return unmod_lookup[(unsigned char)b[0]] != 0;
+    if (b.size() != 1)
+        return false;  // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
+    return unmod_lookup[(unsigned char) b[0]] != 0;
 }
-
 
 }  // namespace knotergy

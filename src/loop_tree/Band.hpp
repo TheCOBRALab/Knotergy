@@ -10,17 +10,17 @@
 
 namespace knotergy {
 /**
- * @brief Represents a pseudoknot band in an RNA secondary structure. 
- * 
+ * @brief Represents a pseudoknot band in an RNA secondary structure.
+ *
  * Stores the four key positions that define the band.
  * Stores every base pair that participates in the band
  * each base pair also stores any nested closed regions that are contained within it.
- * 
+ *
  * Visual representation of a band:
  * (((((..(...)..((((((((((....[.......)))))))..))))))))....]
  * ^                       ^            ^               ^
  * left_border             left_inner   right_inner     right_border
- * 
+ *
  * The band contains all base pairs that participate in the pseudoknot crossing.
  * Non-pseudoknotted structures do not have bands.
  */
@@ -28,8 +28,8 @@ class Band {
    public:
     // ------------- Constructors -------------
     /**
-     * @brief Construct a Band from boundary positions. 
-     * 
+     * @brief Construct a Band from boundary positions.
+     *
      * A simple constructor without validation or base pair extraction.
      *
      * @param lb Left border position.
@@ -61,22 +61,23 @@ class Band {
     }
 
     // ------------------- Public methods -------------------
-    
+
     /**
      * @brief Finds all base pairs that participate in the band
-     * 
+     *
      * Validates the band structure and extracts all base pairs that participate in the band
      * and each base pair's nested closed region.
-     * 
+     *
      * @param pairings Base-pair index mapping for the structure.
      * @param cr_pairings Closed region pairing indices.
-     * 
+     *
      * @throws DetailedException if band structure is invalid or if indices are not base pairs.
      */
-    void populate_base_pairs(const std::vector<size_t>& pairings, const std::vector<size_t>& cr_pairings) {
-        
+    void populate_base_pairs(const std::vector<size_t>& pairings,
+                             const std::vector<size_t>& cr_pairings) {
         // -------------- Validate band structure -------------
-        if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_], pairings[right_border_]}) == NULL_INDEX) {
+        if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_],
+                      pairings[right_border_]}) == NULL_INDEX) {
             THROW_ERROR("One or more indices are not base-pairs");
         }
 
@@ -89,7 +90,6 @@ class Band {
         // find all consecutive base pairs on left side and their nested closed regions
         base_pairs_.emplace_back(left_border_, pairings[left_border_]);
         for (size_t idx = left_border_ + 1; idx <= left_inner_; ++idx) {
-
             // skip closed regions and add them as children to the current base pair
             if (cr_pairings[idx] != NULL_INDEX) {
                 base_pairs_.back().children.emplace_back(idx, cr_pairings[idx]);
@@ -115,7 +115,8 @@ class Band {
             if (idx == next_bp_right_border) {
                 ++current_bp_idx;
                 // If the next base pair is valid, we update the next_bp_right_border
-                if ((base_pairs_.size() > current_bp_idx + 1) && next_bp_right_border > right_inner_) {
+                if ((base_pairs_.size() > current_bp_idx + 1) &&
+                    next_bp_right_border > right_inner_) {
                     next_bp_right_border = base_pairs_[current_bp_idx + 1].j;
                 }
                 continue;
@@ -153,7 +154,7 @@ class Band {
 
     /**
      * @brief Check if an index is nested within the band (between inner positions).
-     * 
+     *
      * Nests means not within the borders, but the area between the inner positions of the band
      *
      * @param idx Index to check.

@@ -38,7 +38,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Stacking energy in centicalories.
      */
-    static int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence, vrna_md_param& vp);
+    static int stack_energy(size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence,
+                            vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for two consecutive base pairs.
@@ -48,7 +49,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Stacking energy in centicalories.
      */
-    static int stack_energy(BasePair pair, BasePair child, const std::string& sequence, vrna_md_param& vp);
+    static int stack_energy(BasePair pair, BasePair child, const std::string& sequence,
+                            vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -59,7 +61,8 @@ class ViennaFunctions {
      * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
      * @return Hairpin loop energy in centicalories.
      */
-    static int hairpin_energy(size_t i, size_t j, const std::string& sequence, bool& is_inf, vrna_md_param& vp);
+    static int hairpin_energy(size_t i, size_t j, const std::string& sequence, bool& is_inf,
+                              vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -69,7 +72,8 @@ class ViennaFunctions {
      * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
      * @return Hairpin loop energy in centicalories.
      */
-    static int hairpin_energy(const BasePair& pair, const std::string& sequence, bool& is_inf, vrna_md_param& vp);
+    static int hairpin_energy(const BasePair& pair, const std::string& sequence, bool& is_inf,
+                              vrna_md_param& vp);
 
     /**
      * @brief Calculate internal loop or bulge energy.
@@ -92,7 +96,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Internal loop energy in centicalories.
      */
-    static int internal_loop_energy(BasePair pair, BasePair child, const std::string& sequence, vrna_md_param& vp);
+    static int internal_loop_energy(BasePair pair, BasePair child, const std::string& sequence,
+                                    vrna_md_param& vp);
 
     /**
      * @brief Calculate multibranch loop energy.
@@ -101,7 +106,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Multibranch loop energy in centicalories.
      */
-    static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
+    static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                  vrna_md_param& vp);
 
     /**
      * @brief Calculate external loop energy.

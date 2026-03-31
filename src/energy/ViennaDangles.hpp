@@ -29,12 +29,15 @@ struct DangleSet {
    public:
     DangleSet() : no_dangle(0), left_dangle(0), right_dangle(0), both_dangle(0) {}
     DangleSet(int no_dangle, int left_dangle, int right_dangle, int both_dangle)
-        : no_dangle(no_dangle), left_dangle(left_dangle), right_dangle(right_dangle), both_dangle(both_dangle) {}
+        : no_dangle(no_dangle),
+          left_dangle(left_dangle),
+          right_dangle(right_dangle),
+          both_dangle(both_dangle) {}
 
-    int no_dangle;      ///< Energy with no dangling ends.
-    int left_dangle;    ///< Energy with only 5' dangling end.
-    int right_dangle;   ///< Energy with only 3' dangling end.
-    int both_dangle;    ///< Energy with both dangling ends.
+    int no_dangle;     ///< Energy with no dangling ends.
+    int left_dangle;   ///< Energy with only 5' dangling end.
+    int right_dangle;  ///< Energy with only 3' dangling end.
+    int both_dangle;   ///< Energy with both dangling ends.
 
     /**
      * @brief Get the minimum (most favorable) energy among all dangle configurations.
@@ -98,8 +101,7 @@ class ViennaDangles {
      * @param sequence The RNA nucleotide sequence.
      * @return Optimal dangle energy in centicalories.
      */
-    static int get_multibranch_dangle_1(const LoopNode& node, 
-                                        const ProcessedRNAEntry& pRNA, 
+    static int get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                         vrna_md_param& vp);
 
     /**
@@ -111,8 +113,7 @@ class ViennaDangles {
      * @return Optimal dangle energy in centicalories.
      */
     static int get_multibranch_dangle_1(const LoopNode& node,
-                                        std::vector<DangleSet> dangle_energies, 
-                                        DangleSet closing);
+                                        std::vector<DangleSet> dangle_energies, DangleSet closing);
 
     /**
      * @brief Compute dangle energies for all child loop nodes.
@@ -123,10 +124,8 @@ class ViennaDangles {
      * @return Vector of DangleSet objects containing energies for each child.
      */
     static std::vector<DangleSet> populate_children_dangle_energies(
-        const std::vector<std::shared_ptr<LoopNode>>& children, 
-        const ProcessedRNAEntry& pRNA,
-        vrna_md_param& vp, 
-        bool is_external = true);
+        const std::vector<std::shared_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
+        vrna_md_param& vp, bool is_external = true);
 
     /**
      * @brief Get dangle energy for a multibranch loop closing pair.
@@ -135,9 +134,8 @@ class ViennaDangles {
      * @param sequence The RNA nucleotide sequence.
      * @return DangleSet containing energies for the closing pair.
      */
-    static DangleSet get_ml_closing_dangle_energy(const LoopNode& node, 
-                                          const ProcessedRNAEntry& pRNA,
-                                          vrna_md_param& vp);
+    static DangleSet get_ml_closing_dangle_energy(const LoopNode& node,
+                                                  const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
 
    private:
     /**

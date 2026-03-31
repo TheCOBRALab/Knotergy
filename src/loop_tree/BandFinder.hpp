@@ -13,10 +13,10 @@ namespace knotergy {
  * ((..[[..))..]]
  * Linked list:
  * 0 -> 1 -> 4 -> 5 -> 8 -> 9 -> 12 -> 13 -> NULL_INDEX
- * 
+ *
  * Each node contains the position value, previous position, and next position.
  * This structure helps in navigating through base pairs when identifying bands.
- * 
+ *
  */
 struct PairedBaseNode {
     size_t value = NULL_INDEX;  ///< Position value.

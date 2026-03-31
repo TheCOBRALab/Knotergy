@@ -26,11 +26,12 @@ class ComputeEnergy {
      * @param processed_rna The processed RNA entry containing sequence and structure information.
      * @param vienna_params ViennaRNA energy parameters.
      * @param pseudo_params Pseudoknot energy parameters.
-     * @param mod_params Vector of modified base parameters for computing energy with modified nucleotides.
+     * @param mod_params Vector of modified base parameters for computing energy with modified
+     * nucleotides.
      * @param round Whether to round energy values (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna, 
+    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna,
                   vrna_md_param& vp, const knotergy::pk_param& pkp,
                   const std::vector<modified_base_param>& mp = {}, bool round = false,
                   bool verbose = false)
@@ -41,7 +42,6 @@ class ComputeEnergy {
           mp_{mp},
           sequence_{processed_rna.get_sequence()},
           round_{round} {
-        
         bool has_mod = processed_rna_.has_modified_bases();
         has_mod ? process_modified_tree(*root_node_, verbose) : process_tree(*root_node_, verbose);
     };
@@ -63,7 +63,8 @@ class ComputeEnergy {
     const std::string& sequence_;
     float energy_ = 0.0f;
     bool round_ = false;
-    bool infinite_energy_flag_ = false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
+    bool infinite_energy_flag_ =
+        false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
 
     /**
      * @brief Process the entire loop tree and calculate energies.
@@ -95,14 +96,14 @@ class ComputeEnergy {
     float process_node(LoopNode& node);
 
     /**
-      * @brief Process a single loop node with modified base energy calculations.
-      *
-      * This function computes the energy contribution of a loop node, taking into account
-      * any modified bases present in the sequence and using the appropriate energy parameters.
-      *
-      * @param node The loop node to process.
-      * @return The energy contribution of this node in centicalories.
-      */
+     * @brief Process a single loop node with modified base energy calculations.
+     *
+     * This function computes the energy contribution of a loop node, taking into account
+     * any modified bases present in the sequence and using the appropriate energy parameters.
+     *
+     * @param node The loop node to process.
+     * @return The energy contribution of this node in centicalories.
+     */
     float process_modified_node(LoopNode& node);
 };
 

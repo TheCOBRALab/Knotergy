@@ -32,13 +32,9 @@ class PseudoknotFunctions {
      * @param round Whether to round energy values (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
-    static double pseudoknot_energy(const LoopNode& node,
-                                    const ProcessedRNAEntry& processed_rna,
-                                    vrna_md_param& vp,
-                                    const std::vector<modified_base_param>& mp,
-                                    const pk_param& pkp,
-                                    bool& is_inf,
-                                    bool round = false);
+    static double pseudoknot_energy(const LoopNode& node, const ProcessedRNAEntry& processed_rna,
+                                    vrna_md_param& vp, const std::vector<modified_base_param>& mp,
+                                    const pk_param& pkp, bool& is_inf, bool round = false);
 
    private:
     /**
@@ -56,8 +52,8 @@ class PseudoknotFunctions {
     /**
      * @brief Calculate loop-specific energy penalties in a pseudoknot.
      *
-     * Iterates through each band in the pseudoknot and calculates stacking, internal loop, and multiloop
-     * energies for each base pair in the band.
+     * Iterates through each band in the pseudoknot and calculates stacking, internal loop, and
+     * multiloop energies for each base pair in the band.
      *
      * @param node The pseudoknot loop node.
      * @param processed_rna The processed RNA entry with structural information.
@@ -72,8 +68,7 @@ class PseudoknotFunctions {
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp,
                                                const std::vector<modified_base_param>& mp,
-                                               const knotergy::pk_param& pkp,
-                                               bool round,
+                                               const knotergy::pk_param& pkp, bool round,
                                                bool& is_inf);
 
     /**
@@ -90,18 +85,17 @@ class PseudoknotFunctions {
      * @param round Whether to round the energy value.
      * @return Stacking energy with pseudoknot multiplier in centicalories.
      */
-    [[nodiscard]] static double pk_stack_energy(const BasePair& bp,
-                                                const BasePair& next_bp,
+    [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
                                                 vrna_md_param& vp,
                                                 const std::vector<modified_base_param>& mp,
-                                                const knotergy::pk_param& pkp,
-                                                bool round);
+                                                const knotergy::pk_param& pkp, bool round);
 
     /**
      * @brief Calculate internal loop energy for base pairs in a pseudoknot band.
      *
-     * Applies the pseudoknot internal loop multiplier to the standard ViennaRNA internal loop energy.
+     * Applies the pseudoknot internal loop multiplier to the standard ViennaRNA internal loop
+     * energy.
      *
      * @param bp The outer base pair.
      * @param next_bp The inner base pair.
@@ -111,11 +105,9 @@ class PseudoknotFunctions {
      * @param round Whether to round the energy value.
      * @return Internal loop energy with pseudoknot multiplier in centicalories.
      */
-    [[nodiscard]] static double pk_internal_energy(const BasePair& bp,
-                                                   const BasePair& next_bp,
+    [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp,
-                                                   const knotergy::pk_param& pkp,
+                                                   vrna_md_param& vp, const knotergy::pk_param& pkp,
                                                    bool round);
 
     /**
@@ -129,8 +121,7 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Multiloop energy in centicalories.
      */
-    [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp,
-                                                    const BasePair& next_bp,
+    [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
                                                     const ProcessedRNAEntry& processed_rna,
                                                     const knotergy::pk_param& pkp);
 };

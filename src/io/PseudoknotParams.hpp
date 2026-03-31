@@ -1,8 +1,8 @@
 #pragma once
 #include <fstream>
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <iostream>
 
 #include "FileUtils.hpp"
 #include "common.hpp"
@@ -19,7 +19,7 @@ namespace knotergy {
 struct pk_param {
     /**
      * @brief Construct with default DirksPierce09 parameters from HotKnotsV2.
-     * 
+     *
      * Hard coded values based on the original HotKnotsV2 implementation
      */
     pk_param()
@@ -69,20 +69,19 @@ struct pk_param {
           pk_mloop_bp(pk_mloop_bp_pen),
           pk_mloop_unpaired(pk_mloop_unpaired_pen) {}
 
-    const std::string name;         ///< Parameter set name.
-    const int pk_in_ext;            ///< Pseudoknot in exterior loop penalty.
-    const int pk_in_mloop;          ///< Pseudoknot in multiloop penalty.
-    const int pk_in_pk;             ///< Pseudoknot in pseudoloop penalty.
-    const int band;                 ///< Band penalty.
-    const int unpaired_in_pk;       ///< Unpaired bases in pseudoknot penalty.
-    const int cr_in_pk;             ///< Closed region nested in pseudoknot penalty.
-    const double pk_stack_x;        ///< Stacked pair spanning band multiplier.
-    const double pk_internal_x;     ///< Internal pair spanning band multiplier.
-    const int pk_mloop_init;        ///< Multiloop spanning band initialization penalty.
-    const int pk_mloop_bp;          ///< Base pair in multiloop spanning band penalty.
-    const int pk_mloop_unpaired;    ///< Unpaired bases in multiloop spanning band penalty.
+    const std::string name;       ///< Parameter set name.
+    const int pk_in_ext;          ///< Pseudoknot in exterior loop penalty.
+    const int pk_in_mloop;        ///< Pseudoknot in multiloop penalty.
+    const int pk_in_pk;           ///< Pseudoknot in pseudoloop penalty.
+    const int band;               ///< Band penalty.
+    const int unpaired_in_pk;     ///< Unpaired bases in pseudoknot penalty.
+    const int cr_in_pk;           ///< Closed region nested in pseudoknot penalty.
+    const double pk_stack_x;      ///< Stacked pair spanning band multiplier.
+    const double pk_internal_x;   ///< Internal pair spanning band multiplier.
+    const int pk_mloop_init;      ///< Multiloop spanning band initialization penalty.
+    const int pk_mloop_bp;        ///< Base pair in multiloop spanning band penalty.
+    const int pk_mloop_unpaired;  ///< Unpaired bases in multiloop spanning band penalty.
 };
-
 
 /**
  * @brief Manages pseudoknot energy parameters.
@@ -102,10 +101,11 @@ class PseudoknotParams {
     static const pk_param load_pk_param(
         const std::string& paramFile = "./params/common/pk_DirksPierce09_HotKnotsV2.json") {
         if (paramFile.empty()) {
-            std::cerr << "Warning: No pseudoknot parameter file provided. Using default parameters." << std::endl;
+            std::cerr << "Warning: No pseudoknot parameter file provided. Using default parameters."
+                      << std::endl;
             return {};
         }
-        
+
         if (!FileUtils::file_exists(paramFile)) {
             THROW_ERROR("Pseudoknot parameters JSON file \"" + paramFile + "\" not found.");
         }

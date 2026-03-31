@@ -40,8 +40,6 @@ std::tuple<float, float, float> pipeline(
 } // namespace
 
 
-
-
 TEST(Dangles, external_simple) {
     std::string sequence  = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
     std::string structure = ".(((((.........................))))).";

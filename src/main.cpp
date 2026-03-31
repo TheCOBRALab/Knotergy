@@ -25,7 +25,7 @@ void help() {
         << "  -o, --output <file>           Output file\n"
         << "  -p, --paramFile <file>        Parameter file\n"
         << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
-        // << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
+        << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
         << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
         << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
 }
@@ -84,7 +84,6 @@ int main(int argc, char** argv) {
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--mod-file") {
-            std::cout << "Modified bases are not currently supported" << std::endl;
             mod_param_path = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
@@ -148,20 +147,26 @@ int main(int argc, char** argv) {
     std::vector<knotergy::modified_base_param> mp =
         knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
 
-
     //------------------------- Pre-processing and reading from files -----------------------------
-    std::vector<knotergy::RNAEntry> inputs = knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs = knotergy::RNAInputManager::process_inputs(inputs, mp);
-    
+    std::vector<knotergy::RNAEntry> inputs =
+        knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
+    std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
+        knotergy::RNAInputManager::process_inputs(inputs, mp);
+
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
+        // Builds loop tree
         knotergy::LoopFactory factory(processed_rna);
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp, mp, round, verbose);
-        // std::cout << "\nName: " << processed_rna.get_name() << "\nSequence: " <<
-        // processed_rna.get_sequence()
-        //           << "\nStructure: " << processed_rna.get_structure() << std::endl;
+
+        // Computes the energy
+        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,
+                                                  mp, round, verbose);
+
+        // Output results
+        std::cout << "\nName: " << processed_rna.get_name() << std::endl;
         if (energy_calculator.getInfiniteEnergyFlag()) {
-            std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)" << std::endl;
+            std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)"
+                      << std::endl;
         } else {
             printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
         }

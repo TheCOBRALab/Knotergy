@@ -23,10 +23,10 @@ struct vrna_md_param {
     ~vrna_md_param() {
         if (p) free(p);
     }
-    
+
     vrna_md_t md{};     ///< ViennaRNA model details.
     vrna_param_t* p{};  ///< ViennaRNA parameters.
-};  
+};
 
 /**
  * @brief Parameters for modified RNA bases.
@@ -56,18 +56,13 @@ struct modified_base_param {
      * @param dangle3_h 3' dangle enthalpy parameters.
      */
     modified_base_param(const std::string& mod_name, const std::string& unmod,
-                         const std::string& mod, const std::string& fallback,
-                         const string_list& partners,
-                         const param_map& stacking,
-                         const param_map& enthalpies,
-                         const param_map& terminal_e,
-                         const param_map& terminal_h,
-                         const param_map& mismatch_e,
-                         const param_map& mismatch_h,
-                         const param_map& dangle5_e,
-                         const param_map& dangle5_h,
-                         const param_map& dangle3_e,
-                         const param_map& dangle3_h)
+                        const std::string& mod, const std::string& fallback,
+                        const string_list& partners, const param_map& stacking,
+                        const param_map& enthalpies, const param_map& terminal_e,
+                        const param_map& terminal_h, const param_map& mismatch_e,
+                        const param_map& mismatch_h, const param_map& dangle5_e,
+                        const param_map& dangle5_h, const param_map& dangle3_e,
+                        const param_map& dangle3_h)
         : name(mod_name),
           unmodified_base(unmod),
           modified_base(mod),
@@ -84,21 +79,21 @@ struct modified_base_param {
           dangle3_energies(dangle3_e),
           dangle3_enthalpies(dangle3_h) {}
 
-    const std::string name;                 ///< Modified base name.
-    const std::string unmodified_base;      ///< Unmodified base it replaces.
-    const std::string modified_base;        ///< Modified base representation.
-    const std::string fallback_base;        ///< Fallback base for calculations.
-    const string_list pairing_partners;     ///< Valid pairing partners.
-    const param_map stacking_energies;      ///< Stacking energies.
-    const param_map stacking_enthalpies;    ///< Stacking enthalpies.
-    const param_map terminal_energies;      ///< Terminal mismatch energies.
-    const param_map terminal_enthalpies;    ///< Terminal mismatch enthalpies.
-    const param_map mismatch_energies;      ///< Mismatch energies.
-    const param_map mismatch_enthalpies;    ///< Mismatch enthalpies.
-    const param_map dangle5_energies;       ///< 5' dangle energies.
-    const param_map dangle5_enthalpies;     ///< 5' dangle enthalpies.
-    const param_map dangle3_energies;       ///< 3' dangle energies.
-    const param_map dangle3_enthalpies;     ///< 3' dangle enthalpies.
+    const std::string name;               ///< Modified base name.
+    const std::string unmodified_base;    ///< Unmodified base it replaces.
+    const std::string modified_base;      ///< Modified base representation.
+    const std::string fallback_base;      ///< Fallback base for calculations.
+    const string_list pairing_partners;   ///< Valid pairing partners.
+    const param_map stacking_energies;    ///< Stacking energies.
+    const param_map stacking_enthalpies;  ///< Stacking enthalpies.
+    const param_map terminal_energies;    ///< Terminal mismatch energies.
+    const param_map terminal_enthalpies;  ///< Terminal mismatch enthalpies.
+    const param_map mismatch_energies;    ///< Mismatch energies.
+    const param_map mismatch_enthalpies;  ///< Mismatch enthalpies.
+    const param_map dangle5_energies;     ///< 5' dangle energies.
+    const param_map dangle5_enthalpies;   ///< 5' dangle enthalpies.
+    const param_map dangle3_energies;     ///< 3' dangle energies.
+    const param_map dangle3_enthalpies;   ///< 3' dangle enthalpies.
 };
 
 /**
@@ -119,7 +114,7 @@ class ViennaParams {
      * @param seq Optional sequence for parameter initialization.
      */
     static vrna_md_param load_energy_parameters(const std::string& paramFile = "", int dangle = 2,
-                             const std::string& seq = "");
+                                                const std::string& seq = "");
 
     /**
      * @brief Load modified base energy parameters from a file or directory.

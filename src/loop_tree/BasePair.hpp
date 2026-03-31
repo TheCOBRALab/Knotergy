@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+
 #include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {
@@ -11,22 +12,22 @@ namespace knotergy {
  *
  * A base pair consists of two indices (i, j) where i < j, representing
  * positions in the RNA sequence that are paired together.
- * 
+ *
  * These base pairs can also have nested closed regions as children
- * 
+ *
  * Example:
  * (.....(.......).......([.....)].......)
  * ^     ^       ^       ^       ^       ^
- * i     nested_cr       nested_cr       j   
- * 
- * 
+ * i     nested_cr       nested_cr       j
+ *
+ *
  * @param i 5' position of the base pair.
  * @param j 3' position of the base pair.
  * @param children Nested base pairs (closed regions) within this pair.
  */
 struct BasePair {
-    size_t i;  ///< 5' position of the base pair.
-    size_t j;  ///< 3' position of the base pair.
+    size_t i;                            ///< 5' position of the base pair.
+    size_t j;                            ///< 3' position of the base pair.
     std::vector<ClosedRegion> children;  ///< Nested base pairs (closed regions) within this pair.
 
     BasePair() = default;
@@ -41,7 +42,7 @@ struct BasePair {
 
     /**
      * @brief Construct a base pair from two indices and its children.
-     * 
+     *
      * @param left_index 5' position of the base pair.
      * @param right_index 3' position of the base pair.
      * @param child_regions Nested base pairs (closed regions) within this pair.
@@ -64,7 +65,7 @@ struct BasePair {
 // === Operator overload for printing ===
 inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
     os << "(" << bp.i << ", " << bp.j << ")";
-    
+
     // Display children base pairs if any
     if (!bp.children.empty()) {
         os << "\n  Children: ";
@@ -74,4 +75,4 @@ inline std::ostream& operator<<(std::ostream& os, const BasePair& bp) {
     }
     return os;
 }
-}
+}  // namespace knotergy
