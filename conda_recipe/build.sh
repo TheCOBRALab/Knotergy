@@ -23,9 +23,9 @@ cd     build
 # ──────────────────────────────────────────────────────────────
 # 2 · Unpack ViennaRNA, patch and build ViennaRNA
 # ──────────────────────────────────────────────────────────────
-curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.1/ViennaRNA-2.7.1.tar.gz
-tar -xf  ./ViennaRNA-2.7.1.tar.gz
-cd   ViennaRNA-2.7.1
+curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.2/ViennaRNA-2.7.2.tar.gz
+tar -xf  ./ViennaRNA-2.7.2.tar.gz
+cd   ViennaRNA-2.7.2
 
 ./configure --without-perl --without-python --prefix="${PREFIX}"
 make  -j"${CPU_COUNT}"
