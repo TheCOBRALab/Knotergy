@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "../io/ViennaParams.hpp"
+#include "../preprocessing/ProcessedRNAEntry.hpp"
 
 extern "C" {
 #include <ViennaRNA/sequences/alphabet.h>
@@ -45,9 +46,11 @@ class ViennaUtils {
      * @param sequence The RNA nucleotide sequence.
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
-    static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j, const std::string& sequence, vrna_md_t& md) {
-        int encoded_i = i > 0 ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
-        int encoded_j = j + 1 < sequence.size() ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
+    static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j, const ProcessedRNAEntry& entry, vrna_md_t& md) {
+        const std::string& sequence = entry.get_sequence();
+        const std::vector<size_t>& pairings = entry.get_pairings();
+        int encoded_i = i > 0  && (pairings[i-1] == NULL_INDEX || md.dangles != 1) ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
+        int encoded_j = j + 1 < sequence.size() && (pairings[j+1] == NULL_INDEX || md.dangles != 1) ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
         return std::make_tuple(encoded_i, encoded_j);
     }
 
@@ -59,9 +62,11 @@ class ViennaUtils {
      * @param sequence The RNA nucleotide sequence.
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
-    static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j, const std::string& sequence, vrna_md_t& md) {
-        int encoded_i = vrna_nucleotide_encode(sequence[i + 1], &md);
-        int encoded_j = vrna_nucleotide_encode(sequence[j - 1], &md);
+    static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j, const ProcessedRNAEntry& entry, vrna_md_t& md) {
+        const std::string& sequence = entry.get_sequence();
+        const std::vector<size_t>& pairings = entry.get_pairings();
+        int encoded_i = (pairings[i+1] == NULL_INDEX || md.dangles != 1) ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
+        int encoded_j = (pairings[j-1] == NULL_INDEX || md.dangles != 1) ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
         return std::make_tuple(encoded_i, encoded_j);
     }
 

@@ -15,6 +15,7 @@ int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
     return vp.p->stack[type1][type2];
 }
 
+// Helper function for stack_energy that takes BasePair objects instead of indices
 int ViennaFunctions::stack_energy(BasePair pair, BasePair child, const std::string& sequence, 
                                   vrna_md_param& vp) {
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
@@ -70,14 +71,10 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
-    int si1 = vrna_nucleotide_encode(sequence[i + 1],
-                                     &vp.md);  // 5' mismatch nt of closing pair
-    int sj1 = vrna_nucleotide_encode(sequence[j - 1],
-                                     &vp.md);  // 3' mismatch nt of closing pair
-    int sp1 = vrna_nucleotide_encode(sequence[ci - 1],
-                                     &vp.md);  // 5' mismatch nt of enclosed pair
-    int sq1 = vrna_nucleotide_encode(sequence[cj + 1],
-                                     &vp.md);  // 3' mismatch nt of enclosed pair
+    int si1 = vrna_nucleotide_encode(sequence[i + 1], &vp.md);  // 5' mismatch nt of closing pair
+    int sj1 = vrna_nucleotide_encode(sequence[j - 1], &vp.md);  // 3' mismatch nt of closing pair
+    int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &vp.md);  // 5' mismatch nt of enclosed pair
+    int sq1 = vrna_nucleotide_encode(sequence[cj + 1], &vp.md);  // 3' mismatch nt of enclosed pair
     return vrna_E_internal(n1, n2, type1, type2, si1, sj1, sp1, sq1, vp.p);
 }
 
@@ -86,16 +83,16 @@ int ViennaFunctions::internal_loop_energy(BasePair pair, BasePair child,
     return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
-int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string& sequence, 
-                                        vrna_md_param& vp) {
+int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+    const std::string& sequence = pRNA.get_sequence();
+
     // ------------------- Penalties -------------------
     int energy = vp.p->MLclosing;  // closing penalty
-    energy +=
-        node.exclusive_unpaired_bases_count * vp.p->MLbase;  // unpaired bases penalty
+    energy += node.exclusive_unpaired_bases_count * vp.p->MLbase;  // unpaired bases penalty
 
     // ------------------ Dangle 1 Energy ------------------
     if (vp.md.dangles == 1) {
-        return ViennaDangles::get_multibranch_dangle_1(node, sequence, vp) + energy;
+        return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp) + energy;
     }
 
     size_t i = node.begin;
@@ -103,7 +100,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 
     // ------------------ Closing Pair Energy ------------------
     unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
-    auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(i, j, sequence, vp.md);
+    auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(i, j, pRNA, vp.md);
     if (vp.md.dangles == 0) {
         n5d = -1;
         n3d = -1;
@@ -116,7 +113,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
         size_t ci = child->begin;
         size_t cj = child->end;
         unsigned int c_pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
-        auto [child_n5d, child_n3d] = ViennaUtils::encode_outer_dangles(ci, cj, sequence, vp.md);
+        auto [child_n5d, child_n3d] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
 
         if (vp.md.dangles == 0) {
             child_n5d = -1;
@@ -130,11 +127,12 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const std::string&
 }
 
 int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                     const std::string& sequence, vrna_md_param& vp) {
+                                     const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+    const std::string& sequence = pRNA.get_sequence();
 
     // ------------------ Dangle 1 Energy ------------------
     if (vp.md.dangles == 1) {
-        return ViennaDangles::get_external_dangle_1(children, sequence, vp);
+        return ViennaDangles::get_external_dangle_1(children, pRNA, vp);
     }
 
     // ------------------ No dangles or dangle type 2 ------------------
@@ -145,7 +143,7 @@ int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>
                            ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], vp.md);
 
             // Check for dangling ends at sequence boundaries (-1 indicates no dangle)
-            auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, sequence, vp.md);
+            auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(c->begin, c->end, pRNA, vp.md);
 
             if (vp.md.dangles == 0) {
                 n5d = -1;

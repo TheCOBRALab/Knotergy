@@ -76,8 +76,7 @@ class ViennaDangles {
      * @return Optimal dangle energy in centicalories.
      */
     static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                     const std::string& sequence, 
-                                     vrna_md_param& vp);
+                                     const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
 
     /**
      * @brief Calculate optimal external loop dangle energy using precomputed dangle sets.
@@ -99,7 +98,7 @@ class ViennaDangles {
      * @return Optimal dangle energy in centicalories.
      */
     static int get_multibranch_dangle_1(const LoopNode& node, 
-                                        const std::string& sequence, 
+                                        const ProcessedRNAEntry& pRNA, 
                                         vrna_md_param& vp);
 
     /**
@@ -124,7 +123,7 @@ class ViennaDangles {
      */
     static std::vector<DangleSet> populate_children_dangle_energies(
         const std::vector<std::shared_ptr<LoopNode>>& children, 
-        const std::string& sequence, 
+        const ProcessedRNAEntry& pRNA,
         vrna_md_param& vp, 
         const bool& is_external = true);
 
@@ -136,7 +135,7 @@ class ViennaDangles {
      * @return DangleSet containing energies for the closing pair.
      */
     static DangleSet get_ml_dangle_energy(const LoopNode& node, 
-                                          const std::string& sequence, 
+                                          const ProcessedRNAEntry& pRNA,
                                           vrna_md_param& vp);
 
    private:
@@ -181,16 +180,13 @@ class ViennaDangles {
      * @param chain Vector of child indices forming a contiguous chain.
      * @param children Vector of all child loop nodes.
      * @param dangle_energies Precomputed dangle energies.
-     * @param disable_first_left_dangle Whether to disable left dangle for first child.
      * @param disable_last_right_dangle Whether to disable right dangle for last child.
      * @param init Initial values for dynamic programming.
      * @param closing Dangle energy for closing base pair (for multiloop).
      * @return Optimal dangle energy for the chain in centicalories.
      */
     static int process_chain(const std::vector<size_t>& chain,
-                             const std::vector<std::shared_ptr<LoopNode>>& children,
                              const std::vector<DangleSet>& dangle_energies,
-                             const bool& disable_first_left_dangle = false,
                              const bool& disable_last_right_dangle = false,
                              std::array<int, 2> init = {0, INF}, DangleSet closing = DangleSet());
 
@@ -200,16 +196,13 @@ class ViennaDangles {
      * @param dangle_chains Vector of chains to process.
      * @param children Vector of all child loop nodes.
      * @param dangle_energies Precomputed dangle energies.
-     * @param disable_first_left_dangle Whether to disable left dangle for first child.
      * @param disable_last_right_dangle Whether to disable right dangle for last child.
      * @param init Initial values for dynamic programming.
      * @param closing Dangle energy for closing base pair (for multiloop).
      * @return Total optimal dangle energy in centicalories.
      */
     static int process_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                              const std::vector<std::shared_ptr<LoopNode>>& children,
                               const std::vector<DangleSet>& dangle_energies,
-                              const bool& disable_first_left_dangle = false,
                               const bool& disable_last_right_dangle = false,
                               std::array<int, 2> init = {0, INF}, DangleSet closing = DangleSet());
 

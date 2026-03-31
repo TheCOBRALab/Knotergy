@@ -80,7 +80,7 @@ class ModifiedBasesFunctions {
      * @param mod_params Vector of modified base parameters.
      * @return Multiloop energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_multiloop_energy(const LoopNode& node, const std::string& sequence,
+    static int find_mod_multiloop_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                            const std::vector<std::string_view>& mod_sequence,
                                            vrna_md_param& vp,
                                            const std::vector<modified_base_param>& mod_params);
@@ -94,8 +94,7 @@ class ModifiedBasesFunctions {
      * @param mod_params Vector of modified base parameters.
      * @return External loop energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, 
-                                        const std::string& sequence,
+    static int find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
                                         const std::vector<std::string_view>& mod_sequence,
                                         vrna_md_param& vp,
                                         const std::vector<modified_base_param>& mod_params);
@@ -121,7 +120,7 @@ class ModifiedBasesFunctions {
     * @return Energy difference in centicalories to apply to the loop's energy due to modified bases.
     * 
     */
-   static int update_energy(const LoopNode& node, const std::string& sequence, 
+   static int update_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA, 
                             const std::vector<std::string_view>& mod_sequence,
                             vrna_md_param& vp,const std::vector<modified_base_param>& mod_params, 
                             DangleSet& current_set, bool is_external = false, 
