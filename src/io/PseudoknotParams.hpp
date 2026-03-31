@@ -5,6 +5,7 @@
 #include <string>
 
 #include "FileUtils.hpp"
+#include "Report.hpp"
 #include "common.hpp"
 using json = nlohmann::json;
 
@@ -81,6 +82,15 @@ struct pk_param {
     const int pk_mloop_init;      ///< Multiloop spanning band initialization penalty.
     const int pk_mloop_bp;        ///< Base pair in multiloop spanning band penalty.
     const int pk_mloop_unpaired;  ///< Unpaired bases in multiloop spanning band penalty.
+
+    // ------- Details about loading the parameters, for reporting purposes -------
+
+    [[nodiscard]] const ParamSourceInfo& get_source_info() const { return source_info; }
+
+    void set_source_info(const ParamSourceInfo& info) { source_info = info; }
+
+   private:
+    ParamSourceInfo source_info;
 };
 
 /**
@@ -100,9 +110,12 @@ class PseudoknotParams {
      */
     static const pk_param load_pk_param(
         const std::string& paramFile = "./params/common/pk_DirksPierce09_HotKnotsV2.json") {
+        ParamSourceInfo info;
+        info.label = "Pseudoknot";
+        info.requested_path = paramFile;
+
         if (paramFile.empty()) {
-            std::cerr << "Warning: No pseudoknot parameter file provided. Using default parameters."
-                      << std::endl;
+            info.status = ParamStatus::Defaulted;
             return {};
         }
 
@@ -114,8 +127,14 @@ class PseudoknotParams {
             THROW_ERROR("Pseudoknot parameters path \"" + paramFile + "\" is not a file.");
         }
 
-        std::cout << "Pseudoknot Parameter File: " << paramFile << std::endl;
-        const pk_param pkp = parse_pk_json(paramFile);
+        pk_param pkp = parse_pk_json(paramFile);
+
+        info.status = ParamStatus::LoadedUserFile;
+        info.resolved_path = paramFile;
+        info.resolved_name = pkp.name;
+
+        pkp.set_source_info(info);
+
         return pkp;
     }
 

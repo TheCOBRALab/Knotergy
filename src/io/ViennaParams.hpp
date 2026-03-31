@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "FileUtils.hpp"
+#include "Report.hpp"
 using json = nlohmann::json;
 
 extern "C" {
@@ -26,6 +27,14 @@ struct vrna_md_param {
 
     vrna_md_t md{};     ///< ViennaRNA model details.
     vrna_param_t* p{};  ///< ViennaRNA parameters.
+
+    // ------- Details about loading the parameters, for reporting purposes -------
+
+    [[nodiscard]] const ParamSourceInfo& get_source_info() const { return source_info; }
+    void set_source_info(const ParamSourceInfo& info) { source_info = info; }
+
+   private:
+    ParamSourceInfo source_info;
 };
 
 /**

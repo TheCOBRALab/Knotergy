@@ -5,44 +5,71 @@ namespace knotergy {
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
                                                    const std::string& seq) {
     vrna_md_param md_param{};
+    ParamSourceInfo source_info;
+
+    source_info.label = "ViennaRNA";
+    source_info.requested_path = paramFile;
 
     // Find user specified parameter file
     vrna_md_set_default(&md_param.md);
     md_param.md.dangles = dangle;
+
+    // Try to load user-specified parameter file if provided
     if (!paramFile.empty()) {
         if (FileUtils::file_exists(paramFile)) {
             int loaded = vrna_params_load(paramFile.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
             if (!loaded) {
                 THROW_ERROR("Failed to load parameter file: " + paramFile);
             }
-            std::cout << "Successfully loaded parameter file: " << paramFile << std::endl;
+
             md_param.p = vrna_params(&md_param.md);
+            source_info.status = ParamStatus::LoadedUserFile;
+            source_info.resolved_path = paramFile;
+            source_info.resolved_name = FileUtils::get_filename_no_ext(paramFile);
+
+            if (source_info.resolved_name == "rna_DirksPierce09") {
+                source_info.resolved_name += "Dirks&Pierce 2009";
+            } else if (source_info.resolved_name == "rna_Turner2004") {
+                source_info.resolved_name += "Turner 2004";
+            } else if (source_info.resolved_name == "dna_Mathews2004") {
+                source_info.resolved_name += "Mathews 2004";
+            }
+
+            md_param.set_source_info(source_info);
+            md_param.p = vrna_params(&md_param.md);
+
             return md_param;
-        } else {
-            std::cerr << "Warning: Parameter file \"" << paramFile << "\" not found." << std::endl;
         }
-    } else {
-        std::cerr << "No ViennaRNA parameter file provided. ";
     }
 
-    // Default fallback based on sequence
-    if (seq.find('T') != std::string::npos) {  //  (detect DNA but currently disabled)
-        std::cerr << "Defaulting to DNA parameters (Mathews 2004)." << std::endl;
+    // Fallback for DNA
+    if (seq.find('T') != std::string::npos) {
         vrna_params_load_DNA_Mathews2004();
-    } else {
-        // Default RNA parameters (Dirks&Pierce 2009)
-        const std::string default_path = "./params/common/rna_DirksPierce09.par";
-        std::cerr << "Defaulting to RNA parameters (Dirks&Pierce 2009)." << std::endl;
-        int loaded = vrna_params_load(default_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
-
-        // in case someone deletes the default param file 😭
-        if (!loaded) {
-            std::cerr << ("Failed to load parameter file: " + default_path) << std::endl;
-            std::cerr << "Defaulting to RNA parameters (Turner 2004)." << std::endl;
-            vrna_params_load_RNA_Turner2004();
-        }
+        source_info.status = ParamStatus::Fallback;
+        source_info.resolved_name = "Mathews 2004 (DNA)";
     }
+    // Fallback for RNA (Dirks&Pierce 2009 if available, otherwise Turner 2004)
+    else if (FileUtils::file_exists("./params/common/rna_DirksPierce09.par")) {
+        int loaded = vrna_params_load("./params/common/rna_DirksPierce09.par",
+                                      VRNA_PARAMETER_FORMAT_DEFAULT);
+        if (!loaded) {
+            THROW_ERROR(
+                "Failed to load default RNA parameter file: "
+                "./params/common/rna_DirksPierce09.par");
+        }
+
+        source_info.status = ParamStatus::Fallback;
+        source_info.resolved_path = "./params/common/rna_DirksPierce09.par";
+        source_info.resolved_name = "Dirks&Pierce 2009";
+    } else {
+        vrna_params_load_RNA_Turner2004();
+        source_info.status = ParamStatus::Fallback;
+        source_info.resolved_name = "Turner 2004";
+    }
+
+    md_param.set_source_info(source_info);
     md_param.p = vrna_params(&md_param.md);
+
     return md_param;
 }
 

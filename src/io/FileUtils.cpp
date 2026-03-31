@@ -67,4 +67,27 @@ bool FileUtils::is_directory(const std::string& name) {
     return out;
 }
 
+// Helper to extract filename without extension from a path
+std::string FileUtils::get_filename_no_ext(const std::string& path) {
+    // 1. Extract filename
+    size_t slash = path.find_last_of("/\\");
+    std::string filename = (slash == std::string::npos) ? path : path.substr(slash + 1);
+
+    // 2. Handle hidden files like ".bashrc"
+    if (!filename.empty() && filename[0] == '.') {
+        size_t dot = filename.find('.', 1);  // skip first dot
+        if (dot == std::string::npos) {
+            return filename;  // no extension
+        }
+    }
+
+    // 3. Remove extension
+    size_t dot = filename.find_last_of('.');
+    if (dot != std::string::npos) {
+        filename = filename.substr(0, dot);
+    }
+
+    return filename;
+}
+
 }  // namespace knotergy

@@ -56,6 +56,14 @@ class FileUtils {
     [[nodiscard]] static std::vector<std::string> get_files_in_dir(const std::string& dir,
                                                                    bool include_dirs = false,
                                                                    bool recursive = false);
+
+    /**
+     * @brief Get the filename without extension from a path.
+     *
+     * @param path Full file path.
+     * @return Filename without extension.
+     */
+    [[nodiscard]] static std::string get_filename_no_ext(const std::string& path);
 };
 
 }  // namespace knotergy

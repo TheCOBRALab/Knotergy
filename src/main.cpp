@@ -3,6 +3,7 @@
 #include <unordered_set>
 
 #include "energy/ComputeEnergy.hpp"
+#include "io/OutputManager.hpp"
 #include "io/PseudoknotParams.hpp"
 #include "io/RNAInputManager.hpp"
 #include "loop_tree/LoopFactory.hpp"
@@ -153,8 +154,12 @@ int main(int argc, char** argv) {
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
         knotergy::RNAInputManager::process_inputs(inputs, mp);
 
+    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, verbose);
+
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
+        std::cout << "\n--------- Name: " << processed_rna.get_name() << " ---------" << std::endl;
+
         // Builds loop tree
         knotergy::LoopFactory factory(processed_rna);
 
@@ -163,7 +168,7 @@ int main(int argc, char** argv) {
                                                   mp, round, verbose);
 
         // Output results
-        std::cout << "\nName: " << processed_rna.get_name() << std::endl;
+
         if (energy_calculator.getInfiniteEnergyFlag()) {
             std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)"
                       << std::endl;
