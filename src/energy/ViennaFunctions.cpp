@@ -32,8 +32,8 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     unsigned int size = static_cast<unsigned int>(j - i - 1);
     if (vp.p->hairpin[size] == INF) {
         std::cerr
-            << "Warning: Hairpin loop size is too small (usually < 3). Infinite Energy. Sequence: "
-            << sequence << " i: " << i << ", j: " << j << std::endl;
+            << "Warning: Hairpin loop size is too small (usually < 3). Infinite Energy. Pairing: "
+            << sequence[i] << "-" << sequence[j] << " i: " << i << ", j: " << j << std::endl;
         is_inf = true;
         return INF;
     }

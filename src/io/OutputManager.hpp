@@ -28,7 +28,7 @@ class OutputManager {
 
         // Only show details if explicitly requested AND not too many
         if (verbose && !modified_params.empty()) {
-            std::cout << "\nModified base sets\n";
+            std::cout << "\nModified bases\n";
             std::cout << "------------------------------------------------\n";
 
             for (const auto& param : modified_params) {
