@@ -96,7 +96,7 @@ class PseudoknotFunctions {
                                                 vrna_md_param& vp,
                                                 const std::vector<modified_base_param>& mp,
                                                 const knotergy::pk_param& pkp,
-                                                const bool& round);
+                                                bool round);
 
     /**
      * @brief Calculate internal loop energy for base pairs in a pseudoknot band.
@@ -116,7 +116,7 @@ class PseudoknotFunctions {
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp,
                                                    const knotergy::pk_param& pkp,
-                                                   const bool& round);
+                                                   bool round);
 
     /**
      * @brief Calculate multiloop energy nested between base pairs in a pseudoknot band.

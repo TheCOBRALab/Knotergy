@@ -28,6 +28,8 @@ namespace knotergy {
 struct DangleSet {
    public:
     DangleSet() : no_dangle(0), left_dangle(0), right_dangle(0), both_dangle(0) {}
+    DangleSet(int no_dangle, int left_dangle, int right_dangle, int both_dangle)
+        : no_dangle(no_dangle), left_dangle(left_dangle), right_dangle(right_dangle), both_dangle(both_dangle) {}
 
     int no_dangle;      ///< Energy with no dangling ends.
     int left_dangle;    ///< Energy with only 5' dangling end.
@@ -87,8 +89,7 @@ class ViennaDangles {
      * @return Optimal dangle energy in centicalories.
      */
     static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
-                                     const std::vector<DangleSet>& dangle_energies, 
-                                     size_t sequence_length);
+                                     const std::vector<DangleSet>& dangle_energies);
 
     /**
      * @brief Calculate optimal multibranch loop dangle energy.
@@ -125,7 +126,7 @@ class ViennaDangles {
         const std::vector<std::shared_ptr<LoopNode>>& children, 
         const ProcessedRNAEntry& pRNA,
         vrna_md_param& vp, 
-        const bool& is_external = true);
+        bool is_external = true);
 
     /**
      * @brief Get dangle energy for a multibranch loop closing pair.
@@ -134,7 +135,7 @@ class ViennaDangles {
      * @param sequence The RNA nucleotide sequence.
      * @return DangleSet containing energies for the closing pair.
      */
-    static DangleSet get_ml_dangle_energy(const LoopNode& node, 
+    static DangleSet get_ml_closing_dangle_energy(const LoopNode& node, 
                                           const ProcessedRNAEntry& pRNA,
                                           vrna_md_param& vp);
 
@@ -187,7 +188,7 @@ class ViennaDangles {
      */
     static int process_chain(const std::vector<size_t>& chain,
                              const std::vector<DangleSet>& dangle_energies,
-                             const bool& disable_last_right_dangle = false,
+                             bool disable_last_right_dangle = false,
                              std::array<int, 2> init = {0, INF}, DangleSet closing = DangleSet());
 
     /**
@@ -203,7 +204,7 @@ class ViennaDangles {
      */
     static int process_chains(const std::vector<std::vector<size_t>>& dangle_chains,
                               const std::vector<DangleSet>& dangle_energies,
-                              const bool& disable_last_right_dangle = false,
+                              bool disable_last_right_dangle = false,
                               std::array<int, 2> init = {0, INF}, DangleSet closing = DangleSet());
 
     /**

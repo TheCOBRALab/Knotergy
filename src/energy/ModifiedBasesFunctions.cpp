@@ -49,7 +49,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     if (vp.md.dangles == 1) {
         children_dangle_sets = ViennaDangles::populate_children_dangle_energies(
                                                          node.children, pRNA, vp, is_external);
-        closing_set = ViennaDangles::get_ml_dangle_energy(node, pRNA, vp);
+        closing_set = ViennaDangles::get_ml_closing_dangle_energy(node, pRNA, vp);
     }
 
     // Initialize energy with unmodified multiloop energy if not dangle 1
@@ -82,9 +82,8 @@ int ModifiedBasesFunctions::find_mod_external_energy(
     const std::vector<std::shared_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
     const std::vector<std::string_view>& mod_sequence,
     vrna_md_param& vp,
-    const std::vector<modified_base_param>& mod_params) {
-    
-    const std::string& sequence = pRNA.get_sequence();
+    const std::vector<modified_base_param>& mod_params) 
+{
     bool is_external = true;
     std::vector<DangleSet> all_dangle_sets;
     DangleSet empty_set; // Used when dangles != 1 to avoid checking condition in loop
@@ -106,7 +105,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
      }
 
      if (vp.md.dangles == 1) {
-         energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets, sequence.size());
+         energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets);
      }
      return energy;
 }

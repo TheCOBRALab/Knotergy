@@ -125,7 +125,7 @@ double PseudoknotFunctions::pk_stack_energy(const BasePair& bp,
                                             vrna_md_param& vp,
                                             const std::vector<modified_base_param>& mp,
                                             const knotergy::pk_param& pkp,
-                                            const bool& round) {
+                                            bool round) {
     const std::string& sequence = processed_rna.get_sequence();
 
     int stack_energy = processed_rna.has_modified_bases()
@@ -141,7 +141,7 @@ double PseudoknotFunctions::pk_internal_energy(const BasePair& bp,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp,
                                                const knotergy::pk_param& pkp,
-                                               const bool& round) {
+                                               bool round) {
     const std::string& sequence = processed_rna.get_sequence();
     double internal_penalty =
         ViennaFunctions::internal_loop_energy(bp, next_bp, sequence, vp) * pkp.pk_internal_x;
