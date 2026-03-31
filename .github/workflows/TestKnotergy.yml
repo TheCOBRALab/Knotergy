@@ -6,7 +6,7 @@ on:
   pull_request: { branches: [main] }
 
 env:
-  VIENNARNA_VERSION: "2.7.1"
+  VIENNARNA_VERSION: "2.7.2"
   VIENNARNA_PREFIX: "${{ github.workspace }}/viennarna"
 
 jobs:
