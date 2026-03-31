@@ -17,24 +17,24 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 ### Software Requirements
 
 * **CMake** ≥ 3.15
-* **ViennaRNA** 2.7.0 & 2.7.1
+* **ViennaRNA** ≥ 2.7.0
 ---
 
 ## 1. Install ViennaRNA
 
 Knotergy requires ViennaRNA to compile and run.
 
-1. **Download ViennaRNA 2.7.1:**
+1. **Download ViennaRNA 2.7.2:**
 
    ```bash
-   curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.1/ViennaRNA-2.7.1.tar.gz
+   curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.2/ViennaRNA-2.7.2.tar.gz
    ```
 
 2. **Install:**
 
    ```bash
-   tar -zxvf ViennaRNA-2.7.1.tar.gz
-   cd ViennaRNA-2.7.1
+   tar -zxvf ViennaRNA-2.7.2.tar.gz
+   cd ViennaRNA-2.7.2
    ./configure --without-perl
    sudo make -j$(nproc)              # Linux
    sudo make -j$(sysctl -n hw.ncpu)  # macOS
