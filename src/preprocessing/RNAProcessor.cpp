@@ -5,20 +5,30 @@
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(
     RNAEntry rna, const std::vector<modified_base_param>& modified_params) {
-    std::vector<std::string_view> mod_sequence =
-        ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
+    bool has_modified_bases = false;
+    std::string unmodified_sequence;
+    std::vector<size_t> pairings;
 
-    // Ensure Sequence & Structure are the same length
-    if (mod_sequence.size() != rna.structure.size()) {
-        THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
-                    std::to_string(mod_sequence.size()) +
-                    "\nRNA length: " + std::to_string(rna.structure.size()));
+    if (!modified_params.empty()) {
+        std::vector<std::string_view> mod_sequence =
+            ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
+
+        if (mod_sequence.size() != rna.structure.size()) {
+            THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
+                        std::to_string(mod_sequence.size()) +
+                        "\nRNA length: " + std::to_string(rna.structure.size()));
+        }
+
+        unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(),
+                                                          has_modified_bases);
+        pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
+    }
+    // If no modified base parameters provided, skip modified sequence processing
+    else {
+        unmodified_sequence = rna.sequence;
+        pairings = compute_pairings(rna, unmodified_sequence);
     }
 
-    bool has_modified_bases = false;
-    std::string unmodified_sequence =
-        compute_unmodified_sequence(mod_sequence, modified_params, rna.size(), has_modified_bases);
-    std::vector<size_t> pairings = compute_pairings(rna, unmodified_sequence, mod_sequence);
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pairings);
     std::vector<size_t> cr_pairings = compute_cr_pairings(closed_regions, rna.size());
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pairings);

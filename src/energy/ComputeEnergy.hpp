@@ -42,8 +42,7 @@ class ComputeEnergy {
           mp_{mp},
           sequence_{processed_rna.get_sequence()},
           round_{round} {
-        bool has_mod = processed_rna_.has_modified_bases();
-        has_mod ? process_modified_tree(*root_node_, verbose) : process_tree(*root_node_, verbose);
+        process_tree(*root_node_, verbose);
     };
 
     /**

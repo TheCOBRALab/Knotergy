@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
-    std::string mod_param_path = "./params/modified_bases";
+    std::string mod_param_path = "";
     std::string pseudo_param_file = "./params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
     bool verbose = false;
@@ -86,6 +86,9 @@ int main(int argc, char** argv) {
             round = true;
         } else if (arg == "-m" || arg == "--mod-file") {
             mod_param_path = get_trimmed_arg(i, argc, argv);
+            if (mod_param_path.empty()) {
+                mod_param_path = "./params/modified_bases";
+            }
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
         } else if ((arg == "-k" || arg == "--pk-paramFile") && argc >= i + 1) {
@@ -154,7 +157,7 @@ int main(int argc, char** argv) {
     std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
         knotergy::RNAInputManager::process_inputs(inputs, mp);
 
-    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, verbose);
+    knotergy::OutputManager::print_parameter_report(vp, pkp, mp);
 
     //------------------------- Main Processing Loop ----------------------------
     for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
@@ -168,7 +171,6 @@ int main(int argc, char** argv) {
                                                   mp, round, verbose);
 
         // Output results
-
         if (energy_calculator.getInfiniteEnergyFlag()) {
             std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)"
                       << std::endl;
