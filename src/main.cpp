@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
         } else if ((arg == "-i" || arg == "--input") && argc >= i + 1) {
             input_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-o" || arg == "--output") && argc >= i + 1) {
+            std::cout << "Output file specified but output functionality is not yet implemented. Ignoring output file argument." << std::endl;
             output_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
