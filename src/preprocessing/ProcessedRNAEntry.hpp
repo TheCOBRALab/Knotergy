@@ -57,7 +57,10 @@ class ProcessedRNAEntry {
           closed_regions_pairings_{std::move(closed_regions_pairings)},
           unpaired_prefix_sum_{std::move(unpaired_prefix_sum)},
           has_modified_bases_{has_modified_bases} {
-        mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        if (has_modified_bases) {
+            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        }
+        
     }
 
     /**
@@ -96,7 +99,9 @@ class ProcessedRNAEntry {
           closed_regions_pairings_(std::move(other.closed_regions_pairings_)),
           unpaired_prefix_sum_(std::move(other.unpaired_prefix_sum_)),
           has_modified_bases_(other.has_modified_bases_) {
-        mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        if (has_modified_bases_) {
+            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        }
     }
 
     // Move assignment operator (ProcessedRNAEntry a = std::move(b);)
@@ -111,8 +116,9 @@ class ProcessedRNAEntry {
             closed_regions_pairings_ = std::move(other.closed_regions_pairings_);
             unpaired_prefix_sum_ = std::move(other.unpaired_prefix_sum_);
             has_modified_bases_ = other.has_modified_bases_;
-
-            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+            if (has_modified_bases_) {
+                mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+            } 
         }
         return *this;
     }
@@ -128,7 +134,9 @@ class ProcessedRNAEntry {
           closed_regions_pairings_(other.closed_regions_pairings_),
           unpaired_prefix_sum_(other.unpaired_prefix_sum_),
           has_modified_bases_(other.has_modified_bases_) {
-        mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        if (has_modified_bases_) {
+            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_);
+        }
     }
 
     /// @return The RNA entry's name.

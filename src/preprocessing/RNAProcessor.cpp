@@ -61,13 +61,16 @@ std::vector<size_t> RNAProcessor::compute_pairings(
         close_to_open.emplace(pair.second, pair.first);
     }
 
-    // pre-allocate pairings
-    std::vector<size_t> pairings(structure.size(), NULL_INDEX);
+    const size_t n = structure.size();
+    const bool check_pairs = (unmodified_sequence.size() == n);
+    const bool have_mod_seq = (mod_sequence.size() == n);
 
+    // pre-allocate pairings
+    std::vector<size_t> pairings(n, NULL_INDEX);
     // 1 stack for each open/close pair
     std::unordered_map<char, std::vector<size_t>> stacks;
 
-    for (size_t i = 0; i < structure.size(); i++) {
+    for (size_t i = 0; i < n; i++) {
         char c = structure[i];
 
         // un-paired
@@ -97,20 +100,20 @@ std::vector<size_t> RNAProcessor::compute_pairings(
             pairings[j] = i;
 
             // check if they're a valid pair
-            if (unmodified_sequence.size() == structure.size() &&
+            if (check_pairs &&
                 !valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
                 // if modified sequence is provided, use that for warning
-                if (mod_sequence.size() == structure.size()) {
+                if (have_mod_seq) {
                     std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
                                      "' can't pair with '" + std::string(mod_sequence[j]) +
-                                     "' at indices " + std::to_string(j) + ", " + std::to_string(i)
-                              << std::endl;
+                                     "' at indices " + std::to_string(j) + ", " + std::to_string(i) 
+                                     << '\n';
+
                 } else {  // If modified sequence is not provided, fall back to unmodified sequence
                     std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
                                      "' can't pair with '" +
                                      std::string(1, unmodified_sequence[j]) + "' at indices " +
-                                     std::to_string(j) + ", " + std::to_string(i)
-                              << std::endl;
+                                     std::to_string(j) + ", " + std::to_string(i) << '\n';
                 }
             }
             continue;
