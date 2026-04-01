@@ -45,9 +45,9 @@ TEST(Dangles, external_simple) {
     std::string structure = ".(((((.........................))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 3.90, 0.009);
-    EXPECT_NEAR(d1, 3.2, 0.009);
-    EXPECT_NEAR(d2, 3.2, 0.009);
+    EXPECT_NEAR(d0, 3.90, 0.00005);
+    EXPECT_NEAR(d1, 3.2, 0.00005);
+    EXPECT_NEAR(d2, 3.2, 0.00005);
 }
 
 TEST(Dangles, external_simple_NoEnds) {
@@ -55,9 +55,9 @@ TEST(Dangles, external_simple_NoEnds) {
     std::string structure = "(((((.........................)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 3.90, 0.009);
-    EXPECT_NEAR(d1, 3.90, 0.009);
-    EXPECT_NEAR(d2, 3.90, 0.009);
+    EXPECT_NEAR(d0, 3.90, 0.00005);
+    EXPECT_NEAR(d1, 3.90, 0.00005);
+    EXPECT_NEAR(d2, 3.90, 0.00005);
 }
 
 TEST(Dangles, external_simple_adjacent) {
@@ -65,9 +65,9 @@ TEST(Dangles, external_simple_adjacent) {
     std::string structure = ".((((((((((((((...)))))))))))))).((((((((........)))))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, -16.40, 0.009);
-    EXPECT_NEAR(d1, -17.20, 0.009);
-    EXPECT_NEAR(d2, -17.60, 0.009);
+    EXPECT_NEAR(d0, -16.40, 0.00005);
+    EXPECT_NEAR(d1, -17.20, 0.00005);
+    EXPECT_NEAR(d2, -17.60, 0.00005);
 }
 
 TEST(Dangles, multiloop_left_dangle) {
@@ -75,9 +75,9 @@ TEST(Dangles, multiloop_left_dangle) {
     std::string structure = "(((.(((....)))..((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.5, 0.009);
-    EXPECT_NEAR(d2, 12.9, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.5, 0.00005);
+    EXPECT_NEAR(d2, 12.9, 0.00005);
 }
 
 TEST(Dangles, multiloop_left_dangle_chained) {
@@ -85,9 +85,9 @@ TEST(Dangles, multiloop_left_dangle_chained) {
     std::string structure = "(((.(((....))).((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.6, 0.009);
-    EXPECT_NEAR(d2, 12.9, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.6, 0.00005);
+    EXPECT_NEAR(d2, 12.9, 0.00005);
 }
 
 TEST(Dangles, multiloop_left_touch) {
@@ -95,9 +95,9 @@ TEST(Dangles, multiloop_left_touch) {
     std::string structure = "((((((....))).((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 14.4, 0.009);
-    EXPECT_NEAR(d2, 12.9, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 14.4, 0.00005);
+    EXPECT_NEAR(d2, 12.9, 0.00005);
 }
 
 
@@ -106,9 +106,9 @@ TEST(Dangles, multiloop_right_dangle) {
     std::string structure = "(((..(((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.1, 0.009);
-    EXPECT_NEAR(d2, 12.4, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.1, 0.00005);
+    EXPECT_NEAR(d2, 12.4, 0.00005);
 }
 
 TEST(Dangles, multiloop_right_touch) {
@@ -116,9 +116,9 @@ TEST(Dangles, multiloop_right_touch) {
     std::string structure = "(((..(((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.3, 0.009);
-    EXPECT_NEAR(d2, 12.4, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.3, 0.00005);
+    EXPECT_NEAR(d2, 12.4, 0.00005);
 }
 
 TEST(Dangles, multiloop_both_touch) {
@@ -126,9 +126,9 @@ TEST(Dangles, multiloop_both_touch) {
     std::string structure = "((((((....)))...((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 14.70, 0.009);
-    EXPECT_NEAR(d2, 12.70, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 14.70, 0.00005);
+    EXPECT_NEAR(d2, 12.70, 0.00005);
 }
 
 TEST(Dangles, multiloop_both_RDangle) {
@@ -136,9 +136,9 @@ TEST(Dangles, multiloop_both_RDangle) {
     std::string structure = "((((((....)))...((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 14.30, 0.009);
-    EXPECT_NEAR(d2, 12.70, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 14.30, 0.00005);
+    EXPECT_NEAR(d2, 12.70, 0.00005);
 }
 
 TEST(Dangles, multiloop_both_LDangle) {
@@ -146,9 +146,9 @@ TEST(Dangles, multiloop_both_LDangle) {
     std::string structure = "(((.(((....)))...((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.90, 0.009);
-    EXPECT_NEAR(d2, 12.70, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.90, 0.00005);
+    EXPECT_NEAR(d2, 12.70, 0.00005);
 }
 
 TEST(Dangles, multiloop_both_BDangle) {
@@ -156,9 +156,9 @@ TEST(Dangles, multiloop_both_BDangle) {
     std::string structure = "(((.(((....)))...((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.50, 0.009);
-    EXPECT_NEAR(d2, 12.70, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.50, 0.00005);
+    EXPECT_NEAR(d2, 12.70, 0.00005);
 }
 
 TEST(Dangles, multiloop_loop_touch) {
@@ -166,9 +166,9 @@ TEST(Dangles, multiloop_loop_touch) {
     std::string structure = "((((((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 14.90, 0.009);
-    EXPECT_NEAR(d2, 12.90, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 14.90, 0.00005);
+    EXPECT_NEAR(d2, 12.90, 0.00005);
 }
 
 TEST(Dangles, multiloop_loop_RDangle) {
@@ -176,9 +176,9 @@ TEST(Dangles, multiloop_loop_RDangle) {
     std::string structure = "((((((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 14.20, 0.009);
-    EXPECT_NEAR(d2, 12.40, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 14.20, 0.00005);
+    EXPECT_NEAR(d2, 12.40, 0.00005);
 }
 
 TEST(Dangles, multiloop_loop_LDangle) {
@@ -186,9 +186,9 @@ TEST(Dangles, multiloop_loop_LDangle) {
     std::string structure = "(((.(((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.60, 0.009);
-    EXPECT_NEAR(d2, 12.40, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.60, 0.00005);
+    EXPECT_NEAR(d2, 12.40, 0.00005);
 }
 
 TEST(Dangles, multiloop_loop_BDangle) {
@@ -196,9 +196,9 @@ TEST(Dangles, multiloop_loop_BDangle) {
     std::string structure = "(((.(((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 15.10, 0.009);
-    EXPECT_NEAR(d1, 13.40, 0.009);
-    EXPECT_NEAR(d2, 12.40, 0.009);
+    EXPECT_NEAR(d0, 15.10, 0.00005);
+    EXPECT_NEAR(d1, 13.40, 0.00005);
+    EXPECT_NEAR(d2, 12.40, 0.00005);
 }
 
 // echo -e "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))." | RNAeval -d 
@@ -207,7 +207,7 @@ TEST(Dangles, external_multiloop) {
     std::string structure = ".(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........))))))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, -2.50, 0.009);
-    EXPECT_NEAR(d1, -4.30, 0.009);
-    EXPECT_NEAR(d2, -8.90, 0.009);
+    EXPECT_NEAR(d0, -2.50, 0.00005);
+    EXPECT_NEAR(d1, -4.30, 0.00005);
+    EXPECT_NEAR(d2, -8.90, 0.00005);
 }

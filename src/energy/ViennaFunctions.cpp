@@ -30,7 +30,9 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
 
     // loop size
     unsigned int size = static_cast<unsigned int>(j - i - 1);
-    if (vp.p->hairpin[size] == INF) {
+
+    // Max size for hairpin loop is 30 in ViennaRNA
+    if (size <= 30 && vp.p->hairpin[size] == INF) {
         std::cerr
             << "Warning: Hairpin loop size is too small (usually < 3). Infinite Energy. Pairing: "
             << sequence[i] << "-" << sequence[j] << " i: " << i << ", j: " << j << std::endl;

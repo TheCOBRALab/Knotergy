@@ -172,8 +172,7 @@ int main(int argc, char** argv) {
 
         // Output results
         if (energy_calculator.getInfiniteEnergyFlag()) {
-            std::cout << "\nENERGY: Infinite (" << energy_calculator.getEnergy() << " kcal/mol)"
-                      << std::endl;
+            printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
         } else {
             printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
         }

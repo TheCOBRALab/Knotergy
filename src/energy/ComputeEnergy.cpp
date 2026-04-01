@@ -2,12 +2,24 @@
 
 #include "./ModifiedBasesFunctions.hpp"
 namespace knotergy {
-void ComputeEnergy::process_tree(LoopNode& node, bool verbose) {
-    energy_ += process_node(node);
-    if (verbose) std::cout << node.energy_breakdown(sequence_.size());
 
-    for (const std::shared_ptr<LoopNode>& child : node.children) {
-        process_tree(*child, verbose);
+// A stack is used instead of recursion to avoid stack overflows on deeply nested structures.
+void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
+    std::vector<LoopNode*> stack;
+    stack.push_back(&root);
+
+    while (!stack.empty()) {
+        LoopNode* node = stack.back();
+        stack.pop_back();
+
+        energy_ += process_node(*node);
+        if (verbose) {
+            std::cout << node->energy_breakdown(sequence_.size());
+        }
+
+        for (auto it = node->children.rbegin(); it != node->children.rend(); ++it) {
+            stack.push_back(it->get());
+        }
     }
 }
 

@@ -200,4 +200,24 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
     }
 }
 
+// Iteratively destroy the loop tree to free memory.
+void LoopFactory::destroy_tree_iterative() {
+        if (!root_node_) return;
+
+        std::vector<std::shared_ptr<LoopNode>> work;
+        work.push_back(std::move(root_node_));
+
+        while (!work.empty()) {
+            auto node = std::move(work.back());
+            work.pop_back();
+
+            for (auto& child : node->children) {
+                if (child) work.push_back(std::move(child));
+            }
+
+            node->children.clear();
+            node->parent.reset();
+        }
+    }
+
 }  // namespace knotergy

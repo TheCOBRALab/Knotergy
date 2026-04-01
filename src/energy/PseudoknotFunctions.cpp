@@ -90,7 +90,8 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
 
         // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
         size_t size = band.right_inner() - band.left_inner() - 1;
-        if (vp.p->hairpin[size] == INF) {
+
+        if (size <= 30 && vp.p->hairpin[size] == INF) {
             std::cout << "Warning: Band with borders (" << band.left_border() << ", "
                       << band.right_border()
                       << ") are too close (usually < 3 base pairs), resulting in infinite energy."

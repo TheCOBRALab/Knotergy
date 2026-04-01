@@ -66,8 +66,19 @@ constexpr size_t NULL_INDEX = static_cast<size_t>(-1);
  * @param s The string to be trimmed.
  */
 inline void trim(std::string& s) {
-    s.erase(0, s.find_first_not_of(" \t\n\r\f\v\""));
-    s.erase(s.find_last_not_of(" \t\n\r\f\v\"") + 1);
+    const char* ws = " \t\n\r\f\v\"";
+
+    // Trim left
+    size_t start = s.find_first_not_of(ws);
+    if (start == std::string::npos) {
+        s.clear();  // string is all whitespace
+        return;
+    }
+
+    // Trim right
+    size_t end = s.find_last_not_of(ws);
+
+    s = s.substr(start, end - start + 1);
 }
 
 }  // namespace knotergy

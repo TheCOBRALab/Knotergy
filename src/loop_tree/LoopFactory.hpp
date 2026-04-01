@@ -22,6 +22,14 @@ class LoopFactory {
      * @param processed_rna The processed RNA entry containing structure and pairing information.
      */
     LoopFactory(const ProcessedRNAEntry& processed_rna);
+    
+    /**
+     * @brief Destroy the LoopFactory and its associated loop tree.
+     * 
+     * This destructor ensures that all dynamically allocated LoopNode objects are properly
+     * deallocated to prevent memory leaks. This is needed for deeply nested structures.
+     */
+    ~LoopFactory() {destroy_tree_iterative();};
 
     /**
      * @brief Get the root node of the loop tree.
@@ -147,6 +155,14 @@ class LoopFactory {
      * @param node Shared pointer to the loop node to annotate.
      */
     void annotate_bands(const std::shared_ptr<LoopNode>& node);
+
+    /**
+     * @brief Iteratively destroy the loop tree to free memory.
+     *
+     * This method uses a stack to traverse the tree and delete nodes without recursion,
+     * preventing potential stack overflow for deeply nested structures.
+     */
+    void destroy_tree_iterative();
 };
 
 }  // namespace knotergy

@@ -50,9 +50,9 @@ TEST(mod_nonpk, small) {
     std::string structure= "()";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 100000.0000, 0.001); // Turner 2004
-    EXPECT_NEAR(d1, 100000.0000, 0.001); // Turner 2004
-    EXPECT_NEAR(d2, 100000.0000, 0.001); // Turner 2004
+    EXPECT_NEAR(d0, 100000.0000, 0.00005); // Turner 2004
+    EXPECT_NEAR(d1, 100000.0000, 0.00005); // Turner 2004
+    EXPECT_NEAR(d2, 100000.0000, 0.00005); // Turner 2004
 }
 
 // echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
@@ -61,9 +61,9 @@ TEST(mod_nonpk, stack_0_dangles) {
     std::string structure= "(((((((((((((((((((((......)))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, -13.25, 0.001); // Turner 2004
-    EXPECT_NEAR(d1, -13.25, 0.001); // Turner 2004
-    EXPECT_NEAR(d2, -13.25, 0.001); // Turner 2004
+    EXPECT_NEAR(d0, -13.25, 0.00005); // Turner 2004
+    EXPECT_NEAR(d1, -13.25, 0.00005); // Turner 2004
+    EXPECT_NEAR(d2, -13.25, 0.00005); // Turner 2004
 }
 
 // // echo -e "GUUUUUAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUU66AAAC" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
@@ -72,9 +72,9 @@ TEST(mod_nonpk, stack_0_dangles) {
 //     std::string structure= "(((((((((((((((((((((((((......)))))))))))))))))))))))))";
 //     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-//     // EXPECT_NEAR(d0, -13.63, 0.001); // Turner 2004
-//     // EXPECT_NEAR(d1, -14.23, 0.001); // Turner 2004
-//     EXPECT_NEAR(d2, -18.55, 0.001); // Turner 2004
+//     // EXPECT_NEAR(d0, -13.63, 0.00005); // Turner 2004
+//     // EXPECT_NEAR(d1, -14.23, 0.00005); // Turner 2004
+//     EXPECT_NEAR(d2, -18.55, 0.00005); // Turner 2004
 // }
 
 
@@ -85,9 +85,9 @@ TEST(mod_nonpk, external1_0_dangle) {
     std::string structure= "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, -70.11, 0.001); // Turner 2004
-    EXPECT_NEAR(d1, -70.11, 0.001); // Turner 2004
-    EXPECT_NEAR(d2, -70.81, 0.001); // Turner 2004
+    EXPECT_NEAR(d0, -70.11, 0.00005); // Turner 2004
+    EXPECT_NEAR(d1, -70.11, 0.00005); // Turner 2004
+    EXPECT_NEAR(d2, -70.81, 0.00005); // Turner 2004
 }
 
 // // echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC\n(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
@@ -97,9 +97,9 @@ TEST(mod_nonpk, external1_0_dangle) {
 //     std::string structure= "(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))";
 //     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
 
-//     EXPECT_NEAR(d0, -68.83, 0.001); // Turner 2004
-//     EXPECT_NEAR(d1, -69.53, 0.001); // Turner 2004
-//     EXPECT_NEAR(d2, -69.73, 0.001); // Turner 2004
+//     EXPECT_NEAR(d0, -68.83, 0.00005); // Turner 2004
+//     EXPECT_NEAR(d1, -69.53, 0.00005); // Turner 2004
+//     EXPECT_NEAR(d2, -69.73, 0.00005); // Turner 2004
 // }
 
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json

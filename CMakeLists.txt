@@ -58,10 +58,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wsign-compare
         -Wconversion
         -Wsign-conversion
-        -fsanitize=address
+        -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow,shift
+        -fno-sanitize-recover=all
         -fno-omit-frame-pointer
     )
-    add_link_options(-fsanitize=address)
+    add_link_options(
+        -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow,shift
+        -fno-sanitize-recover=all
+    )
 else()
     # Normal (Release or other non-Debug builds)
     message(STATUS "Building in Release/Normal mode")
