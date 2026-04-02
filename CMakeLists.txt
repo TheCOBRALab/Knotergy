@@ -266,33 +266,44 @@ endif()
 message(STATUS "VIENNARNA_LIBRARY = ${VIENNARNA_LIBRARY}")
 message(STATUS "VIENNARNA_INCLUDE_DIRECTORY = ${VIENNARNA_INCLUDE_DIRECTORY}")
 
+
 # ---------- Friendly failure message ----------
 if (NOT VIENNARNA_LIBRARY OR NOT VIENNARNA_INCLUDE_DIRECTORY)
   string(JOIN "\n" _help
-    "❌ ViennaRNA library not found."
+    "❌ ViennaRNA not found."
     ""
-    "✔️ Quick fixes (pick one):"
-    "  1) Pass directories (recommended):"
-    "     cmake -S . -B build \\"
-    "       -DVIENNARNA_LIB=/path/to/lib/ \\"
-    "       -DVIENNARNA_INCLUDE_DIR=/path/to/include/"
+    "This project needs the ViennaRNA library and headers to build."
+    "If you already have ViennaRNA installed, CMake just couldn't find it with the default settings."
     ""
-    "  2) Pass full paths:"
-    "     cmake -S . -B build \\"
-    "       -DVIENNARNA_LIBRARY=/path/to/lib/libRNA.a \\"
-    "       -DVIENNARNA_INCLUDE_DIRECTORY=/path/to/include/ViennaRNA/pair_mat.h"
+    "Quick fix:"
+    "  Step 1: Locate the ViennaRNA library and header on your system."
+    "  They are often named 'libRNA.a' (or similar) and 'pair_mat.h'."
     ""
-    "  3) Environment variables:"
-    "     export VIENNARNA_LIB=/path/to/lib"
-    "     export VIENNARNA_INCLUDE_DIR=/path/to/include"
+    " 🔎 To locate these files, try:"
+    "    find \$HOME /usr/local /opt -type f -name 'libRNA*' 2>/dev/null"
+    "    find \$HOME /usr/local /opt -type f -name 'pair_mat.h' 2>/dev/null"
     ""
-    "🔎 To locate files:"
-    "     find \$HOME /usr/local /opt -type f -name libRNA.a 2>/dev/null"
-    "     find \$HOME /usr/local /opt -type f -name pair_mat.h 2>/dev/null"
+    "  Step 2: Set environment variables with the paths you found:"
+    "    export VIENNARNA_LIBRARY=/path/to/libRNA.a"
+    "    export VIENNARNA_INCLUDE_DIRECTORY=/path/to/include"
+    ""
+    "  For example, if you found:"
+    "    /usr/local/lib/libRNA.a"
+    "    /usr/local/include/ViennaRNA/pair_mat.h"
+    "  then use:"
+    "    export VIENNARNA_LIBRARY=/usr/local/lib/libRNA.a"
+    "    export VIENNARNA_INCLUDE_DIRECTORY=/usr/local/include"
+    ""
+    "  Step 3: Re-run CMake:"
+    "    cmake -S . -B build"
+    ""
+    "Optional: pass the paths directly to CMake instead of environment variables:"
+    "    cmake -S . -B build \\"
+    "      -DVIENNARNA_LIBRARY=/path/to/libRNA.a \\"
+    "      -DVIENNARNA_INCLUDE_DIRECTORY=/path/to/include"
   )
   message(FATAL_ERROR "${_help}")
 endif()
-
 
 # -------------------------------------------------------------------
 #                     Knotergy Configuration
