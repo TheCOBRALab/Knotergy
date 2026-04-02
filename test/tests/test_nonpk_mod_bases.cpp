@@ -8,37 +8,26 @@
 #include <loop_tree/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
 
+#include "utils.hpp"
+
 #include <string>
 #include <vector>
 
 namespace {
-float pipeline(std::string sequence, std::string structure, int dangle = 2,
-               std::string param_file = "../../params/common/rna_turner2004.par",
-               std::string pseudoknot_param_file = "../../params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json",
-               std::string mod_param_path = "../../params/modified_bases") {
 
-    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
-    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
-    knotergy::RNAEntry rna(sequence, structure);
-    std::vector<knotergy::modified_base_param> modified_params = knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
-    knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna), modified_params));
-    knotergy::LoopFactory factory(processed_rna);
-    
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, modified_params);
 
-    return energy.getEnergy();
-}
+const bool round = false;
 
-std::tuple<float, float, float> dangle_pipeline(
+std::tuple<float, float, float> dangle_get_energy(
     std::string sequence,
     std::string structure,
-    std::string param_file = "../../params/common/rna_turner2004.par",
-    std::string pseudoknot_param_file = "../../params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json",
-    std::string mod_param_path = "../../params/modified_bases"
+    std::string param_file = turner_file,
+    std::string pseudoknot_param_file = pkp_file,
+    std::string mod_param_path = mod_folder
 ) {
-    float d0 = pipeline(sequence, structure, 0, param_file, pseudoknot_param_file, mod_param_path);
-    float d1 = pipeline(sequence, structure, 1, param_file, pseudoknot_param_file, mod_param_path);
-    float d2 = pipeline(sequence, structure, 2, param_file, pseudoknot_param_file, mod_param_path);
+    float d0 = get_energy(sequence, structure, 0, round, param_file, pseudoknot_param_file, mod_param_path);
+    float d1 = get_energy(sequence, structure, 1, round, param_file, pseudoknot_param_file, mod_param_path);
+    float d2 = get_energy(sequence, structure, 2, round, param_file, pseudoknot_param_file, mod_param_path);
 
     return {d0, d1, d2};
 }
@@ -48,7 +37,7 @@ std::tuple<float, float, float> dangle_pipeline(
 TEST(mod_nonpk, small) {
     std::string sequence = "6U";
     std::string structure= "()";
-    auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+    auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
     EXPECT_NEAR(d0, 100000.0000, 0.00005); // Turner 2004
     EXPECT_NEAR(d1, 100000.0000, 0.00005); // Turner 2004
@@ -59,7 +48,7 @@ TEST(mod_nonpk, small) {
 TEST(mod_nonpk, stack_0_dangles) {
     std::string sequence = "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU";
     std::string structure= "(((((((((((((((((((((......)))))))))))))))))))))";
-    auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+    auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
     EXPECT_NEAR(d0, -13.25, 0.00005); // Turner 2004
     EXPECT_NEAR(d1, -13.25, 0.00005); // Turner 2004
@@ -70,7 +59,7 @@ TEST(mod_nonpk, stack_0_dangles) {
 // TEST(mod_nonpk, stack2_0_dangle) {
 //     std::string sequence = "GUUUUUAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUU66AAAC";
 //     std::string structure= "(((((((((((((((((((((((((......)))))))))))))))))))))))))";
-//     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+//     auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
 //     // EXPECT_NEAR(d0, -13.63, 0.00005); // Turner 2004
 //     // EXPECT_NEAR(d1, -14.23, 0.00005); // Turner 2004
@@ -83,7 +72,7 @@ TEST(mod_nonpk, stack_0_dangles) {
 TEST(mod_nonpk, external1_0_dangle) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
     std::string structure= "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
-    auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+    auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
     EXPECT_NEAR(d0, -70.11, 0.00005); // Turner 2004
     EXPECT_NEAR(d1, -70.11, 0.00005); // Turner 2004
@@ -95,7 +84,7 @@ TEST(mod_nonpk, external1_0_dangle) {
 // TEST(mod_nonpk, external2_1_dangle) {
 //     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
 //     std::string structure= "(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))";
-//     auto [d0, d1, d2] = dangle_pipeline(sequence, structure);
+//     auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
 //     EXPECT_NEAR(d0, -68.83, 0.00005); // Turner 2004
 //     EXPECT_NEAR(d1, -69.53, 0.00005); // Turner 2004

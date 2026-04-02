@@ -8,40 +8,31 @@
 #include <loop_tree/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
 
+#include "utils.hpp"
+
 #include <string>
 #include <vector>
 
 namespace {
-float pipeline(std::string sequence, std::string structure, std::string param_file, bool round = false){
-    int dangle = 2;
-    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
-    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param("../../params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json");
-    knotergy::RNAEntry rna(sequence, structure);
-    knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    knotergy::LoopFactory factory(processed_rna);
-    std::vector<knotergy::modified_base_param> mp;  // empty for unmodified bases
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp, round);
-
-    return energy.getEnergy();
-}
+const int dangle = 2;
+const bool round = true;
+const bool dont_round = false;
 
 std::pair<float, float> get_turner_results(const std::string& sequence, const std::string& structure){
-    bool round = true;
-    float turner_result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par");
-    float turner_rounded = pipeline(sequence, structure, "../../params/common/rna_turner2004.par", round);
+    float turner_result = get_energy(sequence, structure, dangle, dont_round, turner_file);
+    float turner_rounded = get_energy(sequence, structure, dangle, round, turner_file);
     return {turner_result, turner_rounded};
 }
 std::pair<float, float> get_dp_results(const std::string& sequence, const std::string& structure){
-    bool round = true;
-    float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
-    float dp_rounded = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par", round);
+    float dp_result = get_energy(sequence, structure, dangle, dont_round, DP_file);
+    float dp_rounded = get_energy(sequence, structure, dangle, round, DP_file);
     return {dp_result, dp_rounded};
 }
 
 TEST(PK_energies, InfiniteEnergy_DP) {
     std::string sequence  = "GGCC";
     std::string structure = "[(])";
-    float dp_result = pipeline(sequence, structure, "../../params/common/rna_DirksPierce09.par");
+    float dp_result = get_energy(sequence, structure, dangle, round, DP_file);
 
     EXPECT_NEAR(dp_result, 200003.5469, 0.00005);
 }
@@ -49,7 +40,7 @@ TEST(PK_energies, InfiniteEnergy_DP) {
 TEST(PK_energies, InfiniteEnergy_Turner) {
     std::string sequence  = "GGCC";
     std::string structure = "[(])";
-    float turner_result = pipeline(sequence, structure, "../../params/common/rna_turner2004.par");
+    float turner_result = get_energy(sequence, structure, dangle, round, turner_file);
 
     EXPECT_NEAR(turner_result, 200003.5469, 0.00005);
 }
@@ -58,7 +49,7 @@ TEST(PK_energies, HType_DP) {
     std::string sequence  = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
-
+    
     EXPECT_NEAR(dp_result,  -20.1912, 0.00005);
     EXPECT_NEAR(dp_rounded, -20.1600, 0.00005);
 }

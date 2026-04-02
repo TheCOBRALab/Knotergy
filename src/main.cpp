@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
     std::string mod_param_path = "";
-    std::string pseudo_param_file = "./params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+    const std::string default_mod_path = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
+    std::string pseudo_param_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
     bool verbose = false;
     int dangle = 2;
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
         } else if (arg == "-m" || arg == "--mod-file") {
             mod_param_path = get_trimmed_arg(i, argc, argv);
             if (mod_param_path.empty()) {
-                mod_param_path = "./params/modified_bases";
+                mod_param_path = default_mod_path;
             }
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);

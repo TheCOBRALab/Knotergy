@@ -8,32 +8,27 @@
 #include <loop_tree/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
 
+#include "utils.hpp"
+
 #include <string>
 #include <vector>
 #include <tuple>
 
 namespace {
-float get_energy(std::string sequence, std::string structure, int dangle, std::string param_file = "../../params/common/rna_turner2004.par", std::string pseudoknot_param_file = "../../params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json") {
-    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
-    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
-    knotergy::RNAEntry rna(sequence, structure);
-    knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    knotergy::LoopFactory factory(processed_rna);
-    std::vector<knotergy::modified_base_param> mod_params;  // empty for unmodified bases
-    bool round = false;
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mod_params, dangle, round);
 
-    return energy.getEnergy();
-}
+const std::string DP_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
+const std::string turner_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
+const std::string pkp_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+const bool round = false;
 
 std::tuple<float, float, float> pipeline(
     std::string sequence,
     std::string structure,
-    std::string param_file = "../../params/common/rna_turner2004.par"
+    std::string param_file = turner_file
 ) {
-    float d0 = get_energy(sequence, structure, 0, param_file);
-    float d1 = get_energy(sequence, structure, 1, param_file);
-    float d2 = get_energy(sequence, structure, 2, param_file);
+    float d0 = get_energy(sequence, structure, 0, round, param_file);
+    float d1 = get_energy(sequence, structure, 1, round, param_file);
+    float d2 = get_energy(sequence, structure, 2, round, param_file);
 
     return {d0, d1, d2};
 }

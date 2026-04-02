@@ -12,6 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Define a global compile definition for the source directory,
+# so it can be used in both the library and tests
+add_compile_definitions(
+    KNOTERGY_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
 # ------------------------- External Dependencies ------------------------- 
 include(FetchContent)
 
@@ -58,12 +64,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wsign-compare
         -Wconversion
         -Wsign-conversion
-        -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow,shift
+        -fsanitize=address,undefined
         -fno-sanitize-recover=all
         -fno-omit-frame-pointer
     )
     add_link_options(
-        -fsanitize=address,undefined,signed-integer-overflow,unsigned-integer-overflow,shift
+        -fsanitize=address,undefined
         -fno-sanitize-recover=all
     )
 else()
@@ -85,7 +91,7 @@ option(ENABLE_TESTS "Build unit tests" ON)
 
 if (NOT ENABLE_TESTS)
     message(STATUS "Unit tests are disabled. To enable them, set -DBUILD_TESTING=ON")
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/googletest/CMakeLists.txt")
+elseif(EXISTS "${CMAKE_SOURCE_DIR}/test/googletest/CMakeLists.txt")
     enable_testing()
     add_subdirectory(test)
     add_subdirectory(test/googletest)
@@ -294,10 +300,10 @@ endif()
 
 # ------------------------- Source Files -------------------------
 file(GLOB KnotergySources
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/io/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/preprocessing/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/loop_tree/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/energy/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/io/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/preprocessing/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/loop_tree/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/energy/*.cpp
 )
 
 add_library(KnotergyLib ${KnotergySources})

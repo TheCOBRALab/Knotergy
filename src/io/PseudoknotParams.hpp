@@ -109,7 +109,7 @@ class PseudoknotParams {
      * @throws DetailedException if file not found or invalid.
      */
     static const pk_param load_pk_param(
-        const std::string& paramFile = "./params/common/pk_DirksPierce09_HotKnotsV2.json") {
+        const std::string& paramFile = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json") {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;

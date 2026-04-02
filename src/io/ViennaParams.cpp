@@ -4,6 +4,11 @@ namespace knotergy {
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
                                                    const std::string& seq) {
+    
+
+    const std::string DP_path_str = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
+    const char* DP_path_char = DP_path_str.c_str(); // Need char* for ViennaRNA C API
+
     vrna_md_param md_param{};
     ParamSourceInfo source_info;
 
@@ -49,17 +54,15 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         source_info.resolved_name = "Mathews 2004 (DNA)";
     }
     // Fallback for RNA (Dirks&Pierce 2009 if available, otherwise Turner 2004)
-    else if (FileUtils::file_exists("./params/common/rna_DirksPierce09.par")) {
-        int loaded = vrna_params_load("./params/common/rna_DirksPierce09.par",
-                                      VRNA_PARAMETER_FORMAT_DEFAULT);
+    else if (FileUtils::file_exists(DP_path_str)) {
+        int loaded = vrna_params_load(DP_path_char, VRNA_PARAMETER_FORMAT_DEFAULT);
         if (!loaded) {
             THROW_ERROR(
-                "Failed to load default RNA parameter file: "
-                "./params/common/rna_DirksPierce09.par");
+                "Failed to load default RNA parameter file: " + DP_path_str);
         }
 
         source_info.status = ParamStatus::Fallback;
-        source_info.resolved_path = "./params/common/rna_DirksPierce09.par";
+        source_info.resolved_path = DP_path_str;
         source_info.resolved_name = "Dirks&Pierce 2009";
     } else {
         vrna_params_load_RNA_Turner2004();
