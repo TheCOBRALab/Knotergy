@@ -24,6 +24,15 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 
 Knotergy requires ViennaRNA to compile and run.
 
+### Option 1: Install via Conda
+1.  **Install ViennaRNA through conda, and activate your conda environment**
+
+      ```bash
+      conda install -c bioconda viennarna
+      conda activate
+      ```
+
+### Option 2: Manual install
 1. **Download ViennaRNA 2.7.2:**
 
    ```bash
