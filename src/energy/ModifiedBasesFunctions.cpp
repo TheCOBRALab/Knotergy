@@ -16,17 +16,17 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
     if (unique_mod_bases.empty()) return unmod_energy;
 
     // Used to look up stacking energies in modified base parameters
-    std::string r_key = join_string_views({cj, j, ci, i}, mod_sequence);
     std::string l_key = join_string_views({i, ci, j, cj}, mod_sequence);
-
+    std::string r_key = join_string_views({cj, j, ci, i}, mod_sequence);
+    
     // Get energy correction for modified bases (returns original energy if no modifications found)
     // Try the Vienna-defined ordering first, then the swapped orientation
     int e = get_mod_energy(l_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
 
-    // uncomment if you want values to match RNAfold, but note this is likely a bug in RNAfold
-    if (e == unmod_energy) {
-        e = get_mod_energy(r_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
-    }
+    // // uncomment if you want values to match RNAfold, but note this is likely a bug in RNAfold
+    // if (e == unmod_energy) {
+    //     e = get_mod_energy(r_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    // }
 
     return e;
 }
@@ -214,10 +214,11 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
         if (energy_lookup) {
             auto it = energy_lookup->find(key);
             if (it != energy_lookup->end()) {
-                std::cout << "Modified base energy found for key: " << key << " -> " << it->second
-                          << " Diff: " << static_cast<int>(it->second * 100) - unmod_energy
+                int mod_energy = static_cast<int>(it->second * 100);
+                std::cout << "Modified base energy found for key: " << key << " -> " << mod_energy
+                          << " Diff: " << mod_energy - unmod_energy
                           << std::endl;
-                return static_cast<int>(it->second * 100);
+                return mod_energy;
             }
         }
 

@@ -87,8 +87,10 @@ int main(int argc, char** argv) {
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--mod-file") {
-            mod_param_path = get_trimmed_arg(i, argc, argv);
-            if (mod_param_path.empty()) {
+            // Check if next argument exists AND is not another flag
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                mod_param_path = get_trimmed_arg(i, argc, argv);
+            } else {
                 mod_param_path = default_mod_path;
             }
         } else if (arg == "-d" || arg == "--dangle") {

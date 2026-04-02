@@ -33,7 +33,7 @@ std::tuple<float, float, float> dangle_get_energy(
 }
 }
 
-// echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
+// echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold -m
 TEST(mod_nonpk, small) {
     std::string sequence = "6U";
     std::string structure= "()";
@@ -44,42 +44,60 @@ TEST(mod_nonpk, small) {
     EXPECT_NEAR(d2, 100000.0000, 0.00005); // Turner 2004
 }
 
-// echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
-TEST(mod_nonpk, stack_0_dangles) {
-    std::string sequence = "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU";
-    std::string structure= "(((((((((((((((((((((......)))))))))))))))))))))";
+// echo -e "AAAUU6\n(...)." | RNAfold -C  --enforceConstraint  -m
+TEST(mod_nonpk, dangle_3_external) {
+    std::string sequence = "AAAUU6";
+    std::string structure= "(...).";
     auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
-    EXPECT_NEAR(d0, -13.25, 0.00005); // Turner 2004
-    EXPECT_NEAR(d1, -13.25, 0.00005); // Turner 2004
-    EXPECT_NEAR(d2, -13.25, 0.00005); // Turner 2004
+    // RNAfold gives different values due to a likely bug in their code
+    // d0 has a dangle modification when there shouldn't be one
+    // d1 & d2 use the wrong unmodified energy for the dangle and wrong keys for the modification
+    EXPECT_NEAR(d0, 6.40, 0.00005); // Turner 2004 // RNAfold gives 6.77
+    EXPECT_NEAR(d1, 5.70, 0.00005); // Turner 2004 // RNAfold gives 6.07
+    EXPECT_NEAR(d2, 5.70, 0.00005); // Turner 2004 // RNAfold gives 6.07
 }
 
-// // echo -e "GUUUUUAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUU66AAAC" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
+// echo -e "A6AAAAUUU\n(((...)))" | RNAfold -C  --enforceConstraint  -m
+TEST(mod_nonpk, simple_stack) {
+    std::string sequence = "A6AAAAUUU";
+    std::string structure= "(((...)))";
+    auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
+
+    // ViennaRNA's RNAfold gives 4.65 but it's likely a bug in their code
+    // (Vienna checks 2 different keys for the stack)
+    EXPECT_NEAR(d0, 4.58, 0.00005); // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d1, 4.58, 0.00005); // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d2, 4.58, 0.00005); // Turner 2004 // RNAfold gives 4.65
+}
+
+// // echo -e "GUUUUUAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUU66AAAC" | RNAfold -m
 // TEST(mod_nonpk, stack2_0_dangle) {
 //     std::string sequence = "GUUUUUAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUU66AAAC";
 //     std::string structure= "(((((((((((((((((((((((((......)))))))))))))))))))))))))";
 //     auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
-//     // EXPECT_NEAR(d0, -13.63, 0.00005); // Turner 2004
-//     // EXPECT_NEAR(d1, -14.23, 0.00005); // Turner 2004
+//     // EXPECT_NEAR(d0, -18.55, 0.00005); // Turner 2004
+//     // EXPECT_NEAR(d1, -18.55, 0.00005); // Turner 2004
 //     EXPECT_NEAR(d2, -18.55, 0.00005); // Turner 2004
 // }
 
 
-// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
+// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" | RNAfold -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
 // ./build/Knotergy -s "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))" -p ./params/common/rna_turner2004.par
 TEST(mod_nonpk, external1_0_dangle) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
     std::string structure= "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
 
-    EXPECT_NEAR(d0, -70.11, 0.00005); // Turner 2004
-    EXPECT_NEAR(d1, -70.11, 0.00005); // Turner 2004
-    EXPECT_NEAR(d2, -70.81, 0.00005); // Turner 2004
+    // RNAfold gives different values due to a likely bug in their code 
+    // where they check 2 different keys for the stack
+    EXPECT_NEAR(d0, -69.39, 0.00005); // Turner 2004 // RNAfold gives -70.11
+    EXPECT_NEAR(d1, -69.39, 0.00005); // Turner 2004 // RNAfold gives -70.11
+    EXPECT_NEAR(d2, -70.09, 0.00005); // Turner 2004 // RNAfold gives -70.81
 }
 
-// // echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC\n(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))" | RNAfold --mod-file=./params/modified_bases/rna_mod_m6A_parameters.json
+// // echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC\n(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))" | RNAfold -m
 // // ./build/Knotergy -p ./params/common/rna_turner2004.par -s "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r "(((((((((((((((((((....))))))))))))))))))).((((((((((((((((((((....))))))))))))))))))))"
 // TEST(mod_nonpk, external2_1_dangle) {
 //     std::string sequence = "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUU6GGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";
@@ -91,4 +109,4 @@ TEST(mod_nonpk, external1_0_dangle) {
 //     EXPECT_NEAR(d2, -69.73, 0.00005); // Turner 2004
 // }
 
-// echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold --mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
+// echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
