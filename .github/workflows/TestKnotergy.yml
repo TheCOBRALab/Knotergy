@@ -5,27 +5,29 @@ on:
   push:         { branches: [main] }
   pull_request: { branches: [main] }
 
-env:
-  VIENNARNA_VERSION: "2.7.2"
-  VIENNARNA_PREFIX: "${{ github.workspace }}/viennarna"
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel] # ,
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel]
         build_type: [Release]
+        viennarna_version: ["2.7.0", "2.7.1", "2.7.2"]
         include:
           - { os: ubuntu-latest   , c_compiler: gcc  , cpp_compiler: g++      }
           - { os: ubuntu-24.04-arm, c_compiler: gcc  , cpp_compiler: g++      }
           - { os: macos-latest    , c_compiler: clang, cpp_compiler: clang++  }
           - { os: macos-15-intel  , c_compiler: clang, cpp_compiler: clang++  }
+
+    env:
+      VIENNARNA_VERSION: ${{ matrix.viennarna_version }}
+      VIENNARNA_PREFIX: ${{ github.workspace }}/viennarna/${{ matrix.viennarna_version }}
+
     steps:
     - uses: actions/checkout@v5
-      with: { submodules: true }
-    
+      with:
+        submodules: true
 
 # -------------------- ViennaRNA --------------------
     - name: Restore ViennaRNA from cache
@@ -33,41 +35,49 @@ jobs:
       uses: actions/cache@v5
       with:
         path: ${{ env.VIENNARNA_PREFIX }}
-        key: viennarna-${{ env.VIENNARNA_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+        key: viennarna-${{ matrix.viennarna_version }}-${{ runner.os }}-${{ runner.arch }}
 
     - name: Build & install ViennaRNA
       if: steps.cache-viennarna.outputs.cache-hit != 'true'
+      shell: bash
       run: |
-        curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v${VIENNARNA_VERSION}/ViennaRNA-${VIENNARNA_VERSION}.tar.gz
-        tar -xzf ViennaRNA-${VIENNARNA_VERSION}.tar.gz
-        cd ViennaRNA-${VIENNARNA_VERSION}
+        curl -L -O "https://github.com/ViennaRNA/ViennaRNA/releases/download/v${VIENNARNA_VERSION}/ViennaRNA-${VIENNARNA_VERSION}.tar.gz"
+        tar -xzf "ViennaRNA-${VIENNARNA_VERSION}.tar.gz"
+        cd "ViennaRNA-${VIENNARNA_VERSION}"
+
+        # Apply patch only for v2.7.0
+        if [ "${VIENNARNA_VERSION}" = "2.7.0" ]; then
+          sed -i.bak 's/::template go(/::template go<>(/' src/dlib-19.24/dlib/global_optimization/find_max_global.h
+        fi
+
         ./configure --without-perl --prefix="${VIENNARNA_PREFIX}"
         CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
         make -j"$CORES"
         make install
 
-    # Expose headers & libs to the compiler / linker / CMake
     - name: Export ViennaRNA paths
       shell: bash
       run: |
-        echo "VIENNARNA_LIB=${VIENNARNA_PREFIX}/lib"                                          >>"$GITHUB_ENV"
-        echo "CPATH=${VIENNARNA_PREFIX}/include:$CPATH"                                       >>"$GITHUB_ENV"
-        echo "LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$LIBRARY_PATH"                             >>"$GITHUB_ENV"
-        echo "CMAKE_PREFIX_PATH=${VIENNARNA_PREFIX}"                                          >>"$GITHUB_ENV"
-        echo "LD_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$LD_LIBRARY_PATH"                       >>"$GITHUB_ENV"
-        echo "DYLD_FALLBACK_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib:$DYLD_FALLBACK_LIBRARY_PATH" >>"$GITHUB_ENV"
+        echo "VIENNARNA_LIB=${VIENNARNA_PREFIX}/lib" >>"$GITHUB_ENV"
+        echo "CPATH=${VIENNARNA_PREFIX}/include${CPATH:+:$CPATH}" >>"$GITHUB_ENV"
+        echo "LIBRARY_PATH=${VIENNARNA_PREFIX}/lib${LIBRARY_PATH:+:$LIBRARY_PATH}" >>"$GITHUB_ENV"
+        echo "CMAKE_PREFIX_PATH=${VIENNARNA_PREFIX}${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}" >>"$GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >>"$GITHUB_ENV"
+        echo "DYLD_FALLBACK_LIBRARY_PATH=${VIENNARNA_PREFIX}/lib${DYLD_FALLBACK_LIBRARY_PATH:+:$DYLD_FALLBACK_LIBRARY_PATH}" >>"$GITHUB_ENV"
 
 # -------------------- Build --------------------
     - name: Set reusable strings
       id: strings
+      shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >>"$GITHUB_OUTPUT"
 
     - name: Configure CMake
       run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_BUILD_TYPE=Debug
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -S ${{ github.workspace }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --parallel
