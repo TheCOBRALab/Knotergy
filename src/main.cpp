@@ -144,6 +144,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    if (structure.length() >= 2147483647) { // Prevent overflow of int in energy calculations
+        std::cerr << "Error: Structure length exceeds maximum allowed size of 2,147,483,647" << std::endl;
+        return 1;
+    }
+
     // ------------------------- Load ViennaRNA Parameters -----------------------
     knotergy::vrna_md_param vp =
         knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);

@@ -113,14 +113,17 @@ cd Knotergy-main
 ### Build
 
 ```bash
-cmake -S . -B build
-cmake --build build --parallel
+cmake -S . -B build; cmake --build build --parallel
 ```
 
-**Debug build:**
+**Build Types:**
+
+- **Release:** Most optimized
+- **Debug:** Slower but catches hard to spot bugs (e.g. overflow) 
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release; cmake --build build --parallel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug;   cmake --build build --parallel
 ```
 
 **Build & Test (one liner):**

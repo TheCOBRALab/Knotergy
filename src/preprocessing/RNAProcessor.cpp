@@ -25,6 +25,14 @@ ProcessedRNAEntry RNAProcessor::process_rna(
     }
     // If no modified base parameters provided, skip modified sequence processing
     else {
+        // Validate that the sequence only contains unmodified bases, and warn if it contains modified bases but no parameters are provided
+        for (char base : rna.sequence) {
+            if (unmod_lookup[(unsigned char)base] == 0) {
+                THROW_ERROR("RNA sequence contains invalid base: '" + std::string(1, base) + "'");
+                break;
+            }
+        }
+
         unmodified_sequence = rna.sequence;
         pairings = compute_pairings(rna, unmodified_sequence);
     }
@@ -255,12 +263,16 @@ std::string RNAProcessor::compute_unmodified_sequence(
 }
 
 // Check if a base is unmodified (using lookup table for speed)
-#include <iostream>
-
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
     if (b.size() != 1)
         return false;  // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
     return unmod_lookup[(unsigned char) b[0]] != 0;
 }
+
+bool RNAProcessor::is_unmod_base(char b) {
+    return unmod_lookup[static_cast<unsigned char>(b)] != 0;
+}
+
+
 
 }  // namespace knotergy

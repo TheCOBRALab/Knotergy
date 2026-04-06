@@ -152,13 +152,15 @@ class RNAProcessor {
      * This is used to validate the input and ensure that modified bases are properly handled.
      *
      * Example:
-     * is_unmod_base("A") -> true
-     * is_unmod_base("6") -> false
+     * is_unmod_base('A') -> true
+     * is_unmod_base('6') -> false
      *
-     * @param base The base to check, as a string_view.
+     * @param base The base to check, as a string_view or char.
      * @return true if the base is unmodified, false otherwise.
      */
     [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
+    [[nodiscard]] static bool is_unmod_base(char base);
+
 
    private:
     // Lookup table for unmodified bases
