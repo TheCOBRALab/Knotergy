@@ -27,7 +27,6 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
                 THROW_ERROR("Failed to load parameter file: " + paramFile);
             }
 
-            md_param.p = vrna_params(&md_param.md);
             source_info.status = ParamStatus::LoadedUserFile;
             source_info.resolved_path = paramFile;
             source_info.resolved_name = FileUtils::get_filename_no_ext(paramFile);
