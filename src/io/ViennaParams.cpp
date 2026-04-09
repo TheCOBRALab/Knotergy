@@ -109,7 +109,7 @@ modified_base_param ViennaParams::parse_modified_base_json(const std::string& js
         THROW_ERROR("Error: Unable to open modified base parameter file: " + jsonFile);
     }
     json data = json::parse(f);
-    json mod = data["modified_base"].get<json>();
+    const json& mod = data.at("modified_base");
 
     warn_if_missing(mod, "name", jsonFile);
     warn_if_missing(mod, "unmodified", jsonFile);

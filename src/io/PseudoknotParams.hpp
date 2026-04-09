@@ -11,6 +11,12 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
+static const std::string& default_pk_param_path() {
+    static const std::string path =
+        std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json";
+    return path;
+}
+
 /**
  * @brief Pseudoknot energy parameters.
  *
@@ -109,7 +115,7 @@ class PseudoknotParams {
      * @throws DetailedException if file not found or invalid.
      */
     static const pk_param load_pk_param(
-        const std::string& paramFile = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json") {
+        const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;
@@ -145,19 +151,33 @@ class PseudoknotParams {
      * @return Parsed pk_param structure.
      * @throws DetailedException if file cannot be opened or parsed.
      */
-    [[nodiscard]] static const pk_param parse_pk_json(const std::string& jsonFile) {
+    [[nodiscard]] static pk_param parse_pk_json(const std::string& jsonFile) {
         std::ifstream f(jsonFile);
         if (!f.is_open()) {
             THROW_ERROR("Error: Unable to open pseudoknot parameter file: " + jsonFile);
         }
+
         json data = json::parse(f);
-        json pk = data["pseudoknot_parameters"].get<json>();
-        return pk_param(pk.value("name", "default"), pk.value("pk_in_ext", 0),
-                        pk.value("pk_in_mloop", 0), pk.value("pk_in_pk", 0), pk.value("band", 0),
-                        pk.value("unpaired_in_pk", 0), pk.value("cr_in_pk", 0),
-                        pk.value("pk_stack_x", 1.0), pk.value("pk_internal_x", 1.0),
-                        pk.value("pk_mloop_init", 0), pk.value("pk_mloop_bp", 0),
-                        pk.value("pk_mloop_unpaired", 0));
+
+        auto it = data.find("pseudoknot_parameters");
+        if (it == data.end()) {
+            THROW_ERROR("Missing required key 'pseudoknot_parameters' in file " + jsonFile);
+        }
+        const auto& pk = *it;
+
+        return pk_param(
+            pk.value("name", std::string{"default"}),
+            pk.value("pk_in_ext", 0),
+            pk.value("pk_in_mloop", 0),
+            pk.value("pk_in_pk", 0),
+            pk.value("band", 0),
+            pk.value("unpaired_in_pk", 0),
+            pk.value("cr_in_pk", 0),
+            pk.value("pk_stack_x", 1.0),
+            pk.value("pk_internal_x", 1.0),
+            pk.value("pk_mloop_init", 0),
+            pk.value("pk_mloop_bp", 0),
+            pk.value("pk_mloop_unpaired", 0));
     }
 };
 

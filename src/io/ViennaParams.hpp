@@ -64,45 +64,53 @@ struct modified_base_param {
      * @param dangle3_e 3' dangle energy parameters.
      * @param dangle3_h 3' dangle enthalpy parameters.
      */
-    modified_base_param(const std::string& mod_name, const std::string& unmod,
-                        const std::string& mod, const std::string& fallback,
-                        const string_list& partners, const param_map& stacking,
-                        const param_map& enthalpies, const param_map& terminal_e,
-                        const param_map& terminal_h, const param_map& mismatch_e,
-                        const param_map& mismatch_h, const param_map& dangle5_e,
-                        const param_map& dangle5_h, const param_map& dangle3_e,
-                        const param_map& dangle3_h)
-        : name(mod_name),
-          unmodified_base(unmod),
-          modified_base(mod),
-          fallback_base(fallback),
-          pairing_partners(partners),
-          stacking_energies(stacking),
-          stacking_enthalpies(enthalpies),
-          terminal_energies(terminal_e),
-          terminal_enthalpies(terminal_h),
-          mismatch_energies(mismatch_e),
-          mismatch_enthalpies(mismatch_h),
-          dangle5_energies(dangle5_e),
-          dangle5_enthalpies(dangle5_h),
-          dangle3_energies(dangle3_e),
-          dangle3_enthalpies(dangle3_h) {}
+    modified_base_param(
+        std::string mod_name,
+        std::string unmod,
+        std::string mod,
+        std::string fallback,
+        string_list partners,
+        param_map stacking,
+        param_map enthalpies,
+        param_map terminal_e,
+        param_map terminal_h,
+        param_map mismatch_e,
+        param_map mismatch_h,
+        param_map dangle5_e,
+        param_map dangle5_h,
+        param_map dangle3_e,
+        param_map dangle3_h)
+        : name(std::move(mod_name)),
+          unmodified_base(std::move(unmod)),
+          modified_base(std::move(mod)),
+          fallback_base(std::move(fallback)),
+          pairing_partners(std::move(partners)),
+          stacking_energies(std::move(stacking)),
+          stacking_enthalpies(std::move(enthalpies)),
+          terminal_energies(std::move(terminal_e)),
+          terminal_enthalpies(std::move(terminal_h)),
+          mismatch_energies(std::move(mismatch_e)),
+          mismatch_enthalpies(std::move(mismatch_h)),
+          dangle5_energies(std::move(dangle5_e)),
+          dangle5_enthalpies(std::move(dangle5_h)),
+          dangle3_energies(std::move(dangle3_e)),
+          dangle3_enthalpies(std::move(dangle3_h)) {}
 
-    const std::string name;               ///< Modified base name.
-    const std::string unmodified_base;    ///< Unmodified base it replaces.
-    const std::string modified_base;      ///< Modified base representation.
-    const std::string fallback_base;      ///< Fallback base for calculations.
-    const string_list pairing_partners;   ///< Valid pairing partners.
-    const param_map stacking_energies;    ///< Stacking energies.
-    const param_map stacking_enthalpies;  ///< Stacking enthalpies.
-    const param_map terminal_energies;    ///< Terminal mismatch energies.
-    const param_map terminal_enthalpies;  ///< Terminal mismatch enthalpies.
-    const param_map mismatch_energies;    ///< Mismatch energies.
-    const param_map mismatch_enthalpies;  ///< Mismatch enthalpies.
-    const param_map dangle5_energies;     ///< 5' dangle energies.
-    const param_map dangle5_enthalpies;   ///< 5' dangle enthalpies.
-    const param_map dangle3_energies;     ///< 3' dangle energies.
-    const param_map dangle3_enthalpies;   ///< 3' dangle enthalpies.
+    const std::string name;
+    const std::string unmodified_base;
+    const std::string modified_base;
+    const std::string fallback_base;
+    const string_list pairing_partners;
+    const param_map stacking_energies;
+    const param_map stacking_enthalpies;
+    const param_map terminal_energies;
+    const param_map terminal_enthalpies;
+    const param_map mismatch_energies;
+    const param_map mismatch_enthalpies;
+    const param_map dangle5_energies;
+    const param_map dangle5_enthalpies;
+    const param_map dangle3_energies;
+    const param_map dangle3_enthalpies;
 };
 
 /**
