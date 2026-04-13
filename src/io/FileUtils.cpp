@@ -26,8 +26,18 @@ bool FileUtils::is_directory(const std::string& name) {
     return S_ISDIR(buffer.st_mode);
 }
 
+// Get file modification time as uint64_t timestamp, or 0 if file doesn't exist or on error
+std::uint64_t FileUtils::get_file_mtime(const std::string& path) {
+    if (path.empty()) return 0;
+
+    struct stat st{};
+    if (stat(path.c_str(), &st) != 0) return 0;
+
+    return static_cast<std::uint64_t>(st.st_mtime);
+}
+
 // List files in a directory
-[[nodiscard]] std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir,
+std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir,
                                                                    bool include_dirs,
                                                                    bool recursive) {
     std::vector<std::string> out;

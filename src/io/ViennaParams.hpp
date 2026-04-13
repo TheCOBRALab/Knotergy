@@ -20,6 +20,8 @@ using param_map = std::map<std::string, float>;
 
 namespace knotergy {
 
+
+
 struct vrna_md_param {
     ~vrna_md_param() {
         if (p) free(p);
@@ -35,6 +37,18 @@ struct vrna_md_param {
 
    private:
     ParamSourceInfo source_info;
+};
+
+static const uint32_t BigEndianMarker = 0x01020304;
+
+struct ParamCacheHeader {
+    char magic[8] = {'V', 'R', 'N', 'A', 'P', 'R', 'M', '1'};
+    std::uint32_t cache_version = 1;
+    std::uint32_t param_struct_size = sizeof(vrna_param_t);
+    std::uint32_t md_struct_size = sizeof(vrna_md_t);
+    std::uint32_t endian_marker = BigEndianMarker;
+    std::int32_t dangles = 2;
+    std::uint64_t source_mtime = 0;   // 0 for built-in fallback sets
 };
 
 /**

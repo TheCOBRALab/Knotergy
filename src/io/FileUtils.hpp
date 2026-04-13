@@ -7,6 +7,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "common.hpp"
@@ -44,6 +45,14 @@ class FileUtils {
      * @return True if the path is a directory.
      */
     [[nodiscard]] static bool is_directory(const std::string& name);
+
+    /**
+     * @brief Get the modification time of a file as a uint64_t timestamp.
+     *
+     * @param path Path to the file.
+     * @return Modification time as uint64_t, or 0 if file doesn't exist or on error.
+     */
+    [[nodiscard]] static std::uint64_t get_file_mtime(const std::string& path);
 
     /**
      * @brief Get a list of files in a directory.

@@ -46,3 +46,6 @@
 
 # Mac Xcode
 *.trace
+
+# Cache files
+*.bin
