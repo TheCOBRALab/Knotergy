@@ -24,7 +24,7 @@ It uses the [ViennaRNA](https://www.tbi.univie.ac.at/RNA/) library for non-pseud
 
 Knotergy requires ViennaRNA to compile and run.
 
-### Option 1: Install via Conda
+### Option 1: Install via Conda (Easiest)
 1.  **Install ViennaRNA through conda, and activate your conda environment**
 
       ```bash
@@ -32,7 +32,7 @@ Knotergy requires ViennaRNA to compile and run.
       conda activate
       ```
 
-### Option 2: Manual install
+### Option 2: Manual install (Advanced / for development)
 1. **Download ViennaRNA 2.7.2:**
 
    ```bash
@@ -45,8 +45,8 @@ Knotergy requires ViennaRNA to compile and run.
    tar -zxvf ViennaRNA-2.7.2.tar.gz
    cd ViennaRNA-2.7.2
    ./configure --without-perl
-   sudo make -j$(nproc)              # Linux
-   sudo make -j$(sysctl -n hw.ncpu)  # macOS
+   make -j$(nproc)              # Linux
+   make -j$(sysctl -n hw.ncpu)  # macOS
    sudo make install
    ```
 
@@ -60,6 +60,17 @@ Knotergy requires ViennaRNA to compile and run.
   make -j$(nproc)              # Linux
   make -j$(sysctl -n hw.ncpu)  # macOS
   make install
+  ```
+
+* **macOS: “not 8-byte aligned” (wrong ar/ranlib)**
+
+  ```bash
+  make clean
+  export AR=/usr/bin/ar
+  export RANLIB=/usr/bin/ranlib
+  ./configure --without-perl
+  make -j$(sysctl -n hw.ncpu)
+  sudo make install
   ```
 
 For full details, see the [ViennaRNA GitHub repo](https://github.com/ViennaRNA/ViennaRNA).
