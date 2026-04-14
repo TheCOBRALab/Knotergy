@@ -49,3 +49,7 @@
 
 # Cache files
 *.bin
+
+# Virtual environment
+/venv/
+/.venv/

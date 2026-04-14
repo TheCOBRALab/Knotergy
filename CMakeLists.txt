@@ -87,9 +87,9 @@ endif()
 # -------------------------------------------------------------------
 #                      GoogleTest Configuration
 # -------------------------------------------------------------------
-option(ENABLE_TESTS "Build unit tests" ON)
+option(BUILD_TESTING "Build unit tests" ON)
 
-if (NOT ENABLE_TESTS)
+if (NOT BUILD_TESTING)
     message(STATUS "Unit tests are disabled. To enable them, set -DBUILD_TESTING=ON")
 elseif(EXISTS "${CMAKE_SOURCE_DIR}/test/googletest/CMakeLists.txt")
     enable_testing()
