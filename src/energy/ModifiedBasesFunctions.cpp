@@ -215,9 +215,9 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
             auto it = energy_lookup->find(key);
             if (it != energy_lookup->end()) {
                 int mod_energy = static_cast<int>(it->second * 100);
-                std::cout << "Modified base energy found for key: " << key << " -> " << mod_energy
-                          << " Diff: " << mod_energy - unmod_energy
-                          << std::endl;
+                // std::cout << "Modified base energy found for key: " << key << " -> " << mod_energy
+                //           << " Diff: " << mod_energy - unmod_energy
+                //           << std::endl;
                 return mod_energy;
             }
         }
@@ -227,9 +227,9 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
             break;
         }
     }
-    std::cout << "No modified base energy found for key: " << key
-              << ", using unmodified energy: " << unmod_energy
-              << " ModLookup type: " << static_cast<int>(lookup_type) << std::endl;
+    // std::cout << "No modified base energy found for key: " << key
+    //           << ", using unmodified energy: " << unmod_energy
+    //           << " ModLookup type: " << static_cast<int>(lookup_type) << std::endl;
     return static_cast<int>(unmod_energy);
 }
 

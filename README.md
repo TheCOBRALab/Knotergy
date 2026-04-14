@@ -70,12 +70,13 @@ For full details, see the [ViennaRNA GitHub repo](https://github.com/ViennaRNA/V
 
 Knotergy requires **CMake ≥ 3.15**.
 
-Check your current version:
+If you have it installed, check your current version:
 
 ```bash
 cmake --version
 ```
 
+## How to install
 ### Linux:
 
 ```bash
@@ -93,7 +94,7 @@ brew install cmake
 
 ---
 
-## 3. Install Knotergy
+## 3. Download & Build Knotergy
 
 ### Clone the repository
 
@@ -139,9 +140,29 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cd
 ```bash
 ./build/Knotergy [flags]
 ```
-
 Run `--help` for available options:
 
 ```bash
 ./build/Knotergy --help
+```
+
+### Examples
+
+#### Sequence + Structure
+```bash
+./build/Knotergy -s AAAAUUU -r "((...))"
+```
+
+#### Modified bases (Default params)
+```bash
+./build/Knotergy -s 6AAAUUU -r "((...))" -m
+```
+
+#### Modified bases (Custom Params)
+```bash
+# Path to file
+./build/Knotergy -s 6AAAUUU -r "((...))" -m "./params/modified_bases/rna_mod_m6A_parameters.json"
+
+# Path to folder
+./build/Knotergy -s 6AAAUUU -r "((...))" -m "./params/modified_bases/"
 ```
