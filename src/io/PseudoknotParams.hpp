@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
-static const std::string& default_pk_param_path() {
+static inline const std::string& default_pk_param_path() {
     static const std::string path =
         std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json";
     return path;
