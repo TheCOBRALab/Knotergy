@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
-    std::string mod_param_path = "";
+    std::vector<std::string> mod_param_paths; 
     const std::string default_mod_path = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
     std::string pseudo_param_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
@@ -87,11 +87,11 @@ int main(int argc, char** argv) {
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--mod-file") {
-            // Check if next argument exists AND is not another flag
+            // -m /path/to/params
             if (i + 1 < argc && argv[i + 1][0] != '-') {
-                mod_param_path = get_trimmed_arg(i, argc, argv);
-            } else {
-                mod_param_path = default_mod_path;
+                mod_param_paths.push_back(get_trimmed_arg(i, argc, argv));
+            } else { // -m with no path, use default
+                mod_param_paths.push_back(default_mod_path);
             }
         } else if (arg == "-d" || arg == "--dangle") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
@@ -138,10 +138,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    knotergy::trim(mod_param_path);
-    if (!mod_param_path.empty() && !knotergy::FileUtils::file_exists(mod_param_path)) {
-        std::cerr << "Modified bases parameter file not found: " << mod_param_path << std::endl;
-        return 1;
+    for (std::string& mod_path : mod_param_paths) {
+        knotergy::trim(mod_path);
+        if (!knotergy::FileUtils::file_exists(mod_path)) {
+            std::cerr << "Modified bases parameter path not found: " << mod_path << std::endl;
+            return 1;
+        }
     }
 
     if (structure.length() >= 2147483647) { // Prevent overflow of int in energy calculations
@@ -157,8 +159,12 @@ int main(int argc, char** argv) {
     knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
 
     // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_param> mp =
-        knotergy::ViennaParams::load_modified_energy_parameters(mod_param_path);
+    std::vector<knotergy::modified_base_param> mp;
+    for (const std::string& mod_path : mod_param_paths) {
+        std::vector<knotergy::modified_base_param> additional_mp =
+            knotergy::ViennaParams::load_modified_energy_parameters(mod_path);
+        mp.insert(mp.end(), additional_mp.begin(), additional_mp.end());
+    }
 
     //------------------------- Pre-processing and reading from files -----------------------------
     std::vector<knotergy::RNAEntry> inputs =

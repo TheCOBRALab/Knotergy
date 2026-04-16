@@ -226,12 +226,12 @@ std::string RNAProcessor::compute_unmodified_sequence(
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
     mod_to_unmod.reserve(params.size());
     for (const modified_base_param& param : params) {
-        if (param.unmodified_base.empty()) {
-            THROW_ERROR("Modified base '" + param.modified_base +
+        if (param.unmodified_base().empty()) {
+            THROW_ERROR("Modified base '" + param.modified_base() +
                         "' has empty unmodified mapping.");
         }
 
-        mod_to_unmod.emplace(param.modified_base, param.unmodified_base);
+        mod_to_unmod.emplace(param.modified_base(), param.unmodified_base());
     }
 
     // Convert modified sequence to unmodified sequence

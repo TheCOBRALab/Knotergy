@@ -181,7 +181,7 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
     // Get the pointer to the correct energy map based on lookup type
     unsigned int modified_found = 0;
     for (const modified_base_param& param : mod_params) {
-        if (std::find(unique_mod_bases.begin(), unique_mod_bases.end(), param.modified_base) ==
+        if (std::find(unique_mod_bases.begin(), unique_mod_bases.end(), param.modified_base()) ==
             unique_mod_bases.end()) {
             continue;
         }
@@ -190,19 +190,19 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
         const std::map<std::string, float>* energy_lookup = nullptr;
         switch (lookup_type) {
             case ModLookup::Stacking:
-                energy_lookup = &param.stacking_energies;
+                energy_lookup = &param.stacking_energies();
                 break;
             case ModLookup::Terminal:
-                energy_lookup = &param.terminal_energies;
+                energy_lookup = &param.terminal_energies();
                 break;
             case ModLookup::Mismatch:
-                energy_lookup = &param.mismatch_energies;
+                energy_lookup = &param.mismatch_energies();
                 break;
             case ModLookup::Dangle5:
-                energy_lookup = &param.dangle5_energies;
+                energy_lookup = &param.dangle5_energies();
                 break;
             case ModLookup::Dangle3:
-                energy_lookup = &param.dangle3_energies;
+                energy_lookup = &param.dangle3_energies();
                 break;
             default:
                 THROW_ERROR("Invalid ModLookup type: " +

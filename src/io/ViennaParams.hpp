@@ -58,8 +58,8 @@ struct ParamCacheHeader {
  * of modified nucleotides in RNA secondary structures. Parameters include
  * stacking, terminal, mismatch, and dangle energies.
  */
-struct modified_base_param {
-    /**
+class modified_base_param {
+  /**
      * @brief Construct modified base parameters.
      *
      * @param mod_name Name of the modified base.
@@ -78,6 +78,7 @@ struct modified_base_param {
      * @param dangle3_e 3' dangle energy parameters.
      * @param dangle3_h 3' dangle enthalpy parameters.
      */
+public:
     modified_base_param(
         std::string mod_name,
         std::string unmod,
@@ -94,37 +95,54 @@ struct modified_base_param {
         param_map dangle5_h,
         param_map dangle3_e,
         param_map dangle3_h)
-        : name(std::move(mod_name)),
-          unmodified_base(std::move(unmod)),
-          modified_base(std::move(mod)),
-          fallback_base(std::move(fallback)),
-          pairing_partners(std::move(partners)),
-          stacking_energies(std::move(stacking)),
-          stacking_enthalpies(std::move(enthalpies)),
-          terminal_energies(std::move(terminal_e)),
-          terminal_enthalpies(std::move(terminal_h)),
-          mismatch_energies(std::move(mismatch_e)),
-          mismatch_enthalpies(std::move(mismatch_h)),
-          dangle5_energies(std::move(dangle5_e)),
-          dangle5_enthalpies(std::move(dangle5_h)),
-          dangle3_energies(std::move(dangle3_e)),
-          dangle3_enthalpies(std::move(dangle3_h)) {}
+        : name_(std::move(mod_name)),
+          unmodified_base_(std::move(unmod)),
+          modified_base_(std::move(mod)),
+          fallback_base_(std::move(fallback)),
+          pairing_partners_(std::move(partners)),
+          stacking_energies_(std::move(stacking)),
+          stacking_enthalpies_(std::move(enthalpies)),
+          terminal_energies_(std::move(terminal_e)),
+          terminal_enthalpies_(std::move(terminal_h)),
+          mismatch_energies_(std::move(mismatch_e)),
+          mismatch_enthalpies_(std::move(mismatch_h)),
+          dangle5_energies_(std::move(dangle5_e)),
+          dangle5_enthalpies_(std::move(dangle5_h)),
+          dangle3_energies_(std::move(dangle3_e)),
+          dangle3_enthalpies_(std::move(dangle3_h)) {}
 
-    const std::string name;
-    const std::string unmodified_base;
-    const std::string modified_base;
-    const std::string fallback_base;
-    const string_list pairing_partners;
-    const param_map stacking_energies;
-    const param_map stacking_enthalpies;
-    const param_map terminal_energies;
-    const param_map terminal_enthalpies;
-    const param_map mismatch_energies;
-    const param_map mismatch_enthalpies;
-    const param_map dangle5_energies;
-    const param_map dangle5_enthalpies;
-    const param_map dangle3_energies;
-    const param_map dangle3_enthalpies;
+    const std::string& name() const noexcept { return name_; }
+    const std::string& unmodified_base() const noexcept { return unmodified_base_; }
+    const std::string& modified_base() const noexcept { return modified_base_; }
+    const std::string& fallback_base() const noexcept { return fallback_base_; }
+    const string_list& pairing_partners() const noexcept { return pairing_partners_; }
+    const param_map& stacking_energies() const noexcept { return stacking_energies_; }
+    const param_map& stacking_enthalpies() const noexcept { return stacking_enthalpies_; }
+    const param_map& terminal_energies() const noexcept { return terminal_energies_; }
+    const param_map& terminal_enthalpies() const noexcept { return terminal_enthalpies_; }
+    const param_map& mismatch_energies() const noexcept { return mismatch_energies_; }
+    const param_map& mismatch_enthalpies() const noexcept { return mismatch_enthalpies_; }
+    const param_map& dangle5_energies() const noexcept { return dangle5_energies_; }
+    const param_map& dangle5_enthalpies() const noexcept { return dangle5_enthalpies_; }
+    const param_map& dangle3_energies() const noexcept { return dangle3_energies_; }
+    const param_map& dangle3_enthalpies() const noexcept { return dangle3_enthalpies_; }
+
+private:
+    std::string name_;
+    std::string unmodified_base_;
+    std::string modified_base_;
+    std::string fallback_base_;
+    string_list pairing_partners_;
+    param_map stacking_energies_;
+    param_map stacking_enthalpies_;
+    param_map terminal_energies_;
+    param_map terminal_enthalpies_;
+    param_map mismatch_energies_;
+    param_map mismatch_enthalpies_;
+    param_map dangle5_energies_;
+    param_map dangle5_enthalpies_;
+    param_map dangle3_energies_;
+    param_map dangle3_enthalpies_;
 };
 
 /**

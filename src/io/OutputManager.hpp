@@ -31,7 +31,7 @@ class OutputManager {
             std::cout << "------------------------------------------------\n";
 
             for (const auto& param : modified_params) {
-                std::cout << "- " << param.name << '\n';
+                std::cout << "- " << param.name() << '\n';
             }
         }
 
