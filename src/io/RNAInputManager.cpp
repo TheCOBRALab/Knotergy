@@ -37,17 +37,6 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
     return entries;
 }
 
-std::vector<ProcessedRNAEntry> RNAInputManager::process_inputs(
-    const std::vector<RNAEntry>& inputs, const std::vector<modified_base_param>& modified_params) {
-    std::vector<ProcessedRNAEntry> processed_inputs;
-    processed_inputs.reserve(inputs.size());
-
-    for (const RNAEntry& rna : inputs) {
-        processed_inputs.emplace_back(RNAProcessor::process_rna(rna, modified_params));
-    }
-    return processed_inputs;
-}
-
 // Parses RNA entries from a file in FASTA format
 [[nodiscard]] std::vector<RNAEntry> RNAInputManager::get_all_FASTA_entries(
     const std::string& file) {

@@ -38,20 +38,6 @@ class RNAInputManager {
                                                               const std::string& seq,
                                                               const std::string& restricted);
 
-    /**
-     * @brief Process RNA entries into ProcessedRNAEntry objects.
-     *
-     * Converts RNAEntry objects into ProcessedRNAEntry objects with precomputed
-     * structural annotations (pairings, closed regions, unpaired counts).
-     *
-     * @param inputs Vector of RNAEntry objects to process.
-     * @param modified_params Vector of modified base parameters (default: empty).
-     * @return Vector of ProcessedRNAEntry objects.
-     */
-    [[nodiscard]] static std::vector<ProcessedRNAEntry> process_inputs(
-        const std::vector<RNAEntry>& inputs,
-        const std::vector<modified_base_param>& modified_params = {});
-
    private:
     /**
      * @brief Parses RNA entries from a file in FASTA format

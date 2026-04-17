@@ -166,17 +166,19 @@ int main(int argc, char** argv) {
         mp.insert(mp.end(), additional_mp.begin(), additional_mp.end());
     }
 
-    //------------------------- Pre-processing and reading from files -----------------------------
+    //------------------------- Reading Inputs From File -----------------------------
     std::vector<knotergy::RNAEntry> inputs =
         knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
-    std::vector<knotergy::ProcessedRNAEntry> processed_inputs =
-        knotergy::RNAInputManager::process_inputs(inputs, mp);
 
+    // ------------------------- Print Parameter Report -----------------------
     knotergy::OutputManager::print_parameter_report(vp, pkp, mp);
 
     //------------------------- Main Processing Loop ----------------------------
-    for (const knotergy::ProcessedRNAEntry& processed_rna : processed_inputs) {
-        std::cout << "\n--------- Name: " << processed_rna.get_name() << " ---------" << std::endl;
+    for (const knotergy::RNAEntry& rna : inputs) {
+        std::cout << "\n--------- Name: " << rna.name << " ---------" << std::endl;
+
+        // Preprocess the RNA entry to compute pairings, closed regions, etc.
+        const knotergy::ProcessedRNAEntry& processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
 
         // Builds loop tree
         knotergy::LoopFactory factory(processed_rna);
