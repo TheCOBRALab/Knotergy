@@ -18,7 +18,7 @@ const std::string turner_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/comm
 const std::string pkp_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
 const std::string mod_folder = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
 
-inline static float get_energy(std::string sequence, std::string structure, int dangle = 2, bool round = false,
+inline static double get_energy(std::string sequence, std::string structure, int dangle = 2, bool round = false,
     std::string param_file = turner_file,
     std::string pseudoknot_param_file = pkp_file,
     std::string mod_param_file = mod_folder) {
@@ -41,14 +41,14 @@ inline static float get_energy(std::string sequence, std::string structure, int 
     return energy.getEnergy();
 }
 
-inline static float get_energy(knotergy::RNAEntry rna, int dangle = 2, bool round = false,
+inline static double get_energy(knotergy::RNAEntry rna, int dangle = 2, bool round = false,
     std::string param_file = turner_file,
     std::string pseudoknot_param_file = pkp_file,
     std::string mod_param_file = mod_folder) {
     return get_energy(rna.sequence, rna.structure, dangle, round, param_file, pseudoknot_param_file, mod_param_file);
 }
 
-inline static float get_energy(std::string sequence, std::string structure, 
+inline static double get_energy(std::string sequence, std::string structure, 
     std::string param_file = turner_file) {
     const int dangle = 2;
     const bool round = false;

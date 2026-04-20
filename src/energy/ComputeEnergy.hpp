@@ -50,7 +50,7 @@ class ComputeEnergy {
      *
      * @return The total Gibbs free energy in centicalories (hundredths of kcal/mol).
      */
-    float getEnergy() const { return energy_; };
+    double getEnergy() const { return energy_; };
     bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
 
    private:
@@ -60,7 +60,7 @@ class ComputeEnergy {
     const knotergy::pk_param& pkp_;
     const std::vector<modified_base_param>& mp_;
     const std::string& sequence_;
-    float energy_ = 0.0f;
+    double energy_ = 0.0;
     bool round_ = false;
     bool infinite_energy_flag_ =
         false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
@@ -76,34 +76,12 @@ class ComputeEnergy {
     void process_tree(LoopNode& root_node, bool verbose = false);
 
     /**
-     * @brief Process the entire loop tree with modified base energy calculations.
-     *
-     * Recursively traverses the loop tree and computes energy for each node,
-     * using modified base parameters when applicable.
-     *
-     * @param root_node The root node of the loop tree to process.
-     * @param verbose Whether to print verbose energy breakdown (default: false).
-     */
-    void process_modified_tree(LoopNode& node, bool verbose);
-
-    /**
      * @brief Process a single loop node and compute its energy contribution.
      *
      * @param node The loop node to process.
      * @return The energy contribution of this node in centicalories.
      */
-    float process_node(LoopNode& node);
-
-    /**
-     * @brief Process a single loop node with modified base energy calculations.
-     *
-     * This function computes the energy contribution of a loop node, taking into account
-     * any modified bases present in the sequence and using the appropriate energy parameters.
-     *
-     * @param node The loop node to process.
-     * @return The energy contribution of this node in centicalories.
-     */
-    float process_modified_node(LoopNode& node);
+    double process_node(LoopNode& node);
 };
 
 }  // namespace knotergy

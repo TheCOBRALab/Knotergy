@@ -23,7 +23,7 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
     }
 }
 
-float ComputeEnergy::process_node(LoopNode& node) {
+double ComputeEnergy::process_node(LoopNode& node) {
     double node_energy = 0.0;
     bool is_inf = false;
     const bool has_mod = processed_rna_.has_modified_bases();
@@ -84,7 +84,7 @@ float ComputeEnergy::process_node(LoopNode& node) {
     node.energy = node_energy;
     node.is_inf = is_inf;
     infinite_energy_flag_ = infinite_energy_flag_ || is_inf;
-    return static_cast<float>(node_energy) / 100.0f;
+    return node_energy / 100.0;
 }
 
 }  // namespace knotergy

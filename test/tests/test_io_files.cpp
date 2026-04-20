@@ -15,7 +15,7 @@
 
 namespace {
 
-float pipeline(std::string input_file, std::string param_file, std::string pseudoknot_param_file = pkp_file) {
+double pipeline(std::string input_file, std::string param_file, std::string pseudoknot_param_file = pkp_file) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file);
     knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
     knotergy::RNAEntry rna = knotergy::RNAInputManager::get_all_inputs(input_file, "", "").front();
@@ -30,9 +30,9 @@ float pipeline(std::string input_file, std::string param_file, std::string pseud
 TEST(IO_InputFile, tree_construction_overflow) {
     const std::string input_file = "../../test/tests/input_files/loop_tree_destructor_overflow_test.txt";
 
-    float turner_energy = pipeline(input_file, turner_file);
+    double turner_energy = pipeline(input_file, turner_file);
 
-    EXPECT_NEAR(turner_energy, -22498.2813, 0.00005); // Turner 2004
+    EXPECT_NEAR(turner_energy, -22492.70, 0.0005); // Turner 2004
 }
 
 }
