@@ -2,6 +2,7 @@
 
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "LoopNode.hpp"
+#include "BandFinder.hpp"
 
 namespace knotergy {
 /**
@@ -70,6 +71,7 @@ class LoopFactory {
     const ProcessedRNAEntry& processed_rna_;
     std::shared_ptr<LoopNode> root_node_;
     size_t structure_length_;
+    std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band detection and navigation.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

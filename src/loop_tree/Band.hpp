@@ -104,6 +104,11 @@ class Band {
             }
         }
 
+        // If nested closed regions on the right is impossible, we can skip the rest of the process
+        if ((right_border_ - right_inner_) <= 2) {
+            return;
+        }
+
         // Find all nested closed regions on the right side of the band
         // And add them as children to the correct base pair
         size_t current_bp_idx = 0;
