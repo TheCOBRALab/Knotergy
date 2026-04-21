@@ -17,18 +17,17 @@ void help() {
     std::cout
         << "Usage: ./Knotergy [options]\n"
         << "Options:\n"
-        << "  -h, --help                    Show this help message\n"
-        << "  -V, --version                 Print version and exit\n"
-        << "  -v, --verbose                 Enable verbose output\n"
-        << "  -s, --sequence <string>       RNA sequence\n"
-        << "  -r, --structure <string>      Input structure\n"
-        << "  -i, --input <file>            Input file\n"
-        << "  -o, --output <file>           Output file\n"
-        << "  -p, --paramFile <file>        Parameter file\n"
-        << "  -k, --pk-paramFile <file>     Pseudoknot parameter file\n"
-        << "  -m, --mod-dir <path|file>     Directory containing modified base parameter files\n"
-        << "  -e, --round                   Rounds all decimal places in pseudoknot calculations\n"
-        << "  -d, --dangle                  Specify the dangle model to be used (base is 2)\n";
+        << "  -h, --help                            Show this help message\n"
+        << "  -V, --version                         Print version and exit\n"
+        << "  -v, --verbose                         Enable verbose output\n"
+        << "  -s, --sequence <string>               Input sequence\n"
+        << "  -r, --structure <string>              Input structure\n"
+        << "  -i, --input <file>                    Input file\n"
+        << "  -p, --paramFile <file>                Parameter file\n"
+        << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
+        << "  -m, --mod-params <none|path|file>     Directory containing modified base parameter files\n"
+        << "  -e, --round                           Rounds all decimal places in pseudoknot calculations\n"
+        << "  -d, --dangle                          Specify the dangle model to be used (base is 2)\n";
 }
 
 // cleans white space from arg
@@ -79,14 +78,11 @@ int main(int argc, char** argv) {
             structure = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-i" || arg == "--input") && argc >= i + 1) {
             input_file = get_trimmed_arg(i, argc, argv);
-        } else if ((arg == "-o" || arg == "--output") && argc >= i + 1) {
-            std::cout << "Output file specified but output functionality is not yet implemented. Ignoring output file argument." << std::endl;
-            output_file = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-e" || arg == "--round") {
             round = true;
-        } else if (arg == "-m" || arg == "--mod-file") {
+        } else if (arg == "-m" || arg == "--mod-params") {
             // -m /path/to/params
             if (i + 1 < argc && argv[i + 1][0] != '-') {
                 mod_param_paths.push_back(get_trimmed_arg(i, argc, argv));
