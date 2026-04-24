@@ -223,7 +223,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
 
 // ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessor::compute_cr_pairings(
-    const std::vector<ClosedRegion>& closed_regions, const size_t& rna_size) {
+    const std::vector<ClosedRegion>& closed_regions, size_t rna_size) {
     std::vector<size_t> closed_regions_pairings(rna_size, NULL_INDEX);
     for (ClosedRegion cr : closed_regions) {
         if (cr.end >= rna_size) THROW_ERROR("rna_size is too small");

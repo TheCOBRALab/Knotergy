@@ -153,7 +153,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
 }
 
 std::vector<ClosedRegion> LoopFactory::closed_region_bucket_sort(
-    const std::vector<ClosedRegion>& closed_regions, const size_t& structure_length) {
+    const std::vector<ClosedRegion>& closed_regions, size_t structure_length) {
     // Map each possible 'begin' position to an index in closed_regions.
     std::vector<size_t> begin_to_idx(structure_length, NULL_INDEX);
 

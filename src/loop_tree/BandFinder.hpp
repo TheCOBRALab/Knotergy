@@ -44,8 +44,8 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
-    static std::vector<Band> find_bands(const size_t& left_bound, const size_t& right_bound,
-                                        const LoopType& loop_type, std::vector<PairedBaseNode>& aux_bands,
+    static std::vector<Band> find_bands(size_t left_bound,size_t right_bound,
+                                        LoopType loop_type, std::vector<PairedBaseNode>& aux_bands,
                                         const std::vector<size_t>& pairings,
                                         const std::vector<size_t>& cr_pairings);
 
@@ -90,8 +90,8 @@ class BandFinder {
      * @return Vector of PairedBaseNode objects.
      */
     static void generate_paired_base_links(
-        const size_t left_bound, 
-        const size_t right_bound,
+        size_t left_bound, 
+        size_t right_bound,
         std::vector<PairedBaseNode>& aux_bands,
         const std::vector<size_t>& pairings,
         const std::vector<size_t>& cr_pairings);

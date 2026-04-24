@@ -65,7 +65,7 @@ class LoopFactory {
      * @return Sorted vector of closed regions.
      */
     static std::vector<ClosedRegion> closed_region_bucket_sort(
-        const std::vector<ClosedRegion>& closed_regions, const size_t& structure_length);
+        const std::vector<ClosedRegion>& closed_regions, size_t structure_length);
 
    private:
     const ProcessedRNAEntry& processed_rna_;
