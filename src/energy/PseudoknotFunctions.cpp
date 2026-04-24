@@ -14,7 +14,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 
     // remove unpaired bases within bands since they're already included in ViennaRNA's energy
     // calculations for internal loops
-    for (Band band : node.bands) {
+    for (const Band& band : node.bands) {
         unpaired -= processed_rna.get_unpaired_count(band.left_border(), band.left_inner());
         unpaired -= processed_rna.get_unpaired_count(band.right_inner(), band.right_border());
     }
@@ -23,7 +23,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     // that are within the band. Since the base pairs of all children were already removed in
     // exclusive_unpaired_bases_count, we need to add them back due to double counting. We can
     // identify these base pairs as the children that are within bands (pseudo_type == WithinBand)
-    for (std::shared_ptr<LoopNode> child : node.children) {
+    for (const std::shared_ptr<LoopNode>& child : node.children) {
         if (child->pseudo_type == PseudoNestedType::WithinBand) {
             unpaired += child->total_unpaired_bases_count;
         }
@@ -39,11 +39,14 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 
     // Children that are within a band are nested inside of a pseudoknotted multiloop
     // Add the base pair penalty for each child that is within a band
-    for (std::shared_ptr<LoopNode> c : node.children) {
-        if (c->pseudo_type == PseudoNestedType::WithinBand) {
-            energy += pkp.pk_mloop_bp;
-        }
-    }
+    energy += node.number_of_withinband_children * pkp.pk_mloop_bp;
+
+    // Personal note: I find it dumb that the number of children is what used for base pair penalty
+    // If a child is a pseudoknot, it can have multiple base pairs. 
+    // Like an H-type pseudoknot has 2 bands. Why tf does it only get 1 base pair penalty? 
+    // But this is how the original HotKnotsV2 implementation did it, 
+    // so I guess we have to do it too for consistency.
+    // But if you're reading this, maybe this could be a paper? idk.
 
     return energy;
 }
@@ -51,7 +54,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
     double energy = 0;
-    if (std::shared_ptr<LoopNode> parent = node.parent.lock()) {
+    if (const std::shared_ptr<LoopNode>& parent = node.parent.lock()) {
         switch (parent->loop_type) {
             case (LoopType::External):
                 energy += pkp.pk_in_ext;
@@ -87,6 +90,14 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
     for (const Band& band : node.bands) {
         const std::vector<BasePair>& bps = band.base_pairs();
         const size_t n = bps.size();
+
+        // Sanity check: left inner border must be less than right inner border
+        if (band.left_inner() >= band.right_inner()) {
+            THROW_ERROR("Invalid band with borders (" + std::to_string(band.left_border()) + ", " +
+                        std::to_string(band.right_border()) + ") in pseudoknot (" +
+                        std::to_string(node.begin) + ", " + std::to_string(node.end) +
+                        "). Left inner border must be less than right inner border."); 
+        }
 
         // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
         size_t size = band.right_inner() - band.left_inner() - 1;

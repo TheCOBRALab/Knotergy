@@ -48,95 +48,126 @@ ProcessedRNAEntry RNAProcessor::process_rna(
 };
 
 std::vector<size_t> RNAProcessor::compute_pairings(
-    const std::string& structure, const std::string& unmodified_sequence,
+    const std::string& structure,
+    const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
-    const std::unordered_map<char, char> open_to_close = {
-        {'(', ')'}, {'[', ']'}, {'{', '}'}, {'<', '>'}, {'A', 'a'}, {'B', 'b'},
-        {'C', 'c'}, {'D', 'd'}, {'E', 'e'}, {'F', 'f'}, {'G', 'g'}, {'H', 'h'},
-        {'I', 'i'}, {'J', 'j'}, {'K', 'k'}, {'L', 'l'}, {'M', 'm'}, {'N', 'n'},
-        {'O', 'o'}, {'P', 'p'}, {'Q', 'q'}, {'R', 'r'}, {'S', 's'}, {'T', 't'},
-        {'U', 'u'}, {'V', 'v'}, {'W', 'w'}, {'X', 'x'}, {'Y', 'y'}, {'Z', 'z'}};
 
-    const std::unordered_map<char, std::unordered_set<char>> valid_pairings = {
-        {'A', {'U'}}, {'U', {'A', 'G'}},      {'G', {'C', 'U'}},
-        {'C', {'G'}}, {'T', {'A', 'T', 'G'}}, {'N', {}}};
+    constexpr unsigned char MAX_CHAR = 128;
+    constexpr unsigned char INVALID_CHAR = '\0';
+    
+    // Lookup tables for bracket matching. Indexed by ASCII character code.
+    std::array<char, MAX_CHAR> open_to_close{}; // open('(') -> close(')')
+    std::array<char, MAX_CHAR> close_to_open{}; // close(')') -> open('(')
+    
+    // Adds valid bracket pairs to the lookup tables
+    auto add_bracket = [&](char open, char close) {
+        open_to_close[static_cast<unsigned char>(open)] = close;
+        close_to_open[static_cast<unsigned char>(close)] = open;
+    };
 
-    // close_to_open is the opposite of open_to_close
-    // e.g. {'(', ')'} -> {')', '('}
-    std::unordered_map<char, char> close_to_open;
-    close_to_open.reserve(open_to_close.size());
-    for (const auto& pair : open_to_close) {
-        close_to_open.emplace(pair.second, pair.first);
+    add_bracket('(', ')');
+    add_bracket('[', ']');
+    add_bracket('{', '}');
+    add_bracket('<', '>');
+
+    // Adds A-Z and a-z as valid brackets. e.g. open('A') -> close('a')
+    for (char c = 'A'; c <= 'Z'; ++c) {
+        add_bracket(c, static_cast<char>(std::tolower(c)));
     }
 
+    // Function to check if two bases can pair according to RNA base-pairing rules.
+    auto can_pair = [](char left, char right) {
+        switch (left) {
+            case 'A': return right == 'U';
+            case 'U': return right == 'A' || right == 'G';
+            case 'G': return right == 'C' || right == 'U';
+            case 'C': return right == 'G';
+            case 'T': return right == 'A' || right == 'G';
+            case 'N': return false; // Should not pair with anything
+            default:  return false;
+        }
+    };
+
     const size_t n = structure.size();
-    const bool check_pairs = (unmodified_sequence.size() == n);
-    const bool have_mod_seq = (mod_sequence.size() == n);
 
-    // pre-allocate pairings
+    // sequence and mod_sequence are optional inputs
+    // If provided, it will check for valid base pairs, and warn for invalid pairs.
+    const bool check_pairs = unmodified_sequence.size() == n;
+    const bool have_mod_seq = mod_sequence.size() == n;
+
+    // Initialize all pairings to NULL_INDEX (unpaired).
     std::vector<size_t> pairings(n, NULL_INDEX);
-    // 1 stack for each open/close pair
-    std::unordered_map<char, std::vector<size_t>> stacks;
 
-    for (size_t i = 0; i < n; i++) {
-        char c = structure[i];
+    // Stacks for each type of opening bracket. Indexed by ASCII character code.
+    std::array<std::vector<size_t>, MAX_CHAR> stacks;
 
-        // un-paired
-        if (c == '.') continue;
+    for (size_t i = 0; i < n; ++i) {
+        const unsigned char c = static_cast<unsigned char>(structure[i]);
 
-        // if open bracket, push to it's stack
-        if (open_to_close.count(c)) {
+        // Skip unpaired bases
+        if (c == '.') {
+            continue;
+        }
+        // If it's an opening bracket, push its index onto the corresponding stack
+        if (c < MAX_CHAR && open_to_close[c] != INVALID_CHAR) {
             stacks[c].push_back(i);
             continue;
         }
 
-        // if closing bracket
-        if (close_to_open.count(c)) {
-            char open = close_to_open[c];
-            std::vector<size_t>& stack = stacks[open];
+        // If it's a closing bracket, pop from the corresponding opening stack and record the pair
+        if (c < MAX_CHAR && close_to_open[c] != INVALID_CHAR) {
+            const unsigned char open = static_cast<unsigned char>(close_to_open[c]);
+            auto& stack = stacks[open];
 
-            // if closed without being opened
-            if (stacks[open].empty()) {
-                THROW_ERROR("Invalid RNA structure: Bracket: '" + std::string(1, c) +
-                            "' at index: " + std::to_string(i) + " was never opened");
+            if (stack.empty()) {
+                THROW_ERROR(
+                    "Invalid RNA structure: bracket '" + std::string(1, structure[i]) +
+                    "' at index " + std::to_string(i) + " was never opened"
+                );
             }
 
-            // pair top of stack with current basepair
-            size_t j = stack.back();
+            // get's the index of the opening bracket
+            const size_t j = stack.back();
             stack.pop_back();
+
+            // record the pairing
             pairings[i] = j;
             pairings[j] = i;
 
-            // check if they're a valid pair
+            // Validate pairings if sequence information is available
             if (check_pairs &&
-                !valid_pairings.at(unmodified_sequence[j]).count(unmodified_sequence[i])) {
-                // if modified sequence is provided, use that for warning
-                if (have_mod_seq) {
-                    std::cerr << "Warning: Base Pair '" + std::string(mod_sequence[i]) +
-                                     "' can't pair with '" + std::string(mod_sequence[j]) +
-                                     "' at indices " + std::to_string(j) + ", " + std::to_string(i) 
-                                     << '\n';
+                !can_pair(unmodified_sequence[j], unmodified_sequence[i])) {
 
-                } else {  // If modified sequence is not provided, fall back to unmodified sequence
-                    std::cerr << "Warning: Base Pair '" + std::string(1, unmodified_sequence[i]) +
-                                     "' can't pair with '" +
-                                     std::string(1, unmodified_sequence[j]) + "' at indices " +
-                                     std::to_string(j) + ", " + std::to_string(i) << '\n';
+                if (have_mod_seq) {
+                    std::cerr
+                        << "Warning: Base pair '" << mod_sequence[j]
+                        << "' can't pair with '" << mod_sequence[i]
+                        << "' at indices " << j << ", " << i << '\n';
+                } else {
+                    std::cerr
+                        << "Warning: Base pair '" << unmodified_sequence[j]
+                        << "' can't pair with '" << unmodified_sequence[i]
+                        << "' at indices " << j << ", " << i << '\n';
                 }
             }
+
             continue;
         }
 
-        // Not open, not close, not unpaired -> invalid character
-        THROW_ERROR("Invalid RNA structure: Invalid character '" + std::string(1, c) +
-                    "' in RNA structure (position " + std::to_string(i) + ')');
+        // If we reach here, the character is invalid (not a dot or a recognized bracket)
+        THROW_ERROR(
+            "Invalid RNA structure: invalid character '" + std::string(1, structure[i]) +
+            "' at index " + std::to_string(i)
+        );
     }
 
-    // check if all open brackets were closed
-    for (auto& [open, stack] : stacks) {
-        if (!stack.empty()) {
-            THROW_ERROR("Invalid RNA structure: opening bracket '" + std::string(1, open) +
-                        "' at index: " + std::to_string(stack.back()) + " was not closed");
+    // After processing, all stacks should be empty if the structure is well-formed
+    for (size_t c = 0; c < MAX_CHAR; ++c) {
+        if (!stacks[c].empty()) {
+            THROW_ERROR(
+                "Invalid RNA structure: opening bracket '" + std::string(1, static_cast<char>(c)) +
+                "' at index " + std::to_string(stacks[c].back()) + " was not closed"
+            );
         }
     }
 
