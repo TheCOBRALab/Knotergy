@@ -253,6 +253,8 @@ std::string RNAProcessor::compute_unmodified_sequence(
     std::string unmodified_sequence;
     unmodified_sequence.reserve(rna_length);
 
+    bool has_modified_bases_local = false;
+
     // map modified base to unmodified base for quick lookup
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
     mod_to_unmod.reserve(params.size());
@@ -275,7 +277,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
             unmodified_sequence.append(mod_base);
             continue;
         } else {
-            has_modified_bases = true;
+            has_modified_bases_local = true;
         }
 
         // lookup modified -> unmodified
@@ -290,6 +292,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
         }
     }
 
+    has_modified_bases = has_modified_bases_local;
     return unmodified_sequence;
 }
 
