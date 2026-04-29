@@ -8,10 +8,10 @@ ProcessedRNAEntry RNAProcessor::process_rna(
     bool has_modified_bases = false;
     std::string unmodified_sequence;
     std::vector<size_t> pairings;
-
+    
     if (!modified_params.empty()) {
         std::vector<std::string_view> mod_sequence =
-            ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence);
+            ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence, rna.structure);
 
         if (mod_sequence.size() != rna.structure.size()) {
             THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
