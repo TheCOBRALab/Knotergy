@@ -49,8 +49,8 @@ class RNAProcessor {
      *   This evaluates to the maximum size_t value because size_t is unsigned.
      *
      * @param structure Dot-bracket RNA structure string.
-     * @param unmodified_sequence The unmodified RNA sequence corresponding to the structure.
-     * @param mod_sequence Modified RNA sequence (raw sequence split into string_views per base).
+     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the structure.
+     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views per base).
      * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's
      * partner, or NULL_INDEX if i is unpaired.
      *
@@ -68,8 +68,9 @@ class RNAProcessor {
      * Convenience overload: extracts the structure from an RNAEntry and passes it to the main
      * compute_pairings() method.
      *
-     * @param closed_regions All closed regions in the structure.
-     * @param rna_size The total length of the structure (used to preallocate the result).
+     * @param rna RNAEntry containing at least the structure
+     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the structure.
+     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views per base).
      **/
     [[nodiscard]] static std::vector<size_t> compute_pairings(
         const RNAEntry& rna, const std::string& unmodified_sequence = "",
@@ -80,6 +81,8 @@ class RNAProcessor {
      *
      * Parses the base-pair vector returned by compute_pairings() and returns every closed region.
      * See ClosedRegion.hpp for the definition and semantics of a closed region.
+     * 
+     * Output is sorted by the start index of each closed region
      *
      * Example:
      *  pairings = [3, NULL_INDEX, NULL_INDEX, 0] → closed_regions = [ClosedRegion(0, 3)]
@@ -110,7 +113,7 @@ class RNAProcessor {
      * @throws std::runtime_error If any closed-region index exceeds rna_size.
      */
     [[nodiscard]] static std::vector<size_t> compute_cr_pairings(
-        const std::vector<ClosedRegion>& closed_regions, size_t rna_size);
+        const std::vector<ClosedRegion>& closed_regions, size_t rna_size = NULL_INDEX);
 
     /**
      * @brief Prefix-sum of unpaired-base counts.

@@ -88,7 +88,7 @@ TEST(ProcessedRNAEntry, GetClosedRegions_HandlesPseudoknotWithNestedBasePair) {
     std::string structure = "[(..().])";
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    std::vector<knotergy::ClosedRegion> expected_pairings = {{4, 5}, {0, 8}};
+    std::vector<knotergy::ClosedRegion> expected_pairings = {{0, 8}, {4, 5}};
     EXPECT_EQ(processed_rna.get_closed_regions(), expected_pairings);
 }
 
@@ -97,7 +97,7 @@ TEST(ProcessedRNAEntry, GetClosedRegions_HandlesPseudoknotWithNestedPseudoknot) 
     std::string structure = "[(..([)].])";
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    std::vector<knotergy::ClosedRegion> expected_closed_regions = {{4, 7}, {0, 10}};
+    std::vector<knotergy::ClosedRegion> expected_closed_regions = {{0, 10}, {4, 7}};
     EXPECT_EQ(processed_rna.get_closed_regions(), expected_closed_regions);
 }
 
@@ -106,8 +106,7 @@ TEST(ProcessedRNAEntry, GetClosedRegions_HandlesFauxPseudoknots) {
     std::string structure = "(([][])[()])";
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    std::vector<knotergy::ClosedRegion> expected_closed_regions = {
-        {2, 3}, {4, 5}, {1, 6}, {8, 9}, {7, 10}, {0, 11}};
+    std::vector<knotergy::ClosedRegion> expected_closed_regions = {{0, 11}, {1, 6}, {2, 3}, {4, 5}, {7, 10}, {8, 9}};
     EXPECT_EQ(processed_rna.get_closed_regions(), expected_closed_regions);
 }
 
@@ -126,8 +125,7 @@ TEST(ProcessedRNAEntry, GetClosedRegions_HandlesComplexPseudoknot) {
     std::string structure = "([)([)()].(((([[[[))))(]]]]).().(])";
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
-    std::vector<knotergy::ClosedRegion> expected_closed_regions = {
-        {6, 7}, {3, 8}, {10, 27}, {29, 30}, {0, 34}};
+    std::vector<knotergy::ClosedRegion> expected_closed_regions = {{0, 34}, {3, 8}, {6, 7}, {10, 27}, {29, 30}};
     EXPECT_EQ(processed_rna.get_closed_regions(), expected_closed_regions);
 }
 

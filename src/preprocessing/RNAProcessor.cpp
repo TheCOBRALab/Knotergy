@@ -182,46 +182,52 @@ std::vector<size_t> RNAProcessor::compute_pairings(
 
 // Computes all closed regions from a pairing list using an interval-merging stack algorithm.
 // Assumes properly balanced pairings.
+// Traverses from right to left to ensure it's sorted by start index without needing an explicit sort step.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     const std::vector<size_t>& pairings) {
     std::vector<ClosedRegion> closed_regions;
     std::stack<ClosedRegion> stack;
     const size_t n = pairings.size();
 
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = n; i-- > 0;) {
         size_t paired_idx = pairings[i];
         if (paired_idx == NULL_INDEX) continue;
 
-        if (i < paired_idx) {
-            // Opening base: push raw pair; its right boundary may be extended later.
-            stack.emplace(i, paired_idx);
+        if (i > paired_idx) {
+            // Closing base: push raw pair; its left boundary may be extended later.
+            stack.emplace(paired_idx, i);
             continue;
         }
 
-        const size_t open_idx = paired_idx;
-        size_t largest_right = i;
+        const ClosedRegion current_pair(i, paired_idx);
+        size_t smallest_left = i;
 
-        // Merge any nested regions whose start lies within (open, i]
-        while (!stack.empty() && (stack.top().begin > open_idx)) {
-            largest_right = std::max(largest_right, stack.top().end);
+        // Merge any nested regions whose end lies within [i, close)
+        while (!stack.empty() && (stack.top().end < current_pair.end)) {
+            smallest_left = std::min(smallest_left, stack.top().begin);
             stack.pop();
         }
 
         if (stack.empty()) THROW_ERROR("Unbalanced pairings\n");
 
         // Extend region if any nested intervals were merged.
-        stack.top().end = std::max(largest_right, stack.top().end);
+        stack.top().begin = std::min(smallest_left, stack.top().begin);
 
-        // If this closing base ends the region, move it to result.
-        if (i == stack.top().end) {
+        // If this opening base starts the region, move it to result.
+        if (current_pair.begin == stack.top().begin) {
             closed_regions.push_back(stack.top());
             stack.pop();
         }
     }
+
+    // Because we scanned right-to-left, completed regions were appended in descending begin order.
+    // Reverse is linear, not sorting.
+    std::reverse(closed_regions.begin(), closed_regions.end());
+
     return closed_regions;
 }
 
-// ([...)] = 6, -1, -1, -1, -1, -1, 0
+// ([...)] = 5, 6, -1, -1, -1, 0, 1
 std::vector<size_t> RNAProcessor::compute_cr_pairings(
     const std::vector<ClosedRegion>& closed_regions, size_t rna_size) {
     std::vector<size_t> closed_regions_pairings(rna_size, NULL_INDEX);

@@ -57,15 +57,6 @@ class LoopFactory {
      */
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
-    /**
-     * @brief Bucket sort closed regions by their starting position.
-     *
-     * @param closed_regions Vector of closed regions to sort.
-     * @param structure_length Length of the RNA structure.
-     * @return Sorted vector of closed regions.
-     */
-    static std::vector<ClosedRegion> closed_region_bucket_sort(
-        const std::vector<ClosedRegion>& closed_regions, size_t structure_length);
 
    private:
     const ProcessedRNAEntry& processed_rna_;
