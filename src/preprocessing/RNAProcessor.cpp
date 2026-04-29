@@ -14,7 +14,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(
             ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence, rna.structure);
 
         if (mod_sequence.size() != rna.structure.size()) {
-            THROW_ERROR("Modified sequence length does not match RNA length\nSequence length: " +
+            THROW_ERROR("Sequence length does not match RNA length\nSequence length: " +
                         std::to_string(mod_sequence.size()) +
                         "\nRNA length: " + std::to_string(rna.structure.size()));
         }

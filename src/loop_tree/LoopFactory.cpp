@@ -10,7 +10,6 @@
 namespace knotergy {
 
 LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna_{processed_rna} {
-    aux_bands_.resize(processed_rna.get_structure().size());// Used for band finding
     build_tree(processed_rna.get_closed_regions());
 }
 
@@ -62,10 +61,19 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 void LoopFactory::populate_node(LoopNode& node) {
     node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
     node.loop_type = find_loop_type(node);
-    node.bands = BandFinder::find_bands(node, aux_bands_, processed_rna_);
-    node.number_of_bands = static_cast<int>(node.bands.size());
-    label_pseudonested_children(node);
-    pseudo_nested_check(node);
+
+    if (node.loop_type == LoopType::Pseudoknot) {
+        // Used for band finding and navigation. 
+        // Lazily initialize when we encounter the first pseudoknot.
+        if (aux_bands_.empty()) {
+            aux_bands_.resize(processed_rna_.get_structure().size());
+        }
+
+        node.bands = BandFinder::find_bands(node, aux_bands_, processed_rna_);
+        node.number_of_bands = static_cast<int>(node.bands.size());
+        label_pseudonested_children(node);
+        pseudo_nested_check(node);
+    }
 }
 
 void LoopFactory::populate_node(const std::shared_ptr<LoopNode>& node) {
