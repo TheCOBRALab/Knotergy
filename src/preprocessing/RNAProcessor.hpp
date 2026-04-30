@@ -49,8 +49,10 @@ class RNAProcessor {
      *   This evaluates to the maximum size_t value because size_t is unsigned.
      *
      * @param structure Dot-bracket RNA structure string.
-     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the structure.
-     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views per base).
+     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the
+     * structure.
+     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views
+     * per base).
      * @return std::vector<size_t> of length rna.size(), where pairings[i] is the index of i's
      * partner, or NULL_INDEX if i is unpaired.
      *
@@ -69,8 +71,10 @@ class RNAProcessor {
      * compute_pairings() method.
      *
      * @param rna RNAEntry containing at least the structure
-     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the structure.
-     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views per base).
+     * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the
+     *structure.
+     * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views
+     *per base).
      **/
     [[nodiscard]] static std::vector<size_t> compute_pairings(
         const RNAEntry& rna, const std::string& unmodified_sequence = "",
@@ -81,7 +85,7 @@ class RNAProcessor {
      *
      * Parses the base-pair vector returned by compute_pairings() and returns every closed region.
      * See ClosedRegion.hpp for the definition and semantics of a closed region.
-     * 
+     *
      * Output is sorted by the start index of each closed region
      *
      * Example:
@@ -163,7 +167,6 @@ class RNAProcessor {
      */
     [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
     [[nodiscard]] static bool is_unmod_base(char base);
-
 
    private:
     // Lookup table for unmodified bases

@@ -14,20 +14,22 @@
 
 namespace {
 void help() {
-    std::cout
-        << "Usage: ./Knotergy [options]\n"
-        << "Options:\n"
-        << "  -h, --help                            Show this help message\n"
-        << "  -V, --version                         Print version and exit\n"
-        << "  -v, --verbose                         Enable verbose output\n"
-        << "  -s, --sequence <string>               Input sequence\n"
-        << "  -r, --structure <string>              Input structure\n"
-        << "  -i, --input <file>                    Input file\n"
-        << "  -p, --paramFile <file>                Parameter file\n"
-        << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
-        << "  -m, --mod-params <none|path|file>     Directory containing modified base parameter files\n"
-        << "  -e, --round                           Rounds all decimal places in pseudoknot calculations\n"
-        << "  -d, --dangle                          Specify the dangle model to be used (base is 2)\n";
+    std::cout << "Usage: ./Knotergy [options]\n"
+              << "Options:\n"
+              << "  -h, --help                            Show this help message\n"
+              << "  -V, --version                         Print version and exit\n"
+              << "  -v, --verbose                         Enable verbose output\n"
+              << "  -s, --sequence <string>               Input sequence\n"
+              << "  -r, --structure <string>              Input structure\n"
+              << "  -i, --input <file>                    Input file\n"
+              << "  -p, --paramFile <file>                Parameter file\n"
+              << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
+              << "  -m, --mod-params <none|path|file>     Directory containing modified base "
+                 "parameter files\n"
+              << "  -e, --round                           Rounds all decimal places in pseudoknot "
+                 "calculations\n"
+              << "  -d, --dangle                          Specify the dangle model to be used "
+                 "(base is 2)\n";
 }
 
 // cleans white space from arg
@@ -62,9 +64,11 @@ int main(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
-    std::vector<std::string> mod_param_paths; 
-    const std::string default_mod_path = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
-    std::string pseudo_param_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+    std::vector<std::string> mod_param_paths;
+    const std::string default_mod_path =
+        std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
+    std::string pseudo_param_file =
+        std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
     bool round = false;
     bool verbose = false;
     int dangle = 2;
@@ -86,7 +90,7 @@ int main(int argc, char** argv) {
             // -m /path/to/params
             if (i + 1 < argc && argv[i + 1][0] != '-') {
                 mod_param_paths.push_back(get_trimmed_arg(i, argc, argv));
-            } else { // -m with no path, use default
+            } else {  // -m with no path, use default
                 mod_param_paths.push_back(default_mod_path);
             }
         } else if (arg == "-d" || arg == "--dangle") {
@@ -142,8 +146,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    if (structure.length() >= 2147483647) { // Prevent overflow of int in energy calculations
-        std::cerr << "Error: Structure length exceeds maximum allowed size of 2,147,483,647" << std::endl;
+    if (structure.length() >= 2147483647) {  // Prevent overflow of int in energy calculations
+        std::cerr << "Error: Structure length exceeds maximum allowed size of 2,147,483,647"
+                  << std::endl;
         return 1;
     }
 
@@ -174,7 +179,8 @@ int main(int argc, char** argv) {
         std::cout << "\n--------- Name: " << rna.name << " ---------" << std::endl;
 
         // Preprocess the RNA entry to compute pairings, closed regions, etc.
-        const knotergy::ProcessedRNAEntry& processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
+        const knotergy::ProcessedRNAEntry& processed_rna =
+            knotergy::RNAProcessor::process_rna(rna, mp);
 
         // Builds loop tree
         knotergy::LoopFactory factory(processed_rna);

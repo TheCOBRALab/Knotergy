@@ -12,7 +12,7 @@ namespace knotergy {
 /**
  * @brief Enumeration of loop types in RNA secondary structures.
  */
-enum class LoopType {Unknown, Stack, Hairpin, Internal, Multibranch, External, Pseudoknot};
+enum class LoopType { Unknown, Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
 
 /**
  * @brief Enumeration of pseudoknot nesting types.
@@ -74,16 +74,16 @@ struct LoopNode {
     size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
     size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType loop_type = LoopType::Unknown;                                     ///< Type of this loop.
+    LoopType loop_type = LoopType::Unknown;                 ///< Type of this loop.
     PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
     int exclusive_unpaired_bases_count = 0;                 ///< Unpaired bases only in this loop.
-    int total_unpaired_bases_count = 0;  ///< Unpaired bases in loop + nested children.
+    int total_unpaired_bases_count = 0;     ///< Unpaired bases in loop + nested children.
     int number_of_withinband_children = 0;  ///< Count of children within pseudoknot bands.
-    int number_of_nested_children = 0;  ///< Count of nested children.
-    std::weak_ptr<LoopNode> parent;     ///< Parent loop node (weak to avoid cycles).
+    int number_of_nested_children = 0;      ///< Count of nested children.
+    std::weak_ptr<LoopNode> parent;         ///< Parent loop node (weak to avoid cycles).
     std::vector<std::shared_ptr<LoopNode>> children;  ///< Child loop nodes.
     std::vector<Band> bands;  ///< Pseudoknot bands (empty if not pseudoknotted).
-    int number_of_bands = 0;      ///< Number of bands in this loop.
+    int number_of_bands = 0;  ///< Number of bands in this loop.
     double energy = 0;        ///< Computed energy (set by ComputeEnergy).
     bool is_inf = false;      ///< Flag for infinite energy (e.g., invalid structures).
 

@@ -42,9 +42,9 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     energy += node.number_of_withinband_children * pkp.pk_mloop_bp;
 
     // Personal note: I find it dumb that the number of children is what used for base pair penalty
-    // If a child is a pseudoknot, it can have multiple base pairs. 
-    // Like an H-type pseudoknot has 2 bands. Why tf does it only get 1 base pair penalty? 
-    // But this is how the original HotKnotsV2 implementation did it, 
+    // If a child is a pseudoknot, it can have multiple base pairs.
+    // Like an H-type pseudoknot has 2 bands. Why tf does it only get 1 base pair penalty?
+    // But this is how the original HotKnotsV2 implementation did it,
     // so I guess we have to do it too for consistency.
     // But if you're reading this, maybe this could be a paper? idk.
 
@@ -96,7 +96,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
             THROW_ERROR("Invalid band with borders (" + std::to_string(band.left_border()) + ", " +
                         std::to_string(band.right_border()) + ") in pseudoknot (" +
                         std::to_string(node.begin) + ", " + std::to_string(node.end) +
-                        "). Left inner border must be less than right inner border."); 
+                        "). Left inner border must be less than right inner border.");
         }
 
         // check if the band is valid (has at least 3 base pairs to avoid infinite energy)

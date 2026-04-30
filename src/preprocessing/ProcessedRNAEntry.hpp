@@ -60,7 +60,6 @@ class ProcessedRNAEntry {
         if (has_modified_bases) {
             mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
         }
-        
     }
 
     /**
@@ -118,7 +117,7 @@ class ProcessedRNAEntry {
             has_modified_bases_ = other.has_modified_bases_;
             if (has_modified_bases_) {
                 mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
-            } 
+            }
         }
         return *this;
     }
@@ -206,7 +205,7 @@ class ProcessedRNAEntry {
     }
 
     // grapheme is a user-perceived character, which may be multiple bytes
-    // It's defined here since adding it to RNAProcessor would create a circular dependency 
+    // It's defined here since adding it to RNAProcessor would create a circular dependency
     [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(
         const std::string& sequence, const std::string& structure = "") {
         std::vector<std::string_view> out;
@@ -214,7 +213,8 @@ class ProcessedRNAEntry {
 
         // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
         if (sequence.empty() || sequence.size() != structure.size()) {
-            // Finds any type of grapheme using uni_algo (handles multi-byte modified bases), but is slower.
+            // Finds any type of grapheme using uni_algo (handles multi-byte modified bases), but is
+            // slower.
             for (std::string_view g : una::views::grapheme::utf8(sequence)) {
                 out.push_back(g);
             }
@@ -222,11 +222,13 @@ class ProcessedRNAEntry {
             // Assumes each grapheme is a single character (Faster).
             for (size_t i = 0; i < sequence.size(); ++i) {
                 unsigned char c = static_cast<unsigned char>(sequence[i]);
-                
-                // If the character is not a valid single-byte ASCII character, 
-                // Fall back to the more general grapheme parsing to avoid misalignment between sequence and structure.
+
+                // If the character is not a valid single-byte ASCII character,
+                // Fall back to the more general grapheme parsing to avoid misalignment between
+                // sequence and structure.
                 if (c >= 0x80) {
-                    // Since no structure is provided, it falls back to uni_algo for multibyte grapheme parsing
+                    // Since no structure is provided, it falls back to uni_algo for multibyte
+                    // grapheme parsing
                     return compute_modified_sequence_views(sequence);
                 }
                 out.emplace_back(sequence.data() + i, 1);

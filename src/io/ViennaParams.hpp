@@ -20,8 +20,6 @@ using param_map = std::map<std::string, float>;
 
 namespace knotergy {
 
-
-
 struct vrna_md_param {
     ~vrna_md_param() {
         if (p) free(p);
@@ -48,7 +46,7 @@ struct ParamCacheHeader {
     std::uint32_t md_struct_size = sizeof(vrna_md_t);
     std::uint32_t endian_marker = BigEndianMarker;
     std::int32_t dangles = 2;
-    std::uint64_t source_mtime = 0;   // 0 for built-in fallback sets
+    std::uint64_t source_mtime = 0;  // 0 for built-in fallback sets
 };
 
 /**
@@ -59,7 +57,7 @@ struct ParamCacheHeader {
  * stacking, terminal, mismatch, and dangle energies.
  */
 class modified_base_param {
-  /**
+    /**
      * @brief Construct modified base parameters.
      *
      * @param mod_name Name of the modified base.
@@ -78,23 +76,12 @@ class modified_base_param {
      * @param dangle3_e 3' dangle energy parameters.
      * @param dangle3_h 3' dangle enthalpy parameters.
      */
-public:
-    modified_base_param(
-        std::string mod_name,
-        std::string unmod,
-        std::string mod,
-        std::string fallback,
-        string_list partners,
-        param_map stacking,
-        param_map enthalpies,
-        param_map terminal_e,
-        param_map terminal_h,
-        param_map mismatch_e,
-        param_map mismatch_h,
-        param_map dangle5_e,
-        param_map dangle5_h,
-        param_map dangle3_e,
-        param_map dangle3_h)
+   public:
+    modified_base_param(std::string mod_name, std::string unmod, std::string mod,
+                        std::string fallback, string_list partners, param_map stacking,
+                        param_map enthalpies, param_map terminal_e, param_map terminal_h,
+                        param_map mismatch_e, param_map mismatch_h, param_map dangle5_e,
+                        param_map dangle5_h, param_map dangle3_e, param_map dangle3_h)
         : name_(std::move(mod_name)),
           unmodified_base_(std::move(unmod)),
           modified_base_(std::move(mod)),
@@ -127,7 +114,7 @@ public:
     const param_map& dangle3_energies() const noexcept { return dangle3_energies_; }
     const param_map& dangle3_enthalpies() const noexcept { return dangle3_enthalpies_; }
 
-private:
+   private:
     std::string name_;
     std::string unmodified_base_;
     std::string modified_base_;

@@ -1,42 +1,40 @@
 #include <gtest/gtest.h>
 
-#include <io/common.hpp>
-#include <io/RNAInputManager.hpp>
-#include <preprocessing/RNAEntry.hpp>
-#include <preprocessing/ProcessedRNAEntry.hpp>
-#include <preprocessing/RNAProcessor.hpp>
-#include <loop_tree/LoopFactory.hpp>
 #include <energy/ComputeEnergy.hpp>
+#include <io/RNAInputManager.hpp>
+#include <io/common.hpp>
+#include <loop_tree/LoopFactory.hpp>
+#include <preprocessing/ProcessedRNAEntry.hpp>
+#include <preprocessing/RNAEntry.hpp>
+#include <preprocessing/RNAProcessor.hpp>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include "utils.hpp"
 
-#include <string>
-#include <vector>
-#include <tuple>
-
 namespace {
 
-const std::string DP_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
-const std::string turner_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
-const std::string pkp_file = std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+const std::string DP_file =
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
+const std::string turner_file =
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
+const std::string pkp_file =
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
 const bool round = false;
 
-std::tuple<double, double, double> pipeline(
-    std::string sequence,
-    std::string structure,
-    std::string param_file = turner_file
-) {
+std::tuple<double, double, double> pipeline(std::string sequence, std::string structure,
+                                            std::string param_file = turner_file) {
     double d0 = get_energy(sequence, structure, 0, round, param_file);
     double d1 = get_energy(sequence, structure, 1, round, param_file);
     double d2 = get_energy(sequence, structure, 2, round, param_file);
 
     return {d0, d1, d2};
 }
-} // namespace
-
+}  // namespace
 
 TEST(Dangles, external_simple) {
-    std::string sequence  = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
+    std::string sequence = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
     std::string structure = ".(((((.........................))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -46,7 +44,7 @@ TEST(Dangles, external_simple) {
 }
 
 TEST(Dangles, external_simple_NoEnds) {
-    std::string sequence  = "AAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUU";
+    std::string sequence = "AAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUU";
     std::string structure = "(((((.........................)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -56,7 +54,7 @@ TEST(Dangles, external_simple_NoEnds) {
 }
 
 TEST(Dangles, external_simple_adjacent) {
-    std::string sequence  = "AAAAAAUUUUUGGGGGCCCCCCAAAAAUUUUUUAAAAUUUUGGGCCAAAAAAAUUUUU";
+    std::string sequence = "AAAAAAUUUUUGGGGGCCCCCCAAAAAUUUUUUAAAAUUUUGGGCCAAAAAAAUUUUU";
     std::string structure = ".((((((((((((((...)))))))))))))).((((((((........)))))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -66,7 +64,7 @@ TEST(Dangles, external_simple_adjacent) {
 }
 
 TEST(Dangles, multiloop_left_dangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....)))..((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -76,7 +74,7 @@ TEST(Dangles, multiloop_left_dangle) {
 }
 
 TEST(Dangles, multiloop_left_dangle_chained) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....))).((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -86,7 +84,7 @@ TEST(Dangles, multiloop_left_dangle_chained) {
 }
 
 TEST(Dangles, multiloop_left_touch) {
-    std::string sequence  = "AAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....))).((...))..)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -95,9 +93,8 @@ TEST(Dangles, multiloop_left_touch) {
     EXPECT_NEAR(d2, 12.9, 0.000005);
 }
 
-
 TEST(Dangles, multiloop_right_dangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((..(((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -107,7 +104,7 @@ TEST(Dangles, multiloop_right_dangle) {
 }
 
 TEST(Dangles, multiloop_right_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
     std::string structure = "(((..(((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -117,7 +114,7 @@ TEST(Dangles, multiloop_right_touch) {
 }
 
 TEST(Dangles, multiloop_both_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
     std::string structure = "((((((....)))...((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -127,7 +124,7 @@ TEST(Dangles, multiloop_both_touch) {
 }
 
 TEST(Dangles, multiloop_both_RDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....)))...((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -137,7 +134,7 @@ TEST(Dangles, multiloop_both_RDangle) {
 }
 
 TEST(Dangles, multiloop_both_LDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....)))...((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -147,7 +144,7 @@ TEST(Dangles, multiloop_both_LDangle) {
 }
 
 TEST(Dangles, multiloop_both_BDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUUU";
     std::string structure = "(((.(((....)))...((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -157,7 +154,7 @@ TEST(Dangles, multiloop_both_BDangle) {
 }
 
 TEST(Dangles, multiloop_loop_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAAUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAAUUUUU";
     std::string structure = "((((((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -167,7 +164,7 @@ TEST(Dangles, multiloop_loop_touch) {
 }
 
 TEST(Dangles, multiloop_loop_RDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -177,7 +174,7 @@ TEST(Dangles, multiloop_loop_RDangle) {
 }
 
 TEST(Dangles, multiloop_loop_LDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAUUUUUUU";
     std::string structure = "(((.(((....))).((...)))))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -187,7 +184,7 @@ TEST(Dangles, multiloop_loop_LDangle) {
 }
 
 TEST(Dangles, multiloop_loop_BDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAUUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAUUUUUUUU";
     std::string structure = "(((.(((....))).((...)).)))";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
@@ -196,10 +193,14 @@ TEST(Dangles, multiloop_loop_BDangle) {
     EXPECT_NEAR(d2, 12.40, 0.000005);
 }
 
-// echo -e "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))." | RNAeval -d 
+// echo -e
+// "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC\n.(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........)))))))))."
+// | RNAeval -d
 TEST(Dangles, external_multiloop) {
-    std::string sequence  = "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC";
-    std::string structure = ".(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........))))))))).";
+    std::string sequence =
+        "GGUUUUUUUUAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCC";
+    std::string structure =
+        ".(((((((((((((((..........))))))((((((...)))))))))))))).((((((((........))))))))).";
     auto [d0, d1, d2] = pipeline(sequence, structure);
 
     EXPECT_NEAR(d0, -2.50, 0.000005);

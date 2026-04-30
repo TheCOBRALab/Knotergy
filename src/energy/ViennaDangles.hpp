@@ -28,7 +28,8 @@ namespace knotergy {
 struct DangleSet {
    public:
     DangleSet() : no_dangle(0), left_dangle(0), right_dangle(0), both_dangle(0) {}
-    DangleSet(int no_dangle_energy, int left_dangle_energy, int right_dangle_energy, int both_dangle_energy)
+    DangleSet(int no_dangle_energy, int left_dangle_energy, int right_dangle_energy,
+              int both_dangle_energy)
         : no_dangle(no_dangle_energy),
           left_dangle(left_dangle_energy),
           right_dangle(right_dangle_energy),

@@ -19,8 +19,8 @@ namespace knotergy {
  *
  */
 struct PairedBaseNode {
-    size_t prev = NULL_INDEX;   ///< Previous position in the linked list.
-    size_t next = NULL_INDEX;   ///< Next position in the linked list.
+    size_t prev = NULL_INDEX;  ///< Previous position in the linked list.
+    size_t next = NULL_INDEX;  ///< Next position in the linked list.
 };
 
 /**
@@ -44,8 +44,8 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
-    static std::vector<Band> find_bands(size_t left_bound,size_t right_bound,
-                                        LoopType loop_type, std::vector<PairedBaseNode>& aux_bands,
+    static std::vector<Band> find_bands(size_t left_bound, size_t right_bound, LoopType loop_type,
+                                        std::vector<PairedBaseNode>& aux_bands,
                                         const std::vector<size_t>& pairings,
                                         const std::vector<size_t>& cr_pairings);
 
@@ -58,7 +58,8 @@ class BandFinder {
      * @param processed_rna The processed RNA entry with pairing information.
      * @return Vector of Band objects found for this loop node.
      */
-    static std::vector<Band> find_bands(const LoopNode& node, std::vector<PairedBaseNode>& aux_bands,
+    static std::vector<Band> find_bands(const LoopNode& node,
+                                        std::vector<PairedBaseNode>& aux_bands,
                                         const ProcessedRNAEntry& processed_rna);
 
    private:
@@ -89,12 +90,10 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of PairedBaseNode objects.
      */
-    static void generate_paired_base_links(
-        size_t left_bound, 
-        size_t right_bound,
-        std::vector<PairedBaseNode>& aux_bands,
-        const std::vector<size_t>& pairings,
-        const std::vector<size_t>& cr_pairings);
+    static void generate_paired_base_links(size_t left_bound, size_t right_bound,
+                                           std::vector<PairedBaseNode>& aux_bands,
+                                           const std::vector<size_t>& pairings,
+                                           const std::vector<size_t>& cr_pairings);
 
     /**
      * @brief Generate band links for a given loop node.
@@ -105,8 +104,8 @@ class BandFinder {
      * @param processed_entry The processed RNA entry with pairing information.
      * @return Vector of PairedBaseNode objects.
      */
-    static void generate_paired_base_links(
-        const LoopNode& node, std::vector<PairedBaseNode>& aux_bands,
-        const ProcessedRNAEntry& processed_entry);
+    static void generate_paired_base_links(const LoopNode& node,
+                                           std::vector<PairedBaseNode>& aux_bands,
+                                           const ProcessedRNAEntry& processed_entry);
 };
 }  // namespace knotergy

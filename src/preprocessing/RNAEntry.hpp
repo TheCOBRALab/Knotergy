@@ -23,7 +23,7 @@ struct RNAEntry {
     /**
      * @brief Construct an RNA entry with name, sequence, and structure.
      *
-     * @param rna_name Name or identifier for the RNA.
+     * @param rna_name    Name or identifier for the RNA.
      * @param rna_sequence Nucleotide sequence.
      * @param rna_structure Dot-bracket structure string.
      */

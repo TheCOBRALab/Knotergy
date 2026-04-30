@@ -20,11 +20,12 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // Root node covers full structure [-1, structure_length]
     // Use NULL_INDEX for -1 (unsigned type)
 
-
-    // This should never happen because RNAProcessor::compute_closed_regions() guarantees sorted output, 
-    // but we check just in case to avoid silently producing incorrect loop trees.
+    // This should never happen because RNAProcessor::compute_closed_regions() guarantees sorted
+    // output, but we check just in case to avoid silently producing incorrect loop trees.
     if (!std::is_sorted(closed_regions.begin(), closed_regions.end())) {
-        THROW_ERROR("Closed regions are not sorted by start index. This may cause the loop factory algorithm to fail.\n");
+        THROW_ERROR(
+            "Closed regions are not sorted by start index. This may cause the loop factory "
+            "algorithm to fail.\n");
     }
 
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
@@ -68,7 +69,7 @@ void LoopFactory::populate_node(LoopNode& node) {
     node.loop_type = find_loop_type(node);
 
     if (node.loop_type == LoopType::Pseudoknot) {
-        // Used for band finding and navigation. 
+        // Used for band finding and navigation.
         // Lazily initialize when we encounter the first pseudoknot.
         if (aux_bands_.empty()) {
             aux_bands_.resize(processed_rna_.get_structure().size());
@@ -87,7 +88,7 @@ void LoopFactory::populate_node(const std::shared_ptr<LoopNode>& node) {
 
 int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
     int total = node.total_unpaired_bases_count;
-    for (std::shared_ptr<LoopNode> child : node.children) {
+    for (const std::shared_ptr<LoopNode>& child : node.children) {
         total -= child->total_unpaired_bases_count;
     }
     return total;
@@ -122,7 +123,7 @@ LoopType LoopFactory::find_loop_type(const LoopNode& node) {
 void LoopFactory::pseudo_nested_check(LoopNode& node) {
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    for (std::shared_ptr<LoopNode> child_node : node.children) {
+    for (const std::shared_ptr<LoopNode>& child_node : node.children) {
         if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
             ++node.number_of_withinband_children;
         } else if (child_node->pseudo_type == PseudoNestedType::Nested) {
@@ -156,7 +157,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
         }
     }
 
-    for (std::shared_ptr<LoopNode> c : node.children) {
+    for (const std::shared_ptr<LoopNode>& c : node.children) {
         if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()) {
             c->pseudo_type = PseudoNestedType::WithinBand;
         } else {
@@ -189,22 +190,22 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
 
 // Iteratively destroy the loop tree to free memory.
 void LoopFactory::destroy_tree_iterative() {
-        if (!root_node_) return;
+    if (!root_node_) return;
 
-        std::vector<std::shared_ptr<LoopNode>> work;
-        work.push_back(std::move(root_node_));
+    std::vector<std::shared_ptr<LoopNode>> work;
+    work.push_back(std::move(root_node_));
 
-        while (!work.empty()) {
-            auto node = std::move(work.back());
-            work.pop_back();
+    while (!work.empty()) {
+        auto node = std::move(work.back());
+        work.pop_back();
 
-            for (auto& child : node->children) {
-                if (child) work.push_back(std::move(child));
-            }
-
-            node->children.clear();
-            node->parent.reset();
+        for (auto& child : node->children) {
+            if (child) work.push_back(std::move(child));
         }
+
+        node->children.clear();
+        node->parent.reset();
     }
+}
 
 }  // namespace knotergy

@@ -71,17 +71,35 @@ brew install clang-format
 
 ### Format Your Code
 
-To format all `.cpp` and `.hpp` files in the `src` directory:
+To format all `.cpp` and `.hpp` files in the `src` & `test` directory:
+
+```bash
+cmake --build build --target format
+```
+
+or
 
 ```bash
 find ./src \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 | xargs -0 clang-format -i
 ```
 
+To check if your code is formatted formatted:
+
+```bash
+cmake --build build --target format-check
+```
+
+or
+
+```bash
+find ./src ./test \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 | xargs -0 clang-format --dry-run --Werror
+```
+
 > **Tip:** Run this before committing your changes to ensure a clean, consistent codebase.
-
-
+> **Note:** cmake commands require a build directory
 
 ## How the program flows
+
 main.cpp -> pipeline -> preprocessing -> loop_tree -> energy
 
 main.cpp gets all the user inputs, and uses pipeline commands to parse those user inputs

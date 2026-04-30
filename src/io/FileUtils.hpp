@@ -3,11 +3,11 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#include <cstdint>
 #include <fstream>
 #include <stack>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 #include "../preprocessing/RNAEntry.hpp"
 #include "common.hpp"

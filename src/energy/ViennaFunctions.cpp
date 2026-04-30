@@ -141,7 +141,7 @@ int ViennaFunctions::external_energy(const std::vector<std::shared_ptr<LoopNode>
 
     // ------------------ No dangles or dangle type 2 ------------------
     int energy = 0;
-    for (std::shared_ptr<LoopNode> c : children) {
+    for (const std::shared_ptr<LoopNode>& c : children) {
         if (c->loop_type != LoopType::Pseudoknot) {
             unsigned int pair_type =
                 ViennaUtils::get_pair_type(sequence[c->begin], sequence[c->end], vp.md);

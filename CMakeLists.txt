@@ -21,6 +21,8 @@ add_compile_definitions(
 # ------------------------- External Dependencies ------------------------- 
 include(FetchContent)
 
+message(STATUS "Fetching external dependencies... this may take a moment on the first run")
+
 # ----------------- nlohmann/json -----------------
 set(JSON_Install OFF CACHE BOOL "" FORCE)
 
@@ -339,3 +341,44 @@ target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
 
 # ------------------------- Install -------------------------
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+
+
+# -------------------------------------------------------------------
+#                         clang-format
+# -------------------------------------------------------------------
+
+find_program(CLANG_FORMAT_EXE NAMES clang-format)
+
+file(GLOB_RECURSE KNOTERGY_FORMAT_FILES
+    CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_SOURCE_DIR}/test/*.cpp"
+    "${CMAKE_SOURCE_DIR}/test/*.hpp"
+)
+
+if(CLANG_FORMAT_EXE)
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT_EXE} -i ${KNOTERGY_FORMAT_FILES}
+        COMMENT "Formatting C++ source files with clang-format"
+        VERBATIM
+    )
+
+    add_custom_target(format-check
+        COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror ${KNOTERGY_FORMAT_FILES}
+        COMMENT "Checking C++ source formatting with clang-format"
+        VERBATIM
+    )
+else()
+    add_custom_target(format
+        COMMAND ${CMAKE_COMMAND} -E echo "clang-format not found"
+        COMMAND ${CMAKE_COMMAND} -E false
+        VERBATIM
+    )
+
+    add_custom_target(format-check
+        COMMAND ${CMAKE_COMMAND} -E echo "clang-format not found"
+        COMMAND ${CMAKE_COMMAND} -E false
+        VERBATIM
+    )
+endif()

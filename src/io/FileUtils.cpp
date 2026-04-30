@@ -30,16 +30,15 @@ bool FileUtils::is_directory(const std::string& name) {
 std::uint64_t FileUtils::get_file_mtime(const std::string& path) {
     if (path.empty()) return 0;
 
-    struct stat st{};
+    struct stat st {};
     if (stat(path.c_str(), &st) != 0) return 0;
 
     return static_cast<std::uint64_t>(st.st_mtime);
 }
 
 // List files in a directory
-std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir,
-                                                                   bool include_dirs,
-                                                                   bool recursive) {
+std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir, bool include_dirs,
+                                                     bool recursive) {
     std::vector<std::string> out;
 
     std::stack<std::string> dirs_to_process;

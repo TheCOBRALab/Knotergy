@@ -41,7 +41,9 @@ class ComputeEnergy {
           pkp_{pkp},
           mp_{mp},
           sequence_{processed_rna.get_sequence()},
-          round_{round} {
+          mod_sequence_{processed_rna.get_modified_sequence()},
+          round_{round},
+          has_modified_bases_{processed_rna.has_modified_bases()} {
         process_tree(*root_node_, verbose);
     };
 
@@ -60,10 +62,13 @@ class ComputeEnergy {
     const knotergy::pk_param& pkp_;
     const std::vector<modified_base_param>& mp_;
     const std::string& sequence_;
+    const std::vector<std::string_view>& mod_sequence_;
     double energy_ = 0.0;
     bool round_ = false;
     bool infinite_energy_flag_ =
         false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
+    bool has_modified_bases_ = false;  ///< Flag to indicate if the RNA contains modified bases, for
+                                       ///< energy calculation purposes.
 
     /**
      * @brief Process the entire loop tree and calculate energies.

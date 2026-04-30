@@ -1,0 +1,21 @@
+name: Format
+
+on:
+  workflow_dispatch:
+  push:         { branches: [main] }
+  pull_request: { branches: [main] }
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format
+
+    - name: Check C++ formatting
+      run: find ./src ./test \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 \ | xargs -0 clang-format --dry-run --Werror

@@ -3,17 +3,16 @@
 #include <ViennaRNA/model.h>
 #include <ViennaRNA/params/basic.h>
 #include <ViennaRNA/params/io.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
+#include <cerrno>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <memory>
 #include <string>
-#include <cstdlib> 
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <cerrno>
-
 
 namespace knotergy {
 
@@ -30,21 +29,17 @@ std::string make_cache_path(const std::string& paramFile, int dangle, const std:
 
     // Fallback cache names
     const bool is_dna = (seq.find('T') != std::string::npos);
-    return is_dna
-        ? cache_dir + "dna_Mathews2004.d" + std::to_string(dangle) + ".vrna.bin"
-        : cache_dir + "rna_default.d" + std::to_string(dangle) + ".vrna.bin";
+    return is_dna ? cache_dir + "dna_Mathews2004.d" + std::to_string(dangle) + ".vrna.bin"
+                  : cache_dir + "rna_default.d" + std::to_string(dangle) + ".vrna.bin";
 }
 
 // Returns true if cache was successfully loaded and is valid, false otherwise
-bool load_param_cache(const std::string& cachePath,
-                      int expectedDangle,
-                      std::uint64_t expectedSourceMtime,
-                      vrna_md_param& out) {
-                        
+bool load_param_cache(const std::string& cachePath, int expectedDangle,
+                      std::uint64_t expectedSourceMtime, vrna_md_param& out) {
     // Read and validate cache file
     std::ifstream in(cachePath, std::ios::binary);
     if (!in) return false;
-    
+
     // Read header from cache file
     ParamCacheHeader hdr{};
     in.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
@@ -59,11 +54,11 @@ bool load_param_cache(const std::string& cachePath,
     if (hdr.endian_marker != BigEndianMarker) return false;
     if (hdr.dangles != expectedDangle) return false;
     if (hdr.source_mtime != expectedSourceMtime) return false;
-    
+
     // Allocate memory for vrna_param_t
-    vrna_param_t *p = static_cast<vrna_param_t*>(std::malloc(sizeof(vrna_param_t)));
+    vrna_param_t* p = static_cast<vrna_param_t*>(std::malloc(sizeof(vrna_param_t)));
     if (!p) return false;
-    
+
     // Load parameter into the allocated memory
     in.read(reinterpret_cast<char*>(p), sizeof(vrna_param_t));
     if (!in) {
@@ -76,16 +71,14 @@ bool load_param_cache(const std::string& cachePath,
         std::free(p);
         return false;
     }
-    
+
     // update output parameter struct
     out.md = p->model_details;
-    out.p  = p;
+    out.p = p;
     return true;
 }
 
-void save_param_cache(const std::string& cachePath,
-                      int dangle,
-                      std::uint64_t sourceMtime,
+void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t sourceMtime,
                       const vrna_param_t& p) {
     size_t slash = cachePath.find_last_of("/\\");
     if (slash != std::string::npos) {
@@ -105,13 +98,11 @@ void save_param_cache(const std::string& cachePath,
     out.write(reinterpret_cast<const char*>(&hdr), sizeof(hdr));
     out.write(reinterpret_cast<const char*>(&p), sizeof(vrna_param_t));
 }
-} // namespace
-
+}  // namespace
 
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
-vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
-                                                   int dangle,
+vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
                                                    const std::string& seq) {
     const std::string DP_path_str =
         std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
@@ -122,12 +113,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     source_info.label = "ViennaRNA";
     source_info.requested_path = paramFile;
 
-    enum class SourceKind {
-        UserFile,
-        DefaultRNAFile,
-        BuiltinDNA,
-        BuiltinRNA
-    };
+    enum class SourceKind { UserFile, DefaultRNAFile, BuiltinDNA, BuiltinRNA };
 
     SourceKind source_kind;
     std::string cache_key;
@@ -143,7 +129,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
         source_info.status = ParamStatus::LoadedUserFile;
         source_info.resolved_path = paramFile;
-        source_info.resolved_name =FileUtils::get_filename_no_ext(paramFile);
+        source_info.resolved_name = FileUtils::get_filename_no_ext(paramFile);
     } else if (seq.find('T') != std::string::npos) {
         source_kind = SourceKind::BuiltinDNA;
         cache_key = "builtin:dna_Mathews2004";
@@ -178,8 +164,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     switch (source_kind) {
         case SourceKind::UserFile:
         case SourceKind::DefaultRNAFile: {
-            int loaded =
-                vrna_params_load(load_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+            int loaded = vrna_params_load(load_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
             if (!loaded) {
                 THROW_ERROR("Failed to load parameter file: " + load_path);
             }

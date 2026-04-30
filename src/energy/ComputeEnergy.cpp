@@ -26,15 +26,13 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
 double ComputeEnergy::process_node(LoopNode& node) {
     double node_energy = 0.0;
     bool is_inf = false;
-    const bool has_mod = processed_rna_.has_modified_bases();
-    const std::vector<std::string_view>& mod_sequence = processed_rna_.get_modified_sequence();
 
     switch (node.loop_type) {
         case LoopType::Stack:
-            if (has_mod) {
+            if (has_modified_bases_) {
                 node_energy = ModifiedBasesFunctions::find_mod_stack_energy(
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_,
-                    mod_sequence, vp_, mp_);
+                    mod_sequence_, vp_, mp_);
             } else {
                 node_energy =
                     ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin,
@@ -54,9 +52,9 @@ double ComputeEnergy::process_node(LoopNode& node) {
             break;
 
         case LoopType::Multibranch:
-            if (has_mod) {
+            if (has_modified_bases_) {
                 node_energy = ModifiedBasesFunctions::find_mod_multiloop_energy(
-                    node, processed_rna_, mod_sequence, vp_, mp_);
+                    node, processed_rna_, mod_sequence_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::multibranch_energy(node, processed_rna_, vp_);
             }
@@ -68,9 +66,9 @@ double ComputeEnergy::process_node(LoopNode& node) {
             break;
 
         case LoopType::External:
-            if (has_mod) {
+            if (has_modified_bases_) {
                 node_energy = ModifiedBasesFunctions::find_mod_external_energy(
-                    node.children, processed_rna_, mod_sequence, vp_, mp_);
+                    node.children, processed_rna_, mod_sequence_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::external_energy(node.children, processed_rna_, vp_);
             }
@@ -83,7 +81,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
 
     node.energy = node_energy;
     node.is_inf = is_inf;
-    infinite_energy_flag_ = infinite_energy_flag_ || is_inf;
+    infinite_energy_flag_ |= is_inf;
     return node_energy / 100.0;
 }
 

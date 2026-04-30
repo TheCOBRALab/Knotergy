@@ -39,7 +39,7 @@ class ModifiedBasesFunctions {
      * @param mod_params Vector of modified base parameters.
      * @return Stacking energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj, 
+    static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                                      const std::string& sequence,
                                      const std::vector<std::string_view>& mod_sequence,
                                      vrna_md_param& vp,

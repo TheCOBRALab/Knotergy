@@ -75,6 +75,10 @@ class Band {
      */
     void populate_base_pairs(const std::vector<size_t>& pairings,
                              const std::vector<size_t>& cr_pairings) {
+        
+        // Reserve space for base pairs to avoid multiple reallocations
+        base_pairs_.reserve(std::min({left_inner_ - left_border_, right_border_ - right_inner_}));
+
         // -------------- Validate band structure -------------
         if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_],
                       pairings[right_border_]}) == NULL_INDEX) {

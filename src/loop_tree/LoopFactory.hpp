@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "LoopNode.hpp"
 #include "BandFinder.hpp"
+#include "LoopNode.hpp"
 
 namespace knotergy {
 /**
@@ -23,14 +23,14 @@ class LoopFactory {
      * @param processed_rna The processed RNA entry containing structure and pairing information.
      */
     LoopFactory(const ProcessedRNAEntry& processed_rna);
-    
+
     /**
      * @brief Destroy the LoopFactory and its associated loop tree.
-     * 
+     *
      * This destructor ensures that all dynamically allocated LoopNode objects are properly
      * deallocated to prevent memory leaks. This is needed for deeply nested structures.
      */
-    ~LoopFactory() {destroy_tree_iterative();};
+    ~LoopFactory() { destroy_tree_iterative(); };
 
     /**
      * @brief Get the root node of the loop tree.
@@ -57,12 +57,12 @@ class LoopFactory {
      */
     void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
-
    private:
     const ProcessedRNAEntry& processed_rna_;
     std::shared_ptr<LoopNode> root_node_;
     size_t structure_length_;
-    std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band detection and navigation.
+    std::vector<PairedBaseNode>
+        aux_bands_;  ///< Auxiliary structure for band detection and navigation.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

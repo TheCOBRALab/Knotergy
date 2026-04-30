@@ -40,25 +40,23 @@ class DetailedException : public std::runtime_error {
      * @param func Function name.
      * @return Formatted error message string.
      */
-static std::string format_message(const std::string& message,
-                                  const char* file,
-                                  int line,
-                                  const char* func) {
-    std::ostringstream oss;
+    static std::string format_message(const std::string& message, const char* file, int line,
+                                      const char* func) {
+        std::ostringstream oss;
 
-    oss << "\n"
-        << "══════════════════════════════════════\n"
-        << "❌ ERROR\n"
-        << "══════════════════════════════════════\n"
-        << message << "\n\n"
-        << "📍 Location:\n"
-        << "  Function : " << func << '\n'
-        << "  File     : " << file << '\n'
-        << "  Line     : " << line << '\n'
-        << "══════════════════════════════════════";
+        oss << "\n"
+            << "══════════════════════════════════════\n"
+            << "❌ ERROR\n"
+            << "══════════════════════════════════════\n"
+            << message << "\n\n"
+            << "📍 Location:\n"
+            << "  Function : " << func << '\n'
+            << "  File     : " << file << '\n'
+            << "  Line     : " << line << '\n'
+            << "══════════════════════════════════════";
 
-    return oss.str();
-}
+        return oss.str();
+    }
 };
 
 /// Macro to throw a DetailedException with current file, line, and function.

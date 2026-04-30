@@ -114,8 +114,7 @@ class PseudoknotParams {
      * @return Loaded pk_param structure.
      * @throws DetailedException if file not found or invalid.
      */
-    static const pk_param load_pk_param(
-        const std::string& paramFile = default_pk_param_path()) {
+    static const pk_param load_pk_param(const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;
@@ -165,19 +164,12 @@ class PseudoknotParams {
         }
         const auto& pk = *it;
 
-        return pk_param(
-            pk.value("name", std::string{"default"}),
-            pk.value("pk_in_ext", 0),
-            pk.value("pk_in_mloop", 0),
-            pk.value("pk_in_pk", 0),
-            pk.value("band", 0),
-            pk.value("unpaired_in_pk", 0),
-            pk.value("cr_in_pk", 0),
-            pk.value("pk_stack_x", 1.0),
-            pk.value("pk_internal_x", 1.0),
-            pk.value("pk_mloop_init", 0),
-            pk.value("pk_mloop_bp", 0),
-            pk.value("pk_mloop_unpaired", 0));
+        return pk_param(pk.value("name", std::string{"default"}), pk.value("pk_in_ext", 0),
+                        pk.value("pk_in_mloop", 0), pk.value("pk_in_pk", 0), pk.value("band", 0),
+                        pk.value("unpaired_in_pk", 0), pk.value("cr_in_pk", 0),
+                        pk.value("pk_stack_x", 1.0), pk.value("pk_internal_x", 1.0),
+                        pk.value("pk_mloop_init", 0), pk.value("pk_mloop_bp", 0),
+                        pk.value("pk_mloop_unpaired", 0));
     }
 };
 

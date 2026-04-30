@@ -4,9 +4,9 @@ namespace knotergy {
 
 // Gets the modified energy of a stack
 int ModifiedBasesFunctions::find_mod_stack_energy(
-    size_t i, size_t j, size_t ci, size_t cj,
-    const std::string& sequence, const std::vector<std::string_view>& mod_sequence,
-    vrna_md_param& vp, const std::vector<modified_base_param>& mod_params) {
+    size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence,
+    const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+    const std::vector<modified_base_param>& mod_params) {
     // Get Vienna stacking energy for unmodified bases
     int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
 
@@ -18,14 +18,15 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
     // Used to look up stacking energies in modified base parameters
     std::string l_key = join_string_views({i, ci, j, cj}, mod_sequence);
     std::string r_key = join_string_views({cj, j, ci, i}, mod_sequence);
-    
+
     // Get energy correction for modified bases (returns original energy if no modifications found)
     // Try the Vienna-defined ordering first, then the swapped orientation
     int e = get_mod_energy(l_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
 
     // // uncomment if you want values to match RNAfold, but note this is likely a bug in RNAfold
     // if (e == unmod_energy) {
-    //     e = get_mod_energy(r_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    //     e = get_mod_energy(r_key, unique_mod_bases, mod_params, unmod_energy,
+    //     ModLookup::Stacking);
     // }
 
     return e;
@@ -215,7 +216,8 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
             auto it = energy_lookup->find(key);
             if (it != energy_lookup->end()) {
                 int mod_energy = static_cast<int>(it->second * 100);
-                // std::cout << "Modified base energy found for key: " << key << " -> " << mod_energy
+                // std::cout << "Modified base energy found for key: " << key << " -> " <<
+                // mod_energy
                 //           << " Diff: " << mod_energy - unmod_energy
                 //           << std::endl;
                 return mod_energy;
