@@ -136,16 +136,18 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release; cmake --build build --parallel
 
 - **Release:** Most optimized
 - **Debug:** Slower but catches hard to spot bugs (e.g. overflow)
+- **Strict:** Same as Debug, but treats warnings as errors
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release; cmake --build build --parallel
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug;   cmake --build build --parallel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Strict; cmake --build build --parallel
 ```
 
-**Build & Test (one liner):**
+**Build, Style, Test (one liner):**
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cd build; ctest --output-on-failure; cd ..
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cmake --build build --target format; cd build; ctest --output-on-failure; cd ..
 ```
 
 ---

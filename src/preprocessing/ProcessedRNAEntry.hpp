@@ -204,17 +204,16 @@ class ProcessedRNAEntry {
         return get_unpaired_count(closed_region.begin, closed_region.end);
     }
 
-    // grapheme is a user-perceived character, which may be multiple bytes
+    // grapheme is a user-perceived character, which may be multiple bytes. (e.g. Ψ is 2 bytes)
     // It's defined here since adding it to RNAProcessor would create a circular dependency
     [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(
         const std::string& sequence, const std::string& structure = "") {
         std::vector<std::string_view> out;
-        out.reserve(sequence.size());  // upper bound (bytes >= graphemes)
+        out.reserve(sequence.size());
 
-        // Each iteration yields a std::string_view representing ONE extended grapheme cluster.
-        if (sequence.empty() || sequence.size() != structure.size()) {
-            // Finds any type of grapheme using uni_algo (handles multi-byte modified bases), but is
-            // slower.
+        // If no structure is provided or the sequence is longer than the structure,
+        // we assume it's because of multi-byte graphemes. This is slower, but more robust
+        if (structure.empty() || sequence.size() > structure.size()) {
             for (std::string_view g : una::views::grapheme::utf8(sequence)) {
                 out.push_back(g);
             }

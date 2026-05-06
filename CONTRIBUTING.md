@@ -9,10 +9,31 @@ When developing code, **always build in Debug mode**. This enables runtime check
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
 ```
 
-### No Warnings Allowed
+## Style Guide
 
-Your code **must compile without any warnings**. Not even type conversion warnings.
-Treat every warning as an error. 
+Consistent code style makes our codebase easier to read, maintain, and review. We use **clang-format** to automatically apply our project's style rules.
+
+### Install clang-format
+
+```bash
+sudo apt install clang-format # Linux
+brew install clang-format # macOS
+```
+
+### Format Your Code
+
+To format all `.cpp` and `.hpp` files in the `src` & `test` directory:
+
+```bash
+cmake -S . -B build; cmake --build build --target format
+```
+
+> **Tip:** Run this before committing. Github CI will fail if you don't
+
+
+## No Warnings Allowed
+
+Your code **must compile without any warnings**. Treat every warning as an error.
 
 ### Why This Matters
 
@@ -23,7 +44,7 @@ Clean, warning-free builds:
 * **Better design:** Many warnings are indicators of mismatched types or unsafe practices.
 * **Keeps you safe:** If there's even one warning, ***I will find you.*** 
 
-> **Tip:** If you find yourself repeatedly using `std::static_cast`, it's a sign you may need to reconsider your data types or design approach.
+> **Tip:** If you find yourself repeatedly using `static_cast`, it may be a sign that you should reconsider your data types or design approach.
 
 ### Example
 
@@ -31,7 +52,7 @@ Clean, warning-free builds:
 
 ```c++
 std::vector<int> numbers{-1, 2, 3};
-for (int i = 0; i < 2; ++i) {
+for (int i = 0; i <= 2; ++i) {
     numbers[std::static_cast<size_t>(i)];
 }
 ```
@@ -42,61 +63,18 @@ Here, the repeated `static_cast` is a red flag. You're forcing the compiler to s
 
 ```c++
 std::vector<int> numbers{-1, 2, 3};
-for (size_t i = 0; i < 2; ++i) {
+for (size_t i = 0; i < numbers.size(); ++i) {
     numbers[i];
 }
 ```
 
 By using the correct type (`size_t`) for indexing:
 - The code is cleaner and easier to read.
-- The compiler naturally prevents invalid index usage.
-- No warnings are generated.
+- The variable matches the type expected by `std::vector::operator[]`.
+- No signed/unsigned comparison warnings are generated.
 
 > **Project Convention:** In Knotergy, `size_t` must be used for values representing indices. This makes intent clear and helps prevent bugs caused by using incorrect value types.
 
-
-## Style Guide
-
-Consistent code style makes our codebase easier to read, maintain, and review. We use **clang-format** to automatically apply our project's style rules.
-
-### Install clang-format
-
-```bash
-# Linux
-sudo apt install clang-format
-
-# macOS
-brew install clang-format
-```
-
-### Format Your Code
-
-To format all `.cpp` and `.hpp` files in the `src` & `test` directory:
-
-```bash
-cmake --build build --target format
-```
-
-or
-
-```bash
-find ./src \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 | xargs -0 clang-format -i
-```
-
-To check if your code is formatted formatted:
-
-```bash
-cmake --build build --target format-check
-```
-
-or
-
-```bash
-find ./src ./test \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 | xargs -0 clang-format --dry-run --Werror
-```
-
-> **Tip:** Run this before committing your changes to ensure a clean, consistent codebase.
-> **Note:** cmake commands require a build directory
 
 ## How the program flows
 

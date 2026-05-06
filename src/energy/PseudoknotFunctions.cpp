@@ -37,15 +37,15 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     energy += pkp.cr_in_pk * node.number_of_nested_children;
     energy += PseudoknotFunctions::loop_penalties(node, processed_rna, vp, mp, pkp, round, is_inf);
 
-    // Children that are within a band are nested inside of a pseudoknotted multiloop
-    // Add the base pair penalty for each child that is within a band
+    // Children that are nested within a band are considered to be in a pseudoknotted multiloop, 
+    // so we multiply the number of children within bands by the multiloop base pair penalty.
     energy += node.number_of_withinband_children * pkp.pk_mloop_bp;
 
     // Personal note: I find it dumb that the number of children is what used for base pair penalty
     // If a child is a pseudoknot, it can have multiple base pairs.
     // Like an H-type pseudoknot has 2 bands. Why tf does it only get 1 base pair penalty?
-    // But this is how the original HotKnotsV2 implementation did it,
-    // so I guess we have to do it too for consistency.
+    // But this is how the original HotKnotsV2 implementation did it. HFold and other programs
+    // also use the same convention, so I guess we have to do it too for consistency.
     // But if you're reading this, maybe this could be a paper? idk.
 
     return energy;

@@ -19,6 +19,9 @@ namespace knotergy {
  *
  * Provides cross-platform file system operations without relying on C++17 filesystem
  * (which is not fully supported in older macOS Conda packages).
+ * 
+ * If you manage to get filesystem to compile in conda on older macOS versions, 
+ * consider replacing this with std::filesystem.
  */
 class FileUtils {
    public:

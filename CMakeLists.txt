@@ -54,7 +54,7 @@ endif()
 # -------------------------------------------------------------------
 
 # Debug configuration
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Strict")
     message(STATUS "Building in Debug mode")
     add_compile_options(
         -g
@@ -70,6 +70,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -fno-sanitize-recover=all
         -fno-omit-frame-pointer
     )
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Strict")
+        add_compile_options(-Werror)
+    endif()
+
     add_link_options(
         -fsanitize=address,undefined
         -fno-sanitize-recover=all
