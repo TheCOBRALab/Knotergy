@@ -75,7 +75,6 @@ class Band {
      */
     void populate_base_pairs(const std::vector<size_t>& pairings,
                              const std::vector<size_t>& cr_pairings) {
-
         // -------------- Validate band structure -------------
         if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_],
                       pairings[right_border_]}) == NULL_INDEX) {

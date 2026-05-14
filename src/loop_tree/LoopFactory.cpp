@@ -133,35 +133,17 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
 }
 
 void LoopFactory::label_pseudonested_children(LoopNode& node) {
-    /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    const std::vector<size_t>& cr_pairings = processed_rna_.get_closed_regions_pairings();
-    std::unordered_set<size_t> within_band_start_idx;
-    within_band_start_idx.reserve(node.children.size());
+    for (const std::shared_ptr<LoopNode>& child : node.children) {
+        child->pseudo_type = PseudoNestedType::Nested;
 
-    for (const Band& band : node.bands) {
-        for (size_t i = band.left_border() + 1; i <= band.left_inner(); ++i) {
-            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])) {
-                within_band_start_idx.emplace(i);
-                i = cr_pairings[i];
-                continue;
+        for (const Band& band : node.bands) {
+            // If child->begin is within the band, child->end will also be within the band
+            if (band.contains(child->begin)) {
+                child->pseudo_type = PseudoNestedType::WithinBand;
+                break;
             }
-        }
-        for (size_t i = band.right_inner() + 1; i <= band.right_border(); ++i) {
-            if (cr_pairings[i] != NULL_INDEX && (i < cr_pairings[i])) {
-                within_band_start_idx.emplace(i);
-                i = cr_pairings[i];
-                continue;
-            }
-        }
-    }
-
-    for (const std::shared_ptr<LoopNode>& c : node.children) {
-        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()) {
-            c->pseudo_type = PseudoNestedType::WithinBand;
-        } else {
-            c->pseudo_type = PseudoNestedType::Nested;
         }
     }
 }
