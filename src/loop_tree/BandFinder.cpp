@@ -18,6 +18,7 @@ std::vector<Band> BandFinder::find_bands(size_t left_bound, size_t right_bound, 
     }
 
     std::vector<Band> bands;
+    bands.reserve(8);  // Most pseudoknots are small, so reserving some just in case
 
     // Linked list pointing to potential band boundaries
     generate_paired_base_links(left_bound, right_bound, aux_bands, pairings, cr_pairings);
@@ -47,7 +48,7 @@ std::vector<Band> BandFinder::find_bands(size_t left_bound, size_t right_bound, 
         while (extend_stem(i_prime, j_prime, aux_bands, pairings)) {
         }
 
-        bands.push_back(Band{i, i_prime, j_prime, j, pairings, cr_pairings});
+        bands.emplace_back(i, i_prime, j_prime, j, pairings, cr_pairings);
 
         i = aux_bands[i_prime].next;
     }

@@ -86,6 +86,7 @@ class Band {
         }
 
         // -------------- Extract base pairs -------------
+        base_pairs_.reserve(std::min(right_border_ - right_inner_, left_inner_ - left_border_) + 1);
 
         // find all consecutive base pairs on left side and their nested closed regions
         base_pairs_.emplace_back(left_border_, pairings[left_border_]);
