@@ -63,6 +63,7 @@ class LoopFactory {
     size_t structure_length_;
     std::vector<PairedBaseNode>
         aux_bands_;  ///< Auxiliary structure for band detection and navigation.
+    std::vector<LoopNode*> node_lookup_;  ///< Find a node by it's begin index for O(1) lookup
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

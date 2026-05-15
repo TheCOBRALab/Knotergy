@@ -33,6 +33,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
+    node_lookup_.resize(processed_rna_.size(), nullptr);
 
     for (const ClosedRegion& cr : closed_regions) {
         // Pop until node_stack.end() is the parent of current node
@@ -53,6 +54,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // Gets the total unpaired base pairs within the closed region (including that of children)
         child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(cr);
 
+        node_lookup_[cr.begin] = child.get();
         node_stack.push(child);
     }
 
@@ -137,24 +139,17 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    std::unordered_set<size_t> within_band_start_idx;
-    within_band_start_idx.reserve(node.children.size());
+    for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+        child_node->pseudo_type = PseudoNestedType::Nested;
+    }
 
     // A child is within a band if its start index is within the band.
     // Each band, base pair and children are only ever visited once, so it's O(n)
     for (const Band& band : node.bands) {
         for (const BasePair& base_pair : band.base_pairs()) {
             for (const ClosedRegion& cr : base_pair.children) {
-                within_band_start_idx.insert(cr.begin);
+                node_lookup_[cr.begin]->pseudo_type = PseudoNestedType::WithinBand;
             }
-        }
-    }
-
-    for (const std::shared_ptr<LoopNode>& c : node.children) {
-        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()) {
-            c->pseudo_type = PseudoNestedType::WithinBand;
-        } else {
-            c->pseudo_type = PseudoNestedType::Nested;
         }
     }
 }
