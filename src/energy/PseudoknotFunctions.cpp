@@ -31,11 +31,11 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 
     double energy = 0;
 
-    energy += PseudoknotFunctions::init_penalty(node, pkp);
+    energy += init_penalty(node, pkp);
     energy += pkp.band * node.number_of_bands;
     energy += pkp.unpaired_in_pk * unpaired;
     energy += pkp.cr_in_pk * node.number_of_nested_children;
-    energy += PseudoknotFunctions::loop_penalties(node, processed_rna, vp, mp, pkp, round, is_inf);
+    energy += loop_penalties(node, processed_rna, vp, mp, pkp, round, is_inf);
 
     // Children that are nested within a band are considered to be in a pseudoknotted multiloop,
     // so we multiply the number of children within bands by the multiloop base pair penalty.
@@ -118,14 +118,12 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
             const BasePair& next_bp = bps[idx + 1];
 
             if (bp.is_stack(next_bp)) {
-                energy += PseudoknotFunctions::pk_stack_energy(bp, next_bp, processed_rna, vp, mp,
-                                                               pkp, round);
+                energy += pk_stack_energy(bp, next_bp, processed_rna, vp, mp, pkp, round);
             } else if (bp.children.empty()) {
                 // if no nested structure between two base pairs of a band, it's an internal loop
-                energy += PseudoknotFunctions::pk_internal_energy(bp, next_bp, processed_rna, vp,
-                                                                  pkp, round);
+                energy += pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, round);
             } else {
-                energy += PseudoknotFunctions::pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
+                energy += pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
             }
         }
     }
