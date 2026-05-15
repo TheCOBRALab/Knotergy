@@ -132,18 +132,29 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     }
 }
 
+// Expects bands to already be populated for the node
 void LoopFactory::label_pseudonested_children(LoopNode& node) {
+    /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    for (const std::shared_ptr<LoopNode>& child : node.children) {
-        child->pseudo_type = PseudoNestedType::Nested;
+    std::unordered_set<size_t> within_band_start_idx;
+    within_band_start_idx.reserve(node.children.size());
 
-        for (const Band& band : node.bands) {
-            // If child->begin is within the band, child->end will also be within the band
-            if (band.contains(child->begin)) {
-                child->pseudo_type = PseudoNestedType::WithinBand;
-                break;
+    // A child is within a band if its start index is within the band.
+    // Each band, base pair and children are only ever visited once, so it's O(n)
+    for (const Band& band : node.bands) {
+        for (const BasePair& base_pair : band.base_pairs()) {
+            for (const ClosedRegion& cr : base_pair.children) {
+                within_band_start_idx.insert(cr.begin);
             }
+        }
+    }
+
+    for (const std::shared_ptr<LoopNode>& c : node.children) {
+        if (within_band_start_idx.find(c->begin) != within_band_start_idx.end()) {
+            c->pseudo_type = PseudoNestedType::WithinBand;
+        } else {
+            c->pseudo_type = PseudoNestedType::Nested;
         }
     }
 }
