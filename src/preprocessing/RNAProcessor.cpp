@@ -256,35 +256,27 @@ std::string RNAProcessor::compute_unmodified_sequence(
 
     bool has_modified_bases_local = false;
 
-    // map modified base to unmodified base for quick lookup
-    std::unordered_map<std::string_view, std::string> mod_to_unmod;
-    mod_to_unmod.reserve(mp.mod_params.size());
-    for (const modified_base_param& param : mp.mod_params) {
-        if (param.unmodified_base().empty()) {
-            THROW_ERROR("Modified base '" + param.modified_base() +
-                        "' has empty unmodified mapping.");
-        }
-
-        mod_to_unmod.emplace(param.modified_base(), param.unmodified_base());
-    }
-
     // Convert modified sequence to unmodified sequence
     for (const std::string_view& mod_base : modified_sequence_views) {
         if (mod_base.empty()) {
-            THROW_ERROR("Empty base in modified sequence");
+            THROW_ERROR(
+                "A string view in the modified sequence is empty. This should never happen.");
         }
 
+        // If it's an unmodified base, just append it
         if (is_unmod_base(mod_base)) {
             unmodified_sequence.append(mod_base);
             continue;
-        } else {
-            has_modified_bases_local = true;
         }
 
+        has_modified_bases_local = true;
+
+        // If it's a modified base, convert to unmodified using parameters
+        const std::string* unmod_base_ptr = mp.get_unmodified_base(std::string(mod_base));
+
         // lookup modified -> unmodified
-        auto it = mod_to_unmod.find(mod_base);
-        if (it != mod_to_unmod.end()) {
-            unmodified_sequence += it->second;
+        if (unmod_base_ptr) {
+            unmodified_sequence += *unmod_base_ptr;
         } else {
             THROW_ERROR("Base '" + std::string(mod_base) + "' at index " +
                         std::to_string(unmodified_sequence.size()) +

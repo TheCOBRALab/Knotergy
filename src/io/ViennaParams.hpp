@@ -133,26 +133,44 @@ class modified_base_param {
 };
 
 /**
- * @brief Container for all modified base parameters and their source information.
+ * @brief Container for all modified base parameters and lookup functionality.
  *
- * This structure holds a vector of modified_base_param objects,
- * along with metadata about the source of these parameters
+ * This class holds a collection of modified_base_param objects and provides efficient
+ * lookup methods to retrieve parameters based on modified base characters, as well as
+ * mapping from modified bases to their corresponding unmodified bases. It also includes
+ * metadata about the source of the parameters for reporting purposes.
  *
- * Although currently it seems too simple to warrant its own struct,
- * this design allows for easy extension in the future
  */
 struct all_mod_params {
     all_mod_params() = default;
     all_mod_params(std::vector<modified_base_param> mod_params)
-        : mod_params(std::move(mod_params)) {}
+        : mod_params(std::move(mod_params)) {
+        build_lookup();
+    }
     all_mod_params(std::vector<modified_base_param> mod_params, ParamSourceInfo source_info)
-        : mod_params(std::move(mod_params)), source_info(std::move(source_info)) {}
+        : mod_params(std::move(mod_params)), source_info(std::move(source_info)) {
+        build_lookup();
+    }
 
     std::vector<modified_base_param> mod_params;
     ParamSourceInfo source_info;
 
-    bool empty() const { return mod_params.empty(); }
-    std::size_t size() const { return mod_params.size(); }
+    [[nodiscard]] bool empty() const { return mod_params.empty(); }
+    [[nodiscard]] std::size_t size() const { return mod_params.size(); }
+
+    // Key is the modified base character, returns parameters for that modified base if it exists,
+    // otherwise nullptr
+    [[nodiscard]] const modified_base_param* get_modified_base_param(
+        const std::string& modified_base) const;
+
+    // Key is the modified base character, returns the unmodified base character if it exists,
+    // otherwise nullptr
+    [[nodiscard]] const std::string* get_unmodified_base(const std::string& modified_base) const;
+
+   private:
+    std::unordered_map<std::string, const modified_base_param*> mod_param_lookup;
+    std::unordered_map<std::string, const std::string*> mod_to_unmod_lookup;
+    void build_lookup();
 };
 
 /**

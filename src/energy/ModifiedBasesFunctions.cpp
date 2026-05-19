@@ -177,30 +177,30 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
     }
 
     // Get the pointer to the correct energy map based on lookup type
-    unsigned int modified_found = 0;
-    for (const modified_base_param& param : mp.mod_params) {
-        if (std::find(unique_mod_bases.begin(), unique_mod_bases.end(), param.modified_base()) ==
-            unique_mod_bases.end()) {
-            continue;
+    for (const std::string_view& mod_base : unique_mod_bases) {
+        const modified_base_param* param = mp.get_modified_base_param(std::string(mod_base));
+
+        if (!param) {
+            THROW_ERROR("Modified base '" + std::string(mod_base) +
+                        "' found in sequence but no parameters provided for it.");
         }
-        ++modified_found;
 
         const std::map<std::string, float>* energy_lookup = nullptr;
         switch (lookup_type) {
             case ModLookup::Stacking:
-                energy_lookup = &param.stacking_energies();
+                energy_lookup = &param->stacking_energies();
                 break;
             case ModLookup::Terminal:
-                energy_lookup = &param.terminal_energies();
+                energy_lookup = &param->terminal_energies();
                 break;
             case ModLookup::Mismatch:
-                energy_lookup = &param.mismatch_energies();
+                energy_lookup = &param->mismatch_energies();
                 break;
             case ModLookup::Dangle5:
-                energy_lookup = &param.dangle5_energies();
+                energy_lookup = &param->dangle5_energies();
                 break;
             case ModLookup::Dangle3:
-                energy_lookup = &param.dangle3_energies();
+                energy_lookup = &param->dangle3_energies();
                 break;
             default:
                 THROW_ERROR("Invalid ModLookup type: " +
@@ -220,15 +220,8 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
                 return mod_energy;
             }
         }
-
-        // early exit if we checked all modified bases present in the sequence
-        if (modified_found >= unique_mod_bases.size()) {
-            break;
-        }
     }
-    // std::cout << "No modified base energy found for key: " << key
-    //           << ", using unmodified energy: " << unmod_energy
-    //           << " ModLookup type: " << static_cast<int>(lookup_type) << std::endl;
+
     return static_cast<int>(unmod_energy);
 }
 

@@ -100,6 +100,32 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 }
 }  // namespace
 
+const modified_base_param* all_mod_params::get_modified_base_param(
+    const std::string& modified_base) const {
+    auto it = mod_param_lookup.find(modified_base);
+    if (it != mod_param_lookup.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+const std::string* all_mod_params::get_unmodified_base(const std::string& modified_base) const {
+    auto it = mod_to_unmod_lookup.find(modified_base);
+    if (it != mod_to_unmod_lookup.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void all_mod_params::build_lookup() {
+    mod_param_lookup.reserve(mod_params.size());
+    mod_to_unmod_lookup.reserve(mod_params.size());
+    for (const modified_base_param& param : mod_params) {
+        mod_param_lookup[param.modified_base()] = &param;
+        mod_to_unmod_lookup[param.modified_base()] = &param.unmodified_base();
+    }
+}
+
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
