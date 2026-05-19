@@ -31,17 +31,18 @@ inline static double get_energy(std::string sequence, std::string structure, int
     std::vector<knotergy::modified_base_param> mod_params =
         knotergy::ViennaParams::load_modified_energy_parameters(mod_param_file);
 
+    knotergy::all_mod_params mp{mod_params};
+
     // pre-process RNA entry
     knotergy::RNAEntry rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(
-        knotergy::RNAProcessor::process_rna(std::move(rna), mod_params));
+        knotergy::RNAProcessor::process_rna(std::move(rna), mp));
 
     // build loop tree
     knotergy::LoopFactory factory(processed_rna);
 
     // compute energy
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mod_params,
-                                   round);
+    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp, round);
 
     return energy.getEnergy();
 }

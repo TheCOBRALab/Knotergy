@@ -3,13 +3,15 @@
 #include <iomanip>
 #include <iostream>
 
+#include "PseudoknotParams.hpp"
+#include "ViennaParams.hpp"
+
 namespace knotergy {
 
 class OutputManager {
    public:
     static void print_parameter_report(const vrna_md_param& vienna_params,
-                                       const pk_param& pk_params,
-                                       const std::vector<modified_base_param>& modified_params) {
+                                       const pk_param& pk_params, const all_mod_params& mp) {
         constexpr int W = 18;
 
         std::cout << "Parameters\n";
@@ -22,15 +24,15 @@ class OutputManager {
                   << "Pseudoknot:" << pk_params.get_source_info().resolved_name << '\n';
 
         std::cout << std::left << std::setw(W)
-                  << "Modified bases:" << std::to_string(modified_params.size()) + " loaded"
-                  << (modified_params.empty() ? " (type -m to load)" : "") << '\n';
+                  << "Modified bases:" << std::to_string(mp.mod_params.size()) + " loaded"
+                  << (mp.mod_params.empty() ? " (type -m to load)" : "") << '\n';
 
         // Only show details if explicitly requested AND not too many
-        if (!modified_params.empty()) {
+        if (!mp.mod_params.empty()) {
             std::cout << "\nModified bases\n";
             std::cout << "------------------------------------------------\n";
 
-            for (const auto& param : modified_params) {
+            for (const auto& param : mp.mod_params) {
                 std::cout << "- " << param.name() << '\n';
             }
         }

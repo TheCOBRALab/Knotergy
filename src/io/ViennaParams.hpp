@@ -133,6 +133,29 @@ class modified_base_param {
 };
 
 /**
+ * @brief Container for all modified base parameters and their source information.
+ *
+ * This structure holds a vector of modified_base_param objects,
+ * along with metadata about the source of these parameters
+ *
+ * Although currently it seems too simple to warrant its own struct,
+ * this design allows for easy extension in the future
+ */
+struct all_mod_params {
+    all_mod_params() = default;
+    all_mod_params(std::vector<modified_base_param> mod_params)
+        : mod_params(std::move(mod_params)) {}
+    all_mod_params(std::vector<modified_base_param> mod_params, ParamSourceInfo source_info)
+        : mod_params(std::move(mod_params)), source_info(std::move(source_info)) {}
+
+    std::vector<modified_base_param> mod_params;
+    ParamSourceInfo source_info;
+
+    bool empty() const { return mod_params.empty(); }
+    std::size_t size() const { return mod_params.size(); }
+};
+
+/**
  * @brief Manages ViennaRNA energy parameters and model details.
  *
  * This class provides methods to load and access ViennaRNA energy parameters,

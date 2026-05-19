@@ -192,6 +192,17 @@ TEST(PK_energies, kissing_muliloop_Turner) {
     EXPECT_NEAR(turner_rounded, -11.44, 0.000005);
 }
 
+TEST(PK_energies, PK_energies_multiple_nested_cr) {
+    std::string sequence =
+        "AAAAGGGAAAGGGUUUGGGAAAGGGUUUGGGGAAAAGGGGGGGGGGGUUUUGGUUUUGGGGGGGGGGGGGGGGGAAAAGGGAAAACCCCC"
+        "CCCCCCUUUUGGGGAAAGGGUUUGGGAAAGGGUUUGGUUUU";
+    std::string structure =
+        "((((...(((...)))...(((...)))....(((([[[[[[[[[[[))))..)))).................((((...((((]]]]]"
+        "]]]]]]))))....(((...)))...(((...)))..))))";
+    auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
+    EXPECT_NEAR(dp_rounded, 5.52, 0.000005);
+}
+
 TEST(PK_energies, nestedPK_in_band_DP) {
     std::string sequence =
         "AAAAAAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGUUUUUUUUUUUCCCCCCCCCCCCCCCCCCCCAAAAAAAAAAAGGGGGGG"

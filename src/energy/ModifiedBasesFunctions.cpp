@@ -3,10 +3,10 @@
 namespace knotergy {
 
 // Gets the modified energy of a stack
-int ModifiedBasesFunctions::find_mod_stack_energy(
-    size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence,
-    const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-    const std::vector<modified_base_param>& mod_params) {
+int ModifiedBasesFunctions::find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
+                                                  const std::string& sequence,
+                                                  const std::vector<std::string_view>& mod_sequence,
+                                                  vrna_md_param& vp, const all_mod_params& mp) {
     // Get Vienna stacking energy for unmodified bases
     int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
 
@@ -21,11 +21,11 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
 
     // Get energy correction for modified bases (returns original energy if no modifications found)
     // Try the Vienna-defined ordering first, then the swapped orientation
-    int e = get_mod_energy(l_key, unique_mod_bases, mod_params, unmod_energy, ModLookup::Stacking);
+    int e = get_mod_energy(l_key, unique_mod_bases, mp, unmod_energy, ModLookup::Stacking);
 
     // // uncomment if you want values to match RNAfold, but note this is likely a bug in RNAfold
     // if (e == unmod_energy) {
-    //     e = get_mod_energy(r_key, unique_mod_bases, mod_params, unmod_energy,
+    //     e = get_mod_energy(r_key, unique_mod_bases, mp, unmod_energy,
     //     ModLookup::Stacking);
     // }
 
@@ -36,7 +36,7 @@ int ModifiedBasesFunctions::find_mod_stack_energy(
 int ModifiedBasesFunctions::find_mod_multiloop_energy(
     const LoopNode& node, const ProcessedRNAEntry& pRNA,
     const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-    const std::vector<modified_base_param>& mod_params) {
+    const all_mod_params& mp) {
     bool is_external = false;
     bool is_closing = true;       // multiloop energy correction only applies to closing pair
     bool is_not_closing = false;  // used for child loops
@@ -58,13 +58,12 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     }
 
     // Add energy corrections for modified bases in closing pair and adjacent nucleotides
-    energy += update_energy(node, pRNA, mod_sequence, vp, mod_params, closing_set, is_external,
-                            is_closing);
+    energy += update_energy(node, pRNA, mod_sequence, vp, mp, closing_set, is_external, is_closing);
 
     // Add energy corrections for modified bases in child loops
     for (size_t i = 0; i < node.children.size(); ++i) {
         DangleSet& current_set = (vp.md.dangles == 1) ? children_dangle_sets[i] : closing_set;
-        energy += update_energy(*node.children[i], pRNA, mod_sequence, vp, mod_params, current_set,
+        energy += update_energy(*node.children[i], pRNA, mod_sequence, vp, mp, current_set,
                                 is_external, is_not_closing);
     }
 
@@ -79,7 +78,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 int ModifiedBasesFunctions::find_mod_external_energy(
     const std::vector<std::shared_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
     const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-    const std::vector<modified_base_param>& mod_params) {
+    const all_mod_params& mp) {
     bool is_external = true;
     std::vector<DangleSet> all_dangle_sets;
     DangleSet empty_set;  // Used when dangles != 1 to avoid checking condition in loop
@@ -98,8 +97,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
 
     for (size_t i = 0; i < children.size(); ++i) {
         DangleSet& current_set = (vp.md.dangles == 1) ? all_dangle_sets[i] : empty_set;
-        energy += update_energy(*children[i], pRNA, mod_sequence, vp, mod_params, current_set,
-                                is_external);
+        energy += update_energy(*children[i], pRNA, mod_sequence, vp, mp, current_set, is_external);
     }
 
     if (vp.md.dangles == 1) {
@@ -111,8 +109,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
 // Updates the energy of multiloop & external loop components
 int ModifiedBasesFunctions::update_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                           const std::vector<std::string_view>& mod_sequence,
-                                          vrna_md_param& vp,
-                                          const std::vector<modified_base_param>& mod_params,
+                                          vrna_md_param& vp, const all_mod_params& mp,
                                           DangleSet& current_set, bool is_external,
                                           bool is_closing) {
     if (is_external && is_closing) {
@@ -147,7 +144,7 @@ int ModifiedBasesFunctions::update_energy(const LoopNode& node, const ProcessedR
 
     // Get modified dangle and mismatch energy differences from unmodified energies
     ModDiffs diffs = get_mod_dangle_energy_diffs(node, n5d, n3d, type, unique_mod_bases,
-                                                 mod_sequence, vp, mod_params, is_external);
+                                                 mod_sequence, vp, mp, is_external);
 
     // Apply energy corrections based on dangle settings
     if (vp.md.dangles == 2) {
@@ -172,8 +169,8 @@ int ModifiedBasesFunctions::update_energy(const LoopNode& node, const ProcessedR
 // Uses lookup key to get the energy from the modified base parameter file
 int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
                                            const std::vector<std::string_view>& unique_mod_bases,
-                                           const std::vector<modified_base_param>& mod_params,
-                                           int unmod_energy, ModLookup lookup_type) {
+                                           const all_mod_params& mp, int unmod_energy,
+                                           ModLookup lookup_type) {
     // If no modified bases are present, return the unmodified energy
     if (unique_mod_bases.empty()) {
         return static_cast<int>(unmod_energy);
@@ -181,7 +178,7 @@ int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
 
     // Get the pointer to the correct energy map based on lookup type
     unsigned int modified_found = 0;
-    for (const modified_base_param& param : mod_params) {
+    for (const modified_base_param& param : mp.mod_params) {
         if (std::find(unique_mod_bases.begin(), unique_mod_bases.end(), param.modified_base()) ==
             unique_mod_bases.end()) {
             continue;
@@ -277,8 +274,8 @@ void ModifiedBasesFunctions::modify_dangle_set(DangleSet& dangle_set, ModDiffs d
 // Gets the energy difference between modified and unmodified for a given key and lookup type
 int ModifiedBasesFunctions::get_mod_energy_difference(
     const std::string& key, const std::vector<std::string_view>& unique_mod_bases,
-    const std::vector<modified_base_param>& mod_params, int unmod_energy, ModLookup lookup_type) {
-    int mod_energy = get_mod_energy(key, unique_mod_bases, mod_params, unmod_energy, lookup_type);
+    const all_mod_params& mp, int unmod_energy, ModLookup lookup_type) {
+    int mod_energy = get_mod_energy(key, unique_mod_bases, mp, unmod_energy, lookup_type);
     return mod_energy - unmod_energy;
 }
 
@@ -286,8 +283,8 @@ int ModifiedBasesFunctions::get_mod_energy_difference(
 ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(
     const LoopNode& node, const int n5d, const int n3d, const unsigned int type,
     const std::vector<std::string_view>& unique_mod_bases,
-    const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-    const std::vector<modified_base_param>& mod_params, bool is_external) {
+    const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp, const all_mod_params& mp,
+    bool is_external) {
     // Stores the difference between modified and unmodified energies
     int diffTerminal = 0;  // terminal AU penalty
     int diffMM = 0;        // both neighbors (terminal mismatch)
@@ -301,7 +298,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(
         int unmod_energy =
             is_external ? vp.p->mismatchExt[type][n5d][n3d] : vp.p->mismatchM[type][n5d][n3d];
 
-        diffMM = get_mod_energy_difference(mismatch_key, unique_mod_bases, mod_params, unmod_energy,
+        diffMM = get_mod_energy_difference(mismatch_key, unique_mod_bases, mp, unmod_energy,
                                            ModLookup::Mismatch);
     }
 
@@ -310,7 +307,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(
         std::string dangle5_key =
             join_string_views({node.begin, node.end, node.begin - 1}, mod_sequence);
         int unmod_energy = vp.p->dangle5[type][n5d];
-        diff5 = get_mod_energy_difference(dangle5_key, unique_mod_bases, mod_params, unmod_energy,
+        diff5 = get_mod_energy_difference(dangle5_key, unique_mod_bases, mp, unmod_energy,
                                           ModLookup::Dangle5);
     }
 
@@ -319,7 +316,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(
         std::string dangle3_key =
             join_string_views({node.begin, node.end, node.end + 1}, mod_sequence);
         int unmod_energy = vp.p->dangle3[type][n3d];
-        diff3 = get_mod_energy_difference(dangle3_key, unique_mod_bases, mod_params, unmod_energy,
+        diff3 = get_mod_energy_difference(dangle3_key, unique_mod_bases, mp, unmod_energy,
                                           ModLookup::Dangle3);
     }
 
@@ -327,8 +324,8 @@ ModDiffs ModifiedBasesFunctions::get_mod_dangle_energy_diffs(
     if (type > 2) {
         std::string terminal_key = join_string_views({node.begin, node.end}, mod_sequence);
         int unmod_energy = vp.p->TerminalAU;
-        diffTerminal = get_mod_energy_difference(terminal_key, unique_mod_bases, mod_params,
-                                                 unmod_energy, ModLookup::Terminal);
+        diffTerminal = get_mod_energy_difference(terminal_key, unique_mod_bases, mp, unmod_energy,
+                                                 ModLookup::Terminal);
     }
 
     return ModDiffs(diffTerminal, diffMM, diff5, diff3);

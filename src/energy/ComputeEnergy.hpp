@@ -32,9 +32,8 @@ class ComputeEnergy {
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
     ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna,
-                  vrna_md_param& vp, const knotergy::pk_param& pkp,
-                  const std::vector<modified_base_param>& mp = {}, bool round = false,
-                  bool verbose = false)
+                  vrna_md_param& vp, const knotergy::pk_param& pkp, const all_mod_params& mp = {},
+                  bool round = false, bool verbose = false)
         : root_node_{root_node},
           processed_rna_{processed_rna},
           vp_{vp},
@@ -60,7 +59,7 @@ class ComputeEnergy {
     const ProcessedRNAEntry& processed_rna_;
     vrna_md_param& vp_;
     const knotergy::pk_param& pkp_;
-    const std::vector<modified_base_param>& mp_;
+    const all_mod_params& mp_;
     const std::string& sequence_;
     const std::vector<std::string_view>& mod_sequence_;
     double energy_ = 0.0;

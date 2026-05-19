@@ -7,8 +7,7 @@ namespace knotergy {
 
 double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
-                                              vrna_md_param& vp,
-                                              const std::vector<modified_base_param>& mp,
+                                              vrna_md_param& vp, const all_mod_params& mp,
                                               const pk_param& pkp, bool& is_inf, bool round) {
     int unpaired = node.exclusive_unpaired_bases_count;
 
@@ -81,8 +80,7 @@ double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::p
 
 double PseudoknotFunctions::loop_penalties(const LoopNode& node,
                                            const ProcessedRNAEntry& processed_rna,
-                                           vrna_md_param& vp,
-                                           const std::vector<modified_base_param>& mp,
+                                           vrna_md_param& vp, const all_mod_params& mp,
                                            const knotergy::pk_param& pkp, bool round,
                                            bool& is_inf) {
     double energy = 0;
@@ -133,8 +131,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
 
 double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                             const ProcessedRNAEntry& processed_rna,
-                                            vrna_md_param& vp,
-                                            const std::vector<modified_base_param>& mp,
+                                            vrna_md_param& vp, const all_mod_params& mp,
                                             const knotergy::pk_param& pkp, bool round) {
     const std::string& sequence = processed_rna.get_sequence();
 

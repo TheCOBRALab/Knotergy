@@ -28,8 +28,7 @@ class RNAProcessor {
     RNAProcessor();
 
     /// High-level pipeline that produces a processed entry from raw RNA input.
-    static ProcessedRNAEntry process_rna(
-        RNAEntry rna, const std::vector<modified_base_param>& modified_params = {});
+    static ProcessedRNAEntry process_rna(RNAEntry rna, const all_mod_params& modified_params = {});
 
     /**
      * @brief Compute base-pair indices from a structure string.
@@ -149,9 +148,8 @@ class RNAProcessor {
      * modified_sequence = ["6", "U", "G", "C", "P"] -> unmodified_sequence = "AUGCU"
      */
     [[nodiscard]] static std::string compute_unmodified_sequence(
-        const std::vector<std::string_view>& modified_sequence_views,
-        const std::vector<modified_base_param>& params, const size_t rna_length,
-        bool& has_modified_bases);
+        const std::vector<std::string_view>& modified_sequence_views, const all_mod_params& params,
+        const size_t rna_length, bool& has_modified_bases);
 
     /**
      * @brief Check if a base is an unmodified base (A, U, G, C, T, N).

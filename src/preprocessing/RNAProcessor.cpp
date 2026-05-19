@@ -3,8 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 namespace knotergy {
-ProcessedRNAEntry RNAProcessor::process_rna(
-    RNAEntry rna, const std::vector<modified_base_param>& modified_params) {
+ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params) {
     bool has_modified_bases = false;
     std::string unmodified_sequence;
     std::vector<size_t> pairings;
@@ -250,9 +249,8 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
 };
 
 std::string RNAProcessor::compute_unmodified_sequence(
-    const std::vector<std::string_view>& modified_sequence_views,
-    const std::vector<modified_base_param>& params, const size_t rna_length,
-    bool& has_modified_bases) {
+    const std::vector<std::string_view>& modified_sequence_views, const all_mod_params& mp,
+    const size_t rna_length, bool& has_modified_bases) {
     std::string unmodified_sequence;
     unmodified_sequence.reserve(rna_length);
 
@@ -260,8 +258,8 @@ std::string RNAProcessor::compute_unmodified_sequence(
 
     // map modified base to unmodified base for quick lookup
     std::unordered_map<std::string_view, std::string> mod_to_unmod;
-    mod_to_unmod.reserve(params.size());
-    for (const modified_base_param& param : params) {
+    mod_to_unmod.reserve(mp.mod_params.size());
+    for (const modified_base_param& param : mp.mod_params) {
         if (param.unmodified_base().empty()) {
             THROW_ERROR("Modified base '" + param.modified_base() +
                         "' has empty unmodified mapping.");

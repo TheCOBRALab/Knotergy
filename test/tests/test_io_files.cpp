@@ -21,7 +21,7 @@ double pipeline(std::string input_file, std::string param_file,
     knotergy::RNAEntry rna = knotergy::RNAInputManager::get_all_inputs(input_file, "", "").front();
     knotergy::ProcessedRNAEntry processed_rna(knotergy::RNAProcessor::process_rna(std::move(rna)));
     knotergy::LoopFactory factory(processed_rna);
-    std::vector<knotergy::modified_base_param> mp;  // empty for no modified bases
+    knotergy::all_mod_params mp;  // empty for no modified bases
     knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp);
 
     return energy.getEnergy();

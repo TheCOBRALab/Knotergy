@@ -160,11 +160,11 @@ int main(int argc, char** argv) {
     knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
 
     // ------------------------- Load Modified Base Parameters -----------------------
-    std::vector<knotergy::modified_base_param> mp;
+    knotergy::all_mod_params mp;
     for (const std::string& mod_path : mod_param_paths) {
         std::vector<knotergy::modified_base_param> additional_mp =
             knotergy::ViennaParams::load_modified_energy_parameters(mod_path);
-        mp.insert(mp.end(), additional_mp.begin(), additional_mp.end());
+        mp.mod_params.insert(mp.mod_params.end(), additional_mp.begin(), additional_mp.end());
     }
 
     //------------------------- Reading Inputs From File -----------------------------

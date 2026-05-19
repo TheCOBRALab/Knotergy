@@ -33,7 +33,7 @@ class PseudoknotFunctions {
      * @return Total pseudoknot energy in centicalories.
      */
     static double pseudoknot_energy(const LoopNode& node, const ProcessedRNAEntry& processed_rna,
-                                    vrna_md_param& vp, const std::vector<modified_base_param>& mp,
+                                    vrna_md_param& vp, const all_mod_params& mp,
                                     const pk_param& pkp, bool& is_inf, bool round = false);
 
    private:
@@ -66,8 +66,7 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double loop_penalties(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp,
-                                               const std::vector<modified_base_param>& mp,
+                                               vrna_md_param& vp, const all_mod_params& mp,
                                                const knotergy::pk_param& pkp, bool round,
                                                bool& is_inf);
 
@@ -87,8 +86,7 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
-                                                vrna_md_param& vp,
-                                                const std::vector<modified_base_param>& mp,
+                                                vrna_md_param& vp, const all_mod_params& mp,
                                                 const knotergy::pk_param& pkp, bool round);
 
     /**
