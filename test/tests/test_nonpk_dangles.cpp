@@ -33,6 +33,16 @@ std::tuple<double, double, double> pipeline(std::string sequence, std::string st
 }
 }  // namespace
 
+TEST(Dangles, empty) {
+    std::string sequence = "U";
+    std::string structure = ".";
+    auto [d0, d1, d2] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 0, 0.000005);
+    EXPECT_NEAR(d1, 0, 0.000005);
+    EXPECT_NEAR(d2, 0, 0.000005);
+}
+
 TEST(Dangles, external_simple) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
     std::string structure = ".(((((.........................))))).";

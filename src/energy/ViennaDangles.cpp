@@ -99,7 +99,7 @@ std::vector<std::vector<size_t>> ViennaDangles::get_dangle_chains(
 
     // Stores child indices in each chain. Initialize with first child.
     dangle_chains.reserve(children.size());
-    dangle_chains.push_back({0});
+    if (!children.empty()) dangle_chains.push_back({0});
 
     // Iterate through children to identify chains
     for (size_t i = 1; i < children.size(); ++i) {
