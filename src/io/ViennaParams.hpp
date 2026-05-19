@@ -144,16 +144,16 @@ class modified_base_param {
 struct all_mod_params {
     all_mod_params() = default;
     all_mod_params(std::vector<modified_base_param> mod_params)
-        : mod_params(std::move(mod_params)) {
+        : mod_params_(std::move(mod_params)) {
         build_lookup();
     }
 
     [[nodiscard]] const std::vector<modified_base_param>& get_all_params() const {
-        return mod_params;
+        return mod_params_;
     }
 
-    [[nodiscard]] bool empty() const { return mod_params.empty(); }
-    [[nodiscard]] std::size_t size() const { return mod_params.size(); }
+    [[nodiscard]] bool empty() const { return mod_params_.empty(); }
+    [[nodiscard]] std::size_t size() const { return mod_params_.size(); }
 
     // Key is the modified base character, returns parameters for that modified base if it exists,
     // otherwise nullptr
@@ -165,7 +165,7 @@ struct all_mod_params {
     [[nodiscard]] const std::string* get_unmodified_base(const std::string& modified_base) const;
 
    private:
-    const std::vector<modified_base_param> mod_params;
+    const std::vector<modified_base_param> mod_params_;
     std::unordered_map<std::string, const modified_base_param*> mod_param_lookup;
     std::unordered_map<std::string, const std::string*> mod_to_unmod_lookup;
 

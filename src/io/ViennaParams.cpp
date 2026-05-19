@@ -118,9 +118,9 @@ const std::string* all_mod_params::get_unmodified_base(const std::string& modifi
 }
 
 void all_mod_params::build_lookup() {
-    mod_param_lookup.reserve(mod_params.size());
-    mod_to_unmod_lookup.reserve(mod_params.size());
-    for (const modified_base_param& param : mod_params) {
+    mod_param_lookup.reserve(mod_params_.size());
+    mod_to_unmod_lookup.reserve(mod_params_.size());
+    for (const modified_base_param& param : mod_params_) {
         mod_param_lookup[param.modified_base()] = &param;
         mod_to_unmod_lookup[param.modified_base()] = &param.unmodified_base();
     }
