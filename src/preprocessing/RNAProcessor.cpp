@@ -275,7 +275,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
         const std::string* unmod_base_ptr = mp.get_unmodified_base(std::string(mod_base));
 
         // lookup modified -> unmodified
-        if (unmod_base_ptr) {
+        if (unmod_base_ptr != nullptr) {
             unmodified_sequence += *unmod_base_ptr;
         } else {
             THROW_ERROR("Base '" + std::string(mod_base) + "' at index " +

@@ -24,15 +24,15 @@ class OutputManager {
                   << "Pseudoknot:" << pk_params.get_source_info().resolved_name << '\n';
 
         std::cout << std::left << std::setw(W)
-                  << "Modified bases:" << std::to_string(mp.mod_params.size()) + " loaded"
-                  << (mp.mod_params.empty() ? " (type -m to load)" : "") << '\n';
+                  << "Modified bases:" << std::to_string(mp.size()) + " loaded"
+                  << (mp.empty() ? " (type -m to load)" : "") << '\n';
 
         // Only show details if explicitly requested AND not too many
-        if (!mp.mod_params.empty()) {
+        if (!mp.empty()) {
             std::cout << "\nModified bases\n";
             std::cout << "------------------------------------------------\n";
 
-            for (const auto& param : mp.mod_params) {
+            for (const auto& param : mp.get_all_params()) {
                 std::cout << "- " << param.name() << '\n';
             }
         }

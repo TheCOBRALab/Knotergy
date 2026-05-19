@@ -31,6 +31,16 @@ std::tuple<double, double, double> dangle_get_energy(std::string sequence, std::
 }
 }  // namespace
 
+TEST(mod_nonpk, single_base) {
+    std::string sequence = "P";
+    std::string structure = ".";
+    auto [d0, d1, d2] = dangle_get_energy(sequence, structure);
+
+    EXPECT_NEAR(d0, 0.00, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d1, 0.00, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d2, 0.00, 0.000005);  // Turner 2004
+}
+
 // echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold -m
 TEST(mod_nonpk, small) {
     std::string sequence = "6U";

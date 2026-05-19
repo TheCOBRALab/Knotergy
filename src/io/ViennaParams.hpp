@@ -147,13 +147,10 @@ struct all_mod_params {
         : mod_params(std::move(mod_params)) {
         build_lookup();
     }
-    all_mod_params(std::vector<modified_base_param> mod_params, ParamSourceInfo source_info)
-        : mod_params(std::move(mod_params)), source_info(std::move(source_info)) {
-        build_lookup();
-    }
 
-    std::vector<modified_base_param> mod_params;
-    ParamSourceInfo source_info;
+    [[nodiscard]] const std::vector<modified_base_param>& get_all_params() const {
+        return mod_params;
+    }
 
     [[nodiscard]] bool empty() const { return mod_params.empty(); }
     [[nodiscard]] std::size_t size() const { return mod_params.size(); }
@@ -168,8 +165,10 @@ struct all_mod_params {
     [[nodiscard]] const std::string* get_unmodified_base(const std::string& modified_base) const;
 
    private:
+    const std::vector<modified_base_param> mod_params;
     std::unordered_map<std::string, const modified_base_param*> mod_param_lookup;
     std::unordered_map<std::string, const std::string*> mod_to_unmod_lookup;
+
     void build_lookup();
 };
 
