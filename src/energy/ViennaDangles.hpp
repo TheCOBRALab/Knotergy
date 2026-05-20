@@ -81,7 +81,7 @@ class ViennaDangles {
      * @param sequence The RNA nucleotide sequence.
      * @return Optimal dangle energy in centicalories.
      */
-    static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
+    static int get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
                                      const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
 
     /**
@@ -92,7 +92,7 @@ class ViennaDangles {
      * @param sequence_length Length of the RNA sequence.
      * @return Optimal dangle energy in centicalories.
      */
-    static int get_external_dangle_1(const std::vector<std::shared_ptr<LoopNode>>& children,
+    static int get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
                                      const std::vector<DangleSet>& dangle_energies);
 
     /**
@@ -125,7 +125,7 @@ class ViennaDangles {
      * @return Vector of DangleSet objects containing energies for each child.
      */
     static std::vector<DangleSet> populate_children_dangle_energies(
-        const std::vector<std::shared_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
+        const std::vector<std::unique_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
         vrna_md_param& vp, bool is_external = true);
 
     /**
@@ -172,7 +172,7 @@ class ViennaDangles {
      * @return Vector of chains, where each chain is a vector of child indices.
      */
     static std::vector<std::vector<size_t>> get_dangle_chains(
-        const std::vector<std::shared_ptr<LoopNode>>& children);
+        const std::vector<std::unique_ptr<LoopNode>>& children);
 
     /**
      * @brief Process a single chain to compute optimal dangle energy.
@@ -217,7 +217,7 @@ class ViennaDangles {
      * @return Total optimal dangle energy in centicalories.
      */
     static int process_ml_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                                 const std::vector<std::shared_ptr<LoopNode>>& children,
+                                 const std::vector<std::unique_ptr<LoopNode>>& children,
                                  const std::vector<DangleSet>& dangle_energies,
                                  const LoopNode& node, const DangleSet ml_dangle_energy);
 };

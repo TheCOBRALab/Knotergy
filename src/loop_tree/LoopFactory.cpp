@@ -28,7 +28,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
             "algorithm to fail.\n");
     }
 
-    root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
+    root_node_ = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
     root_node_->loop_type = LoopType::External;
 
     std::vector<LoopNode*> node_stack;
@@ -47,12 +47,12 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // parent = parent of current node. child = current node
         LoopNode* parent = node_stack.back();
 
-        std::shared_ptr<LoopNode> child = std::make_shared<LoopNode>(cr);
+        std::unique_ptr<LoopNode> child = std::make_unique<LoopNode>(cr);
         child->parent = parent;
         child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(cr);
 
         LoopNode* child_raw = child.get();
-        parent->children.emplace_back(child);
+        parent->children.emplace_back(std::move(child));
 
         node_stack.push_back(child_raw);
     }
@@ -83,7 +83,7 @@ void LoopFactory::populate_node(LoopNode& node) {
     }
 }
 
-void LoopFactory::populate_node(const std::shared_ptr<LoopNode>& node) {
+void LoopFactory::populate_node(const std::unique_ptr<LoopNode>& node) {
     populate_node(*node);
 }
 
@@ -97,7 +97,7 @@ int LoopFactory::count_total_base_pairs(const LoopNode& node) {
 
 int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
     int total = node.total_unpaired_bases_count;
-    for (const std::shared_ptr<LoopNode>& child : node.children) {
+    for (const std::unique_ptr<LoopNode>& child : node.children) {
         total -= child->total_unpaired_bases_count;
     }
     return total;
@@ -132,7 +132,7 @@ LoopType LoopFactory::find_loop_type(const LoopNode& node) {
 void LoopFactory::pseudo_nested_check(LoopNode& node) {
     if (node.loop_type != LoopType::Pseudoknot) return;
 
-    for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+    for (const std::unique_ptr<LoopNode>& child_node : node.children) {
         if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
             ++node.number_of_withinband_children;
         } else if (child_node->pseudo_type == PseudoNestedType::Nested) {
@@ -157,12 +157,12 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     // Non-linear method is preferred when it has less operations than the linear method.
     if (static_cast<size_t>(node.total_number_of_base_pairs) >=
         node.children.size() * node.bands.size()) {
-        for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
             child_node->pseudo_type = PseudoNestedType::Nested;
         }
         for (const Band& band : node.bands) {
             if (band.get_number_of_children() == 0) continue;
-            for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+            for (const std::unique_ptr<LoopNode>& child_node : node.children) {
                 // If start index is in the band, by definition, the end index must also be in the
                 // band.
                 if (child_node && band.contains(child_node->begin)) {
@@ -180,7 +180,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
                 within_band_start_idx.insert(base_pair.i);
             }
         }
-        for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
             if (within_band_start_idx.count(child_node->begin)) {
                 child_node->pseudo_type = PseudoNestedType::WithinBand;
             } else {
@@ -196,7 +196,7 @@ void LoopFactory::print_tree(bool debug) const {
     }
 }
 
-void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth,
+void LoopFactory::print_tree(const std::unique_ptr<LoopNode>& node, size_t depth,
                              bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
@@ -216,18 +216,19 @@ void LoopFactory::print_tree(const std::shared_ptr<LoopNode>& node, size_t depth
 void LoopFactory::destroy_tree_iterative() {
     if (!root_node_) return;
 
-    std::vector<std::shared_ptr<LoopNode>> work;
-    work.push_back(std::move(root_node_));
+    std::vector<std::unique_ptr<LoopNode>> work;
+    work.emplace_back(std::move(root_node_));
 
     while (!work.empty()) {
         auto node = std::move(work.back());
         work.pop_back();
 
         for (auto& child : node->children) {
-            if (child) work.push_back(std::move(child));
+            if (child) work.emplace_back(std::move(child));
         }
 
         node->children.clear();
+        // no parent reset needed; parent is now a raw non-owning pointer
     }
 }
 

@@ -22,7 +22,7 @@ class ComputeEnergy {
      * Upon construction, this immediately processes the entire loop tree starting
      * from the root node and calculates the total energy.
      *
-     * @param root_node Shared pointer to the root node of the loop tree.
+     * @param root_node Raw pointer to the root node of the loop tree.
      * @param processed_rna The processed RNA entry containing sequence and structure information.
      * @param vienna_params ViennaRNA energy parameters.
      * @param pseudo_params Pseudoknot energy parameters.
@@ -31,9 +31,9 @@ class ComputeEnergy {
      * @param round Whether to round energy values (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
-    ComputeEnergy(std::shared_ptr<LoopNode> root_node, const ProcessedRNAEntry& processed_rna,
-                  vrna_md_param& vp, const knotergy::pk_param& pkp, const all_mod_params& mp = {},
-                  bool round = false, bool verbose = false)
+    ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
+                  const knotergy::pk_param& pkp, const all_mod_params& mp = {}, bool round = false,
+                  bool verbose = false)
         : root_node_{root_node},
           processed_rna_{processed_rna},
           vp_{vp},
@@ -43,7 +43,7 @@ class ComputeEnergy {
           mod_sequence_{processed_rna.get_modified_sequence()},
           round_{round},
           has_modified_bases_{processed_rna.has_modified_bases()} {
-        process_tree(*root_node_, verbose);
+        process_tree(root_node_, verbose);
     };
 
     /**
@@ -55,7 +55,7 @@ class ComputeEnergy {
     bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
 
    private:
-    std::shared_ptr<LoopNode> root_node_;
+    LoopNode& root_node_;
     const ProcessedRNAEntry& processed_rna_;
     vrna_md_param& vp_;
     const knotergy::pk_param& pkp_;

@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <fstream>
-#include <stack>
 #include <string>
 #include <vector>
 

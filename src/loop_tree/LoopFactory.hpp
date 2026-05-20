@@ -37,9 +37,9 @@ class LoopFactory {
      *
      * The root node represents the external loop containing all other loops.
      *
-     * @return Shared pointer to the root LoopNode.
+     * @return Raw pointer to the root LoopNode.
      */
-    std::shared_ptr<LoopNode> get_root_node() { return root_node_; };
+    LoopNode& get_root_node() { return *root_node_; }
 
     /**
      * @brief Print the loop tree structure.
@@ -55,11 +55,11 @@ class LoopFactory {
      * @param depth Current depth in the tree (for indentation).
      * @param debug Whether to include debug information (default: false).
      */
-    void print_tree(const std::shared_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
+    void print_tree(const std::unique_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
     const ProcessedRNAEntry& processed_rna_;
-    std::shared_ptr<LoopNode> root_node_;
+    std::unique_ptr<LoopNode> root_node_;
     size_t structure_length_;
     std::vector<PairedBaseNode>
         aux_bands_;  ///< Auxiliary structure for band detection and navigation.
@@ -102,11 +102,11 @@ class LoopFactory {
     void populate_node(LoopNode& node);
 
     /**
-     * @brief Populate a loop node (shared pointer version).
+     * @brief Populate a loop node (unique pointer version).
      *
-     * @param node Shared pointer to the loop node to populate.
+     * @param node Unique pointer to the loop node to populate.
      */
-    void populate_node(const std::shared_ptr<LoopNode>& node);
+    void populate_node(const std::unique_ptr<LoopNode>& node);
 
     /**
      * @brief Count the total number of base pairs in a loop node.
@@ -153,9 +153,9 @@ class LoopFactory {
      *
      * Identifies and stores Band objects for pseudoknotted loops.
      *
-     * @param node Shared pointer to the loop node to annotate.
+     * @param node Unique pointer to the loop node to annotate.
      */
-    void annotate_bands(const std::shared_ptr<LoopNode>& node);
+    void annotate_bands(const std::unique_ptr<LoopNode>& node);
 
     /**
      * @brief Iteratively destroy the loop tree to free memory.

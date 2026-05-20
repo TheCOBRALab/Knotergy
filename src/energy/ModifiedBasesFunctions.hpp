@@ -89,7 +89,7 @@ class ModifiedBasesFunctions {
      * @param mp Vector of modified base parameters.
      * @return External loop energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_external_energy(const std::vector<std::shared_ptr<LoopNode>>& children,
+    static int find_mod_external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
                                         const ProcessedRNAEntry& pRNA,
                                         const std::vector<std::string_view>& mod_sequence,
                                         vrna_md_param& vp, const all_mod_params& mp);
