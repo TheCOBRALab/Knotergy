@@ -83,9 +83,10 @@ struct LoopNode {
     std::weak_ptr<LoopNode> parent;         ///< Parent loop node (weak to avoid cycles).
     std::vector<std::shared_ptr<LoopNode>> children;  ///< Child loop nodes.
     std::vector<Band> bands;  ///< Pseudoknot bands (empty if not pseudoknotted).
-    int number_of_bands = 0;  ///< Number of bands in this loop.
-    double energy = 0;        ///< Computed energy (set by ComputeEnergy).
-    bool is_inf = false;      ///< Flag for infinite energy (e.g., invalid structures).
+    int total_number_of_base_pairs =
+        1;                ///< Total base pairs in this loop closed region (excluding children)
+    double energy = 0;    ///< Computed energy (set by ComputeEnergy).
+    bool is_inf = false;  ///< Flag for infinite energy (e.g., invalid structures).
 
     /**
      * @brief Generate a formatted string for energy breakdown output.
@@ -163,7 +164,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "  total_unpaired_bases_count: " << node.total_unpaired_bases_count << "\n";
     os << "  number_of_children_inside_band: " << node.number_of_withinband_children << "\n";
     os << "  number_of_nested_children: " << node.number_of_nested_children << "\n";
-    os << "  number_of_bands: " << node.number_of_bands << "\n";
+    os << "  number_of_bands: " << node.bands.size() << "\n";
     os << "  bands:\n";
     for (const auto& band : node.bands) {
         os << "    Band(" << band.left_border() << ", " << band.left_inner() << ", "

@@ -33,7 +33,6 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
     std::stack<std::shared_ptr<LoopNode>> node_stack;
     node_stack.push(root_node_);
-    node_lookup_.resize(processed_rna_.size(), nullptr);
 
     for (const ClosedRegion& cr : closed_regions) {
         // Pop until node_stack.end() is the parent of current node
@@ -54,7 +53,6 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // Gets the total unpaired base pairs within the closed region (including that of children)
         child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(cr);
 
-        node_lookup_[cr.begin] = child.get();
         node_stack.push(child);
     }
 
@@ -78,7 +76,7 @@ void LoopFactory::populate_node(LoopNode& node) {
         }
 
         node.bands = BandFinder::find_bands(node, aux_bands_, processed_rna_);
-        node.number_of_bands = static_cast<int>(node.bands.size());
+        node.total_number_of_base_pairs = count_total_base_pairs(node);
         label_pseudonested_children(node);
         pseudo_nested_check(node);
     }
@@ -86,6 +84,14 @@ void LoopFactory::populate_node(LoopNode& node) {
 
 void LoopFactory::populate_node(const std::shared_ptr<LoopNode>& node) {
     populate_node(*node);
+}
+
+int LoopFactory::count_total_base_pairs(const LoopNode& node) {
+    size_t total = 0;
+    for (const Band& band : node.bands) {
+        total += band.base_pairs().size();
+    }
+    return static_cast<int>(total);
 }
 
 int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
@@ -138,17 +144,46 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
 void LoopFactory::label_pseudonested_children(LoopNode& node) {
     /* only pseudoknots need bands; leave the rest untouched */
     if (node.loop_type != LoopType::Pseudoknot) return;
+    if (node.children.empty()) return;
 
-    for (const std::shared_ptr<LoopNode>& child_node : node.children) {
-        child_node->pseudo_type = PseudoNestedType::Nested;
-    }
+    /**
+     * There are two methods: Linear & Non-Linear
+     *
+     * Non-Linear is usually more efficient, but in cases where there are many bands and
+     * many children, the linear method can be more efficient.
+     */
 
-    // A child is within a band if its start index is within the band.
-    // Each band, base pair and children are only ever visited once, so it's O(n)
-    for (const Band& band : node.bands) {
-        for (const BasePair& base_pair : band.base_pairs()) {
-            for (const ClosedRegion& cr : base_pair.children) {
-                node_lookup_[cr.begin]->pseudo_type = PseudoNestedType::WithinBand;
+    // Non-linear method is preferred when it has less operations than the linear method.
+    if (static_cast<size_t>(node.total_number_of_base_pairs) >=
+        node.children.size() * node.bands.size()) {
+        for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+            child_node->pseudo_type = PseudoNestedType::Nested;
+        }
+        for (const Band& band : node.bands) {
+            if (band.get_number_of_children() == 0) continue;
+            for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+                // If start index is in the band, by definition, the end index must also be in the
+                // band.
+                if (child_node && band.contains(child_node->begin)) {
+                    child_node->pseudo_type = PseudoNestedType::WithinBand;
+                };
+            }
+        }
+    } else {  // Linear method is preferred when it has less operations than the non-linear method.
+        std::unordered_set<size_t> within_band_start_idx;
+        within_band_start_idx.reserve(node.children.size());
+
+        for (const Band& band : node.bands) {
+            if (band.get_number_of_children() == 0) continue;
+            for (const BasePair& base_pair : band.base_pairs()) {
+                within_band_start_idx.insert(base_pair.i);
+            }
+        }
+        for (const std::shared_ptr<LoopNode>& child_node : node.children) {
+            if (within_band_start_idx.count(child_node->begin)) {
+                child_node->pseudo_type = PseudoNestedType::WithinBand;
+            } else {
+                child_node->pseudo_type = PseudoNestedType::Nested;
             }
         }
     }

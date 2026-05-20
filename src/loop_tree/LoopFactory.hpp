@@ -63,7 +63,6 @@ class LoopFactory {
     size_t structure_length_;
     std::vector<PairedBaseNode>
         aux_bands_;  ///< Auxiliary structure for band detection and navigation.
-    std::vector<LoopNode*> node_lookup_;  ///< Find a node by it's begin index for O(1) lookup
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.
@@ -108,6 +107,14 @@ class LoopFactory {
      * @param node Shared pointer to the loop node to populate.
      */
     void populate_node(const std::shared_ptr<LoopNode>& node);
+
+    /**
+     * @brief Count the total number of base pairs in a loop node.
+     *
+     * @param node The loop node to analyze.
+     * @return Total number of base pairs in the loop's closed region (excluding children).
+     */
+    int count_total_base_pairs(const LoopNode& node);
 
     /**
      * @brief Count unpaired bases in a loop, excluding those in child loops.

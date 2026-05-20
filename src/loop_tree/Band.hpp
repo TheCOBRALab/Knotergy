@@ -95,6 +95,7 @@ class Band {
             if (cr_pairings[idx] != NULL_INDEX) {
                 base_pairs_.back().children.emplace_back(idx, cr_pairings[idx]);
                 idx = cr_pairings[idx];
+                ++number_of_children;
                 continue;
             }
 
@@ -132,6 +133,7 @@ class Band {
             if (cr_pairings[idx] != NULL_INDEX) {
                 idx = cr_pairings[idx];
                 current_bp.children.emplace_back(idx, cr_pairings[idx]);
+                ++number_of_children;
                 if (idx == 0) break;
                 continue;
             }
@@ -191,6 +193,9 @@ class Band {
     /// @return Right border position of the band.
     size_t right_border() const { return right_border_; }
 
+    /// @return Number of children within the band.
+    int get_number_of_children() const { return number_of_children; }
+
     /// @return Vector of base pairs that participate in this band.
     const std::vector<BasePair>& base_pairs() const { return base_pairs_; }
 
@@ -201,6 +206,7 @@ class Band {
     size_t right_border_;  // j
 
     std::vector<BasePair> base_pairs_;
+    int number_of_children = 0;
 };
 
 // === Operator overload for printing ===
