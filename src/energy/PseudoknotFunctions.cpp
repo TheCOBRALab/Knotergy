@@ -31,7 +31,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     double energy = 0;
 
     energy += init_penalty(node, pkp);
-    energy += pkp.band * node.bands.size();
+    energy += pkp.band * static_cast<int>(node.bands.size());
     energy += pkp.unpaired_in_pk * unpaired;
     energy += pkp.cr_in_pk * node.number_of_nested_children;
     energy += loop_penalties(node, processed_rna, vp, mp, pkp, round, is_inf);
@@ -53,27 +53,22 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
     double energy = 0;
-    if (const std::shared_ptr<LoopNode>& parent = node.parent.lock()) {
-        switch (parent->loop_type) {
-            case (LoopType::External):
-                energy += pkp.pk_in_ext;
-                break;
-            case (LoopType::Multibranch):
-                energy += pkp.pk_in_mloop;
-                break;
-            case (LoopType::Pseudoknot):
-                energy += node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop
-                                                                           : pkp.pk_in_pk;
-                break;
-            default:
-                std::cerr << "Warning: Parent of this node is not a pseudoknot, external, or "
-                             "multiloop"
-                          << node << std::endl;
-                break;
-        }
-    } else {
-        THROW_ERROR("Parent node of pseudoknot (" + std::to_string(node.begin) + ", " +
-                    std::to_string(node.end) + ") has expired.");
+    switch (node.parent->loop_type) {
+        case (LoopType::External):
+            energy += pkp.pk_in_ext;
+            break;
+        case (LoopType::Multibranch):
+            energy += pkp.pk_in_mloop;
+            break;
+        case (LoopType::Pseudoknot):
+            energy +=
+                node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;
+            break;
+        default:
+            std::cerr << "Warning: Parent of this node is not a pseudoknot, external, or "
+                         "multiloop"
+                      << node << std::endl;
+            break;
     }
     return energy;
 }

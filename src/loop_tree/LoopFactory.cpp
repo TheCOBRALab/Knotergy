@@ -31,36 +31,37 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     root_node_ = std::make_shared<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
     root_node_->loop_type = LoopType::External;
 
-    std::stack<std::shared_ptr<LoopNode>> node_stack;
-    node_stack.push(root_node_);
+    std::vector<LoopNode*> node_stack;
+    node_stack.reserve(closed_regions.size() + 1);
+    node_stack.push_back(root_node_.get());
 
     for (const ClosedRegion& cr : closed_regions) {
         // Pop until node_stack.end() is the parent of current node
         // A node is only popped (and processed) after all of its children have been added.
         // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
-        while (node_stack.top()->end < cr.begin) {
-            std::shared_ptr<LoopNode> node = node_stack.top();
-            populate_node(node);
-            node_stack.pop();
+        while (node_stack.back()->end < cr.begin) {
+            populate_node(*node_stack.back());
+            node_stack.pop_back();
         }
 
         // parent = parent of current node. child = current node
-        std::shared_ptr<LoopNode> parent = node_stack.top();
+        LoopNode* parent = node_stack.back();
+
         std::shared_ptr<LoopNode> child = std::make_shared<LoopNode>(cr);
         child->parent = parent;
-        parent->children.emplace_back(child);
-
-        // Gets the total unpaired base pairs within the closed region (including that of children)
         child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(cr);
 
-        node_stack.push(child);
+        LoopNode* child_raw = child.get();
+        parent->children.emplace_back(child);
+
+        node_stack.push_back(child_raw);
     }
 
     // process all remaining nodes
-    while (node_stack.top()->begin != NULL_INDEX) {
-        std::shared_ptr<LoopNode> node = node_stack.top();
-        populate_node(node);
-        node_stack.pop();
+    while (node_stack.back()->begin != NULL_INDEX) {
+        LoopNode* node = node_stack.back();
+        populate_node(*node);
+        node_stack.pop_back();
     }
 }
 
@@ -227,7 +228,6 @@ void LoopFactory::destroy_tree_iterative() {
         }
 
         node->children.clear();
-        node->parent.reset();
     }
 }
 
