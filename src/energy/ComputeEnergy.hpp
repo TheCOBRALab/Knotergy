@@ -85,7 +85,7 @@ class ComputeEnergy {
      * @param node The loop node to process.
      * @return The energy contribution of this node in centicalories.
      */
-    [[nodiscard]] double process_node(LoopNode& node);
+    double process_node(LoopNode& node);
 };
 
 }  // namespace knotergy
