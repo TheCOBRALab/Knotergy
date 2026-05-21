@@ -226,10 +226,10 @@ class ViennaDangles {
      * @param ml_dangle_energy Dangle energy for the multibranch loop closing pair.
      * @return Total optimal dangle energy in centicalories.
      */
-    [[nodiscard]] static int process_ml_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                                               const std::vector<std::unique_ptr<LoopNode>>& children,
-                                               const std::vector<DangleSet>& dangle_energies,
-                                               const LoopNode& node,
-                                               const DangleSet ml_dangle_energy);
+    [[nodiscard]] static int process_ml_chains(
+        const std::vector<std::vector<size_t>>& dangle_chains,
+        const std::vector<std::unique_ptr<LoopNode>>& children,
+        const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
+        const DangleSet ml_dangle_energy);
 };
 }  // namespace knotergy

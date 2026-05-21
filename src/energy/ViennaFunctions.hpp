@@ -49,8 +49,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Stacking energy in centicalories.
      */
-    [[nodiscard]] static int stack_energy(BasePair pair, BasePair child, const std::string& sequence,
-                                          vrna_md_param& vp);
+    [[nodiscard]] static int stack_energy(BasePair pair, BasePair child,
+                                          const std::string& sequence, vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -106,8 +106,8 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Multibranch loop energy in centicalories.
      */
-    [[nodiscard]] static int multibranch_energy(const LoopNode& node,
-                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
+    [[nodiscard]] static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                                vrna_md_param& vp);
 
     /**
      * @brief Calculate external loop energy.
