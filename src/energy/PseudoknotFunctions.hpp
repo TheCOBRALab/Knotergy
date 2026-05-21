@@ -32,9 +32,11 @@ class PseudoknotFunctions {
      * @param round Whether to round energy values (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
-    static double pseudoknot_energy(const LoopNode& node, const ProcessedRNAEntry& processed_rna,
-                                    vrna_md_param& vp, const all_mod_params& mp,
-                                    const pk_param& pkp, bool& is_inf, bool round = false);
+    [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
+                                                  const ProcessedRNAEntry& processed_rna,
+                                                  vrna_md_param& vp, const all_mod_params& mp,
+                                                  const pk_param& pkp, bool& is_inf,
+                                                  bool round = false);
 
    private:
     /**

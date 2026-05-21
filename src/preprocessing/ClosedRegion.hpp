@@ -39,11 +39,13 @@ struct ClosedRegion {
     ClosedRegion() = default;
     ClosedRegion(size_t b, size_t e) : begin{b}, end{e} {}
 
-    bool operator==(const ClosedRegion& rhs) const { return begin == rhs.begin && end == rhs.end; }
+    [[nodiscard]] bool operator==(const ClosedRegion& rhs) const {
+        return begin == rhs.begin && end == rhs.end;
+    }
 
     // Should never be needed, but it's to safeguard against unsorted closed regions breaking the
     // loop factory algorithm.
-    bool operator<(const ClosedRegion& rhs) const {
+    [[nodiscard]] bool operator<(const ClosedRegion& rhs) const {
         return std::tie(begin, end) < std::tie(rhs.begin, rhs.end);
     }
 };

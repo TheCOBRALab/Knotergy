@@ -39,7 +39,7 @@ class LoopFactory {
      *
      * @return Raw pointer to the root LoopNode.
      */
-    LoopNode& get_root_node() { return *root_node_; }
+    [[nodiscard]] LoopNode& get_root_node() { return *root_node_; }
 
     /**
      * @brief Print the loop tree structure.
@@ -114,7 +114,7 @@ class LoopFactory {
      * @param node The loop node to analyze.
      * @return Total number of base pairs in the loop's closed region (excluding children).
      */
-    int count_total_base_pairs(const LoopNode& node);
+    [[nodiscard]] int count_total_base_pairs(const LoopNode& node);
 
     /**
      * @brief Count unpaired bases in a loop, excluding those in child loops.
@@ -122,7 +122,7 @@ class LoopFactory {
      * @param node The loop node to analyze.
      * @return Number of unpaired bases exclusive to this loop.
      */
-    int count_unpaired_bases_excluding_children(const LoopNode& node);
+    [[nodiscard]] int count_unpaired_bases_excluding_children(const LoopNode& node);
 
     /**
      * @brief Determine the loop type of a node.
@@ -132,7 +132,7 @@ class LoopFactory {
      * @param node The loop node to classify.
      * @return The determined LoopType.
      */
-    LoopType find_loop_type(const LoopNode& node);
+    [[nodiscard]] LoopType find_loop_type(const LoopNode& node);
 
     /**
      * @brief Check if a loop has pseudo-nested children and update pseudo_type.

@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
-static inline const std::string& default_pk_param_path() {
+[[nodiscard]] static inline const std::string& default_pk_param_path() {
     static const std::string path =
         std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json";
     return path;
@@ -114,7 +114,8 @@ class PseudoknotParams {
      * @return Loaded pk_param structure.
      * @throws DetailedException if file not found or invalid.
      */
-    static const pk_param load_pk_param(const std::string& paramFile = default_pk_param_path()) {
+    [[nodiscard]] static const pk_param load_pk_param(
+        const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;

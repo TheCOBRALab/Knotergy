@@ -39,10 +39,10 @@ class ModifiedBasesFunctions {
      * @param mp Vector of modified base parameters.
      * @return Stacking energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
-                                     const std::string& sequence,
-                                     const std::vector<std::string_view>& mod_sequence,
-                                     vrna_md_param& vp, const all_mod_params& mp);
+    [[nodiscard]] static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
+                                                   const std::string& sequence,
+                                                   const std::vector<std::string_view>& mod_sequence,
+                                                   vrna_md_param& vp, const all_mod_params& mp);
 
     /**
      * @brief Overload of find_mod_stack_energy that takes BasePair objects and a ProcessedRNAEntry.
@@ -58,9 +58,9 @@ class ModifiedBasesFunctions {
      * @return Stacking energy in centicalories, accounting for modified bases.
      *
      */
-    static int find_mod_stack_energy(const BasePair& bp, const BasePair& next_bp,
-                                     const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
-                                     const all_mod_params& mp) {
+    [[nodiscard]] static int find_mod_stack_energy(const BasePair& bp, const BasePair& next_bp,
+                                                   const ProcessedRNAEntry& processed_rna,
+                                                   vrna_md_param& vp, const all_mod_params& mp) {
         const std::string& sequence = processed_rna.get_sequence();
         const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
         return find_mod_stack_energy(bp.i, bp.j, next_bp.i, next_bp.j, sequence, mod_sequence, vp,
@@ -76,9 +76,10 @@ class ModifiedBasesFunctions {
      * @param mp Vector of modified base parameters.
      * @return Multiloop energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_multiloop_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                         const std::vector<std::string_view>& mod_sequence,
-                                         vrna_md_param& vp, const all_mod_params& mp);
+    [[nodiscard]] static int find_mod_multiloop_energy(
+        const LoopNode& node, const ProcessedRNAEntry& pRNA,
+        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+        const all_mod_params& mp);
 
     /**
      * @brief Calculate external loop energy with modified bases.
@@ -89,10 +90,10 @@ class ModifiedBasesFunctions {
      * @param mp Vector of modified base parameters.
      * @return External loop energy in centicalories, accounting for modified bases.
      */
-    static int find_mod_external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
-                                        const ProcessedRNAEntry& pRNA,
-                                        const std::vector<std::string_view>& mod_sequence,
-                                        vrna_md_param& vp, const all_mod_params& mp);
+    [[nodiscard]] static int find_mod_external_energy(
+        const std::vector<std::unique_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
+        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+        const all_mod_params& mp);
 
     /**
      * @brief Update the energy of a loop based on modified bases.
@@ -114,10 +115,11 @@ class ModifiedBasesFunctions {
      * bases.
      *
      */
-    static int update_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                             const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-                             const all_mod_params& mp, DangleSet& current_set,
-                             bool is_external = false, bool is_closing = false);
+    [[nodiscard]] static int update_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                           const std::vector<std::string_view>& mod_sequence,
+                                           vrna_md_param& vp, const all_mod_params& mp,
+                                           DangleSet& current_set, bool is_external = false,
+                                           bool is_closing = false);
 
    private:
     /**
@@ -127,7 +129,7 @@ class ModifiedBasesFunctions {
      * @param mod_sequence The modified RNA sequence (grapheme views).
      * @return Vector of unique modified base string views found at those positions.
      */
-    static std::vector<std::string_view> unique_modified_bases_at_indices(
+    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_indices(
         std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence);
 
     /**
@@ -137,8 +139,8 @@ class ModifiedBasesFunctions {
      * @param mod_sequence The modified RNA sequence (grapheme views).
      * @return Concatenated string of bases at the specified indices.
      */
-    static std::string join_string_views(std::vector<size_t> indices,
-                                         const std::vector<std::string_view>& mod_sequence);
+    [[nodiscard]] static std::string join_string_views(
+        std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence);
 
     /**
      * @brief Get modified energy or fall back to unmodified energy.
@@ -153,8 +155,10 @@ class ModifiedBasesFunctions {
      * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
      * @return Energy value in centicalories.
      */
-    static int get_mod_energy(const std::string& key, const std::vector<std::string_view>& modified,
-                              const all_mod_params& mp, int unmod_energy, ModLookup lookup_type);
+    [[nodiscard]] static int get_mod_energy(const std::string& key,
+                                            const std::vector<std::string_view>& modified,
+                                            const all_mod_params& mp, int unmod_energy,
+                                            ModLookup lookup_type);
 
     /**
      * @brief Modify a DangleSet's energies based on modified base energy
@@ -176,10 +180,9 @@ class ModifiedBasesFunctions {
      * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
      * @return Energy difference in centicalories (mod_energy - unmod_energy).
      */
-    static int get_mod_energy_difference(const std::string& key,
-                                         const std::vector<std::string_view>& modified,
-                                         const all_mod_params& mp, int unmod_energy,
-                                         ModLookup lookup_type);
+    [[nodiscard]] static int get_mod_energy_difference(
+        const std::string& key, const std::vector<std::string_view>& modified,
+        const all_mod_params& mp, int unmod_energy, ModLookup lookup_type);
 
     /**
      * @brief Generates a ModDiffs object which stores the energy differences for modified bases
@@ -201,7 +204,7 @@ class ModifiedBasesFunctions {
      * 5' dangle, and 3' dangle energies.
      *
      */
-    static ModDiffs get_mod_dangle_energy_diffs(
+    [[nodiscard]] static ModDiffs get_mod_dangle_energy_diffs(
         const LoopNode& node, const int n5d, const int n3d, const unsigned int type,
         const std::vector<std::string_view>& unique_mod_bases,
         const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,

@@ -29,7 +29,7 @@ enum class PseudoNestedType { None, WithinBand, Nested };
  * @param t The loop type.
  * @return String representation of the loop type.
  */
-static inline const char* loop_name(LoopType t) {
+[[nodiscard]] static inline const char* loop_name(LoopType t) {
     switch (t) {
         case LoopType::Stack:
             return "Stack    loop";
@@ -96,7 +96,7 @@ struct LoopNode {
      * @param max_idx Maximum index in the structure (for formatting width).
      * @return Formatted string with loop information and energy.
      */
-    std::string energy_breakdown(size_t max_idx) const {
+    [[nodiscard]] std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
 
         const unsigned short idx_w = static_cast<unsigned short>(std::to_string(max_idx).size());

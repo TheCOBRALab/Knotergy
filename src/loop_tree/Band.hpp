@@ -146,7 +146,7 @@ class Band {
      * @param idx Index to check.
      * @return True if the index is in the left or right arm of the band.
      */
-    bool contains(size_t idx) const {
+    [[nodiscard]] bool contains(size_t idx) const {
         return (idx >= left_border_ && idx <= left_inner_) ||
                (idx >= right_inner_ && idx <= right_border_);
     }
@@ -158,7 +158,9 @@ class Band {
      * @param idx2 Second index.
      * @return True if both indices are in the band.
      */
-    bool contains(size_t idx, size_t idx2) const { return contains(idx) && contains(idx2); }
+    [[nodiscard]] bool contains(size_t idx, size_t idx2) const {
+        return contains(idx) && contains(idx2);
+    }
 
     /**
      * @brief Check if an index is nested within the band (between inner positions).
@@ -168,7 +170,7 @@ class Band {
      * @param idx Index to check.
      * @return True if the index is between left_inner and right_inner.
      */
-    bool nests(size_t idx) const { return (idx > left_inner_ && idx < right_inner_); }
+    [[nodiscard]] bool nests(size_t idx) const { return (idx > left_inner_ && idx < right_inner_); }
 
     /**
      * @brief Check if two indices are both nested within the band.
@@ -177,27 +179,27 @@ class Band {
      * @param idx2 Second index.
      * @return True if both indices are nested within the band.
      */
-    bool nests(size_t idx, size_t idx2) const { return nests(idx) && nests(idx2); }
+    [[nodiscard]] bool nests(size_t idx, size_t idx2) const { return nests(idx) && nests(idx2); }
 
     // === Read-only accessors ===
 
     /// @return Left border position of the band.
-    size_t left_border() const { return left_border_; }
+    [[nodiscard]] size_t left_border() const { return left_border_; }
 
     /// @return Left inner position of the band.
-    size_t left_inner() const { return left_inner_; }
+    [[nodiscard]] size_t left_inner() const { return left_inner_; }
 
     /// @return Right inner position of the band.
-    size_t right_inner() const { return right_inner_; }
+    [[nodiscard]] size_t right_inner() const { return right_inner_; }
 
     /// @return Right border position of the band.
-    size_t right_border() const { return right_border_; }
+    [[nodiscard]] size_t right_border() const { return right_border_; }
 
     /// @return Number of children within the band.
-    int get_number_of_children() const { return number_of_children; }
+    [[nodiscard]] int get_number_of_children() const { return number_of_children; }
 
     /// @return Vector of base pairs that participate in this band.
-    const std::vector<BasePair>& base_pairs() const { return base_pairs_; }
+    [[nodiscard]] const std::vector<BasePair>& base_pairs() const { return base_pairs_; }
 
    private:
     size_t left_border_;   // i
