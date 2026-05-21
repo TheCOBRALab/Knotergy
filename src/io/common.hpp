@@ -40,8 +40,8 @@ class DetailedException : public std::runtime_error {
      * @param func Function name.
      * @return Formatted error message string.
      */
-    static std::string format_message(const std::string& message, const char* file, int line,
-                                      const char* func) {
+    [[nodiscard]] static std::string format_message(const std::string& message, const char* file,
+                                                    int line, const char* func) {
         std::ostringstream oss;
 
         oss << "\n"

@@ -98,21 +98,31 @@ class modified_base_param {
           dangle3_energies_(std::move(dangle3_e)),
           dangle3_enthalpies_(std::move(dangle3_h)) {}
 
-    const std::string& name() const noexcept { return name_; }
-    const std::string& unmodified_base() const noexcept { return unmodified_base_; }
-    const std::string& modified_base() const noexcept { return modified_base_; }
-    const std::string& fallback_base() const noexcept { return fallback_base_; }
-    const string_list& pairing_partners() const noexcept { return pairing_partners_; }
-    const param_map& stacking_energies() const noexcept { return stacking_energies_; }
-    const param_map& stacking_enthalpies() const noexcept { return stacking_enthalpies_; }
-    const param_map& terminal_energies() const noexcept { return terminal_energies_; }
-    const param_map& terminal_enthalpies() const noexcept { return terminal_enthalpies_; }
-    const param_map& mismatch_energies() const noexcept { return mismatch_energies_; }
-    const param_map& mismatch_enthalpies() const noexcept { return mismatch_enthalpies_; }
-    const param_map& dangle5_energies() const noexcept { return dangle5_energies_; }
-    const param_map& dangle5_enthalpies() const noexcept { return dangle5_enthalpies_; }
-    const param_map& dangle3_energies() const noexcept { return dangle3_energies_; }
-    const param_map& dangle3_enthalpies() const noexcept { return dangle3_enthalpies_; }
+    [[nodiscard]] const std::string& name() const noexcept { return name_; }
+    [[nodiscard]] const std::string& unmodified_base() const noexcept { return unmodified_base_; }
+    [[nodiscard]] const std::string& modified_base() const noexcept { return modified_base_; }
+    [[nodiscard]] const std::string& fallback_base() const noexcept { return fallback_base_; }
+    [[nodiscard]] const string_list& pairing_partners() const noexcept { return pairing_partners_; }
+    [[nodiscard]] const param_map& stacking_energies() const noexcept { return stacking_energies_; }
+    [[nodiscard]] const param_map& stacking_enthalpies() const noexcept {
+        return stacking_enthalpies_;
+    }
+    [[nodiscard]] const param_map& terminal_energies() const noexcept { return terminal_energies_; }
+    [[nodiscard]] const param_map& terminal_enthalpies() const noexcept {
+        return terminal_enthalpies_;
+    }
+    [[nodiscard]] const param_map& mismatch_energies() const noexcept { return mismatch_energies_; }
+    [[nodiscard]] const param_map& mismatch_enthalpies() const noexcept {
+        return mismatch_enthalpies_;
+    }
+    [[nodiscard]] const param_map& dangle5_energies() const noexcept { return dangle5_energies_; }
+    [[nodiscard]] const param_map& dangle5_enthalpies() const noexcept {
+        return dangle5_enthalpies_;
+    }
+    [[nodiscard]] const param_map& dangle3_energies() const noexcept { return dangle3_energies_; }
+    [[nodiscard]] const param_map& dangle3_enthalpies() const noexcept {
+        return dangle3_enthalpies_;
+    }
 
    private:
     std::string name_;
@@ -189,8 +199,9 @@ class ViennaParams {
      * @param dangle Dangle model to use (0, 1, 2, or 3). Default is 2.
      * @param seq Optional sequence for parameter initialization.
      */
-    static vrna_md_param load_energy_parameters(const std::string& paramFile = "", int dangle = 2,
-                                                const std::string& seq = "");
+    [[nodiscard]] static vrna_md_param load_energy_parameters(const std::string& paramFile = "",
+                                                              int dangle = 2,
+                                                              const std::string& seq = "");
 
     /**
      * @brief Load modified base energy parameters from a file or directory.

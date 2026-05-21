@@ -51,8 +51,8 @@ class ComputeEnergy {
      *
      * @return The total Gibbs free energy in centicalories (hundredths of kcal/mol).
      */
-    double getEnergy() const { return energy_; };
-    bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
+    [[nodiscard]] double getEnergy() const { return energy_; };
+    [[nodiscard]] bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
 
    private:
     LoopNode& root_node_;

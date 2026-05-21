@@ -44,10 +44,11 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
-    static std::vector<Band> find_bands(size_t left_bound, size_t right_bound, LoopType loop_type,
-                                        std::vector<PairedBaseNode>& aux_bands,
-                                        const std::vector<size_t>& pairings,
-                                        const std::vector<size_t>& cr_pairings);
+    [[nodiscard]] static std::vector<Band> find_bands(size_t left_bound, size_t right_bound,
+                                                      LoopType loop_type,
+                                                      std::vector<PairedBaseNode>& aux_bands,
+                                                      const std::vector<size_t>& pairings,
+                                                      const std::vector<size_t>& cr_pairings);
 
     /**
      * @brief Find all bands for a given loop node.
@@ -58,9 +59,9 @@ class BandFinder {
      * @param processed_rna The processed RNA entry with pairing information.
      * @return Vector of Band objects found for this loop node.
      */
-    static std::vector<Band> find_bands(const LoopNode& node,
-                                        std::vector<PairedBaseNode>& aux_bands,
-                                        const ProcessedRNAEntry& processed_rna);
+    [[nodiscard]] static std::vector<Band> find_bands(const LoopNode& node,
+                                                      std::vector<PairedBaseNode>& aux_bands,
+                                                      const ProcessedRNAEntry& processed_rna);
 
    private:
     /**
@@ -75,9 +76,9 @@ class BandFinder {
      * @param pairings Base-pair index mapping.
      * @return True if the stem was successfully extended.
      */
-    static bool extend_stem(size_t& i_prime, size_t& j_prime,
-                            std::vector<PairedBaseNode>& aux_bands,
-                            const std::vector<size_t>& pairings);
+    [[nodiscard]] static bool extend_stem(size_t& i_prime, size_t& j_prime,
+                                          std::vector<PairedBaseNode>& aux_bands,
+                                          const std::vector<size_t>& pairings);
 
     /**
      * @brief Generate a linked structure of potential band boundaries.

@@ -59,7 +59,9 @@ struct BasePair {
      * @param child The potential child base pair.
      * @return True if this forms a stack with the child.
      */
-    bool is_stack(const BasePair& child) const { return i + 1 == child.i && j - 1 == child.j; }
+    [[nodiscard]] bool is_stack(const BasePair& child) const {
+        return i + 1 == child.i && j - 1 == child.j;
+    }
 };
 
 // === Operator overload for printing ===
