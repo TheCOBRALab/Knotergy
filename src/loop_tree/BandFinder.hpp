@@ -44,7 +44,7 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
-    [[nodiscard]] static std::vector<Band> find_bands(size_t left_bound, size_t right_bound,
+    [[nodiscard]] static std::vector<Band> find_bands(size_t cr_start, size_t cr_end,
                                                       LoopType loop_type,
                                                       std::vector<PairedBaseNode>& aux_bands,
                                                       const std::vector<size_t>& pairings,
@@ -70,20 +70,46 @@ class BandFinder {
      * Follows consecutive stacking pairs from the initial positions to find
      * the innermost positions of a band's left and right arms.
      *
-     * @param i_prime Left inner position (modified in place).
-     * @param j_prime Right inner position (modified in place).
+     * @param i Left border of band.
+     * @param j Right border of band.
      * @param aux_bands Map of band links for navigation.
      * @param pairings Base-pair index mapping.
-     * @return True if the stem was successfully extended.
+     * @return A pair containing the extended inner positions.
      */
-    [[nodiscard]] static bool extend_stem(size_t& i_prime, size_t& j_prime,
-                                          std::vector<PairedBaseNode>& aux_bands,
-                                          const std::vector<size_t>& pairings);
+    [[nodiscard]] static std::pair<size_t, size_t> find_stem_inner_indices(
+        size_t band_start, size_t band_end, const std::vector<PairedBaseNode>& aux_bands,
+        const std::vector<size_t>& pairings);
 
     /**
      * @brief Generate a linked structure of potential band boundaries.
      *
-     * Creates a vector of PairedBaseNode objects linking positions that could form band boundaries.
+     * Links consecutive paired bases within a closed region.
+     * Nested children are skipped and are processed separately.
+     * Each closed region is treated as an isolated unit,
+     * so links are only generated within the bounds of the closed region.
+     *
+     * However this function only proesses one closed region at a time.
+     * The example below is how the aux_bands would look after processing the entire structure.
+     *
+     * e.g.
+     * Full Structure: ([.(.).([)].)]
+     *
+     * idx
+     * 0 : prev = NULL_INDEX, next = 1
+     * 1 : prev = 0,          next = 12
+     * 2 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
+     * 3 : prev = NULL_INDEX, next = NULL_INDEX (non-pseudoknotted)
+     * 4 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
+     * 5 : prev = NULL_INDEX, next = NULL_INDEX (non-pseudoknotted)
+     * 6 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
+     * 7 : prev = NULL_INDEX, next = 8
+     * 8 : prev = 7,          next = 9
+     * 9 : prev = 8,          next = 10
+     * 10: prev = 9,          next = NULL_INDEX
+     * 11: prev = NULL_INDEX, next = NULL_INDEX (unpaired)
+     * 12: prev = 1,          next = 13
+     * 13: prev = 12,         next = NULL_INDEX
+     *
      *
      * @param left_bound Left boundary of the region.
      * @param right_bound Right boundary of the region.
@@ -91,7 +117,7 @@ class BandFinder {
      * @param cr_pairings Closed region pairing indices.
      * @return Vector of PairedBaseNode objects.
      */
-    static void generate_paired_base_links(size_t left_bound, size_t right_bound,
+    static void generate_paired_base_links(size_t cr_start, size_t cr_end,
                                            std::vector<PairedBaseNode>& aux_bands,
                                            const std::vector<size_t>& pairings,
                                            const std::vector<size_t>& cr_pairings);
