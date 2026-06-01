@@ -211,8 +211,9 @@ class ProcessedRNAEntry {
         std::vector<std::string_view> out;
         out.reserve(sequence.size());
 
-        // If no structure is provided or the sequence is longer than the structure,
-        // we assume it's because of multi-byte graphemes. This is slower, but more robust
+        // No structure provided = Use multi-byte parsing.
+        // Sequence longer than structure = Use multi-byte parsing (Likely has multi-byte graphemes)
+        // Multi-byte grapheme parsing is more expensive, so we want to avoid it if possible.
         if (structure.empty() || sequence.size() > structure.size()) {
             for (std::string_view g : una::views::grapheme::utf8(sequence)) {
                 out.push_back(g);
@@ -222,12 +223,10 @@ class ProcessedRNAEntry {
             for (size_t i = 0; i < sequence.size(); ++i) {
                 unsigned char c = static_cast<unsigned char>(sequence[i]);
 
-                // If the character is not a valid single-byte ASCII character,
-                // Fall back to the more general grapheme parsing to avoid misalignment between
-                // sequence and structure.
-                if (c >= 0x80) {
-                    // Since no structure is provided, it falls back to uni_algo for multibyte
-                    // grapheme parsing
+                // If the 0x80 bit is set, it's a multi-byte grapheme.
+                // Fall back to multi-byte parsing for the entire sequence.
+                if (c & 0x80) {
+                    // No structure provided = Use multi-byte parsing.
                     return compute_modified_sequence_views(sequence);
                 }
                 out.emplace_back(sequence.data() + i, 1);

@@ -10,7 +10,7 @@
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "preprocessing/RNAEntry.hpp"
 
-#define KNOTERGY_VERSION "0.1.3"
+#define KNOTERGY_VERSION "0.2.0"
 
 namespace {
 void help() {

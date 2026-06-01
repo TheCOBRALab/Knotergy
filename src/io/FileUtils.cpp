@@ -32,7 +32,7 @@ bool FileUtils::is_directory(const std::string& name) {
 std::uint64_t FileUtils::get_file_mtime(const std::string& path) {
     if (path.empty()) return 0;
 
-    struct stat st {};
+    struct stat st{};
     if (stat(path.c_str(), &st) != 0) return 0;
 
     return static_cast<std::uint64_t>(st.st_mtime);
