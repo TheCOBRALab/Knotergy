@@ -238,7 +238,7 @@ Show all available options:
 
 ### ⚙️ Parameter files
 
-- `-p`, `--paramFile`  
+- `-P`, `--paramFile`  
   ViennaRNA parameter file
 
 - `-k`, `--pk-paramFile`  

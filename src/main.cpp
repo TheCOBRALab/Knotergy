@@ -22,13 +22,13 @@ void help() {
               << "  -s, --sequence <string>               Input sequence\n"
               << "  -r, --structure <string>              Input structure\n"
               << "  -i, --input <file>                    Input file\n"
-              << "  -p, --paramFile <file>                Parameter file\n"
+              << "  -P, --paramFile <file>                Parameter file\n"
               << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
               << "  -m, --mod-params <none|path|file>     Directory containing modified base "
                  "parameter files\n"
               << "  -e, --round                           Rounds all decimal places in pseudoknot "
                  "calculations\n"
-              << "  -d, --dangle                          Specify the dangle model to be used "
+              << "  -d, --dangles                          Specify the dangle model to be used "
                  "(base is 2)\n";
 }
 
@@ -82,8 +82,16 @@ int main(int argc, char** argv) {
             structure = get_trimmed_arg(i, argc, argv);
         } else if ((arg == "-i" || arg == "--input") && argc >= i + 1) {
             input_file = get_trimmed_arg(i, argc, argv);
-        } else if ((arg == "-p" || arg == "--paramFile") && argc >= i + 1) {
+        } else if ((arg == "-P" || arg == "--paramFile") && argc >= i + 1) {
             parameter_file = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-p") {
+            std::cerr << "\033[1;33mWarning:\033[0m "
+                      << "-p is deprecated. "
+                      << "Use -P instead. "
+                      << "-p will stop working on full release." << std::endl;
+            parameter_file = get_trimmed_arg(i, argc, argv);
+        } else if (arg == "-P" || arg == "--paramFile") {
+            parameter_file = parameter_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-e" || arg == "--round") {
             round = true;
         } else if (arg == "-m" || arg == "--mod-params") {
@@ -93,8 +101,16 @@ int main(int argc, char** argv) {
             } else {  // -m with no path, use default
                 mod_param_paths.push_back(default_mod_path);
             }
-        } else if (arg == "-d" || arg == "--dangle") {
+        } else if (arg == "-d" || arg == "--dangles") {
             dangle = get_numerical_arg(i, argc, argv, dangle);
+        } else if (arg.rfind("-d", 0) == 0 && arg.size() > 2) {
+            // Supports: -d2 (no space between -d and the number)
+            try {
+                dangle = std::stoi(arg.substr(2));
+            } catch (const std::exception&) {
+                std::cerr << "Invalid dangle value: " << arg.substr(2) << std::endl;
+                return 1;
+            }
         } else if ((arg == "-k" || arg == "--pk-paramFile") && argc >= i + 1) {
             pseudo_param_file = get_trimmed_arg(i, argc, argv);
         } else if (arg == "-h" || arg == "--help") {
@@ -148,6 +164,12 @@ int main(int argc, char** argv) {
 
     if (structure.length() >= 2147483647) {  // Prevent overflow of int in energy calculations
         std::cerr << "Error: Structure length exceeds maximum allowed size of 2,147,483,647"
+                  << std::endl;
+        return 1;
+    }
+
+    if (dangle < 0 || dangle > 2) {
+        std::cerr << "Invalid dangle value: " << dangle << ". Dangle must be 0, 1, or 2."
                   << std::endl;
         return 1;
     }

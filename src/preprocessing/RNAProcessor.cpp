@@ -201,6 +201,9 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
         // Merge any nested regions whose end lies within [i, close)
         while (!stack.empty() && (stack.top().end < current_pair.end)) {
             smallest_left = std::min(smallest_left, stack.top().begin);
+            std::cout << "Merging nested region [" << stack.top().begin << ", " << stack.top().end
+                      << "] into current pair [" << current_pair.begin << ", " << current_pair.end
+                      << "]\n";
             stack.pop();
         }
 
@@ -219,9 +222,15 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     // Because we scanned right-to-left, completed regions were appended in descending begin order.
     // Reverse is linear, not sorting.
     std::reverse(closed_regions.begin(), closed_regions.end());
-
+    // print
+    for (const ClosedRegion& cr : closed_regions) {
+        std::cerr << "Closed region: [" << cr.begin << ", " << cr.end << "]\n";
+    }
     return closed_regions;
 }
+
+// AAAAAAAAAAUUUUAAUUUUUU
+// (...(...[..)..{..]..)}
 
 // ([...)] = 5, 6, -1, -1, -1, 0, 1
 std::vector<size_t> RNAProcessor::compute_cr_pairings(
