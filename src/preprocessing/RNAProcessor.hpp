@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../io/ViennaParams.hpp"
+#include "../io/colors.hpp"
 #include "ClosedRegion.hpp"
 #include "ProcessedRNAEntry.hpp"
 #include "RNAEntry.hpp"

@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 
+#include "../io/colors.hpp"
 #include "../loop_tree/Band.hpp"
 #include "../preprocessing/ClosedRegion.hpp"
 
@@ -106,23 +107,27 @@ struct LoopNode {
             static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2);  // '[' + a + ", " + b + "] "
 
         // Colored name padded
-        out << "\x1b[36m" << std::left << loop_name(loop_type) << "\x1b[0m ";
+        out << ANSI_COLOR_CYAN << std::left << loop_name(loop_type) << ANSI_COLOR_RESET << " ";
 
         // Range column (i, j)
+        std::cout << ANSI_COLOR_BRIGHT;
         if (loop_type == LoopType::External) {
             out << std::string(range_w, ' ');
         } else {
             out << "(" << std::right << std::setw(idx_w) << begin << ", " << std::right
                 << std::setw(idx_w) << end << ") ";
         }
+        std::cout << ANSI_COLOR_RESET;
 
         // Energy column
+        out << ": " << ANSI_COLOR_GREEN;
         if (is_inf) {
-            out << ": " << std::right << std::setw(9) << "inf\n";
+            out << std::right << std::setw(9) << "INF\n";
         } else {
-            out << ": " << std::right << std::setw(9) << std::fixed << std::setprecision(2)
-                << energy << "\n";
+            out << std::right << std::setw(9) << std::fixed << std::setprecision(2) << energy
+                << "\n";
         }
+        out << ANSI_COLOR_RESET;
 
         return out.str();
     }

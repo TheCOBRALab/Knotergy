@@ -13,9 +13,9 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
             ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence, rna.structure);
 
         if (mod_sequence.size() != rna.structure.size()) {
-            THROW_ERROR("Sequence length does not match RNA length\nSequence length: " +
+            THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
                         std::to_string(mod_sequence.size()) +
-                        "\nRNA length: " + std::to_string(rna.structure.size()));
+                        "\nStructure length: " + std::to_string(rna.structure.size()));
         }
 
         unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(),
@@ -26,9 +26,14 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
     else {
         // Validate that the sequence only contains unmodified bases, and warn if it contains
         // modified bases but no parameters are provided
+        if (rna.sequence.size() != rna.structure.size()) {
+            THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
+                        std::to_string(rna.sequence.size()) +
+                        "\nStructure length: " + std::to_string(rna.structure.size()));
+        }
         for (char base : rna.sequence) {
             if (unmod_lookup[(unsigned char) base] == 0) {
-                THROW_ERROR("RNA sequence contains invalid base: '" + std::string(1, base) + "'");
+                THROW_ERROR("Sequence contains invalid base: '" + std::string(1, base) + "'");
                 break;
             }
         }
@@ -140,12 +145,13 @@ std::vector<size_t> RNAProcessor::compute_pairings(
             // Validate pairings if sequence information is available
             if (check_pairs && !can_pair(unmodified_sequence[j], unmodified_sequence[i])) {
                 if (have_mod_seq) {
-                    std::cerr << "Warning: Base pair '" << mod_sequence[j] << "' can't pair with '"
-                              << mod_sequence[i] << "' at indices " << j << ", " << i << '\n';
+                    std::cerr << WARNING << " Base pair '" << mod_sequence[j]
+                              << "' can't pair with '" << mod_sequence[i] << "' at indices " << j
+                              << ", " << i << ANSI_COLOR_RESET << '\n';
                 } else {
-                    std::cerr << "Warning: Base pair '" << unmodified_sequence[j]
+                    std::cerr << WARNING << " Base pair '" << unmodified_sequence[j]
                               << "' can't pair with '" << unmodified_sequence[i] << "' at indices "
-                              << j << ", " << i << '\n';
+                              << j << ", " << i << ANSI_COLOR_RESET << '\n';
                 }
             }
 
@@ -201,9 +207,6 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
         // Merge any nested regions whose end lies within [i, close)
         while (!stack.empty() && (stack.top().end < current_pair.end)) {
             smallest_left = std::min(smallest_left, stack.top().begin);
-            std::cout << "Merging nested region [" << stack.top().begin << ", " << stack.top().end
-                      << "] into current pair [" << current_pair.begin << ", " << current_pair.end
-                      << "]\n";
             stack.pop();
         }
 
@@ -222,15 +225,8 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     // Because we scanned right-to-left, completed regions were appended in descending begin order.
     // Reverse is linear, not sorting.
     std::reverse(closed_regions.begin(), closed_regions.end());
-    // print
-    for (const ClosedRegion& cr : closed_regions) {
-        std::cerr << "Closed region: [" << cr.begin << ", " << cr.end << "]\n";
-    }
     return closed_regions;
 }
-
-// AAAAAAAAAAUUUUAAUUUUUU
-// (...(...[..)..{..]..)}
 
 // ([...)] = 5, 6, -1, -1, -1, 0, 1
 std::vector<size_t> RNAProcessor::compute_cr_pairings(
