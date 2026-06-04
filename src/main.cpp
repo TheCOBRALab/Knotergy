@@ -205,9 +205,9 @@ int run_knotergy(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    if (dangle < 0 || dangle > 2) {
+    if (dangle < 0 || dangle > 3) {
         std::cerr << ERROR << " Invalid dangle value: " << dangle
-                  << ". Dangle must be 0, 1, or 2.\n";
+                  << ". Dangle must be 0, 1, 2, or 3.\n";
         return EXIT_FAILURE;
     }
 
@@ -256,7 +256,8 @@ int run_knotergy(int argc, char** argv) {
         if (energy_calculator.getInfiniteEnergyFlag()) {
             printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
         } else {
-            printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
+            printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, energy_calculator.getEnergy(),
+                   ANSI_COLOR_RESET);
         }
     }
 

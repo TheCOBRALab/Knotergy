@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
+#include <memory>
 #include <vector>
 
 #include "../io/ViennaParams.hpp"
@@ -18,6 +20,15 @@ extern "C" {
 }
 
 namespace knotergy {
+
+struct MultiloopStem {
+    size_t p;              // Pairing base encountered while walking the multiloop
+    size_t q;              // Its pairing partner
+    size_t exit_position;  // q after this stem is processed
+    unsigned int type;     // ViennaRNA pair type in the walking orientation
+};
+
+// ------------------ Dangle 1 --------------------
 
 /**
  * @brief Stores dangle energy values for all four dangle configurations.
@@ -121,6 +132,23 @@ class ViennaDangles {
     [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode& node,
                                                       std::vector<DangleSet> dangle_energies,
                                                       DangleSet closing);
+
+    /**
+     * @brief Calculate multibranch loop dangle/coaxial contribution for dangle model 3.
+     *
+     * This uses a direct ViennaRNA-style fixed-structure d3 multiloop walk.
+     * It is intentionally not implemented as dangle-1 plus a coaxial stacking bonus,
+     * because ViennaRNA d3 uses separate state bookkeeping for odd dangles and
+     * possible flush coaxial stacking.
+     *
+     * @param node The loop node representing the multibranch loop.
+     * @param pRNA Processed RNA entry.
+     * @param vp ViennaRNA model and parameter bundle.
+     * @return Optimal dangle/coaxial contribution in centicalories.
+     */
+    [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
+                                                      const ProcessedRNAEntry& pRNA,
+                                                      vrna_md_param& vp);
 
     /**
      * @brief Compute dangle energies for all child loop nodes.
@@ -231,5 +259,7 @@ class ViennaDangles {
         const std::vector<std::unique_ptr<LoopNode>>& children,
         const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
         const DangleSet ml_dangle_energy);
+
+    // --------------- Dangle 3: Coaxial Stacking ------------------------
 };
 }  // namespace knotergy

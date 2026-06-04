@@ -45,21 +45,37 @@ class ViennaUtils {
      * @param i 5' position of the base pair.
      * @param j 3' position of the base pair.
      * @param sequence The RNA nucleotide sequence.
+     * @param pairings Base-pair indices for the RNA sequence (NULL_INDEX for unpaired).
+     * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
+     */
+    [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
+        const size_t i, const size_t j, const std::string& sequence,
+        const std::vector<size_t>& pairings, vrna_md_t& md) {
+        int encoded_i =
+            i > 0 && (pairings[i - 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3)
+                ? vrna_nucleotide_encode(sequence[i - 1], &md)
+                : -1;
+        int encoded_j = j + 1 < sequence.size() && (pairings[j + 1] == NULL_INDEX ||
+                                                    md.dangles != 1 || md.dangles != 3)
+                            ? vrna_nucleotide_encode(sequence[j + 1], &md)
+                            : -1;
+        return std::make_tuple(encoded_i, encoded_j);
+    }
+
+    /**
+     * @brief Overload of encode_outer_dangles that takes a ProcessedRNAEntry for convenience.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param entry The ProcessedRNAEntry containing the sequence and pairings.
+     * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    vrna_md_t& md) {
-        const std::string& sequence = entry.get_sequence();
-        const std::vector<size_t>& pairings = entry.get_pairings();
-        int encoded_i = i > 0 && (pairings[i - 1] == NULL_INDEX || md.dangles != 1)
-                            ? vrna_nucleotide_encode(sequence[i - 1], &md)
-                            : -1;
-        int encoded_j =
-            j + 1 < sequence.size() && (pairings[j + 1] == NULL_INDEX || md.dangles != 1)
-                ? vrna_nucleotide_encode(sequence[j + 1], &md)
-                : -1;
-        return std::make_tuple(encoded_i, encoded_j);
+        return ViennaUtils::encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pairings(),
+                                                 md);
     }
 
     /**
@@ -70,18 +86,32 @@ class ViennaUtils {
      * @param sequence The RNA nucleotide sequence.
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
-    [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
-                                                                   const ProcessedRNAEntry& entry,
-                                                                   vrna_md_t& md) {
-        const std::string& sequence = entry.get_sequence();
-        const std::vector<size_t>& pairings = entry.get_pairings();
-        int encoded_i = (pairings[i + 1] == NULL_INDEX || md.dangles != 1)
+    [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
+        const size_t i, const size_t j, const std::string& sequence,
+        const std::vector<size_t>& pairings, vrna_md_t& md) {
+        int encoded_i = pairings[i + 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3
                             ? vrna_nucleotide_encode(sequence[i + 1], &md)
                             : -1;
-        int encoded_j = (pairings[j - 1] == NULL_INDEX || md.dangles != 1)
+        int encoded_j = pairings[j - 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3
                             ? vrna_nucleotide_encode(sequence[j - 1], &md)
                             : -1;
         return std::make_tuple(encoded_i, encoded_j);
+    }
+
+    /**
+     * @brief Overload of encode_inner_dangles that takes a ProcessedRNAEntry for convenience.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param entry The ProcessedRNAEntry containing the sequence and pairings.
+     * @param md ViennaRNA model details for encoding.
+     * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
+     */
+    [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
+                                                                   const ProcessedRNAEntry& entry,
+                                                                   vrna_md_t& md) {
+        return ViennaUtils::encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pairings(),
+                                                 md);
     }
 
     /**
@@ -94,6 +124,11 @@ class ViennaUtils {
     [[nodiscard]] static unsigned int get_pair_type(const char& i, const char& j, vrna_md_t& md) {
         auto [encoded_i, encoded_j] = ViennaUtils::encode_nucleotides(i, j, md);
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
+    }
+
+    [[nodiscard]] static unsigned int get_pair_type(const LoopNode& node,
+                                                    const std::string& sequence, vrna_md_t& md) {
+        return ViennaUtils::get_pair_type(sequence[node.begin], sequence[node.end], md);
     }
 
     /**
@@ -116,6 +151,12 @@ class ViennaUtils {
     [[nodiscard]] static unsigned int reverse_pair_type(const char& i, const char& j,
                                                         vrna_md_t& md) {
         return ViennaUtils::reverse_pair_type(ViennaUtils::get_pair_type(i, j, md), md);
+    }
+
+    [[nodiscard]] static unsigned int reverse_pair_type(const LoopNode& node,
+                                                        const std::string& sequence,
+                                                        vrna_md_t& md) {
+        return ViennaUtils::reverse_pair_type(sequence[node.begin], sequence[node.end], md);
     }
 };
 }  // namespace knotergy

@@ -82,7 +82,7 @@ struct LoopNode {
     int number_of_withinband_children = 0;  ///< Count of children within pseudoknot bands.
     int number_of_nested_children = 0;      ///< Count of nested children.
     LoopNode* parent = nullptr;             ///< Parent loop node (weak to avoid cycles).
-    std::vector<std::unique_ptr<LoopNode>> children;  ///< Child loop nodes.
+    std::vector<std::unique_ptr<LoopNode>> children;  ///< Child loop nodes. (sorted by start)
     std::vector<Band> bands;  ///< Pseudoknot bands (empty if not pseudoknotted).
     int total_number_of_base_pairs =
         1;                ///< Total base pairs in this loop closed region (excluding children)

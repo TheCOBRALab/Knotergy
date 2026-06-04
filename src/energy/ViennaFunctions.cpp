@@ -99,6 +99,10 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
         return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp) + energy;
     }
 
+    if (vp.md.dangles == 3) {
+        return ViennaDangles::get_multibranch_dangle_3(node, pRNA, vp) + energy;
+    }
+
     size_t i = node.begin;
     size_t j = node.end;
 
@@ -135,7 +139,7 @@ int ViennaFunctions::external_energy(const std::vector<std::unique_ptr<LoopNode>
     const std::string& sequence = pRNA.get_sequence();
 
     // ------------------ Dangle 1 Energy ------------------
-    if (vp.md.dangles == 1) {
+    if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         return ViennaDangles::get_external_dangle_1(children, pRNA, vp);
     }
 
