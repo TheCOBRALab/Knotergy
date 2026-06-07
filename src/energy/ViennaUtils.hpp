@@ -52,11 +52,11 @@ class ViennaUtils {
         const size_t i, const size_t j, const std::string& sequence,
         const std::vector<size_t>& pairings, vrna_md_t& md) {
         int encoded_i =
-            i > 0 && (pairings[i - 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3)
+            i > 0 && (pairings[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3))
                 ? vrna_nucleotide_encode(sequence[i - 1], &md)
                 : -1;
         int encoded_j = j + 1 < sequence.size() && (pairings[j + 1] == NULL_INDEX ||
-                                                    md.dangles != 1 || md.dangles != 3)
+                                                    (md.dangles != 1 && md.dangles != 3))
                             ? vrna_nucleotide_encode(sequence[j + 1], &md)
                             : -1;
         return std::make_tuple(encoded_i, encoded_j);
@@ -89,10 +89,10 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
         const size_t i, const size_t j, const std::string& sequence,
         const std::vector<size_t>& pairings, vrna_md_t& md) {
-        int encoded_i = pairings[i + 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3
+        int encoded_i = pairings[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
                             ? vrna_nucleotide_encode(sequence[i + 1], &md)
                             : -1;
-        int encoded_j = pairings[j - 1] == NULL_INDEX || md.dangles != 1 || md.dangles != 3
+        int encoded_j = pairings[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
                             ? vrna_nucleotide_encode(sequence[j - 1], &md)
                             : -1;
         return std::make_tuple(encoded_i, encoded_j);
