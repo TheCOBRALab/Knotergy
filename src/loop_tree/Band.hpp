@@ -50,14 +50,14 @@ class Band {
      * @param li Left inner position.
      * @param ri Right inner position.
      * @param rb Right border position.
-     * @param pairings Base-pair index mapping for the structure.
-     * @param cr_pairings Closed region pairing indices.
+     * @param pair_table Base-pair index mapping for the structure.
+     * @param cr_pair_table Closed region pairing indices.
      * @throws DetailedException if band structure is invalid.
      */
-    Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pairings,
-         const std::vector<size_t>& cr_pairings)
+    Band(size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pair_table,
+         const std::vector<size_t>& cr_pair_table)
         : left_border_{lb}, left_inner_{li}, right_inner_{ri}, right_border_{rb} {
-        populate_base_pairs(pairings, cr_pairings);
+        populate_base_pairs(pair_table, cr_pair_table);
     }
 
     // ------------------- Public methods -------------------
@@ -68,39 +68,39 @@ class Band {
      * Validates the band structure and extracts all base pairs that participate in the band
      * and each base pair's nested closed region.
      *
-     * @param pairings Base-pair index mapping for the structure.
-     * @param cr_pairings Closed region pairing indices.
+     * @param pair_table Base-pair index mapping for the structure.
+     * @param cr_pair_table Closed region pairing indices.
      *
      * @throws DetailedException if band structure is invalid or if indices are not base pairs.
      */
-    void populate_base_pairs(const std::vector<size_t>& pairings,
-                             const std::vector<size_t>& cr_pairings) {
+    void populate_base_pairs(const std::vector<size_t>& pair_table,
+                             const std::vector<size_t>& cr_pair_table) {
         // -------------- Validate band structure -------------
-        if (std::max({pairings[left_border_], pairings[left_inner_], pairings[right_inner_],
-                      pairings[right_border_]}) == NULL_INDEX) {
+        if (std::max({pair_table[left_border_], pair_table[left_inner_], pair_table[right_inner_],
+                      pair_table[right_border_]}) == NULL_INDEX) {
             THROW_ERROR("One or more indices are not base-pairs");
         }
 
-        if (pairings[left_border_] != right_border_ || pairings[left_inner_] != right_inner_) {
-            THROW_ERROR("Incorrect pairings in Band");
+        if (pair_table[left_border_] != right_border_ || pair_table[left_inner_] != right_inner_) {
+            THROW_ERROR("Incorrect pair_table in Band");
         }
 
         // -------------- Extract base pairs -------------
         base_pairs_.reserve(std::min(right_border_ - right_inner_, left_inner_ - left_border_) + 1);
 
         // find all consecutive base pairs on left side and their nested closed regions
-        base_pairs_.emplace_back(left_border_, pairings[left_border_]);
+        base_pairs_.emplace_back(left_border_, pair_table[left_border_]);
         for (size_t idx = left_border_ + 1; idx <= left_inner_; ++idx) {
             // skip closed regions and add them as children to the current base pair
-            if (cr_pairings[idx] != NULL_INDEX) {
-                base_pairs_.back().children.emplace_back(idx, cr_pairings[idx]);
-                idx = cr_pairings[idx];
+            if (cr_pair_table[idx] != NULL_INDEX) {
+                base_pairs_.back().children.emplace_back(idx, cr_pair_table[idx]);
+                idx = cr_pair_table[idx];
                 ++number_of_children;
                 continue;
             }
 
             // add base pair if it's part of the band
-            size_t paired = pairings[idx];
+            size_t paired = pair_table[idx];
             if (paired >= right_inner_ && paired <= right_border_) {
                 base_pairs_.emplace_back(idx, paired);
             }
@@ -130,9 +130,9 @@ class Band {
             }
 
             // skip closed regions and add them as children to the current base pair
-            if (cr_pairings[idx] != NULL_INDEX) {
-                idx = cr_pairings[idx];
-                current_bp.children.emplace_back(idx, cr_pairings[idx]);
+            if (cr_pair_table[idx] != NULL_INDEX) {
+                idx = cr_pair_table[idx];
+                current_bp.children.emplace_back(idx, cr_pair_table[idx]);
                 ++number_of_children;
                 if (idx == 0) break;
                 continue;

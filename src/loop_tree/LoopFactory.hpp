@@ -87,7 +87,7 @@ class LoopFactory {
      * - The method finalizes remaining nodes on the stack after all regions have been added.
      *
      * @note
-     * - Assumes `processed_rna` provides access to the secondary structure, base pairings, and
+     * - Assumes `processed_rna` provides access to the secondary structure, base pair_table, and
      * unpaired counts.
      * - `NULL_INDEX` is used to represent an invalid or out-of-bound index for the root node.
      * - The tree is stored in `root_node_`, and child nodes are recursively linked.

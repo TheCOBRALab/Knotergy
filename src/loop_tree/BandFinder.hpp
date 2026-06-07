@@ -40,15 +40,15 @@ class BandFinder {
      * @param left_bound Left boundary of the region to search.
      * @param right_bound Right boundary of the region to search.
      * @param loop_type The type of loop being analyzed.
-     * @param pairings Base-pair index mapping for the structure.
-     * @param cr_pairings Closed region pairing indices.
+     * @param pair_table Base-pair index mapping for the structure.
+     * @param cr_pair_table Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
     [[nodiscard]] static std::vector<Band> find_bands(size_t cr_start, size_t cr_end,
                                                       LoopType loop_type,
                                                       std::vector<PairedBaseNode>& aux_bands,
-                                                      const std::vector<size_t>& pairings,
-                                                      const std::vector<size_t>& cr_pairings);
+                                                      const std::vector<size_t>& pair_table,
+                                                      const std::vector<size_t>& cr_pair_table);
 
     /**
      * @brief Find all bands for a given loop node.
@@ -73,12 +73,12 @@ class BandFinder {
      * @param i Left border of band.
      * @param j Right border of band.
      * @param aux_bands Map of band links for navigation.
-     * @param pairings Base-pair index mapping.
+     * @param pair_table Base-pair index mapping.
      * @return A pair containing the extended inner positions.
      */
     [[nodiscard]] static std::pair<size_t, size_t> find_stem_inner_indices(
         size_t band_start, size_t band_end, const std::vector<PairedBaseNode>& aux_bands,
-        const std::vector<size_t>& pairings);
+        const std::vector<size_t>& pair_table);
 
     /**
      * @brief Generate a linked structure of potential band boundaries.
@@ -113,14 +113,14 @@ class BandFinder {
      *
      * @param left_bound Left boundary of the region.
      * @param right_bound Right boundary of the region.
-     * @param pairings Base-pair index mapping.
-     * @param cr_pairings Closed region pairing indices.
+     * @param pair_table Base-pair index mapping.
+     * @param cr_pair_table Closed region pairing indices.
      * @return Vector of PairedBaseNode objects.
      */
     static void generate_paired_base_links(size_t cr_start, size_t cr_end,
                                            std::vector<PairedBaseNode>& aux_bands,
-                                           const std::vector<size_t>& pairings,
-                                           const std::vector<size_t>& cr_pairings);
+                                           const std::vector<size_t>& pair_table,
+                                           const std::vector<size_t>& cr_pair_table);
 
     /**
      * @brief Generate band links for a given loop node.

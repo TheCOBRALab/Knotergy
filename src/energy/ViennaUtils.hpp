@@ -45,17 +45,17 @@ class ViennaUtils {
      * @param i 5' position of the base pair.
      * @param j 3' position of the base pair.
      * @param sequence The RNA nucleotide sequence.
-     * @param pairings Base-pair indices for the RNA sequence (NULL_INDEX for unpaired).
+     * @param pair_table Base-pair indices for the RNA sequence (NULL_INDEX for unpaired).
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
         const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pairings, vrna_md_t& md) {
+        const std::vector<size_t>& pair_table, vrna_md_t& md) {
         int encoded_i =
-            i > 0 && (pairings[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3))
+            i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3))
                 ? vrna_nucleotide_encode(sequence[i - 1], &md)
                 : -1;
-        int encoded_j = j + 1 < sequence.size() && (pairings[j + 1] == NULL_INDEX ||
+        int encoded_j = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
                                                     (md.dangles != 1 && md.dangles != 3))
                             ? vrna_nucleotide_encode(sequence[j + 1], &md)
                             : -1;
@@ -67,14 +67,14 @@ class ViennaUtils {
      *
      * @param i 5' position of the base pair.
      * @param j 3' position of the base pair.
-     * @param entry The ProcessedRNAEntry containing the sequence and pairings.
+     * @param entry The ProcessedRNAEntry containing the sequence and pair_table.
      * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    vrna_md_t& md) {
-        return ViennaUtils::encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pairings(),
+        return ViennaUtils::encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(),
                                                  md);
     }
 
@@ -88,11 +88,11 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
         const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pairings, vrna_md_t& md) {
-        int encoded_i = pairings[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
+        const std::vector<size_t>& pair_table, vrna_md_t& md) {
+        int encoded_i = pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
                             ? vrna_nucleotide_encode(sequence[i + 1], &md)
                             : -1;
-        int encoded_j = pairings[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
+        int encoded_j = pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
                             ? vrna_nucleotide_encode(sequence[j - 1], &md)
                             : -1;
         return std::make_tuple(encoded_i, encoded_j);
@@ -103,14 +103,14 @@ class ViennaUtils {
      *
      * @param i 5' position of the base pair.
      * @param j 3' position of the base pair.
-     * @param entry The ProcessedRNAEntry containing the sequence and pairings.
+     * @param entry The ProcessedRNAEntry containing the sequence and pair_table.
      * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    vrna_md_t& md) {
-        return ViennaUtils::encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pairings(),
+        return ViennaUtils::encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(),
                                                  md);
     }
 

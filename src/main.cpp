@@ -112,9 +112,7 @@ int run_knotergy(int argc, char** argv) {
             parameter_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-p") {
-            std::cerr << "\033[1;33m[WARNING]\033[0m "
-                      << "-p is deprecated. "
-                      << "Use -P instead. "
+            std::cerr << "\033[1;33m[WARNING]\033[0m " << "-p is deprecated. " << "Use -P instead. "
                       << "-p will stop working on full release." << '\n';
 
             parameter_file = get_trimmed_arg(i, argc, argv);
@@ -241,7 +239,7 @@ int run_knotergy(int argc, char** argv) {
     for (const knotergy::RNAEntry& rna : inputs) {
         std::cout << "\n--------- Name: " << rna.name << " ---------" << '\n';
 
-        // Preprocess the RNA entry to compute pairings, closed regions, etc.
+        // Preprocess the RNA entry to compute pair_table, closed regions, etc.
         const knotergy::ProcessedRNAEntry& processed_rna =
             knotergy::RNAProcessor::process_rna(rna, mp);
 

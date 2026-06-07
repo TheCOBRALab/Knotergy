@@ -254,24 +254,6 @@ int add_or_inf(int a, int b) {
     return a + b;
 }
 
-std::vector<int> build_pair_table_for_loop(const LoopNode& node, const std::string& sequence) {
-    std::vector<int> pair_table(sequence.size(), -1);
-
-    pair_table[node.begin] = static_cast<int>(node.end);
-    pair_table[node.end] = static_cast<int>(node.begin);
-
-    for (const auto& child : node.children) {
-        if (child->loop_type == LoopType::Pseudoknot) {
-            continue;
-        }
-
-        pair_table[child->begin] = static_cast<int>(child->end);
-        pair_table[child->end] = static_cast<int>(child->begin);
-    }
-
-    return pair_table;
-}
-
 std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, const std::string& sequence,
                                                  vrna_md_param& vp) {
     std::vector<MultiloopStem> stems;
@@ -293,7 +275,7 @@ std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, const std
 }
 
 int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& sequence,
-                             const std::vector<size_t>& pairings, vrna_md_param& vp) {
+                             const std::vector<size_t>& pair_table, vrna_md_param& vp) {
     int ld5 = 0;
 
     // ViennaRNA equivalent:
@@ -316,7 +298,7 @@ int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& seque
 
     if (stem.p >= 2) {
         const size_t check_pos = stem.p - 2;
-        const size_t partner = pairings[check_pos];
+        const size_t partner = pair_table[check_pos];
 
         if (partner != NULL_INDEX) {
             const size_t partner_pos = static_cast<size_t>(partner);
@@ -335,7 +317,7 @@ int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& seque
 }
 
 int walk_multiloop_d3_from_start(const std::vector<MultiloopStem>& stems, size_t start_prev,
-                                 const std::string& sequence, const std::vector<size_t>& pairings,
+                                 const std::string& sequence, const std::vector<size_t>& pair_table,
                                  vrna_md_param& vp) {
     const size_t stem_count = stems.size();
 
@@ -345,7 +327,7 @@ int walk_multiloop_d3_from_start(const std::vector<MultiloopStem>& stems, size_t
     size_t i1 = start_stem.exit_position;
     size_t current = (start_prev + 1) % stem_count;
 
-    int ld5 = prime_ld5_for_start_stem(start_stem, sequence, pairings, vp);
+    int ld5 = prime_ld5_for_start_stem(start_stem, sequence, pair_table, vp);
     int energy = 0;
     int cx_energy = INF;
 
@@ -448,12 +430,12 @@ int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const Processe
         return 0;
     }
 
-    const std::vector<size_t> pairings = pRNA.get_pairings();
+    const std::vector<size_t> pair_table = pRNA.get_pair_table();
 
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the
     // last child back into the closing pair at the final edge of this walk.
-    int best = walk_multiloop_d3_from_start(stems, stems.size() - 1, sequence, pairings, vp);
+    int best = walk_multiloop_d3_from_start(stems, stems.size() - 1, sequence, pair_table, vp);
 
     // Second walk:
     // start from the first child. This disallows stacking of the closing pair
@@ -461,7 +443,7 @@ int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const Processe
     //
     // ViennaRNA does the same "walk around the loop twice" trick for d3.
     if (stems.size() > 1) {
-        best = std::min(best, walk_multiloop_d3_from_start(stems, 0, sequence, pairings, vp));
+        best = std::min(best, walk_multiloop_d3_from_start(stems, 0, sequence, pair_table, vp));
     }
 
     return best;

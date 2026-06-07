@@ -104,9 +104,9 @@ int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
-    const std::vector<size_t>& pairings = processed_rna_.get_pairings();
+    const std::vector<size_t>& pair_table = processed_rna_.get_pair_table();
 
-    if (pairings[node.begin] != node.end) {
+    if (pair_table[node.begin] != node.end) {
         return LoopType::Pseudoknot;
     }
 
