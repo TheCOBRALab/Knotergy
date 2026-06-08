@@ -6,31 +6,37 @@ namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params) {
     bool has_modified_bases = false;
     std::string unmodified_sequence;
-    std::vector<size_t> pair_table;
+    std::vector<std::string_view> mod_sequence;
 
+    // Helper lambda to validate that the sequence length matches the structure length
+    auto validate_sequence_structure_length = [&](size_t sequence_length) {
+        if (sequence_length != rna.structure.size()) {
+            THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
+                        std::to_string(sequence_length) +
+                        "\nStructure length: " + std::to_string(rna.structure.size()));
+        }
+    };
+
+    // Modified bases present
     if (!modified_params.empty()) {
-        std::vector<std::string_view> mod_sequence =
+        mod_sequence =
             ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence, rna.structure);
 
-        if (mod_sequence.size() != rna.structure.size()) {
-            THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
-                        std::to_string(mod_sequence.size()) +
-                        "\nStructure length: " + std::to_string(rna.structure.size()));
-        }
+        // Check sequence.size() == structure.size()
+        validate_sequence_structure_length(mod_sequence.size());
 
+        // Gets unmodified version of the sequence, and checks for invalid bases in the input
+        // sequence This also detects if there are any modified bases present in the sequence
         unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(),
                                                           has_modified_bases);
-        pair_table = compute_pair_table(rna, unmodified_sequence, mod_sequence);
     }
-    // If no modified base parameters provided, skip modified sequence processing
+
+    // No modified bases present
     else {
-        // Validate that the sequence only contains unmodified bases, and warn if it contains
-        // modified bases but no parameters are provided
-        if (rna.sequence.size() != rna.structure.size()) {
-            THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
-                        std::to_string(rna.sequence.size()) +
-                        "\nStructure length: " + std::to_string(rna.structure.size()));
-        }
+        // Check sequence.size() == structure.size()
+        validate_sequence_structure_length(rna.sequence.size());
+
+        // Check for invalid bases in the input sequence
         for (char base : rna.sequence) {
             if (unmod_lookup[(unsigned char) base] == 0) {
                 THROW_ERROR("Sequence contains invalid base: '" + std::string(1, base) + "'");
@@ -39,12 +45,13 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
         }
 
         unmodified_sequence = rna.sequence;
-        pair_table = compute_pair_table(rna, unmodified_sequence);
     }
 
-    std::vector<ClosedRegion> closed_regions = compute_closed_regions(pair_table);
-    std::vector<size_t> cr_pair_table = compute_cr_pair_table(closed_regions, rna.size());
+    std::vector<size_t> pair_table = compute_pair_table(rna, unmodified_sequence, mod_sequence);
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pair_table);
+    size_t number_of_pairs = (rna.size() - static_cast<size_t>(unpaired_prefix_sum.back())) / 2;
+    std::vector<ClosedRegion> closed_regions = compute_closed_regions(pair_table, number_of_pairs);
+    std::vector<size_t> cr_pair_table = compute_cr_pair_table(closed_regions, rna.size());
 
     return ProcessedRNAEntry{std::move(rna),           std::move(unmodified_sequence),
                              std::move(pair_table),    std::move(closed_regions),
@@ -186,10 +193,13 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
 // Traverses from right to left to ensure it's sorted by start index without needing an explicit
 // sort step.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
-    const std::vector<size_t>& pair_table) {
+    const std::vector<size_t>& pair_table, size_t number_of_pairs) {
     std::vector<ClosedRegion> closed_regions;
-    std::stack<ClosedRegion> stack;
+    std::vector<ClosedRegion> stack;
+
     const size_t n = pair_table.size();
+    closed_regions.reserve(number_of_pairs);
+    stack.reserve(std::min(number_of_pairs, size_t{32}));  // rough estimate of stack depth
 
     for (size_t i = n; i-- > 0;) {
         size_t paired_idx = pair_table[i];
@@ -197,7 +207,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
 
         if (i > paired_idx) {
             // Closing base: push raw pair; its left boundary may be extended later.
-            stack.emplace(paired_idx, i);
+            stack.emplace_back(paired_idx, i);
             continue;
         }
 
@@ -205,20 +215,20 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
         size_t smallest_left = i;
 
         // Merge any nested regions whose end lies within [i, close)
-        while (!stack.empty() && (stack.top().end < current_pair.end)) {
-            smallest_left = std::min(smallest_left, stack.top().begin);
-            stack.pop();
+        while (!stack.empty() && (stack.back().end < current_pair.end)) {
+            smallest_left = std::min(smallest_left, stack.back().begin);
+            stack.pop_back();
         }
 
         if (stack.empty()) THROW_ERROR("Unbalanced pair_table\n");
 
         // Extend region if any nested intervals were merged.
-        stack.top().begin = std::min(smallest_left, stack.top().begin);
+        stack.back().begin = std::min(smallest_left, stack.back().begin);
 
         // If this opening base starts the region, move it to result.
-        if (current_pair.begin == stack.top().begin) {
-            closed_regions.push_back(stack.top());
-            stack.pop();
+        if (current_pair.begin == stack.back().begin) {
+            closed_regions.push_back(stack.back());
+            stack.pop_back();
         }
     }
 

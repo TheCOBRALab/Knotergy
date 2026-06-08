@@ -92,10 +92,12 @@ class RNAProcessor {
      *  pair_table = [3, NULL_INDEX, NULL_INDEX, 0] → closed_regions = [ClosedRegion(0, 3)]
      *
      * @param pair_table Base-pair indices as returned by compute_pair_table().
+     * @param number_of_pairs (Optional) If known, the number of base pairs can be passed to
+     * preallocate the result vector.
      * @return std::vector<ClosedRegion> containing all detected closed regions.
      */
     [[nodiscard]] static std::vector<ClosedRegion> compute_closed_regions(
-        const std::vector<size_t>& pair_table);
+        const std::vector<size_t>& pair_table, size_t number_of_pairs = 32);
 
     /**
      * @brief Build a partner-index vector for closed-region boundaries.
