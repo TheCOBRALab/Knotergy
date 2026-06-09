@@ -22,10 +22,10 @@ extern "C" {
 namespace knotergy {
 
 struct MultiloopStem {
-    size_t p;              // Pairing base encountered while walking the multiloop
-    size_t q;              // Its pairing partner
-    size_t exit_position;  // q after this stem is processed
-    unsigned int type;     // ViennaRNA pair type in the walking orientation
+    size_t begin;       // Pairing base encountered while walking the multiloop
+    size_t end;         // Its pairing partner
+    size_t prev_end;    // The end of the previous stem in the walk, used for checking contiguity
+    unsigned int type;  // ViennaRNA pair type
 };
 
 // ------------------ Dangle 1 --------------------
