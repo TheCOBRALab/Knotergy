@@ -173,6 +173,11 @@ class ViennaDangles {
                                                                 const ProcessedRNAEntry& pRNA,
                                                                 vrna_md_param& vp);
 
+    [[nodiscard]] static DangleSet get_child_dangle_energy(const LoopNode& node,
+                                                           const ProcessedRNAEntry& pRNA,
+                                                           vrna_md_param& vp,
+                                                           bool is_external = true);
+
    private:
     /**
      * @brief Check if two indices are contiguous (adjacent).
