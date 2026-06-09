@@ -1,6 +1,5 @@
 #include "ViennaDangles.hpp"
 
-
 /**
  * This file implements dangle models 1 and 3 in different styles.
  *
@@ -20,16 +19,16 @@
  *
  * This approach is lower-overhead and closer to ViennaRNA's control flow, but
  * is less intuitive and less modular than the d1 implementation.
- * 
- * 
+ *
+ *
  * Having separate implementations for d1 and d3 is a good way to show multiple
- * algorithmic approaches to the same problem. 
- * 
- * 
+ * algorithmic approaches to the same problem.
+ *
+ *
  * NOTE: D1: if there are dangles on both sides, it uses mismatched dangle energies,
  *       D3: if there are dangles on both sides, it uses 5'+ 3' dangle energies.
  *       This difference has a real impact on the final energy and follows ViennaRNA implementation.
- * 
+ *
  */
 
 namespace knotergy {
@@ -38,7 +37,7 @@ namespace knotergy {
 enum TouchingRight { RightFree = 0, RightTaken = 1 };
 
 // Calculate dangle energies for external loops (dangle type 1) with precomputed dangle energies
-// This is used by modified bases to inject custom energies. To inject values, 
+// This is used by modified bases to inject custom energies. To inject values,
 // first get a DangleSet for each child (check ViennaDangles::populate_children_dangle_energies).
 // Then inject modified energies into the DangleSet, then this function will compute the d1 energy
 int ViennaDangles::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
@@ -46,7 +45,6 @@ int ViennaDangles::get_external_dangle_1(const std::vector<std::unique_ptr<LoopN
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_chains(dangle_chains, dangle_energies);
 }
-
 
 // Calculate dangle energies for external loops (dangle type 1)
 // This is used when you don't have any modified bases and can just compute energies directly
@@ -73,12 +71,12 @@ int ViennaDangles::get_multibranch_dangle_1(const LoopNode& node, const Processe
                                             vrna_md_param& vp) {
     bool is_external = false;
     const std::vector<std::unique_ptr<LoopNode>>& children = node.children;
-    std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, pRNA, vp, is_external);
+    std::vector<DangleSet> dangle_energies =
+        populate_children_dangle_energies(children, pRNA, vp, is_external);
     DangleSet closing = get_ml_closing_dangle_energy(node, pRNA, vp);
 
     return get_multibranch_dangle_1(node, dangle_energies, closing);
 }
-
 
 DangleSet ViennaDangles::get_ml_closing_dangle_energy(const LoopNode& node,
                                                       const ProcessedRNAEntry& pRNA,
@@ -335,7 +333,6 @@ int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& seque
     // }
     //
     // https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/mfe/mfe_multibranch.c#L360C1-L386C2
-    
 
     if (stem.begin == 0) {
         THROW_ERROR(
@@ -347,7 +344,7 @@ int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& seque
     int encoding = vrna_nucleotide_encode(sequence[left_dangle_pos], &vp.md);
     left_dangle = vp.p->dangle5[stem.type][encoding];
 
-    // 
+    //
     if (stem.begin < 2) {
         return left_dangle;
     }
@@ -412,7 +409,7 @@ int walk_multiloop_d3_from_start(const LoopNode& node, const ProcessedRNAEntry& 
         const int current_ml = vp.p->MLintern[current_type];  // Base ML energy (no dangles)
 
         energy = add_or_inf(energy, current_ml);
-        cx_energy = add_or_inf(cx_energy, current_ml); // Coaxial energy of previous stem
+        cx_energy = add_or_inf(cx_energy, current_ml);  // Coaxial energy of previous stem
 
         int curr_dang5 = 0;  // 5` dangle of the current child
         int prev_dang3 = 0;  // 3` dangle of the previous child

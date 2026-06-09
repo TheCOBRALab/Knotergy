@@ -18,4 +18,4 @@ jobs:
         sudo apt-get install -y clang-format
 
     - name: Check C++ formatting
-      run: find ./src ./test \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 \ | xargs -0 clang-format --dry-run --Werror
+      run: find ./src ./test \( -iname "*.cpp" -o -iname "*.hpp" \) -print0 | xargs -0 clang-format --dry-run --Werror
