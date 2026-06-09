@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../io/PseudoknotParams.hpp"
-#include "../io/ViennaParams.hpp"
+#include "../io/parameters/PseudoknotParams.hpp"
+#include "../io/parameters/ViennaParams.hpp"
 #include "../loop_tree/LoopNode.hpp"
 #include "./ModifiedBasesFunctions.hpp"
 #include "ViennaFunctions.hpp"

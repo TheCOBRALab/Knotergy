@@ -3,8 +3,8 @@
 #include <iomanip>
 #include <iostream>
 
-#include "PseudoknotParams.hpp"
-#include "ViennaParams.hpp"
+#include "./parameters/PseudoknotParams.hpp"
+#include "./parameters/ViennaParams.hpp"
 
 namespace knotergy {
 

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "../preprocessing/RNAEntry.hpp"
-#include "common.hpp"
+#include "../utils/common.hpp"
 
 namespace knotergy {
 

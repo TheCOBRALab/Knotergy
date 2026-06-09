@@ -4,8 +4,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-#include "FileUtils.hpp"
-#include "Report.hpp"
+#include "../FileUtils.hpp"
+#include "../Report.hpp"
 using json = nlohmann::json;
 
 extern "C" {

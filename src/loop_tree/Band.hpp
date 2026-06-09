@@ -5,7 +5,7 @@
 #include <ostream>
 #include <vector>
 
-#include "../io/common.hpp"
+#include "../utils/common.hpp"
 #include "BasePair.hpp"
 
 namespace knotergy {

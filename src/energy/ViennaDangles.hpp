@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "../io/ViennaParams.hpp"
+#include "../io/parameters/ViennaParams.hpp"
 #include "../loop_tree/LoopNode.hpp"
 #include "ViennaUtils.hpp"
 

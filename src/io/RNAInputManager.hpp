@@ -8,8 +8,8 @@
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"
-#include "ViennaParams.hpp"
-#include "common.hpp"
+#include "parameters/ViennaParams.hpp"
+#include "../utils/common.hpp"
 
 namespace knotergy {
 

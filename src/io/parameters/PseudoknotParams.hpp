@@ -4,9 +4,9 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
-#include "FileUtils.hpp"
-#include "Report.hpp"
-#include "common.hpp"
+#include "../FileUtils.hpp"
+#include "../Report.hpp"
+#include "../../utils/common.hpp"
 using json = nlohmann::json;
 
 namespace knotergy {

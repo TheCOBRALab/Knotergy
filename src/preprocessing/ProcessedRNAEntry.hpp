@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../io/common.hpp"
+#include "../utils/common.hpp"
 #include "ClosedRegion.hpp"
 #include "RNAEntry.hpp"
 #include "uni_algo/ranges_grapheme.h"

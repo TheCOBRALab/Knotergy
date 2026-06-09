@@ -5,7 +5,7 @@
 
 #include <tuple>
 
-#include "../io/ViennaParams.hpp"
+#include "../io/parameters/ViennaParams.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 
 extern "C" {

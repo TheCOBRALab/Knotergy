@@ -1,5 +1,5 @@
 #pragma once
-#include "../io/PseudoknotParams.hpp"
+#include "../io/parameters/PseudoknotParams.hpp"
 #include "../loop_tree/LoopNode.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAProcessor.hpp"

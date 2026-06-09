@@ -317,11 +317,12 @@ endif()
 # -------------------------------------------------------------------
 
 # ------------------------- Source Files -------------------------
-file(GLOB KnotergySources
+file(GLOB_RECURSE KnotergySources
     ${CMAKE_SOURCE_DIR}/src/io/*.cpp
     ${CMAKE_SOURCE_DIR}/src/preprocessing/*.cpp
     ${CMAKE_SOURCE_DIR}/src/loop_tree/*.cpp
     ${CMAKE_SOURCE_DIR}/src/energy/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/*.cpp
 )
 
 add_library(KnotergyLib ${KnotergySources})

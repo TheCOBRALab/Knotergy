@@ -5,7 +5,7 @@
 #include <memory>
 #include <sstream>
 
-#include "../io/colors.hpp"
+#include "../utils/colors.hpp"
 #include "../loop_tree/Band.hpp"
 #include "../preprocessing/ClosedRegion.hpp"
 

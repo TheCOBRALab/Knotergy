@@ -3,8 +3,8 @@
 #include <array>
 #include <vector>
 
-#include "../io/ViennaParams.hpp"
-#include "../io/colors.hpp"
+#include "../io/parameters/ViennaParams.hpp"
+#include "../utils/colors.hpp"
 #include "ClosedRegion.hpp"
 #include "ProcessedRNAEntry.hpp"
 #include "RNAEntry.hpp"

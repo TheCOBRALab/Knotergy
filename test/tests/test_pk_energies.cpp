@@ -2,7 +2,7 @@
 
 #include <energy/ComputeEnergy.hpp>
 #include <io/RNAInputManager.hpp>
-#include <io/common.hpp>
+#include <utils/common.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>

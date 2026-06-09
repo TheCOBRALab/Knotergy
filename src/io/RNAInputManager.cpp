@@ -11,7 +11,7 @@
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAEntry.hpp"
 #include "FileUtils.hpp"
-#include "common.hpp"
+#include "../utils/common.hpp"
 
 namespace knotergy {
 
