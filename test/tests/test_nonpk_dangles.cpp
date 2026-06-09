@@ -2,13 +2,13 @@
 
 #include <energy/ComputeEnergy.hpp>
 #include <io/RNAInputManager.hpp>
-#include <utils/common.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
 #include <string>
 #include <tuple>
+#include <utils/common.hpp>
 #include <vector>
 
 #include "utils.hpp"

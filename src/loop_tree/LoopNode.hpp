@@ -5,9 +5,9 @@
 #include <memory>
 #include <sstream>
 
-#include "../utils/colors.hpp"
 #include "../loop_tree/Band.hpp"
 #include "../preprocessing/ClosedRegion.hpp"
+#include "../utils/colors.hpp"
 
 namespace knotergy {
 /**

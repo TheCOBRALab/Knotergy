@@ -10,8 +10,8 @@
 #include "../loop_tree/LoopFactory.hpp"
 #include "../preprocessing/ProcessedRNAEntry.hpp"
 #include "../preprocessing/RNAEntry.hpp"
-#include "FileUtils.hpp"
 #include "../utils/common.hpp"
+#include "FileUtils.hpp"
 
 namespace knotergy {
 

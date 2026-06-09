@@ -7,14 +7,14 @@
 
 #include "energy/ComputeEnergy.hpp"
 #include "io/OutputManager.hpp"
+#include "io/RNAInputManager.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
-#include "io/RNAInputManager.hpp"
-#include "utils/colors.hpp"
-#include "utils/common.hpp"
 #include "loop_tree/LoopFactory.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "preprocessing/RNAEntry.hpp"
+#include "utils/colors.hpp"
+#include "utils/common.hpp"
 
 #define KNOTERGY_VERSION "0.2.0"
 
