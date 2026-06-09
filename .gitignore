@@ -56,3 +56,6 @@
 # Virtual environment
 /venv/
 /.venv/
+
+# Folder I made for fasta files (to test stuff)
+/fasta/

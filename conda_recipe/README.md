@@ -19,7 +19,7 @@ If you want to delete the package, run `conda remove Knotergy`
 - Update the version number in meta.yaml
 - Draft a new release on github
 
-### Update key (Expires on: 2026/03/19)
+### Update key (Expires on: 2027/06/09)
 - Have an account at https://anaconda.org/ with access to COBRALab
 - Got to https://anaconda.org/COBRALab/settings/access
 - Check the boxes next to `Allow write access to the API site` & `Allow access to all package repositories`
