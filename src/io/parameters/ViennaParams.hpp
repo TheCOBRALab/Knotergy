@@ -1,7 +1,7 @@
 #pragma once
 
-#include "io/FileUtils.hpp"
-#include "io/Report.hpp"
+#include "io/output/Report.hpp"
+#include "utils/FileUtils.hpp"
 
 #include <nlohmann/json.hpp>
 

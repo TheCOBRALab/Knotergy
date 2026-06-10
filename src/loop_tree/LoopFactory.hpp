@@ -1,7 +1,7 @@
 #pragma once
 
-#include "loop_tree/BandFinder.hpp"
 #include "loop_tree/LoopNode.hpp"
+#include "loop_tree/bands/BandFinder.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 
 namespace knotergy {

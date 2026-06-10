@@ -79,7 +79,7 @@ std::vector<std::string> FileUtils::get_files_in_dir(const std::string& dir, boo
 }
 
 // Helper to extract filename without extension from a path
-std::string FileUtils::get_filename_no_ext(const std::string& path) {
+std::string FileUtils::strip_extension(const std::string& path) {
     // 1. Extract filename
     size_t slash = path.find_last_of("/\\");
     std::string filename = (slash == std::string::npos) ? path : path.substr(slash + 1);

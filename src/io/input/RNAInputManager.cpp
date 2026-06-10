@@ -1,10 +1,10 @@
 #include "RNAInputManager.hpp"
 
 #include "energy/ComputeEnergy.hpp"
-#include "io/FileUtils.hpp"
 #include "loop_tree/LoopFactory.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "preprocessing/RNAEntry.hpp"
+#include "utils/FileUtils.hpp"
 #include "utils/common.hpp"
 
 #include <fstream>

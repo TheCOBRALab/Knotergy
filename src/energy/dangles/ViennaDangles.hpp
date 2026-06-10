@@ -1,6 +1,6 @@
 #pragma once
 
-#include "energy/ViennaUtils.hpp"
+#include "energy/vienna/ViennaUtils.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopNode.hpp"
 

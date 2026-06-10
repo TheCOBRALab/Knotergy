@@ -1,7 +1,7 @@
 #pragma once
 
-#include "energy/ViennaDangles.hpp"
-#include "energy/ViennaFunctions.hpp"
+#include "energy/dangles/ViennaDangles.hpp"
+#include "energy/vienna/ViennaFunctions.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
 #include <utility>

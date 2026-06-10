@@ -1,5 +1,5 @@
 #pragma once
-#include "BasePair.hpp"
+#include "loop_tree/bands/BasePair.hpp"
 #include "utils/common.hpp"
 
 #include <algorithm>

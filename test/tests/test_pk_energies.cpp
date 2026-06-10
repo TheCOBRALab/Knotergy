@@ -1,13 +1,4 @@
-#include "utils.hpp"
-
-#include <energy/ComputeEnergy.hpp>
-#include <gtest/gtest.h>
-#include <io/RNAInputManager.hpp>
-#include <loop_tree/LoopFactory.hpp>
-#include <preprocessing/ProcessedRNAEntry.hpp>
-#include <preprocessing/RNAEntry.hpp>
-#include <preprocessing/RNAProcessor.hpp>
-#include <utils/common.hpp>
+#include "test_utils.hpp"
 
 #include <string>
 #include <vector>

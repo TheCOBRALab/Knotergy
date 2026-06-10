@@ -1,7 +1,7 @@
 #pragma once
 
-#include "energy/ModifiedBasesFunctions.hpp"
-#include "energy/ViennaFunctions.hpp"
+#include "energy/modified_bases/ModifiedBasesFunctions.hpp"
+#include "energy/vienna/ViennaFunctions.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopNode.hpp"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "loop_tree/Band.hpp"
+#include "loop_tree/bands/Band.hpp"
 #include "preprocessing/ClosedRegion.hpp"
 #include "utils/colors.hpp"
 

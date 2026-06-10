@@ -1,11 +1,6 @@
-#include <gtest/gtest.h>
-#include <preprocessing/ProcessedRNAEntry.hpp>
-#include <preprocessing/RNAEntry.hpp>
-#include <preprocessing/RNAProcessor.hpp>
-#include <utils/common.hpp>
+#include "test_utils.hpp"
 
-#include <string>
-#include <vector>
+#include <gtest/gtest.h>
 
 TEST(RNAEntry, ConstructsWithNameSequenceStructure) {
     std::string name = "Test Input";

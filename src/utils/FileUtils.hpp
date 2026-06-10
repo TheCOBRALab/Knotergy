@@ -70,12 +70,12 @@ class FileUtils {
                                                                    bool recursive = false);
 
     /**
-     * @brief Get the filename without extension from a path.
+     * @brief Strip the extension from a filename.
      *
      * @param path Full file path.
      * @return Filename without extension.
      */
-    [[nodiscard]] static std::string get_filename_no_ext(const std::string& path);
+    [[nodiscard]] static std::string strip_extension(const std::string& path);
 };
 
 }  // namespace knotergy

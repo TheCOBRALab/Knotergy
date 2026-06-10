@@ -114,7 +114,7 @@ IfMacros:
 IncludeBlocks: Regroup
 
 IncludeCategories:
-  # Project headers: "io/Report.hpp", "utils/common.hpp", etc.
+  # Project headers: "io/output/Report.hpp", "utils/common.hpp", etc.
   - Regex: '^"'
     Priority: 1
     SortPriority: 1

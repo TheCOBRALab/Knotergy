@@ -1,6 +1,6 @@
 #pragma once
-#include "energy/PseudoknotFunctions.hpp"
-#include "energy/ViennaFunctions.hpp"
+#include "energy/pseudoknots/PseudoknotFunctions.hpp"
+#include "energy/vienna/ViennaFunctions.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "loop_tree/LoopNode.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"

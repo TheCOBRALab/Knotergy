@@ -1,6 +1,6 @@
 #include "energy/ComputeEnergy.hpp"
-#include "io/OutputManager.hpp"
-#include "io/RNAInputManager.hpp"
+#include "io/input/RNAInputManager.hpp"
+#include "io/output/OutputManager.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopFactory.hpp"
