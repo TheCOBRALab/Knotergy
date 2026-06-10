@@ -1,13 +1,13 @@
 #pragma once
 
+#include "loop_tree/Band.hpp"
+#include "preprocessing/ClosedRegion.hpp"
+#include "utils/colors.hpp"
+
 #include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <sstream>
-
-#include "../loop_tree/Band.hpp"
-#include "../preprocessing/ClosedRegion.hpp"
-#include "../utils/colors.hpp"
 
 namespace knotergy {
 /**

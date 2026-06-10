@@ -1,7 +1,8 @@
 #pragma once
 
-#include <dirent.h>
 #include <sys/stat.h>
+
+#include <dirent.h>
 
 #include <cerrno>
 #include <cstddef>

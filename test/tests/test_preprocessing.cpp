@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
-#include <string>
 #include <utils/common.hpp>
+
+#include <string>
 #include <vector>
 
 TEST(RNAEntry, ConstructsWithNameSequenceStructure) {

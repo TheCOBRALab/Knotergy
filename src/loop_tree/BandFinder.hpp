@@ -1,9 +1,9 @@
 #pragma once
+#include "loop_tree/LoopNode.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+
 #include <iostream>
 #include <utility>
-
-#include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "LoopNode.hpp"
 namespace knotergy {
 
 /**

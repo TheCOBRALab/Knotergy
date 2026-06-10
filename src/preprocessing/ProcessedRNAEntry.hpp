@@ -1,16 +1,17 @@
 #pragma once
 
+#include "preprocessing/ClosedRegion.hpp"
+#include "preprocessing/RNAEntry.hpp"
+#include "utils/common.hpp"
+
+#include <uni_algo/ranges_grapheme.h>
+
 #include <array>
 #include <iostream>
 #include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include "../utils/common.hpp"
-#include "ClosedRegion.hpp"
-#include "RNAEntry.hpp"
-#include "uni_algo/ranges_grapheme.h"
 namespace knotergy {
 
 /**
@@ -103,7 +104,13 @@ class ProcessedRNAEntry {
         }
     }
 
-    // Move assignment operator (ProcessedRNAEntry a = std::move(b);)
+    /**
+     * @brief Move assignment operator (ProcessedRNAEntry a = std::move(b);)
+     *
+     * NOTE: We need to recompute mod_sequence_views_ if has_modified_bases_ is true, since
+     * the moved reference string (raw_sequence_) may have been moved to a different memory
+     * location.
+     */
     ProcessedRNAEntry& operator=(ProcessedRNAEntry&& other) noexcept {
         if (this != &other) {
             name_ = std::move(other.name_);
@@ -122,7 +129,13 @@ class ProcessedRNAEntry {
         return *this;
     }
 
-    // Copy constructor (deep copy) (ProcessedRNAEntry a = b;)
+    /**
+     * @brief Copy constructor (deep copy) (ProcessedRNAEntry a = b;)
+     *
+     * NOTE: We need to recompute mod_sequence_views_ if has_modified_bases_ is true, since the
+     * modified sequence views are string_views into the raw_sequence string, and we need to ensure
+     * they point to the correct memory location in the new copy.
+     */
     ProcessedRNAEntry(const ProcessedRNAEntry& other)
         : name_(other.name_),
           raw_sequence_(other.raw_sequence_),

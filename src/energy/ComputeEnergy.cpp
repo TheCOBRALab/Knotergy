@@ -1,6 +1,6 @@
 #include "ComputeEnergy.hpp"
 
-#include "./ModifiedBasesFunctions.hpp"
+#include "energy/ModifiedBasesFunctions.hpp"
 namespace knotergy {
 
 // A stack is used instead of recursion to avoid stack overflows on deeply nested structures.

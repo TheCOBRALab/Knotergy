@@ -1,9 +1,9 @@
 #pragma once
 
+#include "preprocessing/ClosedRegion.hpp"
+
 #include <iostream>
 #include <vector>
-
-#include "../preprocessing/ClosedRegion.hpp"
 
 namespace knotergy {
 

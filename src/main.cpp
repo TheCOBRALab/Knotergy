@@ -1,10 +1,3 @@
-#include <cstdlib>
-#include <exception>
-#include <iostream>
-#include <string>
-#include <unordered_set>
-#include <vector>
-
 #include "energy/ComputeEnergy.hpp"
 #include "io/OutputManager.hpp"
 #include "io/RNAInputManager.hpp"
@@ -15,6 +8,13 @@
 #include "preprocessing/RNAEntry.hpp"
 #include "utils/colors.hpp"
 #include "utils/common.hpp"
+
+#include <cstdlib>
+#include <exception>
+#include <iostream>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 #define KNOTERGY_VERSION "0.2.0"
 

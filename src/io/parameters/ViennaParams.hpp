@@ -1,11 +1,12 @@
 #pragma once
 
-#include <fstream>
-#include <iostream>
+#include "io/FileUtils.hpp"
+#include "io/Report.hpp"
+
 #include <nlohmann/json.hpp>
 
-#include "../FileUtils.hpp"
-#include "../Report.hpp"
+#include <fstream>
+#include <iostream>
 using json = nlohmann::json;
 
 extern "C" {

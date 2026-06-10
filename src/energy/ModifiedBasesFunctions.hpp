@@ -1,10 +1,10 @@
 #pragma once
 
-#include <utility>
+#include "energy/ViennaDangles.hpp"
+#include "energy/ViennaFunctions.hpp"
+#include "preprocessing/RNAProcessor.hpp"
 
-#include "../preprocessing/RNAProcessor.hpp"
-#include "./ViennaDangles.hpp"
-#include "./ViennaFunctions.hpp"
+#include <utility>
 
 namespace knotergy {
 

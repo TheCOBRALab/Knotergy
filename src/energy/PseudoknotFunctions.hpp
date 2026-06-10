@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../io/parameters/PseudoknotParams.hpp"
-#include "../io/parameters/ViennaParams.hpp"
-#include "../loop_tree/LoopNode.hpp"
-#include "./ModifiedBasesFunctions.hpp"
-#include "ViennaFunctions.hpp"
+#include "energy/ModifiedBasesFunctions.hpp"
+#include "energy/ViennaFunctions.hpp"
+#include "io/parameters/PseudoknotParams.hpp"
+#include "io/parameters/ViennaParams.hpp"
+#include "loop_tree/LoopNode.hpp"
 
 namespace knotergy {
 

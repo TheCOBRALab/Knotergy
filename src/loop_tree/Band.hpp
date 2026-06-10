@@ -1,12 +1,12 @@
 #pragma once
+#include "BasePair.hpp"
+#include "utils/common.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <ostream>
 #include <vector>
-
-#include "../utils/common.hpp"
-#include "BasePair.hpp"
 
 namespace knotergy {
 /**

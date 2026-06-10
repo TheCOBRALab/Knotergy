@@ -1,16 +1,16 @@
-#include <gtest/gtest.h>
+#include "utils.hpp"
 
 #include <energy/ComputeEnergy.hpp>
+#include <gtest/gtest.h>
 #include <io/RNAInputManager.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
-#include <string>
 #include <utils/common.hpp>
-#include <vector>
 
-#include "utils.hpp"
+#include <string>
+#include <vector>
 
 // echo -e "AU\n()" | RNAeval
 TEST(NonPseudoKnottedEnergies, nonPK_small_Turner) {

@@ -327,7 +327,10 @@ file(GLOB_RECURSE KnotergySources
 
 add_library(KnotergyLib ${KnotergySources})
 
+target_include_directories(KnotergyLib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
 target_include_directories(KnotergyLib SYSTEM PUBLIC ${VIENNARNA_INCLUDE_DIRECTORY})
+
 # Add link directories if we couldn't resolve an absolute path earlier.
 if (VIENNARNA_LINK_DIRS)
   target_link_directories(KnotergyLib PUBLIC ${VIENNARNA_LINK_DIRS})

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "io/parameters/PseudoknotParams.hpp"
+#include "io/parameters/ViennaParams.hpp"
+
 #include <iomanip>
 #include <iostream>
-
-#include "./parameters/PseudoknotParams.hpp"
-#include "./parameters/ViennaParams.hpp"
 
 namespace knotergy {
 

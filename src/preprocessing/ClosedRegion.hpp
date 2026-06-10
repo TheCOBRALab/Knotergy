@@ -1,9 +1,9 @@
 #pragma once
 
+#include "preprocessing/RNAEntry.hpp"
+
 #include <array>
 #include <ostream>
-
-#include "RNAEntry.hpp"
 
 namespace knotergy {
 

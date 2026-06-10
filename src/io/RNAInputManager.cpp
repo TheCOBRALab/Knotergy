@@ -1,17 +1,17 @@
 #include "RNAInputManager.hpp"
 
+#include "energy/ComputeEnergy.hpp"
+#include "io/FileUtils.hpp"
+#include "loop_tree/LoopFactory.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+#include "preprocessing/RNAEntry.hpp"
+#include "utils/common.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include "../energy/ComputeEnergy.hpp"
-#include "../loop_tree/LoopFactory.hpp"
-#include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "../preprocessing/RNAEntry.hpp"
-#include "../utils/common.hpp"
-#include "FileUtils.hpp"
 
 namespace knotergy {
 

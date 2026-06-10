@@ -1,13 +1,13 @@
 #pragma once
 
+#include "io/parameters/ViennaParams.hpp"
+#include "preprocessing/ClosedRegion.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+#include "preprocessing/RNAEntry.hpp"
+#include "utils/colors.hpp"
+
 #include <array>
 #include <vector>
-
-#include "../io/parameters/ViennaParams.hpp"
-#include "../utils/colors.hpp"
-#include "ClosedRegion.hpp"
-#include "ProcessedRNAEntry.hpp"
-#include "RNAEntry.hpp"
 namespace knotergy {
 
 /**

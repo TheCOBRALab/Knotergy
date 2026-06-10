@@ -1,13 +1,13 @@
 #pragma once
 
+#include "energy/ViennaUtils.hpp"
+#include "io/parameters/ViennaParams.hpp"
+#include "loop_tree/LoopNode.hpp"
+
 #include <algorithm>
 #include <array>
 #include <memory>
 #include <vector>
-
-#include "../io/parameters/ViennaParams.hpp"
-#include "../loop_tree/LoopNode.hpp"
-#include "ViennaUtils.hpp"
 
 extern "C" {
 #include <ViennaRNA/eval/exterior.h>

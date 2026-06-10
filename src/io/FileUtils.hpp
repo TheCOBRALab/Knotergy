@@ -1,15 +1,16 @@
 #pragma once
 
-#include <dirent.h>
+#include "preprocessing/RNAEntry.hpp"
+#include "utils/common.hpp"
+
 #include <sys/stat.h>
+
+#include <dirent.h>
 
 #include <cstdint>
 #include <fstream>
 #include <string>
 #include <vector>
-
-#include "../preprocessing/RNAEntry.hpp"
-#include "../utils/common.hpp"
 
 namespace knotergy {
 

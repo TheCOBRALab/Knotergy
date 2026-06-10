@@ -1,10 +1,10 @@
 #pragma once
-#include "../io/parameters/PseudoknotParams.hpp"
-#include "../loop_tree/LoopNode.hpp"
-#include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "../preprocessing/RNAProcessor.hpp"
-#include "PseudoknotFunctions.hpp"
-#include "ViennaFunctions.hpp"
+#include "energy/PseudoknotFunctions.hpp"
+#include "energy/ViennaFunctions.hpp"
+#include "io/parameters/PseudoknotParams.hpp"
+#include "loop_tree/LoopNode.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+#include "preprocessing/RNAProcessor.hpp"
 
 namespace knotergy {
 /**

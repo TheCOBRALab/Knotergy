@@ -111,24 +111,44 @@ ForEachMacros:
   - BOOST_FOREACH
 IfMacros:
   - KJ_IF_MAYBE
-IncludeBlocks:   Regroup
+IncludeBlocks: Regroup
+
 IncludeCategories:
-  - Regex:           '^<ext/.*\.h>'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*\.h>'
-    Priority:        1
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '.*'
-    Priority:        3
-    SortPriority:    0
-    CaseSensitive:   false
+  # Project headers: "io/Report.hpp", "utils/common.hpp", etc.
+  - Regex: '^"'
+    Priority: 1
+    SortPriority: 1
+    CaseSensitive: true
+
+  # Known third-party dependencies
+  - Regex: '^<(ViennaRNA|nlohmann|uni_algo)/'
+    Priority: 2
+    SortPriority: 2
+    CaseSensitive: true
+
+  # Other third-party/system-style headers with paths, e.g. <fmt/core.h>
+  - Regex: '^<.*\/.*>'
+    Priority: 2
+    SortPriority: 2
+    CaseSensitive: true
+
+  # Standard C headers, e.g. <math.h>, <stdio.h>
+  - Regex: '^<[a-zA-Z0-9_]+\.h>'
+    Priority: 3
+    SortPriority: 3
+    CaseSensitive: true
+
+  # Standard C++ headers, e.g. <string>, <vector>, <filesystem>
+  - Regex: '^<[a-zA-Z0-9_]+>'
+    Priority: 4
+    SortPriority: 4
+    CaseSensitive: true
+
+  # Fallback
+  - Regex: '.*'
+    Priority: 5
+    SortPriority: 5
+    CaseSensitive: true
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false

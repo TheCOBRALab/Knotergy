@@ -1,15 +1,15 @@
 #pragma once
 
+#include "io/parameters/ViennaParams.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
+#include "preprocessing/RNAEntry.hpp"
+#include "preprocessing/RNAProcessor.hpp"
+#include "utils/common.hpp"
+
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include "../preprocessing/ProcessedRNAEntry.hpp"
-#include "../preprocessing/RNAEntry.hpp"
-#include "../preprocessing/RNAProcessor.hpp"
-#include "../utils/common.hpp"
-#include "parameters/ViennaParams.hpp"
 
 namespace knotergy {
 

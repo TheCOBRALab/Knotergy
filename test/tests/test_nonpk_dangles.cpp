@@ -1,17 +1,17 @@
-#include <gtest/gtest.h>
+#include "utils.hpp"
 
 #include <energy/ComputeEnergy.hpp>
+#include <gtest/gtest.h>
 #include <io/RNAInputManager.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
+#include <utils/common.hpp>
+
 #include <string>
 #include <tuple>
-#include <utils/common.hpp>
 #include <vector>
-
-#include "utils.hpp"
 
 namespace {
 

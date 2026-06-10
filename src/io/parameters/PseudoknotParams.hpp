@@ -1,12 +1,14 @@
 #pragma once
+#include "io/FileUtils.hpp"
+#include "io/Report.hpp"
+#include "utils/common.hpp"
+
+#include <nlohmann/json.hpp>
+
 #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <string>
 
-#include "../../utils/common.hpp"
-#include "../FileUtils.hpp"
-#include "../Report.hpp"
 using json = nlohmann::json;
 
 namespace knotergy {
@@ -114,7 +116,7 @@ class PseudoknotParams {
      * @return Loaded pk_param structure.
      * @throws DetailedException if file not found or invalid.
      */
-    [[nodiscard]] static const pk_param load_pk_param(
+    [[nodiscard]] static pk_param load_pk_param(
         const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
@@ -122,7 +124,10 @@ class PseudoknotParams {
 
         if (paramFile.empty()) {
             info.status = ParamStatus::Defaulted;
-            return {};
+
+            pk_param pkp;
+            pkp.set_source_info(info);
+            return pkp;
         }
 
         if (!FileUtils::file_exists(paramFile)) {
@@ -165,12 +170,12 @@ class PseudoknotParams {
         }
         const auto& pk = *it;
 
-        return pk_param(pk.value("name", std::string{"default"}), pk.value("pk_in_ext", 0),
-                        pk.value("pk_in_mloop", 0), pk.value("pk_in_pk", 0), pk.value("band", 0),
-                        pk.value("unpaired_in_pk", 0), pk.value("cr_in_pk", 0),
-                        pk.value("pk_stack_x", 1.0), pk.value("pk_internal_x", 1.0),
-                        pk.value("pk_mloop_init", 0), pk.value("pk_mloop_bp", 0),
-                        pk.value("pk_mloop_unpaired", 0));
+        return pk_param(pk.value("name", std::string{"Nameless"}), pk.at("pk_in_ext").get<int>(),
+                        pk.at("pk_in_mloop").get<int>(), pk.at("pk_in_pk").get<int>(),
+                        pk.at("band").get<int>(), pk.at("unpaired_in_pk").get<int>(),
+                        pk.at("cr_in_pk").get<int>(), pk.at("pk_stack_x").get<double>(),
+                        pk.at("pk_internal_x").get<double>(), pk.at("pk_mloop_init").get<int>(),
+                        pk.at("pk_mloop_bp").get<int>(), pk.at("pk_mloop_unpaired").get<int>());
     }
 };
 

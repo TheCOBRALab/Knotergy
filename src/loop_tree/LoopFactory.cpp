@@ -5,8 +5,6 @@
 #include <stack>
 #include <unordered_set>
 
-#include "../loop_tree/BandFinder.hpp"
-
 namespace knotergy {
 
 LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna_{processed_rna} {

@@ -3,10 +3,11 @@
 // This file is separate from ViennaFunctions.hpp to avoid circular dependencies (ViennaDangles.hpp
 // needs ViennaUtils.hpp)
 
-#include <tuple>
+#include "io/parameters/ViennaParams.hpp"
+#include "loop_tree/LoopNode.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
 
-#include "../io/parameters/ViennaParams.hpp"
-#include "../preprocessing/ProcessedRNAEntry.hpp"
+#include <tuple>
 
 extern "C" {
 #include <ViennaRNA/sequences/alphabet.h>

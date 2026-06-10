@@ -1,15 +1,15 @@
 #pragma once
 
-#include <gtest/gtest.h>
-
 #include <energy/ComputeEnergy.hpp>
+#include <gtest/gtest.h>
 #include <io/RNAInputManager.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
 #include <preprocessing/RNAProcessor.hpp>
-#include <string>
 #include <utils/common.hpp>
+
+#include <string>
 #include <vector>
 
 const std::string DP_file =
