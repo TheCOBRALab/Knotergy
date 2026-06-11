@@ -212,7 +212,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
         }
 
         const ClosedRegion current_pair(i, paired_idx);
-        size_t smallest_left = i;
+        size_t smallest_left = current_pair.begin;
 
         // Merge any nested regions whose end lies within [i, close)
         while (!stack.empty() && (stack.back().end < current_pair.end)) {

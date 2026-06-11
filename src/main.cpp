@@ -83,6 +83,7 @@ int run_knotergy(int argc, char** argv) {
     std::string output_file = "";
     std::string parameter_file = "";
     std::string modifications = "7I6P9D";
+    const bool use_color = knotergy::should_use_color();
 
     std::vector<std::string> mod_param_paths;
 
@@ -254,9 +255,11 @@ int run_knotergy(int argc, char** argv) {
         // Output results.
         if (energy_calculator.getInfiniteEnergyFlag()) {
             printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
-        } else {
+        } else if (use_color) {
             printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, energy_calculator.getEnergy(),
                    ANSI_COLOR_RESET);
+        } else {
+            printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
         }
     }
 

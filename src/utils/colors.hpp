@@ -1,5 +1,8 @@
 #pragma once
 
+#include <unistd.h>
+
+#include <cstdlib>
 #include <string>
 
 namespace knotergy {
@@ -25,5 +28,18 @@ namespace knotergy {
 
 #define WARNING (ANSI_COLOR_YELLOW + std::string("[WARNING]") + ANSI_COLOR_RESET)
 #define ERROR (ANSI_COLOR_RED_B + std::string("[ERROR]  ") + ANSI_COLOR_RESET)
+
+inline static bool should_use_color() {
+    if (std::getenv("NO_COLOR") != nullptr) {
+        return false;
+    }
+
+    const char* term = std::getenv("TERM");
+    if (term != nullptr && std::string(term) == "dumb") {
+        return false;
+    }
+
+    return isatty(STDOUT_FILENO);
+}
 
 }  // namespace knotergy
