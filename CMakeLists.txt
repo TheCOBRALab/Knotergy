@@ -21,7 +21,7 @@ add_compile_definitions(
 # ------------------------- External Dependencies ------------------------- 
 include(FetchContent)
 
-message(STATUS "Fetching external dependencies... this may take a moment on the first run")
+message(STATUS "Fetching external dependencies... this may take a while on the first run")
 
 # ----------------- nlohmann/json -----------------
 set(JSON_Install OFF CACHE BOOL "" FORCE)

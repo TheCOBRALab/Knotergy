@@ -115,13 +115,9 @@ class ModifiedBasesFunctions {
      * bases.
      *
      */
-    [[nodiscard]] static int update_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                           const std::vector<std::string_view>& mod_sequence,
-                                           vrna_md_param& vp, const all_mod_params& mp,
-                                           DangleSet& current_set, bool is_external = false,
-                                           bool is_closing = false);
+    [[nodiscard]] static int update_energy(const ModDiffs& diffs, int n5d, int n3d,
+                                           unsigned int type, vrna_md_param& vp);
 
-   private:
     /**
      * @brief Find unique modified bases at specified sequence positions.
      *
@@ -131,6 +127,14 @@ class ModifiedBasesFunctions {
      */
     [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_indices(
         std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence);
+
+    // Finds unique modified bases at the inner edge of a loop (i, j, i+1, j-1)
+    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_inner_edge(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence);
+
+    // Finds unique modified bases at the outer edge of a loop (i, j, i-1, j+1)
+    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_outer_edge(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence);
 
     /**
      * @brief Join string views at specified indices into a single string.
@@ -196,19 +200,20 @@ class ModifiedBasesFunctions {
      * @param type The pair type of the closing pair of the loop.
      * @param unique_mod_bases Vector of unique modified base identifiers relevant to this loop.
      * @param mod_sequence The modified RNA sequence (grapheme views).
-     * @param vp ViennaRNA model and parameters.
+     * @param P ViennaRNA parameters (used for looking up unmodified energies).
      * @param mp Vector of modified base parameters.
      * @param is_external Whether this loop is an external loop (affects which energy parameters to
      * use).
+     * @param is_closing Whether this loop is a closing pair (of a multiloop)
      * @return ModDiffs object containing the energy differences for terminal AU penalty, mismatch,
      * 5' dangle, and 3' dangle energies.
      *
      */
-    [[nodiscard]] static ModDiffs get_mod_dangle_energy_diffs(
-        const LoopNode& node, const int n5d, const int n3d, const unsigned int type,
+    [[nodiscard]] static ModDiffs get_mod_diffs(
+        const LoopNode& node, int n5d, int n3d, unsigned int type,
         const std::vector<std::string_view>& unique_mod_bases,
         const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-        const all_mod_params& mp, bool is_external);
+        const all_mod_params& mp, bool is_external, bool is_closing);
 };
 
 }  // namespace knotergy

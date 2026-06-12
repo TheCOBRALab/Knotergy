@@ -73,6 +73,22 @@ struct DangleSet {
      * @return The minimum energy value in centicalories.
      */
     [[nodiscard]] int best_right() const { return std::min(no_dangle, right_dangle); }
+
+    /** @brief Add a constant energy to all dangle configurations.
+     *
+     * This is useful for applying energy contributions that affect all configurations
+     * equally, such as terminal mismatches
+     *
+     * @param energy The energy value in centicalories to add to each configuration.
+     * @return Reference to the modified DangleSet.
+     */
+    DangleSet& operator+=(int energy) {
+        no_dangle += energy;
+        left_dangle += energy;
+        right_dangle += energy;
+        both_dangle += energy;
+        return *this;
+    }
 };
 
 /**
