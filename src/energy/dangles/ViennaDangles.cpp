@@ -299,8 +299,7 @@ int add_or_inf(int a, int b) {
     return a + b;
 }
 
-std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, const std::string& sequence,
-                                                 vrna_md_param& vp) {
+std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
@@ -308,13 +307,11 @@ std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, const std
         if (child->loop_type == LoopType::Pseudoknot) {
             continue;
         }
-        stems.push_back(MultiloopStem{child->begin, child->end, child->end,
-                                      ViennaUtils::get_pair_type(*child, sequence, vp.md)});
+        stems.push_back(MultiloopStem{child->begin, child->end, child->end, child->pair_type});
     }
 
     // The closing pair is encountered from its 3' side while walking the multiloop.
-    stems.push_back(MultiloopStem{node.end, node.begin, node.begin,
-                                  ViennaUtils::reverse_pair_type(node, sequence, vp.md)});
+    stems.push_back(MultiloopStem{node.end, node.begin, node.begin, node.r_pair_type});
 
     return stems;
 }
@@ -374,8 +371,8 @@ int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::string& seque
 int walk_multiloop_d3_from_start(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                  size_t start_prev, vrna_md_param& vp) {
     const std::string& sequence = pRNA.get_sequence();
-    const std::vector<size_t> pair_table = pRNA.get_pair_table();
-    const std::vector<MultiloopStem> stems = build_multiloop_stems(node, sequence, vp);
+    const std::vector<size_t>& pair_table = pRNA.get_pair_table();
+    const std::vector<MultiloopStem> stems = build_multiloop_stems(node);
     const size_t stem_count = stems.size();
 
     const MultiloopStem& start_stem = stems[start_prev];

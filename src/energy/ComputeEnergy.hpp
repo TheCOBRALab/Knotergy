@@ -35,7 +35,7 @@ class ComputeEnergy {
                   const knotergy::pk_param& pkp, const all_mod_params& mp = {}, bool round = false,
                   bool verbose = false)
         : root_node_{root_node},
-          processed_rna_{processed_rna},
+          pRNA_{processed_rna},
           vp_{vp},
           pkp_{pkp},
           mp_{mp},
@@ -56,7 +56,7 @@ class ComputeEnergy {
 
    private:
     LoopNode& root_node_;
-    const ProcessedRNAEntry& processed_rna_;
+    const ProcessedRNAEntry& pRNA_;
     vrna_md_param& vp_;
     const knotergy::pk_param& pkp_;
     const all_mod_params& mp_;

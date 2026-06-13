@@ -246,7 +246,7 @@ int run_knotergy(int argc, char** argv) {
             knotergy::RNAProcessor::process_rna(rna, mp);
 
         // Build loop tree.
-        knotergy::LoopFactory factory(processed_rna);
+        knotergy::LoopFactory factory(processed_rna, vp);
 
         // Compute the energy.
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,

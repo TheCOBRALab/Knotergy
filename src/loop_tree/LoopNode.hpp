@@ -17,38 +17,15 @@ enum class LoopType { Unknown, Stack, Hairpin, Internal, Multibranch, External, 
 
 /**
  * @brief Enumeration of pseudoknot nesting types.
+ *
+ * Within Band (((..(...).(.[[[.)..)))]]]
+ * This hairpin     ^   ^ is within a band
+ * Nested      (((..(...).[[[...)))]]]
+ * This hairpin     ^   ^ is nested inside a band
  */
 enum class PseudoNestedType { None, WithinBand, Nested };
-// Within Band (((..(...).(.[[[.)..)))]]]
-// This hairpin     ^   ^ is within a band
-// Nested      (((..(...).[[[...)))]]]
-// This hairpin     ^   ^ is nested inside a band
 
-/**
- * @brief Get a human-readable name for a loop type.
- *
- * @param t The loop type.
- * @return String representation of the loop type.
- */
-[[nodiscard]] static inline const char* loop_name(LoopType t) {
-    switch (t) {
-        case LoopType::Stack:
-            return "Stack    loop";
-        case LoopType::Hairpin:
-            return "Hairpin  loop";
-        case LoopType::Internal:
-            return "Internal loop";
-        case LoopType::Multibranch:
-            return "Multi    loop";
-        case LoopType::External:
-            return "External loop";
-        case LoopType::Pseudoknot:
-            return "Pseudo   loop";
-        case LoopType::Unknown:
-            return "Unknown  loop";
-    }
-    return "Unknown  loop";
-}
+[[nodiscard]] static inline const char* loop_name(LoopType t);
 
 /**
  * @brief Represents a node in the loop tree of an RNA secondary structure.
@@ -83,11 +60,20 @@ struct LoopNode {
     int number_of_nested_children = 0;      ///< Count of nested children.
     LoopNode* parent = nullptr;             ///< Parent loop node (weak to avoid cycles).
     std::vector<std::unique_ptr<LoopNode>> children;  ///< Child loop nodes. (sorted by start)
-    std::vector<Band> bands;  ///< Pseudoknot bands (empty if not pseudoknotted).
-    int total_number_of_base_pairs =
-        1;                ///< Total base pairs in this loop closed region (excluding children)
-    double energy = 0;    ///< Computed energy (set by ComputeEnergy).
-    bool is_inf = false;  ///< Flag for infinite energy (e.g., invalid structures).
+    std::vector<Band> bands;             ///< Pseudoknot bands (empty if not pseudoknotted).
+    int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
+    double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
+    bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
+
+    // ---------------- Vienna-esque values ---------------
+    unsigned int pair_type;
+    unsigned int r_pair_type;  // reverse pair type
+    int i_encoded = -1;
+    int j_encoded = -1;
+    int n5d_inner = -1;
+    int n3d_inner = -1;
+    int n5d_outer = -1;
+    int n3d_outer = -1;
 
     /**
      * @brief Generate a formatted string for energy breakdown output.
@@ -184,6 +170,32 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     }
     os << "}\n";
     return os;
+}
+
+/**
+ * @brief Get a human-readable name for a loop type.
+ *
+ * @param t The loop type.
+ * @return String representation of the loop type.
+ */
+const char* loop_name(LoopType t) {
+    switch (t) {
+        case LoopType::Stack:
+            return "Stack    loop";
+        case LoopType::Hairpin:
+            return "Hairpin  loop";
+        case LoopType::Internal:
+            return "Internal loop";
+        case LoopType::Multibranch:
+            return "Multi    loop";
+        case LoopType::External:
+            return "External loop";
+        case LoopType::Pseudoknot:
+            return "Pseudo   loop";
+        case LoopType::Unknown:
+            return "Unknown  loop";
+    }
+    return "Unknown  loop";
 }
 
 }  // namespace knotergy

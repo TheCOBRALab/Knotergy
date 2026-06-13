@@ -27,6 +27,65 @@ class ViennaUtils {
     ~ViennaUtils() = default;
 
     /**
+     * @brief Populate ViennaRNA encoding fields for a LoopNode based on its position and the RNA
+     * sequence.
+     *
+     * This function encodes the nucleotides at the loop boundaries and their adjacent positions
+     * according to ViennaRNA's encoding scheme. It also determines the pair type and reverse pair
+     * type for the loop's closing pair. The encoding of dangling nucleotides is determined based on
+     * ViennaRNA's dangle settings and whether adjacent positions are paired or unpaired.
+     *
+     * @param node The LoopNode to populate with ViennaRNA encodings.
+     * @param pRNA The ProcessedRNAEntry containing the RNA sequence and pairing information.
+     * @param vp The ViennaRNA model parameters for encoding.
+     */
+    static void populate_node_encodings(LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                        vrna_md_param& vp) {
+        if (node.loop_type == LoopType::External) return;  // Doesn't have pairings
+        const std::string& sequence = pRNA.get_sequence();
+        size_t n = sequence.size();
+        const std::vector<size_t>& pair_table = pRNA.get_pair_table();
+        vrna_md_s& md = vp.md;
+
+        size_t i = node.begin;
+        size_t j = node.end;
+        char ni = sequence[i];  // nucleotide i
+        char nj = sequence[j];  // nucleotide j
+
+        // Encode the pair's nucleotides
+        std::tie(node.i_encoded, node.j_encoded) = encode_nucleotides(ni, nj, md);
+
+        // Encode the pair type and reverse pair type
+        node.pair_type = vrna_get_ptype_md(node.i_encoded, node.j_encoded, &md);
+        node.r_pair_type = reverse_pair_type(node.pair_type, md);
+
+        // NOTE: Not using this file's helper functions since encoding nucleotides multiple times
+        // is surpiseingly expensive.
+
+        // Helper to determine if we have dangling nucleotides for each position
+        bool has_5d_dangle_out = i > 0 && (md.dangles == 2 || pair_table[i - 1] == NULL_INDEX);
+        bool has_3d_dangle_out = j + 1 < n && (md.dangles == 2 || pair_table[j + 1] == NULL_INDEX);
+        bool has_5d_dangle_in = (md.dangles == 2) || (pair_table[i + 1] == NULL_INDEX);
+        bool has_3d_dangle_in = (md.dangles == 2) || (pair_table[j - 1] == NULL_INDEX);
+
+        // Encode dangling nucleotides based on ViennaRNA's dangle settings
+        if (md.dangles != 0) {
+            node.n5d_outer = has_5d_dangle_out ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
+            node.n3d_outer = has_3d_dangle_out ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
+
+            // Stacked pairs don't have inner dangles even in dangle mode 2
+            if (node.loop_type == LoopType::Stack) return;
+            node.n5d_inner = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
+            node.n3d_inner = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
+            return;
+        } else if (node.loop_type == LoopType::Hairpin) {
+            // Hairpins always have inner dangles even in dangle mode 0
+            node.n5d_inner = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
+            node.n3d_inner = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
+        }
+    }
+
+    /**
      * @brief Encode two nucleotides for ViennaRNA functions.
      *
      * @param i First nucleotide character.
@@ -85,6 +144,8 @@ class ViennaUtils {
      * @param i 5' position of the base pair.
      * @param j 3' position of the base pair.
      * @param sequence The RNA nucleotide sequence.
+     * @param pair_table Base-pair indices for the RNA sequence (NULL_INDEX for unpaired).
+     * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
@@ -127,11 +188,6 @@ class ViennaUtils {
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
     }
 
-    [[nodiscard]] static unsigned int get_pair_type(const LoopNode& node,
-                                                    const std::string& sequence, vrna_md_t& md) {
-        return ViennaUtils::get_pair_type(sequence[node.begin], sequence[node.end], md);
-    }
-
     /**
      * @brief Get the reverse (complementary) pair type.
      *
@@ -152,12 +208,6 @@ class ViennaUtils {
     [[nodiscard]] static unsigned int reverse_pair_type(const char& i, const char& j,
                                                         vrna_md_t& md) {
         return ViennaUtils::reverse_pair_type(ViennaUtils::get_pair_type(i, j, md), md);
-    }
-
-    [[nodiscard]] static unsigned int reverse_pair_type(const LoopNode& node,
-                                                        const std::string& sequence,
-                                                        vrna_md_t& md) {
-        return ViennaUtils::reverse_pair_type(sequence[node.begin], sequence[node.end], md);
     }
 };
 }  // namespace knotergy

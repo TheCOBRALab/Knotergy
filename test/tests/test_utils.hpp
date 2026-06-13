@@ -39,7 +39,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
         knotergy::RNAProcessor::process_rna(std::move(rna), mp));
 
     // build loop tree
-    knotergy::LoopFactory factory(processed_rna);
+    knotergy::LoopFactory factory(processed_rna, vp);
 
     // compute energy
     knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp, round);

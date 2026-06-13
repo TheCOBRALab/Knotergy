@@ -34,43 +34,38 @@ double ComputeEnergy::process_node(LoopNode& node) {
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_,
                     mod_sequence_, vp_, mp_);
             } else {
-                node_energy =
-                    ViennaFunctions::stack_energy(node.begin, node.end, node.children[0]->begin,
-                                                  node.children[0]->end, sequence_, vp_);
+                node_energy = ViennaFunctions::stack_energy(node, vp_);
             }
             break;
 
         case LoopType::Hairpin:
-            node_energy =
-                ViennaFunctions::hairpin_energy(node.begin, node.end, sequence_, is_inf, vp_);
+            node_energy = ViennaFunctions::hairpin_energy(node, pRNA_, is_inf, vp_);
             break;
 
         case LoopType::Internal:
-            node_energy =
-                ViennaFunctions::internal_loop_energy(node.begin, node.end, node.children[0]->begin,
-                                                      node.children[0]->end, sequence_, vp_);
+            node_energy = ViennaFunctions::internal_loop_energy(node, vp_);
             break;
 
         case LoopType::Multibranch:
             if (has_modified_bases_) {
                 node_energy = ModifiedBasesFunctions::find_mod_multiloop_energy(
-                    node, processed_rna_, mod_sequence_, vp_, mp_);
+                    node, pRNA_, mod_sequence_, vp_, mp_);
             } else {
-                node_energy = ViennaFunctions::multibranch_energy(node, processed_rna_, vp_);
+                node_energy = ViennaFunctions::multibranch_energy(node, pRNA_, vp_);
             }
             break;
 
         case LoopType::Pseudoknot:
-            node_energy = PseudoknotFunctions::pseudoknot_energy(node, processed_rna_, vp_, mp_,
-                                                                 pkp_, is_inf, round_);
+            node_energy =
+                PseudoknotFunctions::pseudoknot_energy(node, pRNA_, vp_, mp_, pkp_, is_inf, round_);
             break;
 
         case LoopType::External:
             if (has_modified_bases_) {
                 node_energy = ModifiedBasesFunctions::find_mod_external_energy(
-                    node.children, processed_rna_, mod_sequence_, vp_, mp_);
+                    node.children, pRNA_, mod_sequence_, vp_, mp_);
             } else {
-                node_energy = ViennaFunctions::external_energy(node.children, processed_rna_, vp_);
+                node_energy = ViennaFunctions::external_energy(node.children, pRNA_, vp_);
             }
             break;
 

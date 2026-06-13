@@ -7,7 +7,8 @@
 
 namespace knotergy {
 
-LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : processed_rna_{processed_rna} {
+LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna, vrna_md_param& vp)
+    : pRNA_{processed_rna}, vp_{vp} {
     // CLOSED REGIONS MUST BE SORTED BY START INDEX FOR THE BUILDING ALGORITHM TO WORK CORRECTLY
     build_tree(processed_rna.get_closed_regions());
 }
@@ -26,7 +27,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
             "algorithm to fail.\n");
     }
 
-    root_node_ = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, processed_rna_.size()});
+    root_node_ = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, pRNA_.size()});
     root_node_->loop_type = LoopType::External;
 
     std::vector<LoopNode*> node_stack;
@@ -47,7 +48,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
         std::unique_ptr<LoopNode> child = std::make_unique<LoopNode>(cr);
         child->parent = parent;
-        child->total_unpaired_bases_count = processed_rna_.get_unpaired_count(cr);
+        child->total_unpaired_bases_count = pRNA_.get_unpaired_count(cr);
 
         LoopNode* child_raw = child.get();
         parent->children.emplace_back(std::move(child));
@@ -66,18 +67,21 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 void LoopFactory::populate_node(LoopNode& node) {
     node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
     node.loop_type = find_loop_type(node);
+    // Populate node encodings for ViennaRNA energy calculations.
 
     if (node.loop_type == LoopType::Pseudoknot) {
         // Used for band finding and navigation.
         // Lazily initialize when we encounter the first pseudoknot.
         if (aux_bands_.empty()) {
-            aux_bands_.resize(processed_rna_.get_structure().size());
+            aux_bands_.resize(pRNA_.get_structure().size());
         }
 
-        node.bands = BandFinder::find_bands(node, aux_bands_, processed_rna_);
+        node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_);
         node.total_number_of_base_pairs = count_total_base_pairs(node);
         label_pseudonested_children(node);
         pseudo_nested_check(node);
+    } else {
+        ViennaUtils::populate_node_encodings(node, pRNA_, vp_);
     }
 }
 
@@ -102,7 +106,7 @@ int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
-    const std::vector<size_t>& pair_table = processed_rna_.get_pair_table();
+    const std::vector<size_t>& pair_table = pRNA_.get_pair_table();
 
     if (pair_table[node.begin] != node.end) {
         return LoopType::Pseudoknot;

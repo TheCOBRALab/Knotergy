@@ -1,5 +1,6 @@
 #pragma once
 
+#include "energy/vienna/ViennaUtils.hpp"
 #include "loop_tree/LoopNode.hpp"
 #include "loop_tree/bands/BandFinder.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
@@ -21,8 +22,9 @@ class LoopFactory {
      * processed RNA entry's closed regions.
      *
      * @param processed_rna The processed RNA entry containing structure and pairing information.
+     * @param vp ViennaRNA model parameters for vienna encoding population.
      */
-    LoopFactory(const ProcessedRNAEntry& processed_rna);
+    LoopFactory(const ProcessedRNAEntry& processed_rna, vrna_md_param& vp);
 
     /**
      * @brief Destroy the LoopFactory and its associated loop tree.
@@ -58,11 +60,12 @@ class LoopFactory {
     void print_tree(const std::unique_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
-    const ProcessedRNAEntry& processed_rna_;
+    const ProcessedRNAEntry& pRNA_;
     std::unique_ptr<LoopNode> root_node_;
     size_t structure_length_;
     std::vector<PairedBaseNode>
-        aux_bands_;  ///< Auxiliary structure for band detection and navigation.
+        aux_bands_;      ///< Auxiliary structure for band detection and navigation.
+    vrna_md_param& vp_;  ///< ViennaRNA model parameters for energy calculations.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.
