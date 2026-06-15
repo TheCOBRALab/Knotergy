@@ -1,5 +1,7 @@
 #include "ViennaDangles.hpp"
 
+#include "energy/modified_bases/ModStack.hpp"
+
 /**
  * This file implements dangle models 1 and 3 in different styles.
  *
@@ -314,7 +316,14 @@ int ViennaDangles::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     const size_t dangle_pos = stem.begin - 1;
     const int encoding = vrna_nucleotide_encode(sequence[dangle_pos], &vp.md);
 
-    int ld5 = vp.p->dangle5[stem.type][encoding];
+    int ld5;
+    if (pRNA.has_modified_bases()) {
+        ld5 = ModBaseUtils::get_dangle5_mod_energy(stem.begin, stem.end, sequence,
+                                                   pRNA.get_modified_sequence(), vp,
+                                                   all_mod_params(), false);
+    } else {
+        ld5 = vp.p->dangle5[stem.type][encoding];
+    }
 
     // begin is end for closing pair
     if (stem.begin < 2) {
@@ -376,7 +385,8 @@ std::vector<MultiloopStem> ViennaDangles::populate_multiloop_stems(const LoopNod
 }
 
 int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_prev,
-                                 const std::vector<MultiloopStem>& stems, vrna_md_param& vp) {
+                                 const std::vector<MultiloopStem>& stems, vrna_md_param& vp,
+                                 const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
     const size_t stem_count = stems.size();
 
@@ -434,7 +444,16 @@ int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_pre
         switch (unpaired_between) {
             case 0: {
                 // adjacent helices: possible flush coaxial stacking
-                new_cx = energy + vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
+                int stack_energy;
+                if (pRNA.has_modified_bases()) {
+                    stack_energy = ModStack::find_mod_stack_energy(
+                        prev_stem.end, prev_stem.begin, stem.begin, stem.end, sequence,
+                        pRNA.get_modified_sequence(), vp, mp);
+                    break;
+                } else {
+                    stack_energy = vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
+                }
+                new_cx = energy + stack_energy;
 
                 // swaps Base ML energy for Coaxial base energy,
                 // and removes the 5' dangle of the previous stem (dangles don't apply in coaxial
@@ -490,7 +509,8 @@ int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_pre
 
 int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node,
                                             const std::vector<MultiloopStem>& stems,
-                                            const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+                                            const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                            const all_mod_params& mp) {
     if (node.children.empty()) {
         return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp);
     }
@@ -498,22 +518,22 @@ int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node,
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the
     // last child back into the closing pair at the final edge of this walk.
-    int best = walk_multiloop_d3_from_start(pRNA, node.children.size(), stems, vp);
+    int best = walk_multiloop_d3_from_start(pRNA, node.children.size(), stems, vp, mp);
 
     // Second walk:
     // start from the first child. This disallows stacking of the closing pair
     // back into the first child at the final edge of this walk.
     //
     // ViennaRNA does the same "walk around the loop twice" trick for d3.
-    best = std::min(best, walk_multiloop_d3_from_start(pRNA, 0, stems, vp));
+    best = std::min(best, walk_multiloop_d3_from_start(pRNA, 0, stems, vp, mp));
 
     return best;
 }
 
 int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                            vrna_md_param& vp) {
+                                            vrna_md_param& vp, const all_mod_params& mp) {
     std::vector<MultiloopStem> stems = populate_multiloop_stems(node, pRNA, vp);
-    return get_multibranch_dangle_3(node, stems, pRNA, vp);
+    return get_multibranch_dangle_3(node, stems, pRNA, vp, mp);
 };
 
 }  // namespace knotergy

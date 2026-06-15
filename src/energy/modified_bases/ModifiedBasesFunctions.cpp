@@ -113,6 +113,10 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
             modify_dangle_set(closing_set, diffs);
         } else if (vp.md.dangles == 3) {
             multiloop_stems = ViennaDangles::populate_multiloop_stems(node, pRNA, vp);
+            MultiloopStem& closing_stem =
+                multiloop_stems.back();  // closing stem is last in the vector
+            closing_stem.dangle5 += diffs.n5d;
+            closing_stem.dangle3 += diffs.n3d;
         } else {
             energy = ViennaFunctions::multibranch_energy(node, pRNA, vp);
             energy += update_energy(diffs, n5d, n3d, pair_type, vp);
@@ -149,6 +153,9 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     // Compute the energy of dangle 1 of multiloop
     if (vp.md.dangles == 1) {
         energy = ViennaDangles::get_multibranch_dangle_1(node, children_dangle_sets, closing_set);
+    }
+    if (vp.md.dangles == 3) {
+        energy = ViennaDangles::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
     }
 
     return energy;

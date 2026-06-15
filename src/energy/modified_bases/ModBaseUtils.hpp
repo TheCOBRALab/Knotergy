@@ -1,4 +1,5 @@
 #pragma once
+#include "energy/vienna/ViennaUtils.hpp"
 #include "loop_tree/bands/BasePair.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
@@ -39,7 +40,14 @@ class ModBaseUtils {
         size_t total = 0;
 
         // Calculate total size needed
-        for (size_t idx : indices) total += mod_sequence[idx].size();
+        for (size_t idx : indices) {
+            if (idx >= mod_sequence.size()) {
+                THROW_ERROR("Index " + std::to_string(idx) +
+                            " is out of bounds for modified sequence of size " +
+                            std::to_string(mod_sequence.size()));
+            }
+            total += mod_sequence[idx].size();
+        }
         key.reserve(total);
 
         // Concatenate string views
@@ -59,6 +67,8 @@ class ModBaseUtils {
     [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_indices(
         std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
         std::vector<std::string_view> modified;
+        if (mod_sequence.empty())
+            return modified;  // no modified sequence provided, return empty vector
         modified.reserve(indices.size());
         for (size_t idx : indices) {
             if (!RNAProcessor::is_unmod_base(mod_sequence[idx]) &&
@@ -154,6 +164,34 @@ class ModBaseUtils {
         }
 
         return static_cast<int>(unmod_energy);
+    }
+
+    // THIS HURTS, BUT I WILL FIX IT LATER
+    [[nodiscard]] static int get_dangle5_mod_energy(
+        size_t i, size_t j, std::string sequence, const std::vector<std::string_view>& mod_sequence,
+        vrna_md_param& vp, const all_mod_params& mp, bool is_closing = false) {
+        if (i > 0) {
+            unsigned int type;
+            int dangle_encoding;
+            if (is_closing) {
+                type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
+                dangle_encoding = vrna_nucleotide_encode(sequence[j - 1], &vp.md);
+                std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
+                std::vector<std::string_view> unique_mod_bases =
+                    ModBaseUtils::unique_modified_bases_at_indices({j, i, j - 1}, mod_sequence);
+                return get_mod_energy(key, unique_mod_bases, mp,
+                                      vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
+            }
+            type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
+            std::vector<std::string_view> unique_mod_bases =
+                ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);
+            dangle_encoding = vrna_nucleotide_encode(sequence[i + 1], &vp.md);
+            return get_mod_energy(key, unique_mod_bases, mp, vp.p->dangle5[type][dangle_encoding],
+                                  ModLookup::Dangle5);
+        } else {
+            return 0;
+        }
     }
 };
 }  // namespace knotergy

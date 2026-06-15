@@ -173,11 +173,13 @@ class ViennaDangles {
     [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
                                                       const std::vector<MultiloopStem>& stems,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param& vp);
+                                                      vrna_md_param& vp,
+                                                      const all_mod_params& mp = {});
 
     [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param& vp);
+                                                      vrna_md_param& vp,
+                                                      const all_mod_params& mp = {});
 
     [[nodiscard]] static std::vector<MultiloopStem> populate_multiloop_stems(
         const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
