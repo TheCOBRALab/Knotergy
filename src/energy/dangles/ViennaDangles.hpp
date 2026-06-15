@@ -26,6 +26,8 @@ struct MultiloopStem {
     size_t end;         // Its pairing partner
     size_t prev_end;    // The end of the previous stem in the walk, used for checking contiguity
     unsigned int type;  // ViennaRNA pair type
+    int dangle5;        // Energy of 5' dangle for this stem
+    int dangle3;        // Energy of 3' dangle for this stem
 };
 
 // ------------------ Dangle 1 --------------------
