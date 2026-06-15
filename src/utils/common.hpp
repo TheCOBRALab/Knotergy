@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
