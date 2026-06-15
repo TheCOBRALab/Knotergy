@@ -78,12 +78,8 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
         if (line[0] == '>') {
             if (state != ParserState::UNINITIALIZED) {
                 if (current.sequence.empty() || current.structure.empty()) {
-                    THROW_ERROR("Error: Sequence and/or structure are empty for entry: " +
-                                current.name + ". Line number: " + std::to_string(line_number));
-                }
-                if (current.sequence.size() != current.structure.size()) {
-                    THROW_ERROR("Error: Sequence and structure are not the same length in entry: " +
-                                current.name + ". Line number: " + std::to_string(line_number));
+                    THROW_ERROR("Sequence and/or structure are empty for entry: " + current.name +
+                                ". Line number: " + std::to_string(line_number));
                 }
                 entries.push_back(current);
                 current = {};
@@ -106,7 +102,7 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
     if (!current.name.empty() && !current.name.empty() && !current.structure.empty()) {
         entries.push_back(current);
     } else if (!current.name.empty() && (current.sequence.empty() || current.structure.empty())) {
-        THROW_ERROR("Error: Sequence and/or structure are empty for entry: " + current.name +
+        THROW_ERROR("Sequence and/or structure are empty for entry: " + current.name +
                     ". Line number: " + std::to_string(line_number));
     }
 

@@ -299,7 +299,52 @@ int add_or_inf(int a, int b) {
     return a + b;
 }
 
-std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, vrna_md_param& vp) {
+// applies to closing pair and first child
+int compute_initial_ld5_for_d3(const MultiloopStem& stem, const ProcessedRNAEntry& pRNA,
+                               vrna_md_param& vp) {
+    const std::string& sequence = pRNA.get_sequence();
+    const std::vector<size_t>& pair_table = pRNA.get_pair_table();
+
+    if (stem.begin == 0) {
+        THROW_ERROR(
+            "Unexpected multiloop stem at position 0."
+            "ML with no closing pair does not make sense.");
+    }
+
+    const size_t dangle_pos = stem.begin - 1;
+    const int encoding = vrna_nucleotide_encode(sequence[dangle_pos], &vp.md);
+
+    int ld5 = vp.p->dangle5[stem.type][encoding];
+
+    // begin is end for closing pair
+    if (stem.begin < 2) {
+        return ld5;
+    }
+
+    // begin is end for closing pair
+    if (pair_table[stem.begin - 2] == NULL_INDEX) {
+        return ld5;
+    }
+
+    const size_t closing_5 = stem.begin - 2;
+    const size_t closing_3 = pair_table[closing_5];
+
+    if (closing_3 != NULL_INDEX) {
+        const unsigned int closing_type = ViennaUtils::get_pair_type(
+            sequence[static_cast<size_t>(closing_3)], sequence[closing_5], vp.md);
+
+        const int competing_dangle3 = vp.p->dangle3[closing_type][encoding];
+
+        if (competing_dangle3 < ld5) {
+            ld5 = 0;
+        }
+    }
+
+    return ld5;
+}
+
+std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node,
+                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
@@ -315,61 +360,23 @@ std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node, vrna_md_p
 
     // The closing pair is encountered from its 3' side while walking the multiloop.
     // n3d_inner and n5d_inner are reversed because the closing pair is flipped in orientation
-    int dangle5_closing = node.n5d_inner >= 0 ? vp.p->dangle5[node.r_pair_type][node.n3d_inner] : 0;
-    int dangle3_closing = node.n3d_inner >= 0 ? vp.p->dangle3[node.r_pair_type][node.n5d_inner] : 0;
+    int dangle5_closing = node.n3d_inner >= 0 ? vp.p->dangle5[node.r_pair_type][node.n3d_inner] : 0;
+    int dangle3_closing = node.n5d_inner >= 0 ? vp.p->dangle3[node.r_pair_type][node.n5d_inner] : 0;
     stems.push_back(MultiloopStem{node.end, node.begin, node.begin, node.r_pair_type,
                                   dangle5_closing, dangle3_closing});
 
+    MultiloopStem& closing_stem = stems.back();
+    closing_stem.initial_ld5 = compute_initial_ld5_for_d3(closing_stem, pRNA, vp);
+
+    MultiloopStem& start_stem = stems.front();
+    start_stem.initial_ld5 = compute_initial_ld5_for_d3(start_stem, pRNA, vp);
+
     return stems;
-}
-
-int prime_ld5_for_start_stem(const MultiloopStem& stem, const std::vector<size_t>& pair_table) {
-    // ViennaRNA equivalent:
-    //
-    // if (sn[j - 1] == sn[j]) {
-    //   ld5 = P->dangle5[type][s1[j - 1]];
-    //   if ((p = pt[j - 2]) && (sn[j - 2] == sn[j - 1]))
-    //     if (P->dangle3[pair[s[p]][s[j - 2]]][s1[j - 1]] < ld5)
-    //       ld5 = 0;
-    // }
-    //
-    // https://github.com/ViennaRNA/ViennaRNA/blob/v2.7.2/src/ViennaRNA/mfe/mfe_multibranch.c#L360C1-L386C2
-
-    if (stem.begin == 0) {
-        THROW_ERROR(
-            "Unexpected multiloop stem at position 0."
-            "ML with no closing pair does not make sense.");
-    }
-
-    int dangle5_closing = stem.dangle5;
-
-    // begin is actually end
-    if (stem.begin < 2) {
-        return dangle5_closing;
-    }
-
-    // begin is actually end.
-    if (pair_table[stem.begin - 2] == NULL_INDEX) {
-        return dangle5_closing;
-    }
-
-    const size_t closing_5 = stem.begin - 2;
-    const size_t closing_3 = pair_table[closing_5];
-
-    if (closing_3 != NULL_INDEX) {
-        const int dangle3_closing = stem.dangle3;
-        if (dangle3_closing < dangle5_closing) {
-            dangle5_closing = 0;
-        }
-    }
-
-    return dangle5_closing;
 }
 
 int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_prev,
                                  const std::vector<MultiloopStem>& stems, vrna_md_param& vp) {
     const std::string& sequence = pRNA.get_sequence();
-    const std::vector<size_t>& pair_table = pRNA.get_pair_table();
     const size_t stem_count = stems.size();
 
     const MultiloopStem& start_stem = stems[start_prev];
@@ -381,7 +388,7 @@ int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_pre
     size_t current = (start_prev + 1) % stem_count;
 
     // ld5 is the 5' dangle of the previous stem. (left dangle 5)
-    int ld5 = prime_ld5_for_start_stem(start_stem, pair_table);
+    int ld5 = start_stem.initial_ld5;
     int energy = 0;       // True energy of the current walk (including coaxial)
     int cx_energy = INF;  // Energy for coaxial
     int coaxial_ml_base_energy = vp.p->MLintern[1];
@@ -486,7 +493,7 @@ int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const Processe
         return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp);
     }
 
-    const std::vector<MultiloopStem> stems = build_multiloop_stems(node, vp);
+    const std::vector<MultiloopStem> stems = build_multiloop_stems(node, pRNA, vp);
 
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the

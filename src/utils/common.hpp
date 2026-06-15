@@ -97,6 +97,7 @@ class DetailedException : public std::runtime_error {
 
 /// Maximum value of size_t, used as a sentinel for "no index" or "invalid index".
 constexpr std::size_t NULL_INDEX = static_cast<std::size_t>(-1);
+constexpr int NULL_ENERGY = std::numeric_limits<int>::max();
 
 /**
  * @brief Trims leading and trailing whitespace from a string.
