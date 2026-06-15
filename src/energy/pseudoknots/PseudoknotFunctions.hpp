@@ -1,5 +1,6 @@
 #pragma once
 
+#include "energy/modified_bases/ModStack.hpp"
 #include "energy/modified_bases/ModifiedBasesFunctions.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "io/parameters/PseudoknotParams.hpp"

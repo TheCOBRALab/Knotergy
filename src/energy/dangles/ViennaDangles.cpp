@@ -300,8 +300,8 @@ int add_or_inf(int a, int b) {
 }
 
 // applies to closing pair and first child
-int compute_initial_ld5_for_d3(const MultiloopStem& stem, const ProcessedRNAEntry& pRNA,
-                               vrna_md_param& vp) {
+int ViennaDangles::compute_initial_ld5_for_d3(const MultiloopStem& stem,
+                                              const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<size_t>& pair_table = pRNA.get_pair_table();
 
@@ -343,8 +343,9 @@ int compute_initial_ld5_for_d3(const MultiloopStem& stem, const ProcessedRNAEntr
     return ld5;
 }
 
-std::vector<MultiloopStem> build_multiloop_stems(const LoopNode& node,
-                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+std::vector<MultiloopStem> ViennaDangles::populate_multiloop_stems(const LoopNode& node,
+                                                                   const ProcessedRNAEntry& pRNA,
+                                                                   vrna_md_param& vp) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
@@ -487,13 +488,12 @@ int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_pre
     return energy;
 }
 
-int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                            vrna_md_param& vp) {
+int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node,
+                                            const std::vector<MultiloopStem>& stems,
+                                            const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     if (node.children.empty()) {
         return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp);
     }
-
-    const std::vector<MultiloopStem> stems = build_multiloop_stems(node, pRNA, vp);
 
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the
@@ -509,5 +509,11 @@ int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const Processe
 
     return best;
 }
+
+int ViennaDangles::get_multibranch_dangle_3(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                            vrna_md_param& vp) {
+    std::vector<MultiloopStem> stems = populate_multiloop_stems(node, pRNA, vp);
+    return get_multibranch_dangle_3(node, stems, pRNA, vp);
+};
 
 }  // namespace knotergy

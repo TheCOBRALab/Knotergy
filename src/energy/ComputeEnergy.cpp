@@ -30,7 +30,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
     switch (node.loop_type) {
         case LoopType::Stack:
             if (has_modified_bases_) {
-                node_energy = ModifiedBasesFunctions::find_mod_stack_energy(
+                node_energy = ModStack::find_mod_stack_energy(
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_,
                     mod_sequence_, vp_, mp_);
             } else {

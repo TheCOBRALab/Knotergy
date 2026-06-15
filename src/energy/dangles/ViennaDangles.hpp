@@ -165,13 +165,22 @@ class ViennaDangles {
      * possible flush coaxial stacking.
      *
      * @param node The loop node representing the multibranch loop.
+     * @param stems The multiloop stems in the loop, with precomputed dangle energies.
      * @param pRNA Processed RNA entry.
      * @param vp ViennaRNA model and parameter bundle.
      * @return Optimal dangle/coaxial contribution in centicalories.
      */
     [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
+                                                      const std::vector<MultiloopStem>& stems,
                                                       const ProcessedRNAEntry& pRNA,
                                                       vrna_md_param& vp);
+
+    [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
+                                                      const ProcessedRNAEntry& pRNA,
+                                                      vrna_md_param& vp);
+
+    [[nodiscard]] static std::vector<MultiloopStem> populate_multiloop_stems(
+        const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
 
     /**
      * @brief Compute dangle energies for all child loop nodes.
@@ -288,6 +297,9 @@ class ViennaDangles {
         const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
         const DangleSet ml_dangle_energy);
 
-    // --------------- Dangle 3: Coaxial Stacking ------------------------
+    // ------------------- Dangle 3 (coaxial stacking) --------------------
+    [[nodiscard]] static int compute_initial_ld5_for_d3(const MultiloopStem& stem,
+                                                        const ProcessedRNAEntry& pRNA,
+                                                        vrna_md_param& vp);
 };
 }  // namespace knotergy

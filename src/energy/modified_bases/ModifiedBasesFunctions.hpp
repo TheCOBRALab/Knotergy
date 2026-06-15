@@ -1,6 +1,7 @@
 #pragma once
 
 #include "energy/dangles/ViennaDangles.hpp"
+#include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
@@ -8,65 +9,8 @@
 
 namespace knotergy {
 
-/**
- * @brief Enumeration of modified base energy lookup types.
- *
- * Specifies which type of energy parameter to look up for modified bases.
- */
-enum class ModLookup { Stacking, Terminal, Mismatch, Dangle5, Dangle3 };
-
-// Stores the differences in energy contributions due to modified bases
-struct ModDiffs {
-    ModDiffs(int terminal_diff, int mismatch_diff, int n5d_diff, int n3d_diff)
-        : terminalAU{terminal_diff}, mismatch{mismatch_diff}, n5d{n5d_diff}, n3d{n3d_diff} {}
-    const int terminalAU;
-    const int mismatch;
-    const int n5d;
-    const int n3d;
-};
-
 class ModifiedBasesFunctions {
    public:
-    /**
-     * @brief Calculate stacking energy for base pairs with modified bases.
-     *
-     * @param i 5' position of outer base pair.
-     * @param j 3' position of outer base pair.
-     * @param ci 5' position of inner base pair.
-     * @param cj 3' position of inner base pair.
-     * @param sequence The unmodified RNA nucleotide sequence.
-     * @param mod_sequence The modified RNA sequence (grapheme views).
-     * @param mp Vector of modified base parameters.
-     * @return Stacking energy in centicalories, accounting for modified bases.
-     */
-    [[nodiscard]] static int find_mod_stack_energy(
-        size_t i, size_t j, size_t ci, size_t cj, const std::string& sequence,
-        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
-        const all_mod_params& mp);
-
-    /**
-     * @brief Overload of find_mod_stack_energy that takes BasePair objects and a ProcessedRNAEntry.
-     *
-     * This is a convenience function that extracts the necessary information from the
-     * BasePair objects and ProcessedRNAEntry to call the main find_mod_stack_energy function.
-     *
-     * @param bp The outer base pair.
-     * @param next_bp The inner base pair that stacks with the outer base pair.
-     * @param processed_rna The processed RNA entry containing sequence and modifications.
-     * @param vp ViennaRNA model and parameters.
-     * @param mp Vector of modified base parameters.
-     * @return Stacking energy in centicalories, accounting for modified bases.
-     *
-     */
-    [[nodiscard]] static int find_mod_stack_energy(const BasePair& bp, const BasePair& next_bp,
-                                                   const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp, const all_mod_params& mp) {
-        const std::string& sequence = processed_rna.get_sequence();
-        const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
-        return find_mod_stack_energy(bp.i, bp.j, next_bp.i, next_bp.j, sequence, mod_sequence, vp,
-                                     mp);
-    }
-
     /**
      * @brief Calculate multiloop energy with modified bases.
      *
@@ -117,52 +61,6 @@ class ModifiedBasesFunctions {
      */
     [[nodiscard]] static int update_energy(const ModDiffs& diffs, int n5d, int n3d,
                                            unsigned int type, vrna_md_param& vp);
-
-    /**
-     * @brief Find unique modified bases at specified sequence positions.
-     *
-     * @param indices Vector of sequence indices to check.
-     * @param mod_sequence The modified RNA sequence (grapheme views).
-     * @return Vector of unique modified base string views found at those positions.
-     */
-    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_indices(
-        std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence);
-
-    // Finds unique modified bases at the inner edge of a loop (i, j, i+1, j-1)
-    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_inner_edge(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence);
-
-    // Finds unique modified bases at the outer edge of a loop (i, j, i-1, j+1)
-    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_outer_edge(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence);
-
-    /**
-     * @brief Join string views at specified indices into a single string.
-     *
-     * @param indices Vector of sequence indices.
-     * @param mod_sequence The modified RNA sequence (grapheme views).
-     * @return Concatenated string of bases at the specified indices.
-     */
-    [[nodiscard]] static std::string join_string_views(
-        std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence);
-
-    /**
-     * @brief Get modified energy or fall back to unmodified energy.
-     *
-     * Looks up the modified energy parameter for a given key and modified bases.
-     * Returns the unmodified energy if no modified parameter is found.
-     *
-     * @param key The parameter key to look up.
-     * @param modified Vector of modified base identifiers.
-     * @param mp Vector of modified base parameters.
-     * @param unmod_energy The unmodified energy to use as fallback.
-     * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
-     * @return Energy value in centicalories.
-     */
-    [[nodiscard]] static int get_mod_energy(const std::string& key,
-                                            const std::vector<std::string_view>& modified,
-                                            const all_mod_params& mp, int unmod_energy,
-                                            ModLookup lookup_type);
 
     /**
      * @brief Modify a DangleSet's energies based on modified base energy

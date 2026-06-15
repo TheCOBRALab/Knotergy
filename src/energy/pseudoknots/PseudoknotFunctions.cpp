@@ -130,10 +130,9 @@ double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& 
                                             const knotergy::pk_param& pkp, bool round) {
     const std::string& sequence = processed_rna.get_sequence();
 
-    int stack_energy =
-        processed_rna.has_modified_bases()
-            ? ModifiedBasesFunctions::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp)
-            : ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
+    int stack_energy = processed_rna.has_modified_bases()
+                           ? ModStack::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp)
+                           : ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
 
     double stack_penalty = stack_energy * pkp.pk_stack_x;
     return round ? std::round(stack_penalty) : stack_penalty;

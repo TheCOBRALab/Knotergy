@@ -2,66 +2,6 @@
 
 namespace knotergy {
 
-// Returns a vector of unique modified bases found at the specified indices
-std::vector<std::string_view> ModifiedBasesFunctions::unique_modified_bases_at_indices(
-    std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
-    std::vector<std::string_view> modified;
-    modified.reserve(indices.size());
-    for (size_t idx : indices) {
-        if (!RNAProcessor::is_unmod_base(mod_sequence[idx]) &&
-            std::find(modified.begin(), modified.end(), mod_sequence[idx]) == modified.end()) {
-            modified.push_back(mod_sequence[idx]);
-        }
-    }
-    return modified;
-}
-
-std::vector<std::string_view> ModifiedBasesFunctions::unique_modified_bases_at_inner_edge(
-    size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
-    return unique_modified_bases_at_indices({i, j, i + 1, j - 1}, mod_sequence);
-}
-
-std::vector<std::string_view> ModifiedBasesFunctions::unique_modified_bases_at_outer_edge(
-    size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
-    std::vector<size_t> indices;
-    indices.reserve(4);
-    indices.push_back(i);
-    indices.push_back(j);
-    if (i > 0) indices.push_back(i - 1);
-    if (j + 1 < mod_sequence.size()) indices.push_back(j + 1);
-    return unique_modified_bases_at_indices(indices, mod_sequence);
-}
-
-// Gets the modified energy of a stack
-int ModifiedBasesFunctions::find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
-                                                  const std::string& sequence,
-                                                  const std::vector<std::string_view>& mod_sequence,
-                                                  vrna_md_param& vp, const all_mod_params& mp) {
-    // Get unmodified energy first to use as fallback if no modified nucleotides are found
-    int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
-
-    // Find all modified bases at the inner edge of the stack (i, j, i+1, j-1)
-    std::vector<std::string_view> unique_mod_bases =
-        unique_modified_bases_at_inner_edge(i, j, mod_sequence);
-    if (unique_mod_bases.empty()) return unmod_energy;
-
-    // Used to look up stacking energies in modified base parameters
-    std::string l_key = join_string_views({i, ci, j, cj}, mod_sequence);
-
-    // Get energy correction for modified bases (returns original energy if no modifications found)
-    int e = get_mod_energy(l_key, unique_mod_bases, mp, unmod_energy, ModLookup::Stacking);
-
-    // // uncomment if you want values to match RNAfold, but note this is likely a bug in RNAfold
-    // // If no key found for the stack, try looking up the reverse stack (ci, i, cj, j)
-    // if (e == unmod_energy) {
-    //     std::string r_key = join_string_views({cj, j, ci, i}, mod_sequence);
-    //     e = get_mod_energy(r_key, unique_mod_bases, mp, unmod_energy,
-    //     ModLookup::Stacking);
-    // }
-
-    return e;
-}
-
 struct ModNode {
     unsigned int type;
     int n5d;
@@ -95,7 +35,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
         const LoopNode& child = *children[idx];
 
         std::vector<std::string_view> unique_mod_bases =
-            unique_modified_bases_at_outer_edge(child.begin, child.end, mod_sequence);
+            ModBaseUtils::unique_modified_bases_at_outer_edge(child.begin, child.end, mod_sequence);
         if (unique_mod_bases.empty()) continue;  // no modified bases in this child, skip to next
 
         // Get encoding of pair type and dangles for this child loop
@@ -150,6 +90,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 
     // Get dangle energies for all children and closing pair if dangles == 1
     std::vector<DangleSet> children_dangle_sets;
+    std::vector<MultiloopStem> multiloop_stems;
     DangleSet closing_set;
     DangleSet empty_set;  // Used when dangles != 1 to avoid checking condition in loop
     int energy = 0;
@@ -157,7 +98,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     size_t j = node.end;
     const std::string& sequence = pRNA.get_sequence();
     std::vector<std::string_view> unique_mod_bases =
-        unique_modified_bases_at_inner_edge(i, j, mod_sequence);
+        ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
 
     if (!unique_mod_bases.empty()) {
         unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
@@ -170,7 +111,9 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
                 node.children, pRNA, vp, is_external);
             closing_set = ViennaDangles::get_ml_closing_dangle_energy(node, pRNA, vp);
             modify_dangle_set(closing_set, diffs);
-        } else if (vp.md.dangles != 1) {
+        } else if (vp.md.dangles == 3) {
+            multiloop_stems = ViennaDangles::populate_multiloop_stems(node, pRNA, vp);
+        } else {
             energy = ViennaFunctions::multibranch_energy(node, pRNA, vp);
             energy += update_energy(diffs, n5d, n3d, pair_type, vp);
         }
@@ -181,7 +124,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
         size_t ci = node.children[idx]->begin;
         size_t cj = node.children[idx]->end;
         std::vector<std::string_view> child_unique_mod_bases =
-            unique_modified_bases_at_outer_edge(ci, cj, mod_sequence);
+            ModBaseUtils::unique_modified_bases_at_outer_edge(ci, cj, mod_sequence);
         if (child_unique_mod_bases.empty())
             continue;  // no modified bases in this child, skip to next
 
@@ -193,6 +136,11 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
         if (vp.md.dangles == 1) {
             DangleSet& current_set = (vp.md.dangles == 1) ? children_dangle_sets[idx] : closing_set;
             modify_dangle_set(current_set, child_diffs);
+        } else if (vp.md.dangles == 3) {
+            // Update the dangle energies for this child stem in the multiloop
+            MultiloopStem& stem = multiloop_stems[idx];
+            stem.dangle5 += child_diffs.n5d;
+            stem.dangle3 += child_diffs.n3d;
         } else {
             energy += update_energy(child_diffs, child_n5d, child_n3d, c_pair_type, vp);
         }
@@ -204,83 +152,6 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     }
 
     return energy;
-}
-
-// Uses lookup key to get the energy from the modified base parameter file
-int ModifiedBasesFunctions::get_mod_energy(const std::string& key,
-                                           const std::vector<std::string_view>& unique_mod_bases,
-                                           const all_mod_params& mp, int unmod_energy,
-                                           ModLookup lookup_type) {
-    // If no modified bases are present, return the unmodified energy
-    if (unique_mod_bases.empty()) {
-        return static_cast<int>(unmod_energy);
-    }
-
-    // Get the pointer to the correct energy map based on lookup type
-    for (const std::string_view& mod_base : unique_mod_bases) {
-        const modified_base_param* param = mp.get_modified_base_param(std::string(mod_base));
-
-        if (!param) {
-            THROW_ERROR("Modified base '" + std::string(mod_base) +
-                        "' found in sequence but no parameters provided for it.");
-        }
-
-        const std::map<std::string, float>* energy_lookup = nullptr;
-        switch (lookup_type) {
-            case ModLookup::Stacking:
-                energy_lookup = &param->stacking_energies();
-                break;
-            case ModLookup::Terminal:
-                energy_lookup = &param->terminal_energies();
-                break;
-            case ModLookup::Mismatch:
-                energy_lookup = &param->mismatch_energies();
-                break;
-            case ModLookup::Dangle5:
-                energy_lookup = &param->dangle5_energies();
-                break;
-            case ModLookup::Dangle3:
-                energy_lookup = &param->dangle3_energies();
-                break;
-            default:
-                THROW_ERROR("Invalid ModLookup type: " +
-                            std::to_string(static_cast<int>(lookup_type)));
-                break;
-        }
-
-        // If the map exists, look up the energy for this key and return if found
-        if (energy_lookup) {
-            auto it = energy_lookup->find(key);
-            if (it != energy_lookup->end()) {
-                int mod_energy = static_cast<int>(it->second * 100);
-                // std::cout << "Modified base energy found for key: " << key << " -> " <<
-                // mod_energy
-                //           << " Diff: " << mod_energy - unmod_energy
-                //           << std::endl;
-                return mod_energy;
-            }
-        }
-    }
-
-    return static_cast<int>(unmod_energy);
-}
-
-// Joins string views at specified indices into a single string
-// Move to general utilities
-std::string ModifiedBasesFunctions::join_string_views(
-    std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
-    std::string key;
-    size_t total = 0;
-
-    // Calculate total size needed
-    for (size_t idx : indices) total += mod_sequence[idx].size();
-    key.reserve(total);
-
-    // Concatenate string views
-    for (size_t idx : indices) {
-        key.append(mod_sequence[idx]);
-    }
-    return key;
 }
 
 void ModifiedBasesFunctions::modify_dangle_set(DangleSet& dangle_set, ModDiffs diffs) {
@@ -308,40 +179,45 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     // Unmodified energies for exterior stem (mismatch, dangle5, dangle3, terminalAU)
     if (n5d >= 0 && n3d >= 0) {
         mismatch = is_external ? P->mismatchExt[type][n5d][n3d] : P->mismatchM[type][n5d][n3d];
-        mismatch_key = is_closing
-                           ? join_string_views({node.end, node.end - 1, node.begin, node.begin + 1},
-                                               mod_sequence)
-                           : join_string_views({node.begin, node.begin - 1, node.end, node.end + 1},
-                                               mod_sequence);
+        mismatch_key =
+            is_closing ? ModBaseUtils::join_string_views(
+                             {node.end, node.end - 1, node.begin, node.begin + 1}, mod_sequence)
+                       : ModBaseUtils::join_string_views(
+                             {node.begin, node.begin - 1, node.end, node.end + 1}, mod_sequence);
     }
 
     if (n5d >= 0) {
         dangle5 = P->dangle5[type][n5d];
-        dangle5_key = is_closing
-                          ? join_string_views({node.begin, node.end, node.end - 1}, mod_sequence)
-                          : join_string_views({node.begin, node.end, node.begin - 1}, mod_sequence);
+        dangle5_key = is_closing ? ModBaseUtils::join_string_views(
+                                       {node.begin, node.end, node.end - 1}, mod_sequence)
+                                 : ModBaseUtils::join_string_views(
+                                       {node.begin, node.end, node.begin - 1}, mod_sequence);
     }
 
     if (n3d >= 0) {
         dangle3 = P->dangle3[type][n3d];
-        dangle3_key = is_closing
-                          ? join_string_views({node.begin, node.end, node.begin + 1}, mod_sequence)
-                          : join_string_views({node.begin, node.end, node.end + 1}, mod_sequence);
+        dangle3_key = is_closing ? ModBaseUtils::join_string_views(
+                                       {node.begin, node.end, node.begin + 1}, mod_sequence)
+                                 : ModBaseUtils::join_string_views(
+                                       {node.begin, node.end, node.end + 1}, mod_sequence);
     }
 
     if (type > 2) {
         terminal = P->TerminalAU;
-        terminal_key = is_closing ? join_string_views({node.end, node.begin}, mod_sequence)
-                                  : join_string_views({node.begin, node.end}, mod_sequence);
+        terminal_key = is_closing
+                           ? ModBaseUtils::join_string_views({node.end, node.begin}, mod_sequence)
+                           : ModBaseUtils::join_string_views({node.begin, node.end}, mod_sequence);
     }
 
     // Get modified energies
-    int modMismatch =
-        get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch, ModLookup::Mismatch);
-    int modDangle5 = get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5, ModLookup::Dangle5);
-    int modDangle3 = get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3, ModLookup::Dangle3);
-    int modTerminal =
-        get_mod_energy(terminal_key, unique_mod_bases, mp, terminal, ModLookup::Terminal);
+    int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch,
+                                                   ModLookup::Mismatch);
+    int modDangle5 = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
+                                                  ModLookup::Dangle5);
+    int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
+                                                  ModLookup::Dangle3);
+    int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
+                                                   ModLookup::Terminal);
 
     // Calculate differences
     if (vp.md.dangles == 0) {
