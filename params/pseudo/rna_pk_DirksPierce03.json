@@ -1,0 +1,16 @@
+{
+  "pseudoknot_parameters": {
+    "name": "Dirks-Pierce 2003 pseudoknot parameters from HotKnotsV1",
+    "pk_in_ext" : 960,
+    "pk_in_mloop" : 1500,
+    "pk_in_pk" : 1500,
+    "band" : 20,
+    "unpaired_in_pk": 10,
+    "cr_in_pk": 10,
+    "pk_stack_x": 0.83,
+    "pk_internal_x": 0.83,
+    "pk_mloop_init": 340,
+    "pk_mloop_bp": 40,
+    "pk_mloop_unpaired": 0
+  }
+}

@@ -17,7 +17,7 @@ const std::string DP_file =
 const std::string turner_file =
     std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
 const std::string pkp_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09.json";
 const std::string mod_folder = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
 
 inline static double get_energy(std::string sequence, std::string structure, int dangle = 2,

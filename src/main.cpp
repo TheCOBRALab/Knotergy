@@ -91,7 +91,7 @@ int run_knotergy(int argc, char** argv) {
         std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
 
     std::string pseudo_param_file =
-        std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09_HotKnotsV2.json";
+        std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09.json";
 
     bool round = false;
     bool verbose = false;
