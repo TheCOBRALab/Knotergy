@@ -1,6 +1,5 @@
 #pragma once
 #include "energy/vienna/ViennaUtils.hpp"
-#include "loop_tree/bands/BasePair.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
 #include <vector>

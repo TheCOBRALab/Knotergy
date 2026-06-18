@@ -1,0 +1,71 @@
+#pragma once
+#include "loop_tree/bands/Band.hpp"
+#include "preprocessing/ClosedRegion.hpp"
+
+#include <vector>
+
+namespace knotergy {
+
+class BandBuilder {
+   public:
+    /**
+     * @brief Construct a Band from boundary positions and pairing information.
+     *
+     * Performs validation on the band structure and pairing.
+     * Combines both left and right scans to find all base pairs and their children.
+     *
+     *
+     * @param lb Left border position.
+     * @param li Left inner position.
+     * @param ri Right inner position.
+     * @param rb Right border position.
+     * @param pair_table Base-pair index mapping for the structure.
+     * @param cr_pair_table Closed region pairing indices.
+     * @throws DetailedException if band structure is invalid.
+     */
+    static Band construct_band(size_t lb, size_t li, size_t ri, size_t rb,
+                               const std::vector<size_t>& pair_table,
+                               const std::vector<size_t>& cr_pair_table);
+
+    // Convenience method (BandBounds stores lb, li, ri, rb)
+    static Band construct_band(BandBounds bounds, const std::vector<size_t>& pair_table,
+                               const std::vector<size_t>& cr_pair_table);
+
+   private:
+    /**
+     * @brief Build the list of base pairs that participate in the band.
+     *
+     * Scans left arm for base pairs that are part of the band.
+     * Stores nested children only from the left arm.
+     *
+     * @param lb Left border position.
+     * @param li Left inner position.
+     * @param ri Right inner position.
+     * @param rb Right border position.
+     * @param pair_table Base-pair index mapping for the structure.
+     * @param cr_pair_table Closed region pairing indices.
+     * @param child_count Reference to the count of child nodes.
+     * @return Vector of BasePair objects representing the base pairs in the band.
+     *
+     */
+    static std::vector<BasePair> find_base_pairs_left_scan(size_t lb, size_t li, size_t ri,
+                                                           size_t rb,
+                                                           const std::vector<size_t>& pair_table,
+                                                           const std::vector<size_t>& cr_pair_table,
+                                                           int& child_count);
+
+    /**
+     * @brief Populate closed region children from children of the right arm.
+     *
+     * @param base_pairs Vector of BasePair objects to populate.
+     * @param ri Right inner position.
+     * @param rb Right border position.
+     * @param cr_pair_table Closed region pairing indices.
+     * @param child_count Reference to the count of child nodes.
+     */
+    static void populate_right_arm_children(std::vector<BasePair>& base_pairs, size_t ri, size_t rb,
+                                            const std::vector<size_t>& cr_pair_table,
+                                            int& child_count);
+};
+
+}  // namespace knotergy

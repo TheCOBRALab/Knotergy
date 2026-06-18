@@ -1,5 +1,7 @@
 #include "BandFinder.hpp"
 
+#include "BandBuilder.hpp"
+
 namespace knotergy {
 
 // Returns all bands within the specified region
@@ -46,8 +48,8 @@ std::vector<Band> BandFinder::find_bands(size_t cr_start, size_t cr_end, LoopTyp
             find_stem_inner_indices(band_start, band_end, aux_bands, pair_table);
 
         // Create the band and add to list
-        bands.emplace_back(band_start, left_inner, right_inner, band_end, pair_table,
-                           cr_pair_table);
+        BandBounds bounds{band_start, left_inner, right_inner, band_end};
+        bands.push_back(BandBuilder::construct_band(bounds, pair_table, cr_pair_table));
 
         band_start = aux_bands[left_inner].next;
     }
