@@ -28,6 +28,18 @@ namespace knotergy {
  * code.
  */
 class ProcessedRNAEntry {
+   private:
+    std::string name_;                                  // RNA entry name.
+    std::string raw_sequence_;                          // Raw RNA input sequence
+    std::string structure_;                             // Dot-bracket RNA structure string.
+    std::string sequence_;                              // Unmodified RNA nucleotide sequence.
+    std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
+    std::vector<size_t> pair_table_;                    // Base-pair indices for each position.
+    std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
+    std::vector<size_t> closed_regions_pair_table_;     // Closed regions boundary indicies.
+    std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
+    bool has_modified_bases_ = false;                   // Whether modified bases are present.
+
    public:
     /**
      * @brief Construct a ProcessedRNAEntry with precomputed annotations.
@@ -249,18 +261,6 @@ class ProcessedRNAEntry {
 
         return out;
     }
-
-   private:
-    std::string name_;                                  // RNA entry name.
-    std::string raw_sequence_;                          // Raw RNA input sequence
-    std::string structure_;                             // Dot-bracket RNA structure string.
-    std::string sequence_;                              // Unmodified RNA nucleotide sequence.
-    std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
-    std::vector<size_t> pair_table_;                    // Base-pair indices for each position.
-    std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
-    std::vector<size_t> closed_regions_pair_table_;     // Closed regions boundary indicies.
-    std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
-    bool has_modified_bases_ = false;                   // Whether modified bases are present.
 };
 
 }  // namespace knotergy
