@@ -118,14 +118,15 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
 int ViennaFunctions::internal_loop_energy(const LoopNode& node, vrna_md_param& vp) {
     size_t i = node.begin;
     size_t j = node.end;
-    size_t ci = node.children[0]->begin;
-    size_t cj = node.children[0]->end;
+    LoopNode* child = node.children[0].get();
+    size_t ci = child->begin;
+    size_t cj = child->end;
     unsigned int type = node.pair_type;
-    unsigned int rc_type = node.children[0]->r_pair_type;  // reverse child pair type
+    unsigned int rc_type = child->r_pair_type;  // reverse child pair type
     int si1 = node.n5d_inner;
     int sj1 = node.n3d_inner;
-    int sp1 = node.children[0]->n5d_outer;
-    int sq1 = node.children[0]->n3d_outer;
+    int sp1 = child->n5d_outer;
+    int sq1 = child->n3d_outer;
 
     unsigned int n1 = static_cast<unsigned int>(ci - i - 1);  // unpaired bases 5' side
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
