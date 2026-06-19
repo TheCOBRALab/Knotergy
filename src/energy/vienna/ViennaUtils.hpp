@@ -62,17 +62,11 @@ class ViennaUtils {
         // is surpiseingly expensive.
 
         // Encode dangling nucleotides based on ViennaRNA's dangle settings
-        if (md.dangles != 0) {
-            std::tie(node.n5d_outer, node.n3d_outer) =
-                encode_outer_dangles(i, j, sequence, pair_table, md);
+        std::tie(node.n5d_outer, node.n3d_outer) =
+            encode_outer_dangles(i, j, sequence, pair_table, md);
 
-            // Stacked pairs don't have inner dangles even in dangle mode 2
-            if (node.loop_type != LoopType::Stack) {
-                std::tie(node.n5d_inner, node.n3d_inner) =
-                    encode_inner_dangles(i, j, sequence, pair_table, md);
-            }
-        } else if (node.loop_type == LoopType::Hairpin) {
-            // Hairpins always have inner dangles even in dangle mode 0
+        // Stacked pairs don't have inner dangles even in dangle mode 2
+        if (node.loop_type != LoopType::Stack) {
             std::tie(node.n5d_inner, node.n3d_inner) =
                 encode_inner_dangles(i, j, sequence, pair_table, md);
         }
@@ -104,8 +98,6 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
         const size_t i, const size_t j, const std::string& sequence,
         const std::vector<size_t>& pair_table, vrna_md_t& md) {
-        if (md.dangles == 0) return std::make_tuple(-1, -1);
-
         bool has_5d_dangle_out =
             i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
 

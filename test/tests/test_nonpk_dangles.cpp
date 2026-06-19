@@ -32,6 +32,17 @@ TEST(Dangles, empty) {
     EXPECT_NEAR(d3, 0, 0.000005);
 }
 
+TEST(Dangles, internal_loop) {
+    std::string sequence  = "CUAUUAAAUUUUUUA";
+    std::string structure = "..(..(...)..)..";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 7.20, 0.000005);
+    EXPECT_NEAR(d1, 6.70, 0.000005);
+    EXPECT_NEAR(d2, 6.70, 0.000005);
+    EXPECT_NEAR(d3, 6.70, 0.000005);
+}
+
 TEST(Dangles, external_simple) {
     std::string sequence = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
     std::string structure = ".(((((.........................))))).";
