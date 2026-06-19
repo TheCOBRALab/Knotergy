@@ -1,6 +1,7 @@
 #pragma once
 
-#include "energy/dangles/ViennaDangles.hpp"
+#include "energy/dangles/CoaxialStacking.hpp"
+#include "energy/dangles/Dangle1.hpp"
 #include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "preprocessing/RNAProcessor.hpp"

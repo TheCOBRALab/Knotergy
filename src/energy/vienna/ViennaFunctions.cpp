@@ -146,11 +146,11 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
 
     // ------------------ Dangle Energies ------------------
     if (vp.md.dangles == 1) {
-        return ViennaDangles::get_multibranch_dangle_1(node, pRNA, vp) + penalties;
+        return Dangle1::get_multibranch_dangle_1(node, pRNA, vp) + penalties;
     }
 
     if (vp.md.dangles == 3) {
-        return ViennaDangles::get_multibranch_dangle_3(node, pRNA, vp) + penalties;
+        return CoaxialStacking::get_multibranch_dangle_3(node, pRNA, vp) + penalties;
     }
 
     int energy = penalties;
@@ -172,7 +172,7 @@ int ViennaFunctions::external_energy(const std::vector<std::unique_ptr<LoopNode>
                                      const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     // ------------------ Dangle 1 Energy ------------------
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
-        return ViennaDangles::get_external_dangle_1(children, pRNA, vp);
+        return Dangle1::get_external_dangle_1(children, pRNA, vp);
     }
 
     // ------------------ No dangles or dangle type 2 ------------------

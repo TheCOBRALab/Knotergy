@@ -23,7 +23,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
 
     if (vp.md.dangles == 1) {
         all_dangle_sets =
-            ViennaDangles::populate_children_dangle_energies(children, pRNA, vp, is_external);
+            Dangle1::populate_children_dangle_energies(children, pRNA, vp, is_external);
     } else {
         energy = ViennaFunctions::external_energy(children, pRNA, vp);
     }
@@ -56,7 +56,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
     }
 
     if (vp.md.dangles == 1) {
-        energy = ViennaDangles::get_external_dangle_1(children, all_dangle_sets);
+        energy = Dangle1::get_external_dangle_1(children, all_dangle_sets);
     }
 
     return energy;
@@ -107,12 +107,12 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
                                        vp, mp, is_external, is_closing);
 
         if (vp.md.dangles == 1) {
-            children_dangle_sets = ViennaDangles::populate_children_dangle_energies(
-                node.children, pRNA, vp, is_external);
-            closing_set = ViennaDangles::get_ml_closing_dangle_energy(node, pRNA, vp);
+            children_dangle_sets =
+                Dangle1::populate_children_dangle_energies(node.children, pRNA, vp, is_external);
+            closing_set = Dangle1::get_ml_closing_dangle_energy(node, pRNA, vp);
             modify_dangle_set(closing_set, diffs);
         } else if (vp.md.dangles == 3) {
-            multiloop_stems = ViennaDangles::populate_multiloop_stems(node, pRNA, vp);
+            multiloop_stems = CoaxialStacking::populate_multiloop_stems(node, pRNA, vp);
             MultiloopStem& closing_stem =
                 multiloop_stems.back();  // closing stem is last in the vector
             closing_stem.dangle5 += diffs.n5d;
@@ -152,10 +152,10 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 
     // Compute the energy of dangle 1 of multiloop
     if (vp.md.dangles == 1) {
-        energy = ViennaDangles::get_multibranch_dangle_1(node, children_dangle_sets, closing_set);
+        energy = Dangle1::get_multibranch_dangle_1(node, children_dangle_sets, closing_set);
     }
     if (vp.md.dangles == 3) {
-        energy = ViennaDangles::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
+        energy = CoaxialStacking::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
     }
 
     return energy;

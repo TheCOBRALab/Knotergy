@@ -1,6 +1,7 @@
 #pragma once
 
-#include "energy/dangles/ViennaDangles.hpp"
+#include "energy/dangles/CoaxialStacking.hpp"
+#include "energy/dangles/Dangle1.hpp"
 #include "energy/vienna/ViennaUtils.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopNode.hpp"

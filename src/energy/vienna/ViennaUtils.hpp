@@ -1,7 +1,7 @@
 #pragma once
 
-// This file is separate from ViennaFunctions.hpp to avoid circular dependencies (ViennaDangles.hpp
-// needs ViennaUtils.hpp)
+// This file is separate from ViennaFunctions.hpp to avoid circular dependencies
+// And helps seperate concerns of energy calculation and ViennaRNA encoding details
 
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopNode.hpp"
