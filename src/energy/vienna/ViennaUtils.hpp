@@ -43,7 +43,6 @@ class ViennaUtils {
                                         vrna_md_param& vp) {
         if (node.loop_type == LoopType::External) return;  // Doesn't have pairings
         const std::string& sequence = pRNA.get_sequence();
-        size_t n = sequence.size();
         const std::vector<size_t>& pair_table = pRNA.get_pair_table();
         vrna_md_s& md = vp.md;
 
@@ -62,26 +61,20 @@ class ViennaUtils {
         // NOTE: Not using this file's helper functions since encoding nucleotides multiple times
         // is surpiseingly expensive.
 
-        // Helper to determine if we have dangling nucleotides for each position
-        bool has_5d_dangle_out = i > 0 && (md.dangles == 2 || pair_table[i - 1] == NULL_INDEX);
-        bool has_3d_dangle_out = j + 1 < n && (md.dangles == 2 || pair_table[j + 1] == NULL_INDEX);
-        bool has_5d_dangle_in = (md.dangles == 2) || (pair_table[i + 1] == NULL_INDEX);
-        bool has_3d_dangle_in = (md.dangles == 2) || (pair_table[j - 1] == NULL_INDEX);
-
         // Encode dangling nucleotides based on ViennaRNA's dangle settings
         if (md.dangles != 0) {
-            node.n5d_outer = has_5d_dangle_out ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
-            node.n3d_outer = has_3d_dangle_out ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
+            std::tie(node.n5d_outer, node.n3d_outer) =
+                encode_outer_dangles(i, j, sequence, pair_table, md);
 
             // Stacked pairs don't have inner dangles even in dangle mode 2
-            if (node.loop_type == LoopType::Stack) return;
-            node.n5d_inner = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
-            node.n3d_inner = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
-            return;
+            if (node.loop_type != LoopType::Stack) {
+                std::tie(node.n5d_inner, node.n3d_inner) =
+                    encode_inner_dangles(i, j, sequence, pair_table, md);
+            }
         } else if (node.loop_type == LoopType::Hairpin) {
             // Hairpins always have inner dangles even in dangle mode 0
-            node.n5d_inner = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
-            node.n3d_inner = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
+            std::tie(node.n5d_inner, node.n3d_inner) =
+                encode_inner_dangles(i, j, sequence, pair_table, md);
         }
     }
 
@@ -111,15 +104,17 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
         const size_t i, const size_t j, const std::string& sequence,
         const std::vector<size_t>& pair_table, vrna_md_t& md) {
-        int encoded_i =
-            i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3))
-                ? vrna_nucleotide_encode(sequence[i - 1], &md)
-                : -1;
-        int encoded_j = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
-                                                    (md.dangles != 1 && md.dangles != 3))
-                            ? vrna_nucleotide_encode(sequence[j + 1], &md)
-                            : -1;
-        return std::make_tuple(encoded_i, encoded_j);
+        if (md.dangles == 0) return std::make_tuple(-1, -1);
+
+        bool has_5d_dangle_out =
+            i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
+
+        bool has_3d_dangle_out = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
+                                                             (md.dangles != 1 && md.dangles != 3));
+
+        int n5d_dangle = has_5d_dangle_out ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
+        int n3d_dangle = has_3d_dangle_out ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
+        return std::make_tuple(n5d_dangle, n3d_dangle);
     }
 
     /**
@@ -151,12 +146,13 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
         const size_t i, const size_t j, const std::string& sequence,
         const std::vector<size_t>& pair_table, vrna_md_t& md) {
-        int encoded_i = pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
-                            ? vrna_nucleotide_encode(sequence[i + 1], &md)
-                            : -1;
-        int encoded_j = pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3)
-                            ? vrna_nucleotide_encode(sequence[j - 1], &md)
-                            : -1;
+        bool has_5d_dangle_in =
+            (pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
+        bool has_3d_dangle_in =
+            (pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
+
+        int encoded_i = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
+        int encoded_j = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
         return std::make_tuple(encoded_i, encoded_j);
     }
 
