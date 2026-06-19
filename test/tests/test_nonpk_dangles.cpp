@@ -33,7 +33,7 @@ TEST(Dangles, empty) {
 }
 
 TEST(Dangles, internal_loop) {
-    std::string sequence  = "CUAUUAAAUUUUUUA";
+    std::string sequence = "CUAUUAAAUUUUUUA";
     std::string structure = "..(..(...)..)..";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -217,6 +217,27 @@ TEST(Dangles, multiloop_loop_BDangle) {
     EXPECT_NEAR(d1, 13.40, 0.000005);
     EXPECT_NEAR(d2, 12.40, 0.000005);
     EXPECT_NEAR(d3, 11.90, 0.000005);
+}
+
+TEST(Dangles, multiloop_right_touch_left_dangle) {
+    std::string sequence = "UUAAAAUUGAAACA";
+    std::string structure = "(.(...).(...))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 19.40, 0.000005);
+    EXPECT_NEAR(d1, 18.90, 0.000005);
+    EXPECT_NEAR(d2, 16.80, 0.000005);
+    EXPECT_NEAR(d3, 16.00, 0.000005);
+}
+TEST(Dangles, multiloop_both_dangles) {
+    std::string sequence = "UCUAAAAUAGAAACAG";
+    std::string structure = "(.(...)..(...).)";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 19.40, 0.000005);
+    EXPECT_NEAR(d1, 16.90, 0.000005);
+    EXPECT_NEAR(d2, 16.40, 0.000005);
+    EXPECT_NEAR(d3, 15.80, 0.000005);
 }
 
 // echo -e

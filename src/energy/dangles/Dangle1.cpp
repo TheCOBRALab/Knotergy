@@ -159,7 +159,7 @@ int Dangle1::process_chain(const std::vector<size_t>& chain,
             cur[RightFree] = std::min({RFreeD0, RFreeDL, RTakenD0});
         } else {
             cur[RightFree] = std::min({RFreeD0, RFreeDL, RTakenD0});
-            cur[RightTaken] = std::min({RFreeDL, RFreeDR, RTakenDR, RFreeDB});
+            cur[RightTaken] = std::min({RFreeDR, RTakenDR, RFreeDB});
         }
 
         // Sanity check for overflow
@@ -242,16 +242,18 @@ int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>& dangle_ch
     }
 
     if (back_contig) {
-        return process_chains(dangle_chains, dangle_energies, false, {0, closing.best_left()});
+        return process_chains(dangle_chains, dangle_energies, false,
+                              {closing.best_right(), closing.best()});
     }
 
     // Neither end is contiguous, but both can dangle
-    const int chain1 =
-        process_chains(dangle_chains, dangle_energies, false, {0, closing.best_left()});
+    const int closing_does_not_take_back = process_chains(dangle_chains, dangle_energies, false,
+                                                          {closing.no_dangle, closing.left_dangle});
 
-    const int chain2 = process_chains(dangle_chains, dangle_energies, true, {0, closing.best()});
+    const int closing_takes_back = process_chains(dangle_chains, dangle_energies, true,
+                                                  {closing.right_dangle, closing.both_dangle});
 
-    return std::min(chain1, chain2);
+    return std::min(closing_does_not_take_back, closing_takes_back);
 }
 
 }  // namespace knotergy
