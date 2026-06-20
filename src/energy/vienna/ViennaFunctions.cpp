@@ -5,9 +5,11 @@ namespace knotergy {
 
 int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                                   const std::string& sequence, vrna_md_param& vp) {
-    if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
-        std::cerr << "Invalid indices for stack energy calculation." << std::endl;
-        return 0;
+    bool stacked = i + 1 == ci && j == cj + 1 && ci < cj && j < sequence.size();
+    if (!stacked && vp.md.dangles != 3) {
+        THROW_ERROR("Invalid indices for stack energy calculation. Received i: " +
+                    std::to_string(i) + ", j: " + std::to_string(j) +
+                    ", ci: " + std::to_string(ci) + ", cj: " + std::to_string(cj));
     }
     // c = child or nested base pair
     unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);

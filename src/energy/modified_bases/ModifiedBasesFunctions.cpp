@@ -21,7 +21,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
     DangleSet empty_set;
     int energy = 0;
 
-    if (vp.md.dangles == 1) {
+    if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         all_dangle_sets =
             Dangle1::populate_children_dangle_energies(children, pRNA, vp, is_external);
     } else {
@@ -47,7 +47,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
         ModDiffs diffs = get_mod_diffs(child, n5d, n3d, type, unique_mod_bases, mod_sequence, vp,
                                        mp, is_external, is_closing);
 
-        if (vp.md.dangles == 1) {
+        if (vp.md.dangles == 1 || vp.md.dangles == 3) {
             DangleSet& current_set = all_dangle_sets[idx];
             modify_dangle_set(current_set, diffs);
         } else {
@@ -55,7 +55,7 @@ int ModifiedBasesFunctions::find_mod_external_energy(
         }
     }
 
-    if (vp.md.dangles == 1) {
+    if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         energy = Dangle1::get_external_dangle_1(children, all_dangle_sets);
     }
 
@@ -90,10 +90,29 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 
     // Get dangle energies for all children and closing pair if dangles == 1
     std::vector<DangleSet> children_dangle_sets;
-    std::vector<MultiloopStem> multiloop_stems;
     DangleSet closing_set;
     DangleSet empty_set;  // Used when dangles != 1 to avoid checking condition in loop
+    // Dangle3
+    std::vector<MultiloopStem> multiloop_stems;
+
+    if (vp.md.dangles == 1) {
+        children_dangle_sets =
+            Dangle1::populate_children_dangle_energies(node.children, pRNA, vp, is_external);
+        closing_set = Dangle1::get_ml_closing_dangle_energy(node, pRNA, vp);
+    } else if (vp.md.dangles == 3) {
+        multiloop_stems = CoaxialStacking::populate_multiloop_stems(node, pRNA, vp);
+    }
+
     int energy = 0;
+    // Start with multiloop penalties
+    if (vp.md.dangles != 1 && vp.md.dangles != 3) {
+        energy = ViennaFunctions::multibranch_energy(node, pRNA, vp);
+    } else {
+        // Multiloop initialization penalties
+        int ml_init = vp.p->MLclosing + node.exclusive_unpaired_bases_count * vp.p->MLbase;
+        energy = ml_init;
+    }
+
     size_t i = node.begin;
     size_t j = node.end;
     const std::string& sequence = pRNA.get_sequence();
@@ -107,18 +126,13 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
                                        vp, mp, is_external, is_closing);
 
         if (vp.md.dangles == 1) {
-            children_dangle_sets =
-                Dangle1::populate_children_dangle_energies(node.children, pRNA, vp, is_external);
-            closing_set = Dangle1::get_ml_closing_dangle_energy(node, pRNA, vp);
             modify_dangle_set(closing_set, diffs);
         } else if (vp.md.dangles == 3) {
-            multiloop_stems = CoaxialStacking::populate_multiloop_stems(node, pRNA, vp);
-            MultiloopStem& closing_stem =
-                multiloop_stems.back();  // closing stem is last in the vector
+            // closing stem is last in the vector
+            MultiloopStem& closing_stem = multiloop_stems.back();
             closing_stem.dangle5 += diffs.n5d;
             closing_stem.dangle3 += diffs.n3d;
         } else {
-            energy = ViennaFunctions::multibranch_energy(node, pRNA, vp);
             energy += update_energy(diffs, n5d, n3d, pair_type, vp);
         }
     }
@@ -152,10 +166,10 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 
     // Compute the energy of dangle 1 of multiloop
     if (vp.md.dangles == 1) {
-        energy = Dangle1::get_multibranch_dangle_1(node, children_dangle_sets, closing_set);
+        energy += Dangle1::get_multibranch_dangle_1(node, children_dangle_sets, closing_set);
     }
     if (vp.md.dangles == 3) {
-        energy = CoaxialStacking::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
+        energy += CoaxialStacking::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
     }
 
     return energy;

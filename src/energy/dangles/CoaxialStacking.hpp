@@ -8,14 +8,15 @@
 namespace knotergy {
 
 struct MultiloopStem {
-    size_t begin;       // Pairing base encountered while walking the multiloop
-    size_t end;         // Its pairing partner
-    size_t prev_end;    // The end of the previous stem in the walk, used for checking contiguity
-    unsigned int type;  // ViennaRNA pair type
+    size_t begin = NULL_INDEX;  // Pairing base encountered while walking the multiloop
+    size_t end = NULL_INDEX;    // Its pairing partner
+    size_t prev_end =
+        NULL_INDEX;  // The end of the previous stem in the walk, used for checking contiguity
+    unsigned int type = 0;  // ViennaRNA pair type
 
     // Actual dangles
-    int dangle5;  // Energy of 5' dangle for this stem
-    int dangle3;  // Energy of 3' dangle for this stem
+    int dangle5 = 0;  // Energy of 5' dangle for this stem
+    int dangle3 = 0;  // Energy of 3' dangle for this stem
 
     // The initial 5' dangle energy (only first child and closing pair)
     int initial_ld5 = NULL_ENERGY;

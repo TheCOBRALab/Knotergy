@@ -102,7 +102,6 @@ std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
 std::vector<std::vector<size_t>> Dangle1::get_dangle_chains(
     const std::vector<std::unique_ptr<LoopNode>>& children) {
     std::vector<std::vector<size_t>> dangle_chains;
-
     // Stores child indices in each chain. Initialize with first child.
     dangle_chains.reserve(children.size());
     if (!children.empty()) dangle_chains.push_back({0});
