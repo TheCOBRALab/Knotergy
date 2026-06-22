@@ -10,7 +10,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   export CXXFLAGS="${CXXFLAGS}"
 else
   export CPPFLAGS="${CPPFLAGS:-} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE"
-fi
+fi 
 
 
 # ──────────────────────────────────────────────────────────────
@@ -20,23 +20,9 @@ rm -rf build
 mkdir  build
 cd     build
 
-# ──────────────────────────────────────────────────────────────
-# 2 · Unpack ViennaRNA, patch and build ViennaRNA
-# ──────────────────────────────────────────────────────────────
-curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.2/ViennaRNA-2.7.2.tar.gz
-tar -xf  ./ViennaRNA-2.7.2.tar.gz
-cd   ViennaRNA-2.7.2
-
-./configure --without-perl --without-python --prefix="${PREFIX}"
-make  -j"${CPU_COUNT}"
-
-# override pkgpyexecdir so "make install" never touches /RNA (/RNA needs sudo access)
-make  -j"${CPU_COUNT}" pkgpyexecdir="${PY_SITE_DIR}" install
-
-cd .. # back to build dir
 
 # ──────────────────────────────────────────────────────────────
-# 4 · CMake phase for your own project that links ViennaRNA
+# 2 · CMake phase for your own project that links ViennaRNA
 # ──────────────────────────────────────────────────────────────
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \

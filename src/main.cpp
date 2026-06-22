@@ -16,7 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
-#define KNOTERGY_VERSION "0.2.1"
+#define KNOTERGY_VERSION "0.2.2"
 
 namespace {
 

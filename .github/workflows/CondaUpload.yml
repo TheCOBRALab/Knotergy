@@ -27,11 +27,13 @@ jobs:
         auto-update-conda: true
         auto-activate-base: false
         miniconda-version: latest
-        channels: conda-forge, defaults
+        channels: conda-forge, bioconda, defaults
         channel-priority: strict
         architecture: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
 
     - name: Install conda-build & anaconda-client
+      env:
+        CONDA_PLUGINS_USE_SHARDED_REPODATA: "false"
       run: |
         if [[ "$RUNNER_OS" == "macOS" ]]; then
           arch=$(uname -m)
@@ -52,19 +54,17 @@ jobs:
 # -------------------- Build --------------------
     - name: Build Conda Package
       env:
-        CONDA_BLD_PATH: /tmp/bld
+        CONDA_BLD_PATH: /tmp/conda-build
       run: |
-        export CONDA_BLD_PATH=/tmp/conda-build
         mkdir -p "$CONDA_BLD_PATH"
-        conda build ./conda_recipe --croot "$CONDA_BLD_PATH" \
-        --croot /tmp/bld
+        conda build ./conda_recipe --croot "$CONDA_BLD_PATH"
 
     - name: Upload Package to Anaconda
       if: success()
       env:
         ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
       run: |
-        built_pkg=$(conda build ./conda_recipe --croot /tmp/bld --output)
+        built_pkg=$(conda build ./conda_recipe --croot /tmp/conda-build --output)
         echo "Built package: $built_pkg"
         conda run -n base anaconda -t "$ANACONDA_API_TOKEN" upload \
           --user COBRALab --label main --force "$built_pkg"
@@ -75,8 +75,14 @@ jobs:
         KNOTERGY_VERSION=$(grep -m1 version ./conda_recipe/meta.yaml | awk '{print $2}' | tr -d '"')
         echo "KNOTERGY_VERSION=$KNOTERGY_VERSION" >> "$GITHUB_ENV"
 
+
     - name: Install just-uploaded Knotergy
       run: |
-        conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} --override-channels -c cobralab -c conda-forge
+        conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} \
+          --override-channels \
+          -c cobralab \
+          -c conda-forge \
+          -c bioconda
+
         conda run -n base Knotergy --version
   

@@ -255,13 +255,22 @@ endif()
 # If that fails, record likely link directories to use later.
 set(VIENNARNA_LINK_DIRS "")
 if (VIENNARNA_LIBRARY AND NOT IS_ABSOLUTE "${VIENNARNA_LIBRARY}")
-  find_library(_VIENNA_ABS NAMES ${VIENNARNA_LIBRARY} vrna RNA
-    HINTS $ENV{HOMEBREW_PREFIX} /opt/homebrew /usr/local /opt
-    PATH_SUFFIXES lib lib64)
+  find_library(_VIENNA_ABS
+    NAMES ${VIENNARNA_LIBRARY} vrna RNA
+    HINTS
+      $ENV{CONDA_PREFIX}
+      $ENV{HOMEBREW_PREFIX}
+      /opt/homebrew
+      /usr/local
+      /opt
+    PATH_SUFFIXES lib lib64
+  )
+
   if (_VIENNA_ABS)
     set(VIENNARNA_LIBRARY "${_VIENNA_ABS}" CACHE FILEPATH "Path to ViennaRNA library" FORCE)
   else()
     set(VIENNARNA_LINK_DIRS
+      $ENV{CONDA_PREFIX}/lib
       $ENV{HOMEBREW_PREFIX}/lib
       /opt/homebrew/lib
       /usr/local/lib
