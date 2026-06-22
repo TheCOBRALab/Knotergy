@@ -31,7 +31,7 @@ cmake .. \
   -DCMAKE_C_FLAGS="-DHAVE_STRDUP=1" \
   -DVIENNARNA_LIB="${PREFIX}" \
   -DVIENNARNA_INCLUDE_DIR="${PREFIX}/include" \
-  -DENABLE_TESTS=OFF
+  -DBUILD_TESTING=OFF
 
 cmake --build . --parallel -- VERBOSE=1
 cmake --install . --prefix "${PREFIX}"

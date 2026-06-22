@@ -50,6 +50,36 @@ struct ParamCacheHeader {
     std::uint64_t source_mtime = 0;  // 0 for built-in fallback sets
 };
 
+[[nodiscard]] static inline const std::string& default_mod_param_path() {
+    static const std::string path = [] {
+        const char* conda_prefix = std::getenv("CONDA_PREFIX");
+
+        if (conda_prefix && *conda_prefix) {
+            return std::string(conda_prefix) +
+                   "/share/knotergy/params/modified_bases";
+        }
+
+        return std::string("params/modified_bases");
+    }();
+
+    return path;
+}
+
+[[nodiscard]] static inline const std::string& cache_path() {
+    static const std::string path = [] {
+        const char* conda_prefix = std::getenv("CONDA_PREFIX");
+
+        if (conda_prefix && *conda_prefix) {
+            return std::string(conda_prefix) +
+                   "/share/knotergy/params/common/cache/";
+        }
+
+        return std::string("params/common/cache/");
+    }();
+
+    return path;
+}
+
 /**
  * @brief Parameters for modified RNA bases.
  *

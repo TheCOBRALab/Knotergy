@@ -1,6 +1,6 @@
 package:
   name: knotergy
-  version: "0.2.2"
+  version: "0.2.3"
 
 source:
   - path: ..
@@ -16,13 +16,18 @@ requirements:
 
   host:
     - viennarna =2.7.2
+    - libstdcxx-ng # [linux]
+    - libcxx       # [osx]
 
   run:
     - viennarna =2.7.2
+    - libstdcxx-ng # [linux]
+    - libcxx       # [osx]
 
 test:
   commands:
     - Knotergy --help
+    - Knotergy -s "AAAPUUU" -r "(.....)" -m
 
 about:
   home: https://github.com/TheCOBRALab/Knotergy

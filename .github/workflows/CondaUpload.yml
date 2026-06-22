@@ -85,4 +85,5 @@ jobs:
           -c bioconda
 
         conda run -n base Knotergy --version
+        conda run -n base Knotergy -s "AAAUUUU" -r "(.....)"
   

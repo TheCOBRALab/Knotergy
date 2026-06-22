@@ -16,7 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
-#define KNOTERGY_VERSION "0.2.2"
+#define KNOTERGY_VERSION "0.2.3"
 
 namespace {
 
@@ -87,11 +87,9 @@ int run_knotergy(int argc, char** argv) {
 
     std::vector<std::string> mod_param_paths;
 
-    const std::string default_mod_path =
-        std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
+    const std::string default_mod_path = knotergy::default_mod_param_path();
 
-    std::string pseudo_param_file =
-        std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09.json";
+    std::string pseudo_param_file = knotergy::default_pk_param_path();
 
     bool round = false;
     bool verbose = false;
