@@ -14,8 +14,17 @@ using json = nlohmann::json;
 namespace knotergy {
 
 [[nodiscard]] static inline const std::string& default_pk_param_path() {
-    static const std::string path =
-        std::string(KNOTERGY_SOURCE_DIR) + "/params/common/pk_DirksPierce09_HotKnotsV2.json";
+    static const std::string path = [] {
+        const char* conda_prefix = std::getenv("CONDA_PREFIX");
+
+        if (conda_prefix && *conda_prefix) {
+            return std::string(conda_prefix) +
+                   "/share/knotergy/params/pseudo/rna_pk_DirksPierce09.json";
+        }
+
+        return std::string("params/pseudo/rna_pk_DirksPierce09.json");
+    }();
+
     return path;
 }
 

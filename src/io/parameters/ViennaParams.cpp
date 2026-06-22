@@ -22,7 +22,7 @@ namespace {
 // Generate a cache file path based on the parameter file, dangle model, and sequence type
 std::string make_cache_path(const std::string& paramFile, int dangle, const std::string& seq) {
     std::string file_name = FileUtils::strip_extension(paramFile);
-    std::string cache_dir = std::string(KNOTERGY_SOURCE_DIR) + "/params/common/cache/";
+    std::string cache_dir = cache_path();
     if (!paramFile.empty()) {
         return cache_dir + file_name + ".d" + std::to_string(dangle) + ".vrna.bin";
     }
