@@ -14,6 +14,15 @@ For non-pseudoknotted motifs, it uses the [ViennaRNA](https://www.tbi.univie.ac.
 - **Linux (64-bit)**
 - **macOS (64-bit)**
 
+## Install Knotergy via Conda
+
+```
+conda install cobralab::knotergy
+conda activate
+```
+
+## Instructions to compile Knotergy locally
+
 ### Software Requirements
 
 - **CMake** ≥ 3.15
