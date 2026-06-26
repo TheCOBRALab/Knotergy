@@ -24,7 +24,7 @@ namespace {
 // Generate a cache file path based on the parameter file, dangle model, and sequence type
 std::string make_cache_path(const std::string& paramFile, int dangle, const std::string& seq) {
     std::string file_name = FileUtils::strip_extension(paramFile);
-    std::string cache_dir = cache_path;
+    std::string cache_dir = cache_path();
     if (!paramFile.empty()) {
         return cache_dir + file_name + ".d" + std::to_string(dangle) + ".vrna.bin";
     }
@@ -135,14 +135,14 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
         source_info.status = ParamStatus::Fallback;
         source_info.resolved_name = "Mathews 2004 (DNA)";
-    } else if (FileUtils::file_exists(default_param_path)) {
+    } else if (FileUtils::file_exists(default_param_path())) {
         source_kind = SourceKind::DefaultRNAFile;
-        cache_key = default_param_path;
-        load_path = default_param_path;
-        srcMtime = FileUtils::get_file_mtime(default_param_path);
+        cache_key = default_param_path();
+        load_path = default_param_path();
+        srcMtime = FileUtils::get_file_mtime(default_param_path());
 
         source_info.status = ParamStatus::Fallback;
-        source_info.resolved_path = default_param_path;
+        source_info.resolved_path = default_param_path();
         source_info.resolved_name = "Dirks&Pierce 2009";
     } else {
         std::cout << WARNING

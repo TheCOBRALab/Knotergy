@@ -14,12 +14,12 @@
 #include <vector>
 
 const std::string DP_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
+    knotergy::FileUtils::resolve_data_path("params/common/rna_DirksPierce09.par");
 const std::string turner_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
+    knotergy::FileUtils::resolve_data_path("params/common/rna_turner2004.par");
 const std::string pkp_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09.json";
-const std::string mod_folder = std::string(KNOTERGY_SOURCE_DIR) + "/params/modified_bases";
+    knotergy::FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
+const std::string mod_folder = knotergy::FileUtils::resolve_data_path("params/modified_bases");
 
 inline static double get_energy(std::string sequence, std::string structure, int dangle = 2,
                                 bool round = false, std::string param_file = turner_file,

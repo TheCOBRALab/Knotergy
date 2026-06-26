@@ -15,8 +15,11 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
-inline std::string default_pk_param_path =
-    FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
+[[nodiscard]] inline const std::string& default_pk_param_path() {
+    static const std::string path =
+        FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
+    return path;
+}
 
 /**
  * @brief Pseudoknot energy parameters.
@@ -116,7 +119,7 @@ class PseudoknotParams {
      * @throws DetailedException if file not found or invalid.
      */
     [[nodiscard]] static pk_param load_pk_param(
-        const std::string& paramFile = default_pk_param_path) {
+        const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;
@@ -124,14 +127,14 @@ class PseudoknotParams {
         if (paramFile.empty()) {
             // Prioritize using the default parameter file if it exists,
             // otherwise use hard-coded defaults.
-            bool file_exists = FileUtils::file_exists(default_pk_param_path);
+            bool file_exists = FileUtils::file_exists(default_pk_param_path());
             if (!file_exists) {
                 std::cout << WARNING
                           << " Warning: Default pseudoknot parameter file not found. Using "
                              "hard-coded defaults.\n";
             }
 
-            pk_param pkp = file_exists ? parse_pk_json(default_pk_param_path) : pk_param();
+            pk_param pkp = file_exists ? parse_pk_json(default_pk_param_path()) : pk_param();
             info.status = ParamStatus::Defaulted;
             pkp.set_source_info(info);  // Set the source info for reporting purposes
             return pkp;

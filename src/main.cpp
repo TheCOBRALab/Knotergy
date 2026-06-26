@@ -81,7 +81,7 @@ int run_knotergy(int argc, char** argv) {
     std::string input_file = "";
     std::string output_file = "";
     std::string vienna_param_file = "";
-    std::string pseudo_param_file = knotergy::default_pk_param_path;
+    std::string pseudo_param_file = knotergy::default_pk_param_path();
     std::vector<std::string> mod_param_paths;
     std::string modifications = "7I6P9D";
     const bool use_color = knotergy::should_use_color();
@@ -121,7 +121,7 @@ int run_knotergy(int argc, char** argv) {
                 mod_param_paths.push_back(get_trimmed_arg(i, argc, argv));
             } else {
                 // -m with no path, use default
-                mod_param_paths.push_back(knotergy::default_mod_param_path);
+                mod_param_paths.push_back(knotergy::default_mod_param_path());
             }
 
         } else if (arg == "-d" || arg == "--dangles") {

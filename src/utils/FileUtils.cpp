@@ -7,10 +7,15 @@
 
 namespace knotergy {
 
+// Mostly used for resolving default data paths
 std::string FileUtils::resolve_data_path(const std::string& path) {
+    // Source-tree path (Knotergy is the root)
     std::string source_path = join_path(std::string(KNOTERGY_SOURCE_DIR), path);
+    if (file_exists(source_path)) {
+        return source_path;
+    }
 
-    // Resolve conda path if available
+    // Conda package path
     const char* conda_prefix = std::getenv("CONDA_PREFIX");
     if (conda_prefix && *conda_prefix) {
         std::string conda_path =
@@ -20,12 +25,22 @@ std::string FileUtils::resolve_data_path(const std::string& path) {
         }
     }
 
-    // Try to find the file in the source directory if conda fails
-    if (file_exists(source_path)) {
-        return source_path;
+    // Explicit/direct path first (Likely won't be used, but just in case)
+    if (file_exists(path)) {
+        return path;
     }
 
-    THROW_ERROR("Data file not found: " + path);
+    // Informative error message if the file is not found in any of the expected locations
+    std::ostringstream msg;
+
+    msg << "Data file not found: " << path << "\n"
+        << "Checked source path: " << source_path << "\n"
+        << "CONDA_PREFIX: " << (conda_prefix ? conda_prefix : "not set") << "\n"
+        << "Checked conda path: "
+        << (conda_prefix ? join_path(join_path(std::string(conda_prefix), "share/knotergy"), path)
+                         : "not set");
+
+    THROW_ERROR(msg.str());
 }
 
 // checks if the a slash should be added between base and path, and returns the joined path

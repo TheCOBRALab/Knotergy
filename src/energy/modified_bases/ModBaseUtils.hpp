@@ -125,7 +125,7 @@ class ModBaseUtils {
                             "' found in sequence but no parameters provided for it.");
             }
 
-            const std::map<std::string, float>* energy_lookup = nullptr;
+            const param_map* energy_lookup = nullptr;
             switch (lookup_type) {
                 case ModLookup::Stacking:
                     energy_lookup = &param->stacking_energies();

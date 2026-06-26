@@ -3,17 +3,24 @@
 
 #include <nlohmann/json.hpp>
 
+#include <cstddef>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
-using json = nlohmann::json;
 
 namespace knotergy {
 
-inline std::string default_mod_param_path = FileUtils::resolve_data_path("params/modified_bases");
+using json = nlohmann::json;
+
+[[nodiscard]] inline const std::string& default_mod_param_path() {
+    static const std::string path = FileUtils::resolve_data_path("params/modified_bases");
+    return path;
+}
 
 using string_list = std::vector<std::string>;
-using param_map = std::map<std::string, float>;
+using param_map = std::unordered_map<std::string, float>;
 
 /**
  * @brief Parameters for modified RNA bases.

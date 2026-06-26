@@ -15,9 +15,16 @@ extern "C" {
 
 namespace knotergy {
 
-inline std::string cache_path = FileUtils::resolve_data_path("params/common/cache/");
-inline std::string default_param_path =
-    FileUtils::resolve_data_path("params/common/rna_DirksPierce09.par");
+[[nodiscard]] inline const std::string& cache_path() {
+    static const std::string path = FileUtils::resolve_data_path("params/common/cache/");
+    return path;
+}
+
+[[nodiscard]] inline const std::string& default_param_path() {
+    static const std::string path =
+        FileUtils::resolve_data_path("params/common/rna_DirksPierce09.par");
+    return path;
+}
 
 struct vrna_md_param {
     ~vrna_md_param() {
