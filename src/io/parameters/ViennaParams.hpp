@@ -16,7 +16,9 @@ extern "C" {
 namespace knotergy {
 
 [[nodiscard]] inline const std::string& cache_path() {
-    static const std::string path = FileUtils::resolve_data_path("params/common/cache/");
+    bool check_exists = false;  // Doesn not need to exist and can be created if it doesn't exist
+    static const std::string path =
+        FileUtils::resolve_data_path("params/common/cache/", check_exists);
     return path;
 }
 

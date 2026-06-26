@@ -25,7 +25,8 @@ namespace knotergy {
  */
 class FileUtils {
    public:
-    [[nodiscard]] static std::string resolve_data_path(const std::string& path);
+    [[nodiscard]] static std::string resolve_data_path(const std::string& path,
+                                                       bool check_exists = true);
 
     [[nodiscard]] static std::string join_path(const std::string& base, const std::string& path);
 
