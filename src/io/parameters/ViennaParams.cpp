@@ -1,5 +1,7 @@
 #include "ViennaParams.hpp"
 
+#include "utils/colors.hpp"
+
 #include <ViennaRNA/model.h>
 #include <ViennaRNA/params/basic.h>
 #include <ViennaRNA/params/io.h>
@@ -22,7 +24,7 @@ namespace {
 // Generate a cache file path based on the parameter file, dangle model, and sequence type
 std::string make_cache_path(const std::string& paramFile, int dangle, const std::string& seq) {
     std::string file_name = FileUtils::strip_extension(paramFile);
-    std::string cache_dir = cache_path();
+    std::string cache_dir = cache_path;
     if (!paramFile.empty()) {
         return cache_dir + file_name + ".d" + std::to_string(dangle) + ".vrna.bin";
     }
@@ -100,39 +102,10 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 }
 }  // namespace
 
-const modified_base_param* all_mod_params::get_modified_base_param(
-    const std::string& modified_base) const {
-    auto it = mod_param_lookup.find(modified_base);
-    if (it != mod_param_lookup.end()) {
-        return it->second;
-    }
-    return nullptr;
-}
-
-const std::string* all_mod_params::get_unmodified_base(const std::string& modified_base) const {
-    auto it = mod_to_unmod_lookup.find(modified_base);
-    if (it != mod_to_unmod_lookup.end()) {
-        return it->second;
-    }
-    return nullptr;
-}
-
-void all_mod_params::build_lookup() {
-    mod_param_lookup.reserve(mod_params_.size());
-    mod_to_unmod_lookup.reserve(mod_params_.size());
-    for (const modified_base_param& param : mod_params_) {
-        mod_param_lookup[param.modified_base()] = &param;
-        mod_to_unmod_lookup[param.modified_base()] = &param.fallback_base();
-    }
-}
-
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
                                                    const std::string& seq) {
-    const std::string DP_path_str =
-        std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
-
     vrna_md_param md_param{};
     ParamSourceInfo source_info;
 
@@ -162,16 +135,19 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
         source_info.status = ParamStatus::Fallback;
         source_info.resolved_name = "Mathews 2004 (DNA)";
-    } else if (FileUtils::file_exists(DP_path_str)) {
+    } else if (FileUtils::file_exists(default_param_path)) {
         source_kind = SourceKind::DefaultRNAFile;
-        cache_key = DP_path_str;
-        load_path = DP_path_str;
-        srcMtime = FileUtils::get_file_mtime(DP_path_str);
+        cache_key = default_param_path;
+        load_path = default_param_path;
+        srcMtime = FileUtils::get_file_mtime(default_param_path);
 
         source_info.status = ParamStatus::Fallback;
-        source_info.resolved_path = DP_path_str;
+        source_info.resolved_path = default_param_path;
         source_info.resolved_name = "Dirks&Pierce 2009";
     } else {
+        std::cout << WARNING
+                  << " Default RNA parameter file not found, falling back to built-in Turner 2004 "
+                     "parameters.\n";
         source_kind = SourceKind::BuiltinRNA;
         cache_key = "builtin:rna_Turner2004";
 
@@ -225,67 +201,6 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
 
     return md_param;
-}
-
-std::vector<modified_base_param> ViennaParams::load_modified_energy_parameters(
-    const std::string& path) {
-    if (path.empty()) {
-        return {};
-    }
-
-    if (!FileUtils::file_exists(path)) {
-        THROW_ERROR("Modified parameters JSON file \"" + path + "\" not found.");
-    }
-
-    string_list all_files;
-    if (FileUtils::is_file(path)) {
-        all_files.push_back(path);
-    } else if (FileUtils::is_directory(path)) {
-        all_files = FileUtils::get_files_in_dir(path);
-    }
-
-    std::vector<modified_base_param> params_list;
-
-    for (const std::string& file : all_files) {
-        if (file.size() >= 5 && file.substr(file.size() - 5) == ".json") {
-            params_list.push_back(parse_modified_base_json(file));
-        }
-    }
-
-    return params_list;
-}
-
-modified_base_param ViennaParams::parse_modified_base_json(const std::string& jsonFile) {
-    std::ifstream f(jsonFile);
-    if (!f.is_open()) {
-        THROW_ERROR("Error: Unable to open modified base parameter file: " + jsonFile);
-    }
-    json data = json::parse(f);
-    const json& mod = data.at("modified_base");
-
-    warn_if_missing(mod, "name", jsonFile);
-    warn_if_missing(mod, "unmodified", jsonFile);
-    warn_if_missing(mod, "one_letter_code", jsonFile);
-    warn_if_missing(mod, "fallback", jsonFile);
-    warn_if_missing(mod, "pairing_partners", jsonFile);
-
-    modified_base_param params(
-        mod.value("name", ""), mod.value("unmodified", ""), mod.value("one_letter_code", ""),
-        mod.value("fallback", ""), mod.value("pairing_partners", string_list{}),
-        mod.value("stacking_energies", param_map{}), mod.value("stacking_enthalpies", param_map{}),
-        mod.value("terminal_energies", param_map{}), mod.value("terminal_enthalpies", param_map{}),
-        mod.value("mismatch_energies", param_map{}), mod.value("mismatch_enthalpies", param_map{}),
-        mod.value("dangle5_energies", param_map{}), mod.value("dangle5_enthalpies", param_map{}),
-        mod.value("dangle3_energies", param_map{}), mod.value("dangle3_enthalpies", param_map{}));
-
-    return params;
-}
-
-void ViennaParams::warn_if_missing(const json& j, const std::string& key, const std::string& file) {
-    if (!j.contains(key)) {
-        std::cerr << "Warning: modified_base missing required key '" << key << "' in file " << file
-                  << std::endl;
-    }
 }
 
 }  // namespace knotergy

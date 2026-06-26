@@ -1,5 +1,6 @@
 #pragma once
 
+#include "io/parameters/ModParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopNode.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"

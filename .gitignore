@@ -57,5 +57,12 @@
 /venv/
 /.venv/
 
-# Folder I made for fasta files (to test stuff)
+# Python cache
+__pycache__/
+*.pyc
+
+# Test output
+/Testing/
+
+# Personal files
 /fasta/

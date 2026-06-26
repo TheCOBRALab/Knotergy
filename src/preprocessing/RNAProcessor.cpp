@@ -89,11 +89,11 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
     auto can_pair = [](char left, char right) {
         switch (left) {
             case 'A':
-                return right == 'U';
+                return right == 'U' || right == 'T';
             case 'U':
                 return right == 'A' || right == 'G';
             case 'G':
-                return right == 'C' || right == 'U';
+                return right == 'C' || right == 'U' || right == 'T';
             case 'C':
                 return right == 'G';
             case 'T':

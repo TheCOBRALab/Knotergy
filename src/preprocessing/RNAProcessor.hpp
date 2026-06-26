@@ -1,5 +1,7 @@
 #pragma once
 
+#include "io/parameters/ModParams.hpp"
+#include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "preprocessing/ClosedRegion.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"

@@ -1,8 +1,44 @@
 #include "FileUtils.hpp"
 
+#include "utils/colors.hpp"
+
+#include <iostream>
 #include <stack>
 
 namespace knotergy {
+
+std::string FileUtils::resolve_data_path(const std::string& path) {
+    std::string source_path = join_path(std::string(KNOTERGY_SOURCE_DIR), path);
+
+    // Resolve conda path if available
+    const char* conda_prefix = std::getenv("CONDA_PREFIX");
+    if (conda_prefix && *conda_prefix) {
+        std::string conda_path =
+            join_path(join_path(std::string(conda_prefix), "share/knotergy"), path);
+        if (file_exists(conda_path)) {
+            return conda_path;
+        }
+    }
+
+    // Try to find the file in the source directory if conda fails
+    if (file_exists(source_path)) {
+        return source_path;
+    }
+
+    THROW_ERROR("Data file not found: " + path);
+}
+
+// checks if the a slash should be added between base and path, and returns the joined path
+std::string FileUtils::join_path(const std::string& base, const std::string& path) {
+    if (base.empty()) return path;
+    if (path.empty()) return base;
+
+    if (base.back() == '/' || base.back() == '\\') {
+        return base + path;
+    }
+
+    return base + "/" + path;
+}
 
 // filesystem::exists not supported in older macOS Conda packages
 bool FileUtils::file_exists(const std::string& name) {

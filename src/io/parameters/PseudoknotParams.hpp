@@ -1,6 +1,8 @@
 #pragma once
+
 #include "io/output/Report.hpp"
 #include "utils/FileUtils.hpp"
+#include "utils/colors.hpp"
 #include "utils/common.hpp"
 
 #include <nlohmann/json.hpp>
@@ -13,20 +15,8 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
-[[nodiscard]] static inline const std::string& default_pk_param_path() {
-    static const std::string path = [] {
-        const char* conda_prefix = std::getenv("CONDA_PREFIX");
-
-        if (conda_prefix && *conda_prefix) {
-            return std::string(conda_prefix) +
-                   "/share/knotergy/params/pseudo/rna_pk_DirksPierce09.json";
-        }
-
-        return std::string("params/pseudo/rna_pk_DirksPierce09.json");
-    }();
-
-    return path;
-}
+inline std::string default_pk_param_path =
+    FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
 
 /**
  * @brief Pseudoknot energy parameters.
@@ -41,7 +31,7 @@ struct pk_param {
      * Hard coded values based on the original HotKnotsV2 implementation
      */
     pk_param()
-        : name("DirksPierce09 pseudoknot params from HotKnotsV2"),
+        : name("DirksPierce09 (Hard-coded default)"),
           pk_in_ext(-138),
           pk_in_mloop(1007),
           pk_in_pk(1500),
@@ -126,16 +116,24 @@ class PseudoknotParams {
      * @throws DetailedException if file not found or invalid.
      */
     [[nodiscard]] static pk_param load_pk_param(
-        const std::string& paramFile = default_pk_param_path()) {
+        const std::string& paramFile = default_pk_param_path) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;
 
         if (paramFile.empty()) {
-            info.status = ParamStatus::Defaulted;
+            // Prioritize using the default parameter file if it exists,
+            // otherwise use hard-coded defaults.
+            bool file_exists = FileUtils::file_exists(default_pk_param_path);
+            if (!file_exists) {
+                std::cout << WARNING
+                          << " Warning: Default pseudoknot parameter file not found. Using "
+                             "hard-coded defaults.\n";
+            }
 
-            pk_param pkp;
-            pkp.set_source_info(info);
+            pk_param pkp = file_exists ? parse_pk_json(default_pk_param_path) : pk_param();
+            info.status = ParamStatus::Defaulted;
+            pkp.set_source_info(info);  // Set the source info for reporting purposes
             return pkp;
         }
 

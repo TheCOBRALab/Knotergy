@@ -1,6 +1,6 @@
 {
   "pseudoknot_parameters": {
-    "name": "Dirks-Pierce 2003 pseudoknot parameters from HotKnotsV1",
+    "name": "DirksPierce 2003",
     "pk_in_ext" : 960,
     "pk_in_mloop" : 1500,
     "pk_in_pk" : 1500,

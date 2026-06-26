@@ -3,6 +3,7 @@
 #include <energy/ComputeEnergy.hpp>
 #include <gtest/gtest.h>
 #include <io/input/RNAInputManager.hpp>
+#include <io/parameters/ModParams.hpp>
 #include <loop_tree/LoopFactory.hpp>
 #include <preprocessing/ProcessedRNAEntry.hpp>
 #include <preprocessing/RNAEntry.hpp>
@@ -29,7 +30,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
         knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
     knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
     std::vector<knotergy::modified_base_param> mod_params =
-        knotergy::ViennaParams::load_modified_energy_parameters(mod_param_file);
+        knotergy::ModParams::load_modified_energy_parameters(mod_param_file);
 
     knotergy::all_mod_params mp{mod_params};
 

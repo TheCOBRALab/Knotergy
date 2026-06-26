@@ -1,6 +1,7 @@
 #include "energy/ComputeEnergy.hpp"
 #include "io/input/RNAInputManager.hpp"
 #include "io/output/OutputManager.hpp"
+#include "io/parameters/ModParams.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopFactory.hpp"
@@ -15,8 +16,6 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
-
-#define KNOTERGY_VERSION "0.2.3"
 
 namespace {
 
@@ -81,15 +80,11 @@ int run_knotergy(int argc, char** argv) {
     std::string structure = "";
     std::string input_file = "";
     std::string output_file = "";
-    std::string parameter_file = "";
+    std::string vienna_param_file = "";
+    std::string pseudo_param_file = knotergy::default_pk_param_path;
+    std::vector<std::string> mod_param_paths;
     std::string modifications = "7I6P9D";
     const bool use_color = knotergy::should_use_color();
-
-    std::vector<std::string> mod_param_paths;
-
-    const std::string default_mod_path = knotergy::default_mod_param_path();
-
-    std::string pseudo_param_file = knotergy::default_pk_param_path();
 
     bool round = false;
     bool verbose = false;
@@ -109,13 +104,13 @@ int run_knotergy(int argc, char** argv) {
             input_file = get_trimmed_arg(i, argc, argv);
 
         } else if ((arg == "-P" || arg == "--paramFile") && i + 1 < argc) {
-            parameter_file = get_trimmed_arg(i, argc, argv);
+            vienna_param_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-p") {
             std::cerr << "\033[1;33m[WARNING]\033[0m " << "-p is deprecated. " << "Use -P instead. "
                       << "-p will stop working on full release." << '\n';
 
-            parameter_file = get_trimmed_arg(i, argc, argv);
+            vienna_param_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-e" || arg == "--round") {
             round = true;
@@ -126,7 +121,7 @@ int run_knotergy(int argc, char** argv) {
                 mod_param_paths.push_back(get_trimmed_arg(i, argc, argv));
             } else {
                 // -m with no path, use default
-                mod_param_paths.push_back(default_mod_path);
+                mod_param_paths.push_back(knotergy::default_mod_param_path);
             }
 
         } else if (arg == "-d" || arg == "--dangles") {
@@ -149,7 +144,7 @@ int run_knotergy(int argc, char** argv) {
             return EXIT_SUCCESS;
 
         } else if (arg == "-V" || arg == "--version") {
-            std::cout << "Knotergy " << KNOTERGY_VERSION << '\n';
+            std::cout << "Knotergy " << knotergy::OutputManager::version() << '\n';
             return EXIT_SUCCESS;
 
         } else if (arg == "-v" || arg == "--verbose") {
@@ -183,9 +178,9 @@ int run_knotergy(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    knotergy::trim(parameter_file);
-    if (!parameter_file.empty() && !knotergy::FileUtils::file_exists(parameter_file)) {
-        std::cerr << ERROR << " Parameter file not found: " << parameter_file << '\n';
+    knotergy::trim(vienna_param_file);
+    if (!vienna_param_file.empty() && !knotergy::FileUtils::file_exists(vienna_param_file)) {
+        std::cerr << ERROR << " Parameter file not found: " << vienna_param_file << '\n';
         return EXIT_FAILURE;
     }
 
@@ -211,7 +206,7 @@ int run_knotergy(int argc, char** argv) {
 
     // ------------------------- Load ViennaRNA Parameters -----------------------
     knotergy::vrna_md_param vp =
-        knotergy::ViennaParams::load_energy_parameters(parameter_file, dangle, sequence);
+        knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
     knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
@@ -221,7 +216,7 @@ int run_knotergy(int argc, char** argv) {
 
     for (const std::string& mod_path : mod_param_paths) {
         std::vector<knotergy::modified_base_param> additional_mp =
-            knotergy::ViennaParams::load_modified_energy_parameters(mod_path);
+            knotergy::ModParams::load_modified_energy_parameters(mod_path);
 
         modified_params.insert(modified_params.end(), additional_mp.begin(), additional_mp.end());
     }
