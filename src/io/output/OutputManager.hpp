@@ -25,19 +25,14 @@ class OutputManager {
 
     static void print_version() { std::cout << "Knotergy " << version() << '\n'; }
 
-    static void print_header() {
-        print_version();
-        std::cout << '\n';
-    }
-
     static void print_parameter_report(const vrna_md_param& vienna_params,
                                        const pk_param& pk_params, const all_mod_params& mp) {
         constexpr int W = 18;
 
-        print_header();
+        print_version();
 
-        std::cout << "Parameters\n";
         std::cout << "------------------------------------------------\n";
+        std::cout << "Parameters\n";
 
         std::cout << std::left << std::setw(W)
                   << "ViennaRNA:" << vienna_params.get_source_info().resolved_name
