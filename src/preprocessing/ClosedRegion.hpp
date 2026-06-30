@@ -4,6 +4,7 @@
 
 #include <array>
 #include <ostream>
+#include <tuple>
 
 namespace knotergy {
 
