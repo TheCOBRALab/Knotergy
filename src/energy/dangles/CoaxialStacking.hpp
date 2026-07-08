@@ -51,13 +51,15 @@ class CoaxialStacking {
                                                       const all_mod_params& mp = {});
 
     [[nodiscard]] static std::vector<MultiloopStem> populate_multiloop_stems(
-        const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
+        const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+        const all_mod_params& mp = {});
 
    private:
     // ------------------- Dangle 3 (coaxial stacking) --------------------
     [[nodiscard]] static int compute_initial_ld5_for_d3(const MultiloopStem& stem,
                                                         const ProcessedRNAEntry& pRNA,
-                                                        vrna_md_param& vp);
+                                                        vrna_md_param& vp,
+                                                        const all_mod_params& mp);
     [[nodiscard]] static int add_or_inf(int a, int b);
 
     [[nodiscard]] static int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,

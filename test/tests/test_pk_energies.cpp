@@ -220,4 +220,14 @@ TEST(PK_energies, nestedPK_in_band_Turner) {
     EXPECT_NEAR(turner_rounded, -99.54, 0.000005);
 }
 
+// This is to test the labeling of the linear case since it usually uses the non-linear method
+TEST(PK_energies, many_children_few_bands_DP) {
+    std::string sequence = "AAAAUUUAAAAUUAAAAAUAAAAUUUUAAAUUUAAUUUUAUAAUAAU";
+    std::string structure = "((...).(...).([...)..(...).(...).(...))<].[>..]";
+    auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
+
+    EXPECT_NEAR(dp_result, 37.82, 0.000005);
+    EXPECT_NEAR(dp_rounded, 37.82, 0.000005);
+}
+
 }  // namespace

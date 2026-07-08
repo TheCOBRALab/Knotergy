@@ -13,7 +13,8 @@ int CoaxialStacking::add_or_inf(int a, int b) {
 
 // applies to closing pair and first child
 int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
-                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<size_t>& pair_table = pRNA.get_pair_table();
 
@@ -29,8 +30,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     int ld5;
     if (pRNA.has_modified_bases()) {
         ld5 = ModBaseUtils::get_dangle5_mod_energy(stem.begin, stem.end, sequence,
-                                                   pRNA.get_modified_sequence(), vp,
-                                                   all_mod_params(), false);
+                                                   pRNA.get_modified_sequence(), vp, mp, false);
     } else {
         ld5 = vp.p->dangle5[stem.type][encoding];
     }
@@ -64,7 +64,8 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
 
 std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopNode& node,
                                                                      const ProcessedRNAEntry& pRNA,
-                                                                     vrna_md_param& vp) {
+                                                                     vrna_md_param& vp,
+                                                                     const all_mod_params& mp) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
@@ -86,10 +87,10 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
                                   dangle5_closing, dangle3_closing});
 
     MultiloopStem& closing_stem = stems.back();
-    closing_stem.initial_ld5 = compute_initial_ld5_for_d3(closing_stem, pRNA, vp);
+    closing_stem.initial_ld5 = compute_initial_ld5_for_d3(closing_stem, pRNA, vp, mp);
 
     MultiloopStem& start_stem = stems.front();
-    start_stem.initial_ld5 = compute_initial_ld5_for_d3(start_stem, pRNA, vp);
+    start_stem.initial_ld5 = compute_initial_ld5_for_d3(start_stem, pRNA, vp, mp);
 
     return stems;
 }

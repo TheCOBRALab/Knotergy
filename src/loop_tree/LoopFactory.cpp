@@ -152,13 +152,19 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     /**
      * There are two methods: Linear & Non-Linear
      *
-     * Non-Linear is usually more efficient, but in cases where there are many bands and
-     * many children, the linear method can be more efficient.
+     * Non-linear method is only performs more operations than the linear method
+     * when there are many bands and many children and few base pairs.
+     *
+     * The linear method is usually slower because there are normally many more base pairs than
+     * children * bands. And it also uses a hash set which is slower than a simple vector iteration.
+     *
      */
+    size_t linear_complexity = static_cast<size_t>(node.total_number_of_base_pairs) +
+                               node.children.size() + node.bands.size();
+    size_t non_linear_complexity = node.children.size() * node.bands.size();
 
     // Non-linear method is preferred when it has less operations than the linear method.
-    if (static_cast<size_t>(node.total_number_of_base_pairs) >=
-        node.children.size() * node.bands.size()) {
+    if (linear_complexity <= non_linear_complexity) {
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {
             child_node->pseudo_type = PseudoNestedType::Nested;
         }
@@ -177,9 +183,10 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
         within_band_start_idx.reserve(node.children.size());
 
         for (const Band& band : node.bands) {
-            if (band.get_number_of_children() == 0) continue;
             for (const BasePair& base_pair : band.base_pairs()) {
-                within_band_start_idx.insert(base_pair.i);
+                for (const ClosedRegion& child : base_pair.children) {
+                    within_band_start_idx.insert(child.begin);
+                }
             }
         }
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {

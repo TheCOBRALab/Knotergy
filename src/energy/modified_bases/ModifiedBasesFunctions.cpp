@@ -100,7 +100,7 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
             Dangle1::populate_children_dangle_energies(node.children, pRNA, vp, is_external);
         closing_set = Dangle1::get_ml_closing_dangle_energy(node, pRNA, vp);
     } else if (vp.md.dangles == 3) {
-        multiloop_stems = CoaxialStacking::populate_multiloop_stems(node, pRNA, vp);
+        multiloop_stems = CoaxialStacking::populate_multiloop_stems(node, pRNA, vp, mp);
     }
 
     int energy = 0;
