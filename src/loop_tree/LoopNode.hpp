@@ -85,35 +85,43 @@ struct LoopNode {
      */
     [[nodiscard]] std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
+        const bool use_color = should_use_color();
 
-        const unsigned short idx_w = static_cast<unsigned short>(std::to_string(max_idx).size());
+        const auto color = [use_color](const char* ansi_code) -> const char* {
+            return use_color ? ansi_code : "";
+        };
 
-        // This is the *fixed* width of: "[<idx_w>, <idx_w>] "
-        const unsigned short range_w =
-            static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2);  // '[' + a + ", " + b + "] "
+        const auto idx_w = static_cast<unsigned short>(std::to_string(max_idx).size());
 
-        // Colored name padded
-        out << ANSI_COLOR_CYAN << std::left << loop_name(loop_type) << ANSI_COLOR_RESET << " ";
+        // Fixed width of: "(<idx_w>, <idx_w>) "
+        const auto range_w = static_cast<unsigned short>(1 + idx_w + 2 + idx_w + 2);
 
-        // Range column (i, j)
-        std::cout << ANSI_COLOR_BRIGHT;
+        // Loop name
+        out << color(ANSI_COLOR_CYAN) << std::left << loop_name(loop_type)
+            << color(ANSI_COLOR_RESET) << ' ';
+
+        // Range column
+        out << color(ANSI_COLOR_BRIGHT);
+
         if (loop_type == LoopType::External) {
             out << std::string(range_w, ' ');
         } else {
-            out << "(" << std::right << std::setw(idx_w) << begin << ", " << std::right
+            out << '(' << std::right << std::setw(idx_w) << begin << ", " << std::right
                 << std::setw(idx_w) << end << ") ";
         }
-        std::cout << ANSI_COLOR_RESET;
+
+        out << color(ANSI_COLOR_RESET);
 
         // Energy column
-        out << ": " << ANSI_COLOR_GREEN;
+        out << ": " << color(ANSI_COLOR_GREEN);
+
         if (is_inf) {
-            out << std::right << std::setw(9) << "INF\n";
+            out << std::right << std::setw(9) << "INF";
         } else {
-            out << std::right << std::setw(9) << std::fixed << std::setprecision(2) << energy
-                << "\n";
+            out << std::right << std::setw(9) << std::fixed << std::setprecision(2) << energy;
         }
-        out << ANSI_COLOR_RESET;
+
+        out << color(ANSI_COLOR_RESET) << '\n';
 
         return out.str();
     }
