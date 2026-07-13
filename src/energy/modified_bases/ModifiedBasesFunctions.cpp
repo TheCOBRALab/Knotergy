@@ -238,7 +238,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
                                                   ModLookup::Dangle3);
     int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
-                                                   ModLookup::Terminal);
+                                                   ModLookup::TerminalAU);
 
     // Calculate differences
     if (vp.md.dangles == 0) {

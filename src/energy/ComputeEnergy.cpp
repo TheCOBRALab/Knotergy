@@ -1,6 +1,8 @@
 #include "ComputeEnergy.hpp"
 
 #include "energy/modified_bases/ModifiedBasesFunctions.hpp"
+#include "energy/modified_bases/ModHairpin.hpp"
+
 namespace knotergy {
 
 // A stack is used instead of recursion to avoid stack overflows on deeply nested structures.
@@ -39,7 +41,12 @@ double ComputeEnergy::process_node(LoopNode& node) {
             break;
 
         case LoopType::Hairpin:
-            node_energy = ViennaFunctions::hairpin_energy(node, pRNA_, is_inf, vp_);
+            if (has_modified_bases_) {
+                node_energy = ModHairpin::find_mod_hairpin_energy(
+                    node, pRNA_, mod_sequence_, vp_, mp_, is_inf);
+            } else {
+                node_energy = ViennaFunctions::hairpin_energy(node, pRNA_, is_inf, vp_);
+            }
             break;
 
         case LoopType::Internal:

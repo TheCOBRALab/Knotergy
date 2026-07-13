@@ -10,7 +10,7 @@ namespace knotergy {
  *
  * Specifies which type of energy parameter to look up for modified bases.
  */
-enum class ModLookup { Stacking, Terminal, Mismatch, Dangle5, Dangle3 };
+enum class ModLookup { Stacking, TerminalAU, Mismatch, Dangle5, Dangle3 };
 
 // Stores the differences in energy contributions due to modified bases
 struct ModDiffs {
@@ -130,7 +130,7 @@ class ModBaseUtils {
                 case ModLookup::Stacking:
                     energy_lookup = &param->stacking_energies();
                     break;
-                case ModLookup::Terminal:
+                case ModLookup::TerminalAU:
                     energy_lookup = &param->terminal_energies();
                     break;
                 case ModLookup::Mismatch:
