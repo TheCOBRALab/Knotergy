@@ -34,15 +34,17 @@ class ModStack {
         // Used to look up stacking energies in modified base parameters
         std::string l_key = ModBaseUtils::join_string_views({i, ci, j, cj}, mod_sequence);
 
-        // Get energy correction for modified bases (returns original energy if no modifications found)
+        // Get energy correction for modified bases (returns original energy if no modifications
+        // found)
         int e = ModBaseUtils::get_mod_energy(l_key, unique_mod_bases, mp, unmod_energy,
                                              ModLookup::Stacking);
 
-        // Due to the symmetrical nature of stacks, if the key was not found, we check the reverse order (ci, i, cj, j) for modified bases
+        // Due to the symmetrical nature of stacks, if the key was not found, we check the reverse
+        // order (ci, i, cj, j) for modified bases
         if (e == unmod_energy) {
             std::string r_key = ModBaseUtils::join_string_views({cj, j, ci, i}, mod_sequence);
             e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, unmod_energy,
-            ModLookup::Stacking);
+                                             ModLookup::Stacking);
         }
 
         return e;

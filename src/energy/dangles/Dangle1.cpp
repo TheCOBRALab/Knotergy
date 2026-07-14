@@ -92,6 +92,10 @@ std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
     std::vector<DangleSet> dangle_energies;
     dangle_energies.reserve(children.size());
     for (const auto& child : children) {
+        if (child->loop_type == LoopType::Pseudoknot) {
+            dangle_energies.push_back(DangleSet{0, 0, 0, 0});
+            continue;
+        }
         dangle_energies.push_back(get_child_dangle_energy(*child, pRNA, vp, is_external));
     }
 

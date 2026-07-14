@@ -4,18 +4,17 @@
 #include <vector>
 
 namespace {
-const int dangle = 2;
 const bool round = true;
 const bool dont_round = false;
 
 std::pair<double, double> get_turner_results(const std::string& sequence,
-                                             const std::string& structure) {
+                                             const std::string& structure, const int dangle = 2) {
     double turner_result = get_energy(sequence, structure, dangle, dont_round, turner_file);
     double turner_rounded = get_energy(sequence, structure, dangle, round, turner_file);
     return {turner_result, turner_rounded};
 }
-std::pair<double, double> get_dp_results(const std::string& sequence,
-                                         const std::string& structure) {
+std::pair<double, double> get_dp_results(const std::string& sequence, const std::string& structure,
+                                         const int dangle = 2) {
     double dp_result = get_energy(sequence, structure, dangle, dont_round, DP_file);
     double dp_rounded = get_energy(sequence, structure, dangle, round, DP_file);
     return {dp_result, dp_rounded};
@@ -24,6 +23,7 @@ std::pair<double, double> get_dp_results(const std::string& sequence,
 TEST(PK_energies, InfiniteEnergy_DP) {
     std::string sequence = "GGCC";
     std::string structure = "[(])";
+    const int dangle = 2;
     double dp_result = get_energy(sequence, structure, dangle, round, DP_file);
 
     EXPECT_NEAR(dp_result, 200003.5400, 0.000005);
@@ -32,6 +32,7 @@ TEST(PK_energies, InfiniteEnergy_DP) {
 TEST(PK_energies, InfiniteEnergy_Turner) {
     std::string sequence = "GGCC";
     std::string structure = "[(])";
+    const int dangle = 2;
     double turner_result = get_energy(sequence, structure, dangle, round, turner_file);
 
     EXPECT_NEAR(turner_result, 200003.5400, 0.000005);
@@ -230,4 +231,25 @@ TEST(PK_energies, many_children_few_bands_DP) {
     EXPECT_NEAR(dp_rounded, 37.82, 0.000005);
 }
 
+TEST(PK_energies, dangle_1) {
+    std::string sequence =
+        "UUUUAGUUAAUUAUUUAUUUAAUUGAUAUUUUCUUUUACAUUUAUAAUCUUCAAAUAAAAAAAAUUAAAAAUAAAAAAGAAGAAAAUUAU"
+        "AUAUCAAGUAAUAUGCUACCUUAAUAUCUAUACAUUAUAAAAUACAAAGUUGAACAAUCUUAUUAAAGAAAAUAUAUCUUAAAGUAUUAG"
+        "UACGUAUAAAUUGUUACUUUUUUGUUCAAUAAUGAUAUAUUAAAAUCACUAAUAUAAGUUGAUUAAUUUUUUAUAAAUAAUUGGUUCUUA"
+        "AUUAUUUUAUUUUUUUUUAAAAUACACAAUACUCUAAUUAAAUAUUGCCUAAUUAAAAAAUGUGGAUUAAUCAUUUUGUUUUAUUUAGGU"
+        "UAUUUUUGUACUUCUUAAGUAAAGAUUAUAAUUUACACUAAUAUAUUUAAAUAUCUUAAUACGCAAUUUCUAAGUUACCCAAUUUAAUAU"
+        "CAAUUACUUAAACAUGUUAUUAUUCGGAUUUUUUAUUGUAGUAUUAAAAAACUAAAUAACAA";
+    std::string structure =
+        "..[[[[[.[[[[[[.....(((((((((((.(((((((((...(((((((..((((((((..........((((((((..........(("
+        "((((((....((((.........)))).....................(((((((((........((((.......))))((((((.((("
+        "(........)))).)))))).)))))))))..))))))))...(((((((......)).)))))..))))))))...(((((((......"
+        "..(((((((........)))))))..(((((...........))))).))))))).((((((.........)))))).))))))))))))"
+        ")))...))))..........)))))..]]]]]]...]]]]]..[[[[[[......[[[[[[[[[[[[....[[[[..[[.[[[..)))))"
+        "))))))...............]]].]]]]]]...]]]]].]]]]]]].....]]]]]]....";
+    const int dangle = 1;
+    auto [dp_result, dp_rounded] = get_dp_results(sequence, structure, dangle);
+
+    EXPECT_NEAR(dp_result, -40.8830, 0.000005);
+    EXPECT_NEAR(dp_rounded, -40.9100, 0.000005);
+}
 }  // namespace

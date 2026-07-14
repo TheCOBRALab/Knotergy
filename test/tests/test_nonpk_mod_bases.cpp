@@ -65,15 +65,14 @@ TEST(mod_nonpk, simple_stack) {
     std::string structure = "(((...)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
-    // ViennaRNA's RNAfold gives 4.65 but it's likely a bug in their code
-    // (Vienna checks 2 different keys for the stack)
-    EXPECT_NEAR(d0, 4.58, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d1, 4.58, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d2, 4.58, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d3, 4.58, 0.000005);  // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d0, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d1, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d2, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d3, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
 }
 
-// echo -e "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC"
+// echo -e
+// "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC"
 // | RNAfold -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
 // ./build/Knotergy -s
 // "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r
@@ -86,12 +85,10 @@ TEST(mod_nonpk, external1_0_dangle) {
         "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
-    // RNAfold gives different values due to a likely bug in their code
-    // where they check 2 different keys for the stack
-    EXPECT_NEAR(d0, -69.39, 0.000005);  // Turner 2004 // RNAfold gives -70.11
-    EXPECT_NEAR(d1, -69.39, 0.000005);  // Turner 2004 // RNAfold gives -70.11
-    EXPECT_NEAR(d2, -70.09, 0.000005);  // Turner 2004 // RNAfold gives -70.81
-    EXPECT_NEAR(d3, -69.39, 0.000005);  // Turner 2004 // RNAfold gives -70.81
+    EXPECT_NEAR(d0, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.11
+    EXPECT_NEAR(d1, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.11
+    EXPECT_NEAR(d2, -70.81, 0.000005);  // Turner 2004 // RNAfold gives -70.81
+    EXPECT_NEAR(d3, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.81
 }
 
 TEST(mod_nonpk, multiloop_no_lookup) {

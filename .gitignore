@@ -47,6 +47,9 @@
 /ViennaRNA-2.7.2/
 *.ps
 
+# External tools
+/HFold/
+
 # Mac Xcode
 *.trace
 

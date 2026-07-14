@@ -1,13 +1,14 @@
 #pragma once
 
+#include "io/parameters/ViennaParams.hpp"
+
 #include <cmath>
 #include <cstddef>
 #include <string>
-#include "io/parameters/ViennaParams.hpp"
 
 namespace knotergy {
 
-// This is currently not used. But it fills the gap between ViennaRNA 
+// This is currently not used. But it fills the gap between ViennaRNA
 // and RNAstructure for single-bulge corrections.
 int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
                                  const std::string& sequence, const vrna_md_param& vp) {
@@ -63,4 +64,4 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
 
     return correction;
 }
-}
+}  // namespace knotergy
