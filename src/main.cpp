@@ -144,7 +144,7 @@ int run_knotergy(int argc, char** argv) {
             return EXIT_SUCCESS;
 
         } else if (arg == "-V" || arg == "--version") {
-            std::cout << "Knotergy " << knotergy::OutputManager::version() << '\n';
+            knotergy::OutputManager::print_banner();
             return EXIT_SUCCESS;
 
         } else if (arg == "-v" || arg == "--verbose") {
