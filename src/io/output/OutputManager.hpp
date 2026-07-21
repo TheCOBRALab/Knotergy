@@ -39,7 +39,7 @@ class OutputManager {
 
         std::cout << std::left << std::setw(W)
                   << "ViennaRNA:" << vienna_params.get_source_info().resolved_name
-                  << " (Dangles: " << vienna_params.md.dangles << ")\n";
+                  << " (Dangle Model: " << vienna_params.md.dangles << ")\n";
 
         std::cout << std::left << std::setw(W)
                   << "Pseudoknot:" << pk_params.get_source_info().resolved_name << '\n';

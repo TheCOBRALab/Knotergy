@@ -2,6 +2,8 @@
 
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModifiedBasesFunctions.hpp"
+#include "energy/modified_bases/ModStack.hpp"
+#include "energy/modified_bases/ModInternal.hpp"
 
 namespace knotergy {
 
@@ -50,7 +52,13 @@ double ComputeEnergy::process_node(LoopNode& node) {
             break;
 
         case LoopType::Internal:
-            node_energy = ViennaFunctions::internal_loop_energy(node, vp_);
+            if (has_modified_bases_) {
+                node_energy = ModInternal::find_mod_internal_energy(
+                    node.begin, node.end, node.children[0]->begin, node.children[0]->end,
+                    mod_sequence_, sequence_, vp_, mp_);
+            } else {
+                node_energy = ViennaFunctions::internal_loop_energy(node, vp_);
+            }
             break;
 
         case LoopType::Multibranch:
