@@ -22,7 +22,7 @@ std::tuple<double, double, double, double> pipeline(std::string sequence, std::s
 }  // namespace
 
 TEST(Dangles, empty) {
-    std::string sequence  = "U";
+    std::string sequence = "U";
     std::string structure = ".";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -33,7 +33,7 @@ TEST(Dangles, empty) {
 }
 
 TEST(Dangles, internal_loop) {
-    std::string sequence  = "CUAUUAAAUUUUUUA";
+    std::string sequence = "CUAUUAAAUUUUUUA";
     std::string structure = "..(..(...)..)..";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -44,7 +44,7 @@ TEST(Dangles, internal_loop) {
 }
 
 TEST(Dangles, external_simple) {
-    std::string sequence  = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
+    std::string sequence = "AAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUU";
     std::string structure = ".(((((.........................))))).";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -55,7 +55,7 @@ TEST(Dangles, external_simple) {
 }
 
 TEST(Dangles, external_simple_NoEnds) {
-    std::string sequence  = "AAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUU";
+    std::string sequence = "AAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUU";
     std::string structure = "(((((.........................)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -66,7 +66,7 @@ TEST(Dangles, external_simple_NoEnds) {
 }
 
 TEST(Dangles, external_simple_adjacent) {
-    std::string sequence  = "AAAAAAUUUUUGGGGGCCCCCCAAAAAUUUUUUAAAAUUUUGGGCCAAAAAAAUUUUU";
+    std::string sequence = "AAAAAAUUUUUGGGGGCCCCCCAAAAAUUUUUUAAAAUUUUGGGCCAAAAAAAUUUUU";
     std::string structure = ".((((((((((((((...)))))))))))))).((((((((........)))))))).";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -77,7 +77,7 @@ TEST(Dangles, external_simple_adjacent) {
 }
 
 TEST(Dangles, multiloop_left_dangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....)))..((...))..)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -88,7 +88,7 @@ TEST(Dangles, multiloop_left_dangle) {
 }
 
 TEST(Dangles, multiloop_left_dangle_chained) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....))).((...))..)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -99,7 +99,7 @@ TEST(Dangles, multiloop_left_dangle_chained) {
 }
 
 TEST(Dangles, multiloop_left_touch) {
-    std::string sequence  = "AAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....))).((...))..)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -110,7 +110,7 @@ TEST(Dangles, multiloop_left_touch) {
 }
 
 TEST(Dangles, multiloop_right_dangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((..(((....))).((...)).)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -121,7 +121,7 @@ TEST(Dangles, multiloop_right_dangle) {
 }
 
 TEST(Dangles, multiloop_right_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
     std::string structure = "(((..(((....))).((...)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -132,7 +132,7 @@ TEST(Dangles, multiloop_right_touch) {
 }
 
 TEST(Dangles, multiloop_both_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUU";
     std::string structure = "((((((....)))...((...)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -143,7 +143,7 @@ TEST(Dangles, multiloop_both_touch) {
 }
 
 TEST(Dangles, multiloop_both_RDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....)))...((...)).)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -154,7 +154,7 @@ TEST(Dangles, multiloop_both_RDangle) {
 }
 
 TEST(Dangles, multiloop_both_LDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUU";
     std::string structure = "(((.(((....)))...((...)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -165,7 +165,7 @@ TEST(Dangles, multiloop_both_LDangle) {
 }
 
 TEST(Dangles, multiloop_both_BDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUUAAAAAUUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUUAAAAAUUUUUUUU";
     std::string structure = "(((.(((....)))...((...)).)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -176,7 +176,7 @@ TEST(Dangles, multiloop_both_BDangle) {
 }
 
 TEST(Dangles, multiloop_loop_touch) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAAUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAAUUUUU";
     std::string structure = "((((((....))).((...)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -187,7 +187,7 @@ TEST(Dangles, multiloop_loop_touch) {
 }
 
 TEST(Dangles, multiloop_loop_RDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUAAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUAAAAAUUUUUUU";
     std::string structure = "((((((....))).((...)).)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -198,7 +198,7 @@ TEST(Dangles, multiloop_loop_RDangle) {
 }
 
 TEST(Dangles, multiloop_loop_LDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAUUUUUUU";
     std::string structure = "(((.(((....))).((...)))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -209,7 +209,7 @@ TEST(Dangles, multiloop_loop_LDangle) {
 }
 
 TEST(Dangles, multiloop_loop_BDangle) {
-    std::string sequence  = "AAAAAAAAAUUUUUAAAAUUUUUUUU";
+    std::string sequence = "AAAAAAAAAUUUUUAAAAUUUUUUUU";
     std::string structure = "(((.(((....))).((...)).)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -220,7 +220,7 @@ TEST(Dangles, multiloop_loop_BDangle) {
 }
 
 TEST(Dangles, multiloop_right_touch_left_dangle) {
-    std::string sequence  = "UUAAAAUUGAAACA";
+    std::string sequence = "UUAAAAUUGAAACA";
     std::string structure = "(.(...).(...))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -230,7 +230,7 @@ TEST(Dangles, multiloop_right_touch_left_dangle) {
     EXPECT_NEAR(d3, 16.00, 0.000005);
 }
 TEST(Dangles, multiloop_both_dangles) {
-    std::string sequence  = "UCUAAAAUAGAAACAG";
+    std::string sequence = "UCUAAAAUAGAAACAG";
     std::string structure = "(.(...)..(...).)";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -257,7 +257,7 @@ TEST(Dangles, external_multiloop) {
 }
 
 TEST(Dangles, no_coaxial_stacking) {
-    std::string sequence  = "AAAAAUUUUUAAAAUUUUU";
+    std::string sequence = "AAAAAUUUUUAAAAUUUUU";
     std::string structure = "(..(...)...(...)..)";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -268,7 +268,7 @@ TEST(Dangles, no_coaxial_stacking) {
 }
 
 TEST(Dangles, mismatch_mediated_coaxial_stacking) {
-    std::string sequence  = "AAAAUUUUAAAUUUU";
+    std::string sequence = "AAAAUUUUAAAUUUU";
     std::string structure = "(.(...).(...).)";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -279,7 +279,7 @@ TEST(Dangles, mismatch_mediated_coaxial_stacking) {
 }
 
 TEST(Dangles, flush_coaxial_stacking) {
-    std::string sequence  = "AAAAUUAAAUUU";
+    std::string sequence = "AAAAUUAAAUUU";
     std::string structure = "((...)(...))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 

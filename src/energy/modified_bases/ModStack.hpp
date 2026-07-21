@@ -20,7 +20,7 @@ class ModStack {
      */
     // Gets the modified energy of a stack
     static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
-                                     const std::string&                   sequence,
+                                     const std::string& sequence,
                                      const std::vector<std::string_view>& mod_sequence,
                                      vrna_md_param& vp, const all_mod_params& mp) {
         // Get unmodified energy first to use as fallback if no modified nucleotides are found
@@ -66,7 +66,7 @@ class ModStack {
     [[nodiscard]] static int find_mod_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp, const all_mod_params& mp) {
-        const std::string&                   sequence     = processed_rna.get_sequence();
+        const std::string& sequence = processed_rna.get_sequence();
         const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
         return find_mod_stack_energy(bp.i, bp.j, next_bp.i, next_bp.j, sequence, mod_sequence, vp,
                                      mp);

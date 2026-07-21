@@ -2,18 +2,18 @@
 
 // echo -e "AU\n()" | RNAeval
 TEST(NonPseudoKnottedEnergies, nonPK_small_Turner) {
-    std::string sequence      = "AU";
-    std::string structure     = "()";
-    double      turner_energy = get_energy(sequence, structure, turner_file);
+    std::string sequence = "AU";
+    std::string structure = "()";
+    double turner_energy = get_energy(sequence, structure, turner_file);
 
     EXPECT_NEAR(turner_energy, 100000.50, 0.000005);  // Turner 2004
 }
 
 // echo -e "AU\n()" | RNAeval
 TEST(NonPseudoKnottedEnergies, nonPK_small_DP) {
-    std::string sequence  = "AU";
+    std::string sequence = "AU";
     std::string structure = "()";
-    double      dp_energy = get_energy(sequence, structure, DP_file);
+    double dp_energy = get_energy(sequence, structure, DP_file);
 
     EXPECT_NEAR(dp_energy, 100000.50, 0.000005);  // Dirks & Pierce 2009
 }
@@ -21,9 +21,9 @@ TEST(NonPseudoKnottedEnergies, nonPK_small_DP) {
 // echo -e "AGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGU\n(........................................)"
 // | RNAeval
 TEST(NonPseudoKnottedEnergies, nonPK_hairpin_long_Turner) {
-    std::string sequence      = "AGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGU";
-    std::string structure     = "(........................................)";
-    double      turner_energy = get_energy(sequence, structure, turner_file);
+    std::string sequence = "AGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGU";
+    std::string structure = "(........................................)";
+    double turner_energy = get_energy(sequence, structure, turner_file);
 
     EXPECT_NEAR(turner_energy, 7.41, 0.000005);  // Turner 2004
 }
@@ -32,7 +32,7 @@ TEST(NonPseudoKnottedEnergies, nonPK_hairpin_long_Turner) {
 // "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC\n.(((((.........................)))))................"
 // | RNAeval
 TEST(NonPseudoKnottedEnergies, BasicStack_Turner) {
-    std::string sequence  = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
+    std::string sequence = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = ".(((((.........................)))))................";
 
     double turner_energy = get_energy(sequence, structure, turner_file);
@@ -43,7 +43,7 @@ TEST(NonPseudoKnottedEnergies, BasicStack_Turner) {
 // "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC\n.(((((.........................)))))................"
 // | RNAeval
 TEST(NonPseudoKnottedEnergies, BasicStack_DP) {
-    std::string sequence  = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
+    std::string sequence = "AGGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
     std::string structure = ".(((((.........................)))))................";
 
     double dp_energy = get_energy(sequence, structure, DP_file);
@@ -52,7 +52,7 @@ TEST(NonPseudoKnottedEnergies, BasicStack_DP) {
 
 // echo -e "GGGGAGAAAAAAAAAUUUUUU\n((((((.........))))))" | RNAeval
 TEST(NonPseudoKnottedEnergies, StacksFullStructure_Turner) {
-    std::string sequence  = "GGGGAGAAAAAAAAAUUUUUU";
+    std::string sequence = "GGGGAGAAAAAAAAAUUUUUU";
     std::string structure = "((((((.........))))))";
 
     double turner_energy = get_energy(sequence, structure, turner_file);
@@ -61,7 +61,7 @@ TEST(NonPseudoKnottedEnergies, StacksFullStructure_Turner) {
 
 // echo -e "GGGGAGAAAAAAAAAUUUUUU\n((((((.........))))))" | RNAeval
 TEST(NonPseudoKnottedEnergies, StacksFullStructure_DP) {
-    std::string sequence  = "GGGGAGAAAAAAAAAUUUUUU";
+    std::string sequence = "GGGGAGAAAAAAAAAUUUUUU";
     std::string structure = "((((((.........))))))";
 
     double dp_energy = get_energy(sequence, structure, DP_file);
@@ -150,7 +150,7 @@ TEST(NonPseudoKnottedEnergies, MultiLoopWithStacksFull_DP) {
 // "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC\n((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))"
 // | RNAeval
 TEST(NonPseudoKnottedEnergies, MultiWithMultiLoop_Turner) {
-    std::string sequence  = "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC";
+    std::string sequence = "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC";
     std::string structure = "((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))";
 
     double turner_energy = get_energy(sequence, structure, turner_file);
@@ -161,7 +161,7 @@ TEST(NonPseudoKnottedEnergies, MultiWithMultiLoop_Turner) {
 // "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC\n((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))"
 // | RNAeval
 TEST(NonPseudoKnottedEnergies, MultiWithMultiLoop_DP) {
-    std::string sequence  = "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC";
+    std::string sequence = "GGGGUUAUUUUAUUAAAAAUAACCCUGGUUUUUAAGGCGGGGUCGUGCGGUAAGGGAACCC";
     std::string structure = "((((..(...).((...)))..(((.(.((...))..(...).)..(...)..)))..)))";
 
     double dp_energy = get_energy(sequence, structure, DP_file);

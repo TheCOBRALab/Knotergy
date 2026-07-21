@@ -52,28 +52,28 @@ struct LoopNode {
     size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
     size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType         loop_type   = LoopType::Unknown;       ///< Type of this loop.
+    LoopType loop_type = LoopType::Unknown;                 ///< Type of this loop.
     PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
-    int              exclusive_unpaired_bases_count = 0;    ///< Unpaired bases only in this loop.
-    int              total_unpaired_bases_count = 0;  ///< Unpaired bases in loop + nested children.
-    int       number_of_withinband_children = 0;  ///< Count of children within pseudoknot bands.
-    int       number_of_nested_children     = 0;  ///< Count of nested children.
-    LoopNode* parent = nullptr;                   ///< Parent loop node (weak to avoid cycles).
+    int exclusive_unpaired_bases_count = 0;                 ///< Unpaired bases only in this loop.
+    int total_unpaired_bases_count = 0;     ///< Unpaired bases in loop + nested children.
+    int number_of_withinband_children = 0;  ///< Count of children within pseudoknot bands.
+    int number_of_nested_children = 0;      ///< Count of nested children.
+    LoopNode* parent = nullptr;             ///< Parent loop node (weak to avoid cycles).
     std::vector<std::unique_ptr<LoopNode>> children;  ///< Child loop nodes. (sorted by start)
     std::vector<Band> bands;             ///< Pseudoknot bands (empty if not pseudoknotted).
     int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
-    double energy                  = 0;  ///< Computed energy (set by ComputeEnergy).
-    bool   is_inf = false;               ///< Flag for infinite energy (e.g., invalid structures).
+    double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
+    bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
 
     // ---------------- Vienna-esque values ---------------
     unsigned int pair_type;
     unsigned int r_pair_type;  // reverse pair type
-    int          i_encoded = -1;
-    int          j_encoded = -1;
-    int          n5d_inner = -1;
-    int          n3d_inner = -1;
-    int          n5d_outer = -1;
-    int          n3d_outer = -1;
+    int i_encoded = -1;
+    int j_encoded = -1;
+    int n5d_inner = -1;
+    int n3d_inner = -1;
+    int n5d_outer = -1;
+    int n3d_outer = -1;
 
     /**
      * @brief Generate a formatted string for energy breakdown output.
@@ -85,7 +85,7 @@ struct LoopNode {
      */
     [[nodiscard]] std::string energy_breakdown(size_t max_idx) const {
         std::ostringstream out;
-        const bool         use_color = should_use_color();
+        const bool use_color = should_use_color();
 
         const auto color = [use_color](const char* ansi_code) -> const char* {
             return use_color ? ansi_code : "";

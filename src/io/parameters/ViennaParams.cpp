@@ -76,7 +76,7 @@ bool load_param_cache(const std::string& cachePath, int expectedDangle,
 
     // update output parameter struct
     out.md = p->model_details;
-    out.p  = p;
+    out.p = p;
     return true;
 }
 
@@ -94,7 +94,7 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
     if (!out) return;
 
     ParamCacheHeader hdr{};
-    hdr.dangles      = dangle;
+    hdr.dangles = dangle;
     hdr.source_mtime = sourceMtime;
 
     out.write(reinterpret_cast<const char*>(&hdr), sizeof(hdr));
@@ -106,42 +106,42 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
                                                    const std::string& seq) {
-    vrna_md_param   md_param{};
+    vrna_md_param md_param{};
     ParamSourceInfo source_info;
 
-    source_info.label          = "ViennaRNA";
+    source_info.label = "ViennaRNA";
     source_info.requested_path = paramFile;
 
     enum class SourceKind { UserFile, DefaultRNAFile, BuiltinDNA, BuiltinRNA };
 
-    SourceKind    source_kind;
-    std::string   cache_key;
-    std::string   load_path;
+    SourceKind source_kind;
+    std::string cache_key;
+    std::string load_path;
     std::uint64_t srcMtime = 0;
 
     // ----- Resolve parameter source first -----
     if (!paramFile.empty() && FileUtils::file_exists(paramFile)) {
         source_kind = SourceKind::UserFile;
-        cache_key   = paramFile;
-        load_path   = paramFile;
-        srcMtime    = FileUtils::get_file_mtime(paramFile);
+        cache_key = paramFile;
+        load_path = paramFile;
+        srcMtime = FileUtils::get_file_mtime(paramFile);
 
-        source_info.status        = ParamStatus::LoadedUserFile;
+        source_info.status = ParamStatus::LoadedUserFile;
         source_info.resolved_path = paramFile;
         source_info.resolved_name = FileUtils::strip_extension(paramFile);
     } else if (seq.find('T') != std::string::npos) {
         source_kind = SourceKind::BuiltinDNA;
-        cache_key   = "builtin:dna_Mathews2004";
+        cache_key = "builtin:dna_Mathews2004";
 
-        source_info.status        = ParamStatus::Fallback;
+        source_info.status = ParamStatus::Fallback;
         source_info.resolved_name = "Mathews 2004 (DNA)";
     } else if (FileUtils::file_exists(default_param_path())) {
         source_kind = SourceKind::DefaultRNAFile;
-        cache_key   = default_param_path();
-        load_path   = default_param_path();
-        srcMtime    = FileUtils::get_file_mtime(default_param_path());
+        cache_key = default_param_path();
+        load_path = default_param_path();
+        srcMtime = FileUtils::get_file_mtime(default_param_path());
 
-        source_info.status        = ParamStatus::Fallback;
+        source_info.status = ParamStatus::Fallback;
         source_info.resolved_path = default_param_path();
         source_info.resolved_name = "Dirks & Pierce 2009";
     } else {
@@ -149,9 +149,9 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
                   << " Default RNA parameter file not found, falling back to built-in Turner 2004 "
                      "parameters.\n";
         source_kind = SourceKind::BuiltinRNA;
-        cache_key   = "builtin:rna_Turner2004";
+        cache_key = "builtin:rna_Turner2004";
 
-        source_info.status        = ParamStatus::Fallback;
+        source_info.status = ParamStatus::Fallback;
         source_info.resolved_name = "Turner 2004";
     }
 

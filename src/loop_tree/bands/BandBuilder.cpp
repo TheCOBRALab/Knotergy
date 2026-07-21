@@ -24,7 +24,7 @@ Band BandBuilder::construct_band(size_t lb, size_t li, size_t ri, size_t rb,
     };
 
     // ------------- Build and populate base pairs -------------
-    int                   child_count = 0;
+    int child_count = 0;
     std::vector<BasePair> base_pairs =
         find_base_pairs_left_scan(lb, li, ri, rb, pair_table, cr_pair_table, child_count);
     populate_right_arm_children(base_pairs, ri, rb, cr_pair_table, child_count);
@@ -97,7 +97,7 @@ void BandBuilder::populate_right_arm_children(std::vector<BasePair>& base_pairs,
         // Adds children to current base pair
         if (cr_pair_table[idx] != NULL_INDEX) {
             size_t right = idx;
-            size_t left  = cr_pair_table[idx];
+            size_t left = cr_pair_table[idx];
 
             current_bp.children.emplace_back(left, right);
             idx = left;

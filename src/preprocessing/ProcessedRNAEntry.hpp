@@ -29,16 +29,16 @@ namespace knotergy {
  */
 class ProcessedRNAEntry {
    private:
-    std::string                   name_;                // RNA entry name.
-    std::string                   raw_sequence_;        // Raw RNA input sequence
-    std::string                   structure_;           // Dot-bracket RNA structure string.
-    std::string                   sequence_;            // Unmodified RNA nucleotide sequence.
+    std::string name_;                                  // RNA entry name.
+    std::string raw_sequence_;                          // Raw RNA input sequence
+    std::string structure_;                             // Dot-bracket RNA structure string.
+    std::string sequence_;                              // Unmodified RNA nucleotide sequence.
     std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
-    std::vector<size_t>           pair_table_;          // Base-pair indices for each position.
-    std::vector<ClosedRegion>     closed_regions_;      // All closed regions in the structure.
-    std::vector<size_t>           closed_regions_pair_table_;  // Closed regions boundary indicies.
-    std::vector<int>              unpaired_prefix_sum_;  // Prefix-sum of unpaired-base counts.
-    bool has_modified_bases_ = false;                    // Whether modified bases are present.
+    std::vector<size_t> pair_table_;                    // Base-pair indices for each position.
+    std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
+    std::vector<size_t> closed_regions_pair_table_;     // Closed regions boundary indicies.
+    std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
+    bool has_modified_bases_ = false;                   // Whether modified bases are present.
 
    public:
     /**
@@ -59,7 +59,7 @@ class ProcessedRNAEntry {
     ProcessedRNAEntry(std::string name, std::string raw_sequence, std::string structure,
                       std::string unmodified_sequence, std::vector<size_t> pair_table,
                       std::vector<ClosedRegion> closed_regions,
-                      std::vector<size_t>       closed_regions_pair_table,
+                      std::vector<size_t> closed_regions_pair_table,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : name_{std::move(name)},
           raw_sequence_{std::move(raw_sequence)},
@@ -92,7 +92,7 @@ class ProcessedRNAEntry {
      */
     ProcessedRNAEntry(RNAEntry rna, std::string unmodified_sequence, std::vector<size_t> pair_table,
                       std::vector<ClosedRegion> closed_regions,
-                      std::vector<size_t>       closed_regions_pair_table,
+                      std::vector<size_t> closed_regions_pair_table,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : ProcessedRNAEntry(std::move(rna.name), std::move(rna.sequence), std::move(rna.structure),
                             std::move(unmodified_sequence), std::move(pair_table),
@@ -125,15 +125,15 @@ class ProcessedRNAEntry {
      */
     ProcessedRNAEntry& operator=(ProcessedRNAEntry&& other) noexcept {
         if (this != &other) {
-            name_                      = std::move(other.name_);
-            raw_sequence_              = std::move(other.raw_sequence_);
-            structure_                 = std::move(other.structure_);
-            sequence_                  = std::move(other.sequence_);
-            pair_table_                = std::move(other.pair_table_);
-            closed_regions_            = std::move(other.closed_regions_);
+            name_ = std::move(other.name_);
+            raw_sequence_ = std::move(other.raw_sequence_);
+            structure_ = std::move(other.structure_);
+            sequence_ = std::move(other.sequence_);
+            pair_table_ = std::move(other.pair_table_);
+            closed_regions_ = std::move(other.closed_regions_);
             closed_regions_pair_table_ = std::move(other.closed_regions_pair_table_);
-            unpaired_prefix_sum_       = std::move(other.unpaired_prefix_sum_);
-            has_modified_bases_        = other.has_modified_bases_;
+            unpaired_prefix_sum_ = std::move(other.unpaired_prefix_sum_);
+            has_modified_bases_ = other.has_modified_bases_;
             if (has_modified_bases_) {
                 mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
             }

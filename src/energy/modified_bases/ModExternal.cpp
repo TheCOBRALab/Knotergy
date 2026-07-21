@@ -4,8 +4,8 @@
 
 namespace knotergy {
 namespace {
-int is_closing  = false;  // external loop energy correction does not apply to closing pair
-int is_external = true;   // external loop energy correction applies to children of external loop
+int is_closing = false;  // external loop energy correction does not apply to closing pair
+int is_external = true;  // external loop energy correction applies to children of external loop
 }  // namespace
 
 int ModExternal::find_mod_external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
@@ -22,7 +22,7 @@ int ModExternal::find_mod_external_energy(const std::vector<std::unique_ptr<Loop
 
 ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const ProcessedRNAEntry& pRNA,
                                                vrna_md_param& vp, const all_mod_params& mp) {
-    const std::string&                   sequence     = pRNA.get_sequence();
+    const std::string& sequence = pRNA.get_sequence();
     const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
 
     std::vector<std::string_view> unique_mod_bases =
@@ -51,7 +51,7 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<Lo
         unsigned int type = ViennaUtils::get_pair_type(pRNA.get_sequence()[child->begin],
                                                        pRNA.get_sequence()[child->end], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
-        ModDiffs diffs  = ModExternal::get_external_child_diffs(*child, pRNA, vp, mp);
+        ModDiffs diffs = ModExternal::get_external_child_diffs(*child, pRNA, vp, mp);
 
         if (vp.md.dangles == 2) {
             if (n5d >= 0 && n3d >= 0)
@@ -78,9 +78,9 @@ int ModExternal::external_dangle_1_energy(const std::vector<std::unique_ptr<Loop
     int energy = 0;
 
     for (size_t idx = 0; idx < children.size(); ++idx) {
-        const LoopNode& child       = *children[idx];
-        ModDiffs        diffs       = ModExternal::get_external_child_diffs(child, pRNA, vp, mp);
-        DangleSet&      current_set = all_dangle_sets[idx];
+        const LoopNode& child = *children[idx];
+        ModDiffs diffs = ModExternal::get_external_child_diffs(child, pRNA, vp, mp);
+        DangleSet& current_set = all_dangle_sets[idx];
         ModBaseUtils::modify_dangle_set(current_set, diffs);
     }
 

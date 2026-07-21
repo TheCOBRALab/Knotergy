@@ -30,7 +30,7 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
         return ModStack::find_mod_stack_energy(i, j, ci, cj, sequence, mod_sequence, vp, mp);
     }
 
-    int          e     = unmod_energy;
+    int e = unmod_energy;
     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
 
@@ -44,14 +44,14 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
             } else {
                 if (type1 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
-                    int         mod_AU_penalty =
+                    int mod_AU_penalty =
                         ModBaseUtils::get_mod_energy(AU_key, closing_unique_mod_bases, mp,
                                                      vp.p->TerminalAU, ModLookup::TerminalAU);
                     e += mod_AU_penalty - vp.p->TerminalAU;
                 }
                 if (type2 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({ci, cj}, mod_sequence);
-                    int         mod_AU_penalty =
+                    int mod_AU_penalty =
                         ModBaseUtils::get_mod_energy(AU_key, nested_unique_mod_bases, mp,
                                                      vp.p->TerminalAU, ModLookup::TerminalAU);
                     e += mod_AU_penalty - vp.p->TerminalAU;

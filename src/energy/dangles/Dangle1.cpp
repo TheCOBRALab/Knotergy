@@ -14,7 +14,7 @@ extern "C" {
 
 namespace knotergy {
 int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
-                                   const std::vector<DangleSet>&                 dangle_energies) {
+                                   const std::vector<DangleSet>& dangle_energies) {
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_chains(dangle_chains, dangle_energies);
 }
@@ -27,17 +27,17 @@ int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>&
 
 int Dangle1::get_multibranch_dangle_1(const LoopNode& node, std::vector<DangleSet> dangle_energies,
                                       DangleSet closing) {
-    const std::vector<std::unique_ptr<LoopNode>>& children      = node.children;
-    std::vector<std::vector<size_t>>              dangle_chains = get_dangle_chains(children);
+    const std::vector<std::unique_ptr<LoopNode>>& children = node.children;
+    std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
 
     return process_ml_chains(dangle_chains, children, dangle_energies, node, closing);
 }
 
 int Dangle1::get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                       vrna_md_param& vp) {
-    bool                                          is_external = false;
-    const std::vector<std::unique_ptr<LoopNode>>& children    = node.children;
-    std::vector<DangleSet>                        dangle_energies =
+    bool is_external = false;
+    const std::vector<std::unique_ptr<LoopNode>>& children = node.children;
+    std::vector<DangleSet> dangle_energies =
         populate_children_dangle_energies(children, pRNA, vp, is_external);
     DangleSet closing = get_ml_closing_dangle_energy(node, pRNA, vp);
 
@@ -47,10 +47,10 @@ int Dangle1::get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEn
 DangleSet Dangle1::get_ml_closing_dangle_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                                 vrna_md_param& vp) {
     const std::string& sequence = pRNA.get_sequence();
-    size_t             pi       = node.begin;
-    size_t             pj       = node.end;
+    size_t pi = node.begin;
+    size_t pj = node.end;
 
-    auto [n5d, n3d]        = ViennaUtils::encode_inner_dangles(pi, pj, pRNA, vp.md);
+    auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(pi, pj, pRNA, vp.md);
     unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[pi], sequence[pj], vp.md);
 
     // closing pair dangles
@@ -67,10 +67,10 @@ DangleSet Dangle1::get_ml_closing_dangle_energy(const LoopNode& node, const Proc
 DangleSet Dangle1::get_child_dangle_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                            vrna_md_param& vp, bool is_external) {
     const std::string& sequence = pRNA.get_sequence();
-    size_t             ci       = node.begin;
-    size_t             cj       = node.end;
+    size_t ci = node.begin;
+    size_t cj = node.end;
 
-    auto [n5d, n3d]        = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
+    auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
 
     auto vrna_E_stem = is_external ? vrna_E_exterior_stem : vrna_E_multibranch_stem;
@@ -112,7 +112,7 @@ std::vector<std::vector<size_t>> Dangle1::get_dangle_chains(
 
     // Iterate through children to identify chains
     for (size_t i = 1; i < children.size(); ++i) {
-        const std::unique_ptr<LoopNode>& child      = children[i];
+        const std::unique_ptr<LoopNode>& child = children[i];
         const std::unique_ptr<LoopNode>& prev_child = children[i - 1];
         if (child->loop_type == LoopType::Pseudoknot) {
             continue;
@@ -136,24 +136,24 @@ std::vector<std::vector<size_t>> Dangle1::get_dangle_chains(
 }
 
 // Dynamic programming to compute optimal dangle energies for a single chain of children
-int Dangle1::process_chain(const std::vector<size_t>&    chain,
+int Dangle1::process_chain(const std::vector<size_t>& chain,
                            const std::vector<DangleSet>& dangle_energies,
                            bool disable_last_right_dangle, std::array<int, 2> init,
                            DangleSet closing) {
     std::array<int, 2> prev = init;  // default {0, INF}
     for (size_t idx : chain) {
-        const DangleSet&   energies = dangle_energies[idx];
-        std::array<int, 2> cur      = {INF, INF};
+        const DangleSet& energies = dangle_energies[idx];
+        std::array<int, 2> cur = {INF, INF};
 
         // Check if left or right dangle is possible based on adjacency (no unpaired bases in
         // between)
 
         const bool disable_right_dangle = (idx == chain.back() && disable_last_right_dangle);
 
-        int RFreeD0  = prev[RightFree] + energies.no_dangle;
-        int RFreeDL  = prev[RightFree] + energies.left_dangle;
-        int RFreeDR  = prev[RightFree] + energies.right_dangle;
-        int RFreeDB  = prev[RightFree] + energies.both_dangle;
+        int RFreeD0 = prev[RightFree] + energies.no_dangle;
+        int RFreeDL = prev[RightFree] + energies.left_dangle;
+        int RFreeDR = prev[RightFree] + energies.right_dangle;
+        int RFreeDB = prev[RightFree] + energies.both_dangle;
         int RTakenD0 = prev[RightTaken] + energies.no_dangle;
         int RTakenDR = prev[RightTaken] + energies.right_dangle;
 
@@ -161,7 +161,7 @@ int Dangle1::process_chain(const std::vector<size_t>&    chain,
         if (disable_right_dangle) {
             cur[RightFree] = std::min({RFreeD0, RFreeDL, RTakenD0});
         } else {
-            cur[RightFree]  = std::min({RFreeD0, RFreeDL, RTakenD0});
+            cur[RightFree] = std::min({RFreeD0, RFreeDL, RTakenD0});
             cur[RightTaken] = std::min({RFreeDR, RTakenDR, RFreeDB});
         }
 
@@ -177,15 +177,15 @@ int Dangle1::process_chain(const std::vector<size_t>&    chain,
 
 // Process multiple chains of children and aggregate their dangle energies
 int Dangle1::process_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                            const std::vector<DangleSet>&           dangle_energies,
+                            const std::vector<DangleSet>& dangle_energies,
                             bool disable_last_right_dangle, std::array<int, 2> init,
                             DangleSet closing) {
     if (dangle_chains.empty()) {
         return closing.best();
     }
 
-    int          total = 0;
-    const size_t last  = dangle_chains.size() - 1;
+    int total = 0;
+    const size_t last = dangle_chains.size() - 1;
 
     for (size_t i = 0; i < dangle_chains.size(); ++i) {
         total += process_chain(
@@ -197,7 +197,7 @@ int Dangle1::process_chains(const std::vector<std::vector<size_t>>& dangle_chain
 }
 
 // Specialized processing for multibranch loops with closing pair dangles
-int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>&       dangle_chains,
+int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>& dangle_chains,
                                const std::vector<std::unique_ptr<LoopNode>>& children,
                                const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
                                const DangleSet closing) {
@@ -206,7 +206,7 @@ int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>&       dan
     }
 
     const bool front_dangle = children.front()->begin - node.begin <= 2;
-    const bool back_dangle  = node.end - children.back()->end <= 2;
+    const bool back_dangle = node.end - children.back()->end <= 2;
 
     if (!front_dangle && !back_dangle) {
         return closing.best() + process_chains(dangle_chains, dangle_energies);
@@ -228,7 +228,7 @@ int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>&       dan
     // Both ends are involved:
     // ((....)..(....)) / ((....)..(.....).) / (.(....)..(....)) / (.(....)..(.....).)
     const bool front_contig = contiguous(node.begin, children.front()->begin);
-    const bool back_contig  = contiguous(node.end, children.back()->end);
+    const bool back_contig = contiguous(node.end, children.back()->end);
 
     if (front_contig && back_contig) {
         return process_chains(dangle_chains, dangle_energies, false, {closing.no_dangle, INF});

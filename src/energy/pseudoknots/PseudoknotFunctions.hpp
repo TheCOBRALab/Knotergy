@@ -33,7 +33,7 @@ class PseudoknotFunctions {
      * @param round Whether to round energy values (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
-    [[nodiscard]] static double pseudoknot_energy(const LoopNode&          node,
+    [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
                                                   vrna_md_param& vp, const all_mod_params& mp,
                                                   const pk_param& pkp, bool& is_inf,
@@ -67,7 +67,7 @@ class PseudoknotFunctions {
      * @param is_inf Whether an infinite energy condition was encountered.
      * @return Total loop penalties in centicalories.
      */
-    [[nodiscard]] static double loop_penalties(const LoopNode&          node,
+    [[nodiscard]] static double loop_penalties(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp, const all_mod_params& mp,
                                                const knotergy::pk_param& pkp, bool round,
@@ -123,7 +123,7 @@ class PseudoknotFunctions {
      * @return Multiloop energy in centicalories.
      */
     [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
-                                                    const ProcessedRNAEntry&  processed_rna,
+                                                    const ProcessedRNAEntry& processed_rna,
                                                     const knotergy::pk_param& pkp);
 };
 

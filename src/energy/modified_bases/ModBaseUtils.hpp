@@ -38,7 +38,7 @@ class ModBaseUtils {
     [[nodiscard]] static std::string join_string_views(
         std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
         std::string key;
-        size_t      total = 0;
+        size_t total = 0;
 
         // Calculate total size needed
         for (size_t idx : indices) {
@@ -109,7 +109,7 @@ class ModBaseUtils {
      * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
      * @return Energy value in centicalories.
      */
-    [[nodiscard]] static int get_mod_energy(const std::string&                   key,
+    [[nodiscard]] static int get_mod_energy(const std::string& key,
                                             const std::vector<std::string_view>& unique_mod_bases,
                                             const all_mod_params& mp, int unmod_energy,
                                             ModLookup lookup_type) {
@@ -163,9 +163,9 @@ class ModBaseUtils {
         vrna_md_param& vp, const all_mod_params& mp, bool is_closing = false) {
         if (i > 0) {
             unsigned int type;
-            int          dangle_encoding;
+            int dangle_encoding;
             if (is_closing) {
-                type            = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
+                type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
                 dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
                 std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
                 std::vector<std::string_view> unique_mod_bases =
@@ -173,7 +173,7 @@ class ModBaseUtils {
                 return get_mod_energy(key, unique_mod_bases, mp,
                                       vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
             }
-            type            = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
             std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
             std::vector<std::string_view> unique_mod_bases =
                 ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);
@@ -194,12 +194,12 @@ class ModBaseUtils {
             THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");
         }
 
-        vrna_param_t* P        = vp.p;
-        int           mismatch = 0;
-        int           dangle5  = 0;
-        int           dangle3  = 0;
-        int           terminal = 0;
-        std::string   mismatch_key, dangle5_key, dangle3_key, terminal_key;
+        vrna_param_t* P = vp.p;
+        int mismatch = 0;
+        int dangle5 = 0;
+        int dangle3 = 0;
+        int terminal = 0;
+        std::string mismatch_key, dangle5_key, dangle3_key, terminal_key;
         // Unmodified energies for exterior stem (mismatch, dangle5, dangle3, terminalAU)
         if (n5d >= 0 && n3d >= 0) {
             mismatch = is_external ? P->mismatchExt[type][n5d][n3d] : P->mismatchM[type][n5d][n3d];
@@ -212,7 +212,7 @@ class ModBaseUtils {
         }
 
         if (n5d >= 0) {
-            dangle5     = P->dangle5[type][n5d];
+            dangle5 = P->dangle5[type][n5d];
             dangle5_key = is_closing ? ModBaseUtils::join_string_views(
                                            {node.begin, node.end, node.end - 1}, mod_sequence)
                                      : ModBaseUtils::join_string_views(
@@ -220,7 +220,7 @@ class ModBaseUtils {
         }
 
         if (n3d >= 0) {
-            dangle3     = P->dangle3[type][n3d];
+            dangle3 = P->dangle3[type][n3d];
             dangle3_key = is_closing ? ModBaseUtils::join_string_views(
                                            {node.begin, node.end, node.begin + 1}, mod_sequence)
                                      : ModBaseUtils::join_string_views(
@@ -237,10 +237,10 @@ class ModBaseUtils {
         // Get modified energies
         int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch,
                                                        ModLookup::Mismatch);
-        int modDangle5  = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
-                                                       ModLookup::Dangle5);
-        int modDangle3  = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
-                                                       ModLookup::Dangle3);
+        int modDangle5 = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
+                                                      ModLookup::Dangle5);
+        int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
+                                                      ModLookup::Dangle3);
         int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
                                                        ModLookup::TerminalAU);
 
@@ -250,8 +250,8 @@ class ModBaseUtils {
         }
 
         int diffMismatch = modMismatch - mismatch;
-        int diff5        = modDangle5 - dangle5;
-        int diff3        = modDangle3 - dangle3;
+        int diff5 = modDangle5 - dangle5;
+        int diff3 = modDangle3 - dangle3;
         int diffTerminal = modTerminal - terminal;
 
         return ModDiffs(diffTerminal, diffMismatch, diff5, diff3);

@@ -5,7 +5,7 @@ namespace {
 const bool round = false;
 
 std::tuple<double, double, double, double> pipeline(std::string sequence, std::string structure,
-                                                    std::string param_file            = turner_file,
+                                                    std::string param_file = turner_file,
                                                     std::string pseudoknot_param_file = pkp_file,
                                                     std::string mod_param_path = mod_folder) {
     double d0 = get_energy(sequence, structure, 0, round, param_file, pseudoknot_param_file,
@@ -22,7 +22,7 @@ std::tuple<double, double, double, double> pipeline(std::string sequence, std::s
 }  // namespace
 
 TEST(mod_nonpk, single_base) {
-    std::string sequence  = "P";
+    std::string sequence = "P";
     std::string structure = ".";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -34,7 +34,7 @@ TEST(mod_nonpk, single_base) {
 
 // echo -e "AAAAAAAAAA6AAAAAAAAAAUUUUUUUUUUUUUUUUUUUUUUUUUUU" | RNAfold -m
 TEST(mod_nonpk, small) {
-    std::string sequence  = "6U";
+    std::string sequence = "6U";
     std::string structure = "()";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -46,7 +46,7 @@ TEST(mod_nonpk, small) {
 
 // echo -e "AAAUU6\n(...)." | RNAfold -C  --enforceConstraint  -m
 TEST(mod_nonpk, dangle_3_external) {
-    std::string sequence  = "AAAUU6";
+    std::string sequence = "AAAUU6";
     std::string structure = "(...).";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
@@ -61,7 +61,7 @@ TEST(mod_nonpk, dangle_3_external) {
 
 // echo -e "A6AAAAUUU\n(((...)))" | RNAfold -C  --enforceConstraint  -m
 TEST(mod_nonpk, simple_stack) {
-    std::string sequence  = "A6AAAAUUU";
+    std::string sequence = "A6AAAAUUU";
     std::string structure = "(((...)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 

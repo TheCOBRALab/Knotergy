@@ -95,7 +95,7 @@ class Dangle1 {
      */
     [[nodiscard]] static int get_external_dangle_1(
         const std::vector<std::unique_ptr<LoopNode>>& children,
-        const std::vector<DangleSet>&                 dangle_energies);
+        const std::vector<DangleSet>& dangle_energies);
 
     /**
      * @brief Calculate optimal multibranch loop dangle energy.
@@ -104,9 +104,9 @@ class Dangle1 {
      * @param sequence The RNA nucleotide sequence.
      * @return Optimal dangle energy in centicalories.
      */
-    [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode&          node,
+    [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode& node,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param&           vp);
+                                                      vrna_md_param& vp);
 
     /**
      * @brief Calculate optimal multibranch loop dangle energy using precomputed values.
@@ -116,9 +116,9 @@ class Dangle1 {
      * @param closing Dangle energy for the closing base pair.
      * @return Optimal dangle energy in centicalories.
      */
-    [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode&        node,
+    [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode& node,
                                                       std::vector<DangleSet> dangle_energies,
-                                                      DangleSet              closing);
+                                                      DangleSet closing);
 
     /**
      * @brief Compute dangle energies for all child loop nodes.
@@ -139,13 +139,13 @@ class Dangle1 {
      * @param sequence The RNA nucleotide sequence.
      * @return DangleSet containing energies for the closing pair.
      */
-    [[nodiscard]] static DangleSet get_ml_closing_dangle_energy(const LoopNode&          node,
+    [[nodiscard]] static DangleSet get_ml_closing_dangle_energy(const LoopNode& node,
                                                                 const ProcessedRNAEntry& pRNA,
-                                                                vrna_md_param&           vp);
+                                                                vrna_md_param& vp);
 
-    [[nodiscard]] static DangleSet get_child_dangle_energy(const LoopNode&          node,
+    [[nodiscard]] static DangleSet get_child_dangle_energy(const LoopNode& node,
                                                            const ProcessedRNAEntry& pRNA,
-                                                           vrna_md_param&           vp,
+                                                           vrna_md_param& vp,
                                                            bool is_external = true);
 
    private:
@@ -196,11 +196,11 @@ class Dangle1 {
      * @param closing Dangle energy for closing base pair (for multiloop).
      * @return Optimal dangle energy for the chain in centicalories.
      */
-    [[nodiscard]] static int process_chain(const std::vector<size_t>&    chain,
+    [[nodiscard]] static int process_chain(const std::vector<size_t>& chain,
                                            const std::vector<DangleSet>& dangle_energies,
-                                           bool               disable_last_right_dangle = false,
-                                           std::array<int, 2> init                      = {0, INF},
-                                           DangleSet          closing = DangleSet());
+                                           bool disable_last_right_dangle = false,
+                                           std::array<int, 2> init = {0, INF},
+                                           DangleSet closing = DangleSet());
 
     /**
      * @brief Process multiple chains to compute total optimal dangle energy.
@@ -214,10 +214,10 @@ class Dangle1 {
      * @return Total optimal dangle energy in centicalories.
      */
     [[nodiscard]] static int process_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                                            const std::vector<DangleSet>&           dangle_energies,
-                                            bool               disable_last_right_dangle = false,
-                                            std::array<int, 2> init                      = {0, INF},
-                                            DangleSet          closing = DangleSet());
+                                            const std::vector<DangleSet>& dangle_energies,
+                                            bool disable_last_right_dangle = false,
+                                            std::array<int, 2> init = {0, INF},
+                                            DangleSet closing = DangleSet());
 
     /**
      * @brief Process chains for multibranch loop dangle energy calculation.
@@ -230,7 +230,7 @@ class Dangle1 {
      * @return Total optimal dangle energy in centicalories.
      */
     [[nodiscard]] static int process_ml_chains(
-        const std::vector<std::vector<size_t>>&       dangle_chains,
+        const std::vector<std::vector<size_t>>& dangle_chains,
         const std::vector<std::unique_ptr<LoopNode>>& children,
         const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
         const DangleSet ml_dangle_energy);

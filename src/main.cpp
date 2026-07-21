@@ -76,19 +76,19 @@ int get_numerical_arg(int& i, int argc, char** argv, int default_value = 0) {
 }
 
 int run_knotergy(int argc, char** argv) {
-    std::string              sequence          = "";
-    std::string              structure         = "";
-    std::string              input_file        = "";
-    std::string              output_file       = "";
-    std::string              vienna_param_file = "";
-    std::string              pseudo_param_file = knotergy::default_pk_param_path();
+    std::string sequence = "";
+    std::string structure = "";
+    std::string input_file = "";
+    std::string output_file = "";
+    std::string vienna_param_file = "";
+    std::string pseudo_param_file = knotergy::default_pk_param_path();
     std::vector<std::string> mod_param_paths;
-    std::string              modifications = "7I6P9D";
-    const bool               use_color     = knotergy::should_use_color();
+    std::string modifications = "7I6P9D";
+    const bool use_color = knotergy::should_use_color();
 
-    bool round   = false;
+    bool round = false;
     bool verbose = false;
-    int  dangle  = 2;
+    int dangle = 2;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {

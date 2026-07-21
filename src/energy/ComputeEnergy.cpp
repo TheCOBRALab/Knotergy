@@ -30,7 +30,7 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
 
 double ComputeEnergy::process_node(LoopNode& node) {
     double node_energy = 0.0;
-    bool   is_inf      = false;
+    bool is_inf = false;
 
     switch (node.loop_type) {
         case LoopType::Stack:

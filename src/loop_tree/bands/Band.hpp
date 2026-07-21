@@ -52,8 +52,8 @@ struct BandBounds {
 struct BasePair {
     BasePair(size_t left_index, size_t right_index, std::vector<ClosedRegion> child_regions = {})
         : i{left_index}, j{right_index}, children{std::move(child_regions)} {}
-    size_t                    i;
-    size_t                    j;
+    size_t i;
+    size_t j;
     std::vector<ClosedRegion> children;
 
     [[nodiscard]] bool is_stack(const BasePair& child) const {
@@ -105,7 +105,7 @@ struct Band {
     size_t right_border_;
 
     std::vector<BasePair> base_pairs_;
-    int                   number_of_children_ = 0;
+    int number_of_children_ = 0;
 };
 
 // === Operator overload for printing ===

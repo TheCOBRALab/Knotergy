@@ -80,18 +80,18 @@ struct pk_param {
           pk_mloop_bp(pk_mloop_bp_pen),
           pk_mloop_unpaired(pk_mloop_unpaired_pen) {}
 
-    const std::string name;               ///< Parameter set name.
-    const int         pk_in_ext;          ///< Pseudoknot in exterior loop penalty.
-    const int         pk_in_mloop;        ///< Pseudoknot in multiloop penalty.
-    const int         pk_in_pk;           ///< Pseudoknot in pseudoloop penalty.
-    const int         band;               ///< Band penalty.
-    const int         unpaired_in_pk;     ///< Unpaired bases in pseudoknot penalty.
-    const int         cr_in_pk;           ///< Closed region nested in pseudoknot penalty.
-    const double      pk_stack_x;         ///< Stacked pair spanning band multiplier.
-    const double      pk_internal_x;      ///< Internal pair spanning band multiplier.
-    const int         pk_mloop_init;      ///< Multiloop spanning band initialization penalty.
-    const int         pk_mloop_bp;        ///< Base pair in multiloop spanning band penalty.
-    const int         pk_mloop_unpaired;  ///< Unpaired bases in multiloop spanning band penalty.
+    const std::string name;       ///< Parameter set name.
+    const int pk_in_ext;          ///< Pseudoknot in exterior loop penalty.
+    const int pk_in_mloop;        ///< Pseudoknot in multiloop penalty.
+    const int pk_in_pk;           ///< Pseudoknot in pseudoloop penalty.
+    const int band;               ///< Band penalty.
+    const int unpaired_in_pk;     ///< Unpaired bases in pseudoknot penalty.
+    const int cr_in_pk;           ///< Closed region nested in pseudoknot penalty.
+    const double pk_stack_x;      ///< Stacked pair spanning band multiplier.
+    const double pk_internal_x;   ///< Internal pair spanning band multiplier.
+    const int pk_mloop_init;      ///< Multiloop spanning band initialization penalty.
+    const int pk_mloop_bp;        ///< Base pair in multiloop spanning band penalty.
+    const int pk_mloop_unpaired;  ///< Unpaired bases in multiloop spanning band penalty.
 
     // ------- Details about loading the parameters, for reporting purposes -------
 
@@ -121,7 +121,7 @@ class PseudoknotParams {
     [[nodiscard]] static pk_param load_pk_param(
         const std::string& paramFile = default_pk_param_path()) {
         ParamSourceInfo info;
-        info.label          = "Pseudoknot";
+        info.label = "Pseudoknot";
         info.requested_path = paramFile;
 
         if (paramFile.empty()) {
@@ -135,7 +135,7 @@ class PseudoknotParams {
             }
 
             pk_param pkp = file_exists ? parse_pk_json(default_pk_param_path()) : pk_param();
-            info.status  = ParamStatus::Defaulted;
+            info.status = ParamStatus::Defaulted;
             pkp.set_source_info(info);  // Set the source info for reporting purposes
             return pkp;
         }
@@ -150,7 +150,7 @@ class PseudoknotParams {
 
         pk_param pkp = parse_pk_json(paramFile);
 
-        info.status        = ParamStatus::LoadedUserFile;
+        info.status = ParamStatus::LoadedUserFile;
         info.resolved_path = paramFile;
         info.resolved_name = pkp.name;
 

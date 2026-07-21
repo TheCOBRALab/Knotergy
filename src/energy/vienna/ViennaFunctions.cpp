@@ -12,7 +12,7 @@ int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                     ", ci: " + std::to_string(ci) + ", cj: " + std::to_string(cj));
     }
     // c = child or nested base pair
-    unsigned int type       = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+    unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int child_type = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
     return vp.p->stack[type][child_type];
 }
@@ -47,8 +47,8 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     }
 
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-    int          si1       = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
-    int          sj1       = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
+    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
+    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
 
     // If loop size < 7, you MUST pass the loop sequence substring
     // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
@@ -56,7 +56,7 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     std::string loop_subseq;
     if (size < 7) {
         loop_subseq = sequence.substr(i, size + 2);  // length == size
-        loop_seq    = loop_subseq.c_str();           // temporary c-string
+        loop_seq = loop_subseq.c_str();              // temporary c-string
     }
 
     return vrna_E_hairpin(size, pair_type, si1, sj1, loop_seq, vp.p);
@@ -87,7 +87,7 @@ int ViennaFunctions::hairpin_energy(const LoopNode& node, const ProcessedRNAEntr
     std::string loop_subseq;
     if (size < 7) {
         loop_subseq = sequence.substr(i, size + 2);  // length == size
-        loop_seq    = loop_subseq.c_str();           // temporary c-string
+        loop_seq = loop_subseq.c_str();              // temporary c-string
     }
 
     return vrna_E_hairpin(size, node.pair_type, node.n5d_inner, node.n3d_inner, loop_seq, vp.p);
@@ -107,8 +107,8 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
                                                                                // to message
     }
 
-    unsigned int n1    = static_cast<unsigned int>(ci - i - 1);  // unpaired bases 5' side
-    unsigned int n2    = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
+    unsigned int n1 = static_cast<unsigned int>(ci - i - 1);  // unpaired bases 5' side
+    unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
     int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);   // 5' nt of closing
@@ -119,17 +119,17 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
 }
 
 int ViennaFunctions::internal_loop_energy(const LoopNode& node, vrna_md_param& vp) {
-    size_t       i       = node.begin;
-    size_t       j       = node.end;
-    LoopNode*    child   = node.children[0].get();
-    size_t       ci      = child->begin;
-    size_t       cj      = child->end;
-    unsigned int type    = node.pair_type;
+    size_t i = node.begin;
+    size_t j = node.end;
+    LoopNode* child = node.children[0].get();
+    size_t ci = child->begin;
+    size_t cj = child->end;
+    unsigned int type = node.pair_type;
     unsigned int rc_type = child->r_pair_type;
-    int          si1     = node.n5d_inner;
-    int          sj1     = node.n3d_inner;
-    int          sp1     = child->n5d_outer;
-    int          sq1     = child->n3d_outer;
+    int si1 = node.n5d_inner;
+    int sj1 = node.n3d_inner;
+    int sp1 = child->n5d_outer;
+    int sq1 = child->n3d_outer;
 
     unsigned int n1 = static_cast<unsigned int>(ci - i - 1);  // unpaired bases 5' side
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
