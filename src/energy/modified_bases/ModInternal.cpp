@@ -87,11 +87,12 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
 //                   const all_mod_params& mp) {
 //     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
 //     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
-//     int si1 = vrna_nucleotide_encode(sequence[i + 1], &vp.md);   // 5' mismatch nt of closing
-//     pair int sj1 = vrna_nucleotide_encode(sequence[j - 1], &vp.md);   // 3' mismatch nt of
-//     closing pair int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &vp.md);  // 5' mismatch nt
-//     of enclosed pair int sq1 = vrna_nucleotide_encode(sequence[cj + 1], &vp.md);  // 3' mismatch
-//     nt of enclosed pair
+//     int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);   // 5' mismatch nt
+//     of closing pair int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);   //
+//     3' mismatch nt of closing pair int sp1 = ViennaUtils::fast_nucleotide_encode(sequence[ci -
+//     1], &vp.md);  // 5' mismatch nt of enclosed pair int sq1 =
+//     ViennaUtils::fast_nucleotide_encode(sequence[cj + 1], &vp.md);  // 3' mismatch nt of enclosed
+//     pair
 
 //     int unmod_mismatch1;
 //     int unmod_mismatch2;

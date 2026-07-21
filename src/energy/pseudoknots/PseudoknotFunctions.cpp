@@ -54,12 +54,8 @@ double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::p
     // initialization penalties
     double energy = 0;
     switch (node.parent->loop_type) {
-        case (LoopType::External):
-            energy += pkp.pk_in_ext;
-            break;
-        case (LoopType::Multibranch):
-            energy += pkp.pk_in_mloop;
-            break;
+        case (LoopType::External):    energy += pkp.pk_in_ext; break;
+        case (LoopType::Multibranch): energy += pkp.pk_in_mloop; break;
         case (LoopType::Pseudoknot):
             energy +=
                 node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;

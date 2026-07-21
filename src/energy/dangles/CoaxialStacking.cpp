@@ -25,7 +25,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     }
 
     const size_t dangle_pos = stem.begin - 1;
-    const int encoding = vrna_nucleotide_encode(sequence[dangle_pos], &vp.md);
+    const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos], &vp.md);
 
     int ld5;
     if (pRNA.has_modified_bases()) {
@@ -140,7 +140,7 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
 
         if (begin > 0) {
             curr_dang5 =
-                stem.dangle5;  // vp.p->dangle5[current_type][vrna_nucleotide_encode(sequence[begin
+                stem.dangle5;  // vp.p->dangle5[current_type][ViennaUtils::fast_nucleotide_encode(sequence[begin
                                // - 1], &vp.md)];
             curr_dang5 = std::min(curr_dang5, 0);  // don't apply dangle bonus if it's positive
                                                    // (dangles should never be a penalty)

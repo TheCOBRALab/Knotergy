@@ -147,15 +147,9 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
 
     os << "  pseudo_type: ";
     switch (node.pseudo_type) {
-        case PseudoNestedType::None:
-            os << "None";
-            break;
-        case PseudoNestedType::WithinBand:
-            os << "WithinBand";
-            break;
-        case PseudoNestedType::Nested:
-            os << "Nested";
-            break;
+        case PseudoNestedType::None:       os << "None"; break;
+        case PseudoNestedType::WithinBand: os << "WithinBand"; break;
+        case PseudoNestedType::Nested:     os << "Nested"; break;
     }
     os << "\n";
 
@@ -188,20 +182,13 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
  */
 const char* loop_name(LoopType t) {
     switch (t) {
-        case LoopType::Stack:
-            return "Stack    loop";
-        case LoopType::Hairpin:
-            return "Hairpin  loop";
-        case LoopType::Internal:
-            return "Internal loop";
-        case LoopType::Multibranch:
-            return "Multi    loop";
-        case LoopType::External:
-            return "External loop";
-        case LoopType::Pseudoknot:
-            return "Pseudo   loop";
-        case LoopType::Unknown:
-            return "Unknown  loop";
+        case LoopType::Stack:       return "Stack    loop";
+        case LoopType::Hairpin:     return "Hairpin  loop";
+        case LoopType::Internal:    return "Internal loop";
+        case LoopType::Multibranch: return "Multi    loop";
+        case LoopType::External:    return "External loop";
+        case LoopType::Pseudoknot:  return "Pseudo   loop";
+        case LoopType::Unknown:     return "Unknown  loop";
     }
     return "Unknown  loop";
 }

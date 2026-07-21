@@ -1,9 +1,9 @@
 #include "ComputeEnergy.hpp"
 
 #include "energy/modified_bases/ModHairpin.hpp"
-#include "energy/modified_bases/ModifiedBasesFunctions.hpp"
-#include "energy/modified_bases/ModStack.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
+#include "energy/modified_bases/ModStack.hpp"
+#include "energy/modified_bases/ModifiedBasesFunctions.hpp"
 
 namespace knotergy {
 

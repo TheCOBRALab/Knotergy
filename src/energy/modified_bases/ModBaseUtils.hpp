@@ -127,21 +127,11 @@ class ModBaseUtils {
 
             const param_map* energy_lookup = nullptr;
             switch (lookup_type) {
-                case ModLookup::Stacking:
-                    energy_lookup = &param->stacking_energies();
-                    break;
-                case ModLookup::TerminalAU:
-                    energy_lookup = &param->terminal_energies();
-                    break;
-                case ModLookup::Mismatch:
-                    energy_lookup = &param->mismatch_energies();
-                    break;
-                case ModLookup::Dangle5:
-                    energy_lookup = &param->dangle5_energies();
-                    break;
-                case ModLookup::Dangle3:
-                    energy_lookup = &param->dangle3_energies();
-                    break;
+                case ModLookup::Stacking:   energy_lookup = &param->stacking_energies(); break;
+                case ModLookup::TerminalAU: energy_lookup = &param->terminal_energies(); break;
+                case ModLookup::Mismatch:   energy_lookup = &param->mismatch_energies(); break;
+                case ModLookup::Dangle5:    energy_lookup = &param->dangle5_energies(); break;
+                case ModLookup::Dangle3:    energy_lookup = &param->dangle3_energies(); break;
                 default:
                     THROW_ERROR("Invalid ModLookup type: " +
                                 std::to_string(static_cast<int>(lookup_type)));
@@ -174,7 +164,7 @@ class ModBaseUtils {
             int dangle_encoding;
             if (is_closing) {
                 type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
-                dangle_encoding = vrna_nucleotide_encode(sequence[j - 1], &vp.md);
+                dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
                 std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
                 std::vector<std::string_view> unique_mod_bases =
                     ModBaseUtils::unique_modified_bases_at_indices({j, i, j - 1}, mod_sequence);
@@ -185,7 +175,7 @@ class ModBaseUtils {
             std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
             std::vector<std::string_view> unique_mod_bases =
                 ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);
-            dangle_encoding = vrna_nucleotide_encode(sequence[i + 1], &vp.md);
+            dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
             return get_mod_energy(key, unique_mod_bases, mp, vp.p->dangle5[type][dangle_encoding],
                                   ModLookup::Dangle5);
         } else {

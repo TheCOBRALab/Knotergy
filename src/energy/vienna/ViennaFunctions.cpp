@@ -47,8 +47,8 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     }
 
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-    int si1 = vrna_nucleotide_encode(sequence[i + 1], &vp.md);
-    int sj1 = vrna_nucleotide_encode(sequence[j - 1], &vp.md);
+    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
+    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
 
     // If loop size < 7, you MUST pass the loop sequence substring
     // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
@@ -110,10 +110,14 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
-    int si1 = vrna_nucleotide_encode(sequence[i + 1], &vp.md);   // 5' mismatch nt of closing pair
-    int sj1 = vrna_nucleotide_encode(sequence[j - 1], &vp.md);   // 3' mismatch nt of closing pair
-    int sp1 = vrna_nucleotide_encode(sequence[ci - 1], &vp.md);  // 5' mismatch nt of enclosed pair
-    int sq1 = vrna_nucleotide_encode(sequence[cj + 1], &vp.md);  // 3' mismatch nt of enclosed pair
+    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1],
+                                                  &vp.md);  // 5' mismatch nt of closing pair
+    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1],
+                                                  &vp.md);  // 3' mismatch nt of closing pair
+    int sp1 = ViennaUtils::fast_nucleotide_encode(sequence[ci - 1],
+                                                  &vp.md);  // 5' mismatch nt of enclosed pair
+    int sq1 = ViennaUtils::fast_nucleotide_encode(sequence[cj + 1],
+                                                  &vp.md);  // 3' mismatch nt of enclosed pair
     return vrna_E_internal(n1, n2, type1, type2, si1, sj1, sp1, sq1, vp.p);
 }
 

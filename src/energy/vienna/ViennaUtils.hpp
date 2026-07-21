@@ -81,8 +81,8 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_nucleotides(const char& i, const char& j,
                                                                  vrna_md_t& md) {
-        int encoded_i = vrna_nucleotide_encode(i, &md);
-        int encoded_j = vrna_nucleotide_encode(j, &md);
+        int encoded_i = fast_nucleotide_encode(i, &md);
+        int encoded_j = fast_nucleotide_encode(j, &md);
         return std::make_tuple(encoded_i, encoded_j);
     }
 
@@ -104,8 +104,8 @@ class ViennaUtils {
         bool has_3d_dangle_out = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
                                                              (md.dangles != 1 && md.dangles != 3));
 
-        int n5d_dangle = has_5d_dangle_out ? vrna_nucleotide_encode(sequence[i - 1], &md) : -1;
-        int n3d_dangle = has_3d_dangle_out ? vrna_nucleotide_encode(sequence[j + 1], &md) : -1;
+        int n5d_dangle = has_5d_dangle_out ? fast_nucleotide_encode(sequence[i - 1], &md) : -1;
+        int n3d_dangle = has_3d_dangle_out ? fast_nucleotide_encode(sequence[j + 1], &md) : -1;
         return std::make_tuple(n5d_dangle, n3d_dangle);
     }
 
@@ -121,8 +121,7 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    vrna_md_t& md) {
-        return ViennaUtils::encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(),
-                                                 md);
+        return encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 
     /**
@@ -143,8 +142,8 @@ class ViennaUtils {
         bool has_3d_dangle_in =
             (pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
 
-        int encoded_i = has_5d_dangle_in ? vrna_nucleotide_encode(sequence[i + 1], &md) : -1;
-        int encoded_j = has_3d_dangle_in ? vrna_nucleotide_encode(sequence[j - 1], &md) : -1;
+        int encoded_i = has_5d_dangle_in ? fast_nucleotide_encode(sequence[i + 1], &md) : -1;
+        int encoded_j = has_3d_dangle_in ? fast_nucleotide_encode(sequence[j - 1], &md) : -1;
         return std::make_tuple(encoded_i, encoded_j);
     }
 
@@ -160,8 +159,7 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    vrna_md_t& md) {
-        return ViennaUtils::encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(),
-                                                 md);
+        return encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 
     /**
@@ -172,7 +170,7 @@ class ViennaUtils {
      * @return ViennaRNA pair type identifier (0 for non-canonical pairs).
      */
     [[nodiscard]] static unsigned int get_pair_type(const char& i, const char& j, vrna_md_t& md) {
-        auto [encoded_i, encoded_j] = ViennaUtils::encode_nucleotides(i, j, md);
+        auto [encoded_i, encoded_j] = encode_nucleotides(i, j, md);
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
     }
 
@@ -195,7 +193,30 @@ class ViennaUtils {
      */
     [[nodiscard]] static unsigned int reverse_pair_type(const char& i, const char& j,
                                                         vrna_md_t& md) {
-        return ViennaUtils::reverse_pair_type(ViennaUtils::get_pair_type(i, j, md), md);
+        return reverse_pair_type(get_pair_type(i, j, md), md);
+    }
+
+    /**
+     * @brief A faster version of ViennaRNA's vrna_nucleotide_encode.
+     *
+     * @param c The nucleotide character to encode.
+     * @param md The ViennaRNA model details.
+     * @return The encoded nucleotide.
+     */
+    [[nodiscard]] static int fast_nucleotide_encode(char c, const vrna_md_t* md) {
+        c &= ~0x20;  // ASCII lowercase -> uppercase
+
+        if (md->energy_set > 0) return c - 'A' + 1;
+
+        switch (c) {
+            case 'A': return 1;
+            case 'C': return 2;
+            case 'G': return 3;
+            case 'T':
+            case 'U': return 4;
+            case 'N': return 0;
+            default:  return 0;
+        }
     }
 };
 }  // namespace knotergy
