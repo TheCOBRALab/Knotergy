@@ -4,43 +4,43 @@
 #include <vector>
 
 namespace {
-const bool round = true;
+const bool round      = true;
 const bool dont_round = false;
 
 std::pair<double, double> get_turner_results(const std::string& sequence,
                                              const std::string& structure, const int dangle = 2) {
-    double turner_result = get_energy(sequence, structure, dangle, dont_round, turner_file);
+    double turner_result  = get_energy(sequence, structure, dangle, dont_round, turner_file);
     double turner_rounded = get_energy(sequence, structure, dangle, round, turner_file);
     return {turner_result, turner_rounded};
 }
 std::pair<double, double> get_dp_results(const std::string& sequence, const std::string& structure,
                                          const int dangle = 2) {
-    double dp_result = get_energy(sequence, structure, dangle, dont_round, DP_file);
+    double dp_result  = get_energy(sequence, structure, dangle, dont_round, DP_file);
     double dp_rounded = get_energy(sequence, structure, dangle, round, DP_file);
     return {dp_result, dp_rounded};
 }
 
 TEST(PK_energies, InfiniteEnergy_DP) {
-    std::string sequence = "GGCC";
+    std::string sequence  = "GGCC";
     std::string structure = "[(])";
-    const int dangle = 2;
-    double dp_result = get_energy(sequence, structure, dangle, round, DP_file);
+    const int   dangle    = 2;
+    double      dp_result = get_energy(sequence, structure, dangle, round, DP_file);
 
     EXPECT_NEAR(dp_result, 200003.5400, 0.000005);
 }
 
 TEST(PK_energies, InfiniteEnergy_Turner) {
-    std::string sequence = "GGCC";
-    std::string structure = "[(])";
-    const int dangle = 2;
-    double turner_result = get_energy(sequence, structure, dangle, round, turner_file);
+    std::string sequence      = "GGCC";
+    std::string structure     = "[(])";
+    const int   dangle        = 2;
+    double      turner_result = get_energy(sequence, structure, dangle, round, turner_file);
 
     EXPECT_NEAR(turner_result, 200003.5400, 0.000005);
 }
 
 TEST(PK_energies, HType_DP) {
-    std::string sequence = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
-    std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";
+    std::string sequence         = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
+    std::string structure        = "[[[[[.......((((((((((........]]]]]......))))))))))";
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
 
     EXPECT_NEAR(dp_result, -20.1912, 0.000005);
@@ -48,8 +48,8 @@ TEST(PK_energies, HType_DP) {
 }
 
 TEST(PK_energies, HType_Turner) {
-    std::string sequence = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
-    std::string structure = "[[[[[.......((((((((((........]]]]]......))))))))))";
+    std::string sequence                 = "GGGGGAAAAAAAGGGGGGGGGGAAAAAAAACCCCCAAAAAACCCCCCCCCC";
+    std::string structure                = "[[[[[.......((((((((((........]]]]]......))))))))))";
     auto [turner_result, turner_rounded] = get_turner_results(sequence, structure);
 
     EXPECT_NEAR(turner_result, -33.3810, 0.000005);
@@ -57,8 +57,8 @@ TEST(PK_energies, HType_Turner) {
 }
 
 TEST(PK_energies, LLType_DP) {
-    std::string sequence = "GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC";
-    std::string structure = "(((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]";
+    std::string sequence         = "GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC";
+    std::string structure        = "(((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]";
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
 
     EXPECT_NEAR(dp_result, -25.8912, 0.000005);
@@ -66,8 +66,8 @@ TEST(PK_energies, LLType_DP) {
 }
 
 TEST(PK_energies, LLType_Turner) {
-    std::string sequence = "GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC";
-    std::string structure = "(((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]";
+    std::string sequence                 = "GGGGGGGAGGGGGAAAACCCCCAGGGGGGGGACCCCCCCAAACCCCCCCC";
+    std::string structure                = "(((((((.(((((....))))).[[[[[[[[.)))))))...]]]]]]]]";
     auto [turner_result, turner_rounded] = get_turner_results(sequence, structure);
 
     EXPECT_NEAR(turner_result, -42.021, 0.000005);
@@ -97,7 +97,7 @@ TEST(PK_energies, LLType_Long_Turner) {
 }
 
 TEST(PK_energies, HLinType_DP) {
-    std::string sequence = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
+    std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
 
@@ -106,7 +106,7 @@ TEST(PK_energies, HLinType_DP) {
 }
 
 TEST(PK_energies, HLinType_Turner) {
-    std::string sequence = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
+    std::string sequence  = "AAAAAAAGGGAAAGGGUUUGGGAAAGGGGGGGGGGGGUUUGGGUUUGGGUUUUGGGCCCCCCC";
     std::string structure = "(((((((...(((...)))...(((..[[[[[[[...)))...)))...))))...]]]]]]]";
     auto [turner_result, turner_rounded] = get_turner_results(sequence, structure);
 
@@ -223,8 +223,8 @@ TEST(PK_energies, nestedPK_in_band_Turner) {
 
 // This is to test the labeling of the linear case since it usually uses the non-linear method
 TEST(PK_energies, many_children_few_bands_DP) {
-    std::string sequence = "AAAAUUUAAAAUUAAAAAUAAAAUUUUAAAUUUAAUUUUAUAAUAAU";
-    std::string structure = "((...).(...).([...)..(...).(...).(...))<].[>..]";
+    std::string sequence         = "AAAAUUUAAAAUUAAAAAUAAAAUUUUAAAUUUAAUUUUAUAAUAAU";
+    std::string structure        = "((...).(...).([...)..(...).(...).(...))<].[>..]";
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure);
 
     EXPECT_NEAR(dp_result, 37.82, 0.000005);
@@ -246,7 +246,7 @@ TEST(PK_energies, dangle_1) {
         "..(((((((........)))))))..(((((...........))))).))))))).((((((.........)))))).))))))))))))"
         ")))...))))..........)))))..]]]]]]...]]]]]..[[[[[[......[[[[[[[[[[[[....[[[[..[[.[[[..)))))"
         "))))))...............]]].]]]]]]...]]]]].]]]]]]].....]]]]]]....";
-    const int dangle = 1;
+    const int dangle             = 1;
     auto [dp_result, dp_rounded] = get_dp_results(sequence, structure, dangle);
 
     EXPECT_NEAR(dp_result, -40.8830, 0.000005);

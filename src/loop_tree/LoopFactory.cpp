@@ -27,7 +27,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
             "algorithm to fail.\n");
     }
 
-    root_node_ = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, pRNA_.size()});
+    root_node_            = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, pRNA_.size()});
     root_node_->loop_type = LoopType::External;
 
     std::vector<LoopNode*> node_stack;
@@ -46,8 +46,8 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // parent = parent of current node. child = current node
         LoopNode* parent = node_stack.back();
 
-        std::unique_ptr<LoopNode> child = std::make_unique<LoopNode>(cr);
-        child->parent = parent;
+        std::unique_ptr<LoopNode> child   = std::make_unique<LoopNode>(cr);
+        child->parent                     = parent;
         child->total_unpaired_bases_count = pRNA_.get_unpaired_count(cr);
 
         LoopNode* child_raw = child.get();
@@ -66,7 +66,7 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
 void LoopFactory::populate_node(LoopNode& node) {
     node.exclusive_unpaired_bases_count = count_unpaired_bases_excluding_children(node);
-    node.loop_type = find_loop_type(node);
+    node.loop_type                      = find_loop_type(node);
     // Populate node encodings for ViennaRNA energy calculations.
 
     if (node.loop_type == LoopType::Pseudoknot) {
@@ -76,7 +76,7 @@ void LoopFactory::populate_node(LoopNode& node) {
             aux_bands_.resize(pRNA_.get_structure().size());
         }
 
-        node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_);
+        node.bands                      = BandFinder::find_bands(node, aux_bands_, pRNA_);
         node.total_number_of_base_pairs = count_total_base_pairs(node);
         label_pseudonested_children(node);
         pseudo_nested_check(node);
@@ -85,9 +85,7 @@ void LoopFactory::populate_node(LoopNode& node) {
     }
 }
 
-void LoopFactory::populate_node(const std::unique_ptr<LoopNode>& node) {
-    populate_node(*node);
-}
+void LoopFactory::populate_node(const std::unique_ptr<LoopNode>& node) { populate_node(*node); }
 
 int LoopFactory::count_total_base_pairs(const LoopNode& node) {
     size_t total = 0;
@@ -159,8 +157,8 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
      * children * bands. And it also uses a hash set which is slower than a simple vector iteration.
      *
      */
-    size_t linear_complexity = static_cast<size_t>(node.total_number_of_base_pairs) +
-                               node.children.size() + node.bands.size();
+    size_t linear_complexity     = static_cast<size_t>(node.total_number_of_base_pairs) +
+                                   node.children.size() + node.bands.size();
     size_t non_linear_complexity = node.children.size() * node.bands.size();
 
     // Non-linear method is preferred when it has less operations than the linear method.

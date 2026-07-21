@@ -4,9 +4,9 @@ namespace knotergy {
 
 struct ModNode {
     unsigned int type;
-    int n5d;
-    int n3d;
-    ModDiffs diffs;
+    int          n5d;
+    int          n3d;
+    ModDiffs     diffs;
 };
 
 int ModifiedBasesFunctions::find_mod_external_energy(
@@ -14,12 +14,12 @@ int ModifiedBasesFunctions::find_mod_external_energy(
     const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
     const all_mod_params& mp) {
     bool is_external = true;
-    bool is_closing = false;  // external loop energy correction does not apply to closing pair
+    bool is_closing  = false;  // external loop energy correction does not apply to closing pair
     const std::string& sequence = pRNA.get_sequence();
 
     std::vector<DangleSet> all_dangle_sets;
-    DangleSet empty_set;
-    int energy = 0;
+    DangleSet              empty_set;
+    int                    energy = 0;
 
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         all_dangle_sets =
@@ -84,14 +84,14 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     const LoopNode& node, const ProcessedRNAEntry& pRNA,
     const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
     const all_mod_params& mp) {
-    bool is_external = false;
-    bool is_closing = true;       // multiloop energy correction only applies to closing pair
+    bool is_external    = false;
+    bool is_closing     = true;   // multiloop energy correction only applies to closing pair
     bool is_not_closing = false;  // used for child loops
 
     // Get dangle energies for all children and closing pair if dangles == 1
     std::vector<DangleSet> children_dangle_sets;
-    DangleSet closing_set;
-    DangleSet empty_set;  // Used when dangles != 1 to avoid checking condition in loop
+    DangleSet              closing_set;
+    DangleSet              empty_set;  // Used when dangles != 1 to avoid checking condition in loop
     // Dangle3
     std::vector<MultiloopStem> multiloop_stems;
 
@@ -110,18 +110,18 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
     } else {
         // Multiloop initialization penalties
         int ml_init = vp.p->MLclosing + node.exclusive_unpaired_bases_count * vp.p->MLbase;
-        energy = ml_init;
+        energy      = ml_init;
     }
 
-    size_t i = node.begin;
-    size_t j = node.end;
-    const std::string& sequence = pRNA.get_sequence();
+    size_t                        i        = node.begin;
+    size_t                        j        = node.end;
+    const std::string&            sequence = pRNA.get_sequence();
     std::vector<std::string_view> unique_mod_bases =
         ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
 
     if (!unique_mod_bases.empty()) {
         unsigned int pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
-        auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(i, j, pRNA, vp.md);
+        auto [n5d, n3d]        = ViennaUtils::encode_inner_dangles(i, j, pRNA, vp.md);
         ModDiffs diffs = get_mod_diffs(node, n3d, n5d, pair_type, unique_mod_bases, mod_sequence,
                                        vp, mp, is_external, is_closing);
 
@@ -139,14 +139,14 @@ int ModifiedBasesFunctions::find_mod_multiloop_energy(
 
     // Add energy corrections for modified bases in child loops
     for (size_t idx = 0; idx < node.children.size(); ++idx) {
-        size_t ci = node.children[idx]->begin;
-        size_t cj = node.children[idx]->end;
+        size_t                        ci = node.children[idx]->begin;
+        size_t                        cj = node.children[idx]->end;
         std::vector<std::string_view> child_unique_mod_bases =
             ModBaseUtils::unique_modified_bases_at_outer_edge(ci, cj, mod_sequence);
         if (child_unique_mod_bases.empty())
             continue;  // no modified bases in this child, skip to next
 
-        unsigned int c_pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
+        unsigned int c_pair_type    = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
         auto [child_n5d, child_n3d] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
         ModDiffs child_diffs = get_mod_diffs(*node.children[idx], child_n5d, child_n3d, c_pair_type,
                                              child_unique_mod_bases, mod_sequence, vp, mp,
@@ -191,12 +191,12 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
         THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");
     }
 
-    vrna_param_t* P = vp.p;
-    int mismatch = 0;
-    int dangle5 = 0;
-    int dangle3 = 0;
-    int terminal = 0;
-    std::string mismatch_key, dangle5_key, dangle3_key, terminal_key;
+    vrna_param_t* P        = vp.p;
+    int           mismatch = 0;
+    int           dangle5  = 0;
+    int           dangle3  = 0;
+    int           terminal = 0;
+    std::string   mismatch_key, dangle5_key, dangle3_key, terminal_key;
     // Unmodified energies for exterior stem (mismatch, dangle5, dangle3, terminalAU)
     if (n5d >= 0 && n3d >= 0) {
         mismatch = is_external ? P->mismatchExt[type][n5d][n3d] : P->mismatchM[type][n5d][n3d];
@@ -208,7 +208,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     }
 
     if (n5d >= 0) {
-        dangle5 = P->dangle5[type][n5d];
+        dangle5     = P->dangle5[type][n5d];
         dangle5_key = is_closing ? ModBaseUtils::join_string_views(
                                        {node.begin, node.end, node.end - 1}, mod_sequence)
                                  : ModBaseUtils::join_string_views(
@@ -216,7 +216,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     }
 
     if (n3d >= 0) {
-        dangle3 = P->dangle3[type][n3d];
+        dangle3     = P->dangle3[type][n3d];
         dangle3_key = is_closing ? ModBaseUtils::join_string_views(
                                        {node.begin, node.end, node.begin + 1}, mod_sequence)
                                  : ModBaseUtils::join_string_views(
@@ -224,7 +224,7 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     }
 
     if (type > 2) {
-        terminal = P->TerminalAU;
+        terminal     = P->TerminalAU;
         terminal_key = is_closing
                            ? ModBaseUtils::join_string_views({node.end, node.begin}, mod_sequence)
                            : ModBaseUtils::join_string_views({node.begin, node.end}, mod_sequence);
@@ -233,10 +233,10 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     // Get modified energies
     int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch,
                                                    ModLookup::Mismatch);
-    int modDangle5 = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
-                                                  ModLookup::Dangle5);
-    int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
-                                                  ModLookup::Dangle3);
+    int modDangle5  = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
+                                                   ModLookup::Dangle5);
+    int modDangle3  = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
+                                                   ModLookup::Dangle3);
     int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
                                                    ModLookup::TerminalAU);
 
@@ -246,8 +246,8 @@ ModDiffs ModifiedBasesFunctions::get_mod_diffs(
     }
 
     int diffMismatch = modMismatch - mismatch;
-    int diff5 = modDangle5 - dangle5;
-    int diff3 = modDangle3 - dangle3;
+    int diff5        = modDangle5 - dangle5;
+    int diff3        = modDangle3 - dangle3;
     int diffTerminal = modTerminal - terminal;
 
     return ModDiffs(diffTerminal, diffMismatch, diff5, diff3);

@@ -49,10 +49,10 @@ class BandBuilder {
      *
      */
     static std::vector<BasePair> find_base_pairs_left_scan(size_t lb, size_t li, size_t ri,
-                                                           size_t rb,
+                                                           size_t                     rb,
                                                            const std::vector<size_t>& pair_table,
                                                            const std::vector<size_t>& cr_pair_table,
-                                                           int& child_count);
+                                                           int&                       child_count);
 
     /**
      * @brief Populate closed region children from children of the right arm.
@@ -65,7 +65,7 @@ class BandBuilder {
      */
     static void populate_right_arm_children(std::vector<BasePair>& base_pairs, size_t ri, size_t rb,
                                             const std::vector<size_t>& cr_pair_table,
-                                            int& child_count);
+                                            int&                       child_count);
 };
 
 }  // namespace knotergy

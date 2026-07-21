@@ -20,7 +20,7 @@ using json = nlohmann::json;
 }
 
 using string_list = std::vector<std::string>;
-using param_map = std::unordered_map<std::string, float>;
+using param_map   = std::unordered_map<std::string, float>;
 
 /**
  * @brief Parameters for modified RNA bases.
@@ -103,16 +103,16 @@ class modified_base_param {
     std::string modified_base_;
     std::string fallback_base_;
     string_list pairing_partners_;
-    param_map stacking_energies_;
-    param_map stacking_enthalpies_;
-    param_map terminal_energies_;
-    param_map terminal_enthalpies_;
-    param_map mismatch_energies_;
-    param_map mismatch_enthalpies_;
-    param_map dangle5_energies_;
-    param_map dangle5_enthalpies_;
-    param_map dangle3_energies_;
-    param_map dangle3_enthalpies_;
+    param_map   stacking_energies_;
+    param_map   stacking_enthalpies_;
+    param_map   terminal_energies_;
+    param_map   terminal_enthalpies_;
+    param_map   mismatch_energies_;
+    param_map   mismatch_enthalpies_;
+    param_map   dangle5_energies_;
+    param_map   dangle5_enthalpies_;
+    param_map   dangle3_energies_;
+    param_map   dangle3_enthalpies_;
 };
 
 /**
@@ -135,7 +135,7 @@ struct all_mod_params {
         return mod_params_;
     }
 
-    [[nodiscard]] bool empty() const { return mod_params_.empty(); }
+    [[nodiscard]] bool        empty() const { return mod_params_.empty(); }
     [[nodiscard]] std::size_t size() const { return mod_params_.size(); }
 
     // Key is the modified base character, returns parameters for that modified base if it exists,
@@ -148,9 +148,9 @@ struct all_mod_params {
     [[nodiscard]] const std::string* get_unmodified_base(const std::string& modified_base) const;
 
    private:
-    const std::vector<modified_base_param> mod_params_;
+    const std::vector<modified_base_param>                      mod_params_;
     std::unordered_map<std::string, const modified_base_param*> mod_param_lookup;
-    std::unordered_map<std::string, const std::string*> mod_to_unmod_lookup;
+    std::unordered_map<std::string, const std::string*>         mod_to_unmod_lookup;
 
     void build_lookup();
 };

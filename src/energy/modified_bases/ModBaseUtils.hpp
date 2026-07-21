@@ -36,7 +36,7 @@ class ModBaseUtils {
     [[nodiscard]] static std::string join_string_views(
         std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
         std::string key;
-        size_t total = 0;
+        size_t      total = 0;
 
         // Calculate total size needed
         for (size_t idx : indices) {
@@ -107,7 +107,7 @@ class ModBaseUtils {
      * @param lookup_type Type of energy lookup (Stacking, Terminal, etc.).
      * @return Energy value in centicalories.
      */
-    [[nodiscard]] static int get_mod_energy(const std::string& key,
+    [[nodiscard]] static int get_mod_energy(const std::string&                   key,
                                             const std::vector<std::string_view>& unique_mod_bases,
                                             const all_mod_params& mp, int unmod_energy,
                                             ModLookup lookup_type) {
@@ -161,9 +161,9 @@ class ModBaseUtils {
         vrna_md_param& vp, const all_mod_params& mp, bool is_closing = false) {
         if (i > 0) {
             unsigned int type;
-            int dangle_encoding;
+            int          dangle_encoding;
             if (is_closing) {
-                type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
+                type            = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
                 dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
                 std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
                 std::vector<std::string_view> unique_mod_bases =
@@ -171,7 +171,7 @@ class ModBaseUtils {
                 return get_mod_energy(key, unique_mod_bases, mp,
                                       vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
             }
-            type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            type            = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
             std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
             std::vector<std::string_view> unique_mod_bases =
                 ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);

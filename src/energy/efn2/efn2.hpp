@@ -20,7 +20,7 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         return 0;
     }
 
-    int count = 1;
+    int  count = 1;
     char bulged_base;
 
     if (n1 == 1) {
@@ -51,8 +51,8 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
 
     // Vienna energies use 0.01 kcal/mol units.
     // RNAstructure rounds this correction to 0.1 kcal/mol.
-    constexpr double R_KCAL = 0.00198720425864083;
-    const double temperature_kelvin = vp.p->temperature + 273.15;
+    constexpr double R_KCAL             = 0.00198720425864083;
+    const double     temperature_kelvin = vp.p->temperature + 273.15;
 
     int correction = -10 * static_cast<int>(lround(10.0 * R_KCAL * temperature_kelvin *
                                                    log(static_cast<double>(count))));

@@ -26,7 +26,7 @@ namespace knotergy {
 class FileUtils {
    public:
     [[nodiscard]] static std::string resolve_data_path(const std::string& path,
-                                                       bool check_exists = true);
+                                                       bool               check_exists = true);
 
     [[nodiscard]] static std::string join_path(const std::string& base, const std::string& path);
 
@@ -72,7 +72,7 @@ class FileUtils {
      */
     [[nodiscard]] static std::vector<std::string> get_files_in_dir(const std::string& dir,
                                                                    bool include_dirs = false,
-                                                                   bool recursive = false);
+                                                                   bool recursive    = false);
 
     /**
      * @brief Strip the extension from a filename.

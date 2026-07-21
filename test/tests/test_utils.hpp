@@ -24,7 +24,7 @@ const std::string mod_folder = knotergy::FileUtils::resolve_data_path("params/mo
 inline static double get_energy(std::string sequence, std::string structure, int dangle = 2,
                                 bool round = false, std::string param_file = turner_file,
                                 std::string pseudoknot_param_file = pkp_file,
-                                std::string mod_param_file = mod_folder) {
+                                std::string mod_param_file        = mod_folder) {
     // Load parameters
     knotergy::vrna_md_param vp =
         knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
@@ -35,7 +35,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
     knotergy::all_mod_params mp{mod_params};
 
     // pre-process RNA entry
-    knotergy::RNAEntry rna(sequence, structure);
+    knotergy::RNAEntry          rna(sequence, structure);
     knotergy::ProcessedRNAEntry processed_rna(
         knotergy::RNAProcessor::process_rna(std::move(rna), mp));
 
@@ -49,16 +49,16 @@ inline static double get_energy(std::string sequence, std::string structure, int
 }
 
 inline static double get_energy(knotergy::RNAEntry rna, int dangle = 2, bool round = false,
-                                std::string param_file = turner_file,
+                                std::string param_file            = turner_file,
                                 std::string pseudoknot_param_file = pkp_file,
-                                std::string mod_param_file = mod_folder) {
+                                std::string mod_param_file        = mod_folder) {
     return get_energy(rna.sequence, rna.structure, dangle, round, param_file, pseudoknot_param_file,
                       mod_param_file);
 }
 
 inline static double get_energy(std::string sequence, std::string structure,
                                 std::string param_file = turner_file) {
-    const int dangle = 2;
-    const bool round = false;
+    const int  dangle = 2;
+    const bool round  = false;
     return get_energy(sequence, structure, dangle, round, param_file);
 }

@@ -26,7 +26,7 @@ void all_mod_params::build_lookup() {
     mod_param_lookup.reserve(mod_params_.size());
     mod_to_unmod_lookup.reserve(mod_params_.size());
     for (const modified_base_param& param : mod_params_) {
-        mod_param_lookup[param.modified_base()] = &param;
+        mod_param_lookup[param.modified_base()]    = &param;
         mod_to_unmod_lookup[param.modified_base()] = &param.fallback_base();
     }
 }
@@ -66,8 +66,8 @@ modified_base_param ModParams::parse_modified_base_json(const std::string& jsonF
     if (!f.is_open()) {
         THROW_ERROR("Error: Unable to open modified base parameter file: " + jsonFile);
     }
-    json data = json::parse(f);
-    const json& mod = data.at("modified_base");
+    json        data = json::parse(f);
+    const json& mod  = data.at("modified_base");
 
     warn_if_missing(mod, "name", jsonFile);
     warn_if_missing(mod, "unmodified", jsonFile);

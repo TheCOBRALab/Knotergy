@@ -60,12 +60,11 @@ class LoopFactory {
     void print_tree(const std::unique_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
 
    private:
-    const ProcessedRNAEntry& pRNA_;
-    std::unique_ptr<LoopNode> root_node_;
-    size_t structure_length_;
-    std::vector<PairedBaseNode>
-        aux_bands_;      ///< Auxiliary structure for band detection and navigation.
-    vrna_md_param& vp_;  ///< ViennaRNA model parameters for energy calculations.
+    const ProcessedRNAEntry&    pRNA_;
+    std::unique_ptr<LoopNode>   root_node_;
+    size_t                      structure_length_;
+    std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
+    vrna_md_param&              vp_;  ///< ViennaRNA model parameters for energy calculations.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

@@ -23,7 +23,7 @@ namespace knotergy {
  */
 class ViennaUtils {
    public:
-    ViennaUtils() = default;
+    ViennaUtils()  = default;
     ~ViennaUtils() = default;
 
     /**
@@ -42,20 +42,20 @@ class ViennaUtils {
     static void populate_node_encodings(LoopNode& node, const ProcessedRNAEntry& pRNA,
                                         vrna_md_param& vp) {
         if (node.loop_type == LoopType::External) return;  // Doesn't have pairings
-        const std::string& sequence = pRNA.get_sequence();
+        const std::string&         sequence   = pRNA.get_sequence();
         const std::vector<size_t>& pair_table = pRNA.get_pair_table();
-        vrna_md_s& md = vp.md;
+        vrna_md_s&                 md         = vp.md;
 
-        size_t i = node.begin;
-        size_t j = node.end;
-        char ni = sequence[i];  // nucleotide i
-        char nj = sequence[j];  // nucleotide j
+        size_t i  = node.begin;
+        size_t j  = node.end;
+        char   ni = sequence[i];  // nucleotide i
+        char   nj = sequence[j];  // nucleotide j
 
         // Encode the pair's nucleotides
         std::tie(node.i_encoded, node.j_encoded) = encode_nucleotides(ni, nj, md);
 
         // Encode the pair type and reverse pair type
-        node.pair_type = vrna_get_ptype_md(node.i_encoded, node.j_encoded, &md);
+        node.pair_type   = vrna_get_ptype_md(node.i_encoded, node.j_encoded, &md);
         node.r_pair_type = reverse_pair_type(node.pair_type, md);
 
         // NOTE: Not using this file's helper functions since encoding nucleotides multiple times
@@ -120,7 +120,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
-                                                                   vrna_md_t& md) {
+                                                                   vrna_md_t&               md) {
         return encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 
@@ -158,7 +158,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
-                                                                   vrna_md_t& md) {
+                                                                   vrna_md_t&               md) {
         return encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 

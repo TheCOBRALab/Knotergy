@@ -53,11 +53,11 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
         THROW_ERROR("Error: Unable to open file: " + file);
     }
 
-    std::string line;
-    RNAEntry current;
+    std::string           line;
+    RNAEntry              current;
     std::vector<RNAEntry> entries;
-    ParserState state = ParserState::UNINITIALIZED;
-    int line_number = 0;
+    ParserState           state       = ParserState::UNINITIALIZED;
+    int                   line_number = 0;
 
     // Loop through each line in the file, and is a state machine to parse entries
     // Each entry consists of three lines: name, sequence, structure
@@ -85,13 +85,13 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
                 current = {};
             }
             current.name = line.substr(1);
-            state = ParserState::SEQUENCE;
+            state        = ParserState::SEQUENCE;
         } else if (state == ParserState::SEQUENCE) {
             current.sequence = std::move(line);
-            state = ParserState::STRUCTURE;
+            state            = ParserState::STRUCTURE;
         } else if (state == ParserState::STRUCTURE) {
             current.structure = std::move(line);
-            state = ParserState::NAME;
+            state             = ParserState::NAME;
         } else {
             // Should never reach here
             THROW_ERROR("Error: Unexpected state. Line number: " + std::to_string(line_number));

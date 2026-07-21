@@ -33,8 +33,8 @@ struct vrna_md_param {
         if (p) free(p);
     }
 
-    vrna_md_t md{};     ///< ViennaRNA model details.
-    vrna_param_t* p{};  ///< ViennaRNA parameters.
+    vrna_md_t     md{};  ///< ViennaRNA model details.
+    vrna_param_t* p{};   ///< ViennaRNA parameters.
 
     // ------- Details about loading the parameters, for reporting purposes -------
 
@@ -48,13 +48,13 @@ struct vrna_md_param {
 static const uint32_t BigEndianMarker = 0x01020304;
 
 struct ParamCacheHeader {
-    char magic[8] = {'V', 'R', 'N', 'A', 'P', 'R', 'M', '1'};
-    std::uint32_t cache_version = 1;
+    char          magic[8]          = {'V', 'R', 'N', 'A', 'P', 'R', 'M', '1'};
+    std::uint32_t cache_version     = 1;
     std::uint32_t param_struct_size = sizeof(vrna_param_t);
-    std::uint32_t md_struct_size = sizeof(vrna_md_t);
-    std::uint32_t endian_marker = BigEndianMarker;
-    std::int32_t dangles = 2;
-    std::uint64_t source_mtime = 0;  // 0 for built-in fallback sets
+    std::uint32_t md_struct_size    = sizeof(vrna_md_t);
+    std::uint32_t endian_marker     = BigEndianMarker;
+    std::int32_t  dangles           = 2;
+    std::uint64_t source_mtime      = 0;  // 0 for built-in fallback sets
 };
 
 /**
@@ -75,8 +75,8 @@ class ViennaParams {
      * @param seq Optional sequence for parameter initialization.
      */
     [[nodiscard]] static vrna_md_param load_energy_parameters(const std::string& paramFile = "",
-                                                              int dangle = 2,
-                                                              const std::string& seq = "");
+                                                              int                dangle    = 2,
+                                                              const std::string& seq       = "");
 };
 
 }  // namespace knotergy

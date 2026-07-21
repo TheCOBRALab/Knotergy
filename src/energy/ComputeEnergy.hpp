@@ -52,19 +52,19 @@ class ComputeEnergy {
      * @return The total Gibbs free energy in centicalories (hundredths of kcal/mol).
      */
     [[nodiscard]] double getEnergy() const { return energy_; };
-    [[nodiscard]] bool getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
+    [[nodiscard]] bool   getInfiniteEnergyFlag() const { return infinite_energy_flag_; };
 
    private:
-    LoopNode& root_node_;
-    const ProcessedRNAEntry& pRNA_;
-    vrna_md_param& vp_;
-    const knotergy::pk_param& pkp_;
-    const all_mod_params& mp_;
-    const std::string& sequence_;
+    LoopNode&                            root_node_;
+    const ProcessedRNAEntry&             pRNA_;
+    vrna_md_param&                       vp_;
+    const knotergy::pk_param&            pkp_;
+    const all_mod_params&                mp_;
+    const std::string&                   sequence_;
     const std::vector<std::string_view>& mod_sequence_;
-    double energy_ = 0.0;
-    bool round_ = false;
-    bool infinite_energy_flag_ =
+    double                               energy_ = 0.0;
+    bool                                 round_  = false;
+    bool                                 infinite_energy_flag_ =
         false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
     bool has_modified_bases_ = false;  ///< Flag to indicate if the RNA contains modified bases, for
                                        ///< energy calculation purposes.

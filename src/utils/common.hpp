@@ -67,7 +67,7 @@ class DetailedException : public std::runtime_error {
    private:
     std::string message_;
     std::string file_;
-    int line_;
+    int         line_;
     std::string func_;
     std::string detailed_message_;
 
@@ -97,8 +97,8 @@ class DetailedException : public std::runtime_error {
 #define THROW_ERROR(msg) throw ::knotergy::DetailedException((msg), __FILE__, __LINE__, __func__)
 
 /// Maximum value of size_t, used as a sentinel for "no index" or "invalid index".
-constexpr std::size_t NULL_INDEX = static_cast<std::size_t>(-1);
-constexpr int NULL_ENERGY = std::numeric_limits<int>::max();
+constexpr std::size_t NULL_INDEX  = static_cast<std::size_t>(-1);
+constexpr int         NULL_ENERGY = std::numeric_limits<int>::max();
 
 /**
  * @brief Trims leading and trailing whitespace from a string.

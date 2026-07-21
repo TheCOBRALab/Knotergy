@@ -12,10 +12,10 @@ int CoaxialStacking::add_or_inf(int a, int b) {
 }
 
 // applies to closing pair and first child
-int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
+int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem&     stem,
                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                                 const all_mod_params& mp) {
-    const std::string& sequence = pRNA.get_sequence();
+    const std::string&         sequence   = pRNA.get_sequence();
     const std::vector<size_t>& pair_table = pRNA.get_pair_table();
 
     if (stem.begin == 0) {
@@ -25,7 +25,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     }
 
     const size_t dangle_pos = stem.begin - 1;
-    const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos], &vp.md);
+    const int    encoding   = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos], &vp.md);
 
     int ld5;
     if (pRNA.has_modified_bases()) {
@@ -62,10 +62,10 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     return ld5;
 }
 
-std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopNode& node,
+std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopNode&          node,
                                                                      const ProcessedRNAEntry& pRNA,
-                                                                     vrna_md_param& vp,
-                                                                     const all_mod_params& mp) {
+                                                                     vrna_md_param&           vp,
+                                                                     const all_mod_params&    mp) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
@@ -87,10 +87,10 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
                                   dangle5_closing, dangle3_closing});
 
     MultiloopStem& closing_stem = stems.back();
-    closing_stem.initial_ld5 = compute_initial_ld5_for_d3(closing_stem, pRNA, vp, mp);
+    closing_stem.initial_ld5    = compute_initial_ld5_for_d3(closing_stem, pRNA, vp, mp);
 
     MultiloopStem& start_stem = stems.front();
-    start_stem.initial_ld5 = compute_initial_ld5_for_d3(start_stem, pRNA, vp, mp);
+    start_stem.initial_ld5    = compute_initial_ld5_for_d3(start_stem, pRNA, vp, mp);
 
     return stems;
 }
@@ -98,8 +98,8 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
 int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_prev,
                                                   const std::vector<MultiloopStem>& stems,
                                                   vrna_md_param& vp, const all_mod_params& mp) {
-    const std::string& sequence = pRNA.get_sequence();
-    const size_t stem_count = stems.size();
+    const std::string& sequence   = pRNA.get_sequence();
+    const size_t       stem_count = stems.size();
 
     const MultiloopStem& start_stem = stems[start_prev];
 
@@ -107,20 +107,20 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
 
     // This is the index of the last base of the previous stem
     size_t prev_end_idx = start_stem.prev_end;
-    size_t current = (start_prev + 1) % stem_count;
+    size_t current      = (start_prev + 1) % stem_count;
 
     // ld5 is the 5' dangle of the previous stem. (left dangle 5)
-    int ld5 = start_stem.initial_ld5;
-    int energy = 0;       // True energy of the current walk (including coaxial)
-    int cx_energy = INF;  // Energy for coaxial
+    int ld5                    = start_stem.initial_ld5;
+    int energy                 = 0;    // True energy of the current walk (including coaxial)
+    int cx_energy              = INF;  // Energy for coaxial
     int coaxial_ml_base_energy = vp.p->MLintern[1];
 
     for (size_t step = 0; step < stem_count; ++step) {
-        const MultiloopStem& stem = stems[current];
+        const MultiloopStem& stem      = stems[current];
         const MultiloopStem& prev_stem = stems[(current + stem_count - 1) % stem_count];
 
-        const size_t begin = stem.begin;
-        const size_t end = stem.end;
+        const size_t       begin        = stem.begin;
+        const size_t       end          = stem.end;
         const unsigned int current_type = stem.type;
 
         int new_cx = INF;  // potential new coaxial energy
@@ -132,7 +132,7 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
 
         const int current_ml = vp.p->MLintern[current_type];  // Base ML energy (no dangles)
 
-        energy = add_or_inf(energy, current_ml);
+        energy    = add_or_inf(energy, current_ml);
         cx_energy = add_or_inf(cx_energy, current_ml);  // Coaxial energy of previous stem
 
         int curr_dang5 = 0;  // 5` dangle of the current child
@@ -171,7 +171,7 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                 new_cx += -ld5 - vp.p->MLintern[current_type] - vp.p->MLintern[prev_type] +
                           2 * coaxial_ml_base_energy;
 
-                ld5 = 0;
+                ld5    = 0;
                 energy = std::min(energy, cx_energy);
                 break;
             }
@@ -181,14 +181,14 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                 const int dang = std::min(prev_dang3, curr_dang5);
 
                 energy = add_or_inf(energy, dang);
-                ld5 = dang - prev_dang3;
+                ld5    = dang - prev_dang3;
 
                 // Since each nucleotide or helix end can participate in only one favorable
                 // interaction if the previous stem was coaxially stacked, only the 5' dangle of the
                 // current stem can be used https://rna.urmc.rochester.edu/NNDB/turner04/mb/
                 if (add_or_inf(cx_energy, curr_dang5) < energy) {
                     energy = add_or_inf(cx_energy, curr_dang5);
-                    ld5 = curr_dang5;
+                    ld5    = curr_dang5;
                 }
 
                 new_cx = INF;
@@ -201,15 +201,15 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                 energy = std::min(energy, add_or_inf(cx_energy, curr_dang5));
 
                 new_cx = INF;
-                ld5 = curr_dang5;
+                ld5    = curr_dang5;
                 break;
             }
         }
 
-        prev_type = current_type;
-        cx_energy = new_cx;
+        prev_type    = current_type;
+        cx_energy    = new_cx;
         prev_end_idx = end;
-        current = (current + 1) % stem_count;
+        current      = (current + 1) % stem_count;
     }
 
     // Match ViennaRNA: don't use cx_energy here, because that would allow
@@ -217,7 +217,7 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
     return energy;
 }
 
-int CoaxialStacking::get_multibranch_dangle_3(const LoopNode& node,
+int CoaxialStacking::get_multibranch_dangle_3(const LoopNode&                   node,
                                               const std::vector<MultiloopStem>& stems,
                                               const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                               const all_mod_params& mp) {
