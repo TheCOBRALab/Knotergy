@@ -1,5 +1,6 @@
 #include "ComputeEnergy.hpp"
 
+#include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
@@ -77,8 +78,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
 
         case LoopType::External:
             if (has_modified_bases_) {
-                node_energy = ModifiedBasesFunctions::find_mod_external_energy(
-                    node.children, pRNA_, mod_sequence_, vp_, mp_);
+                node_energy = ModExternal::find_mod_external_energy(node.children, pRNA_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::external_energy(node.children, pRNA_, vp_);
             }

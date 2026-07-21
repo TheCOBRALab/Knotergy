@@ -1,4 +1,5 @@
 #pragma once
+#include "energy/dangles/Dangle1.hpp"
 #include "energy/vienna/ViennaUtils.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
@@ -14,6 +15,7 @@ enum class ModLookup { Stacking, TerminalAU, Mismatch, Dangle5, Dangle3 };
 
 // Stores the differences in energy contributions due to modified bases
 struct ModDiffs {
+    ModDiffs() : terminalAU{0}, mismatch{0}, n5d{0}, n3d{0} {}
     ModDiffs(int terminal_diff, int mismatch_diff, int n5d_diff, int n3d_diff)
         : terminalAU{terminal_diff}, mismatch{mismatch_diff}, n5d{n5d_diff}, n3d{n3d_diff} {}
     const int terminalAU;
@@ -181,6 +183,84 @@ class ModBaseUtils {
         } else {
             return 0;
         }
+    }
+
+    [[nodiscard]] static ModDiffs get_mod_diffs(
+        const LoopNode& node, int n5d, int n3d, unsigned int type,
+        const std::vector<std::string_view>& unique_mod_bases,
+        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+        const all_mod_params& mp, bool is_external, bool is_closing) {
+        if (is_external && is_closing) {
+            THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");
+        }
+
+        vrna_param_t* P        = vp.p;
+        int           mismatch = 0;
+        int           dangle5  = 0;
+        int           dangle3  = 0;
+        int           terminal = 0;
+        std::string   mismatch_key, dangle5_key, dangle3_key, terminal_key;
+        // Unmodified energies for exterior stem (mismatch, dangle5, dangle3, terminalAU)
+        if (n5d >= 0 && n3d >= 0) {
+            mismatch = is_external ? P->mismatchExt[type][n5d][n3d] : P->mismatchM[type][n5d][n3d];
+            mismatch_key =
+                is_closing
+                    ? ModBaseUtils::join_string_views(
+                          {node.end, node.end - 1, node.begin, node.begin + 1}, mod_sequence)
+                    : ModBaseUtils::join_string_views(
+                          {node.begin, node.begin - 1, node.end, node.end + 1}, mod_sequence);
+        }
+
+        if (n5d >= 0) {
+            dangle5     = P->dangle5[type][n5d];
+            dangle5_key = is_closing ? ModBaseUtils::join_string_views(
+                                           {node.begin, node.end, node.end - 1}, mod_sequence)
+                                     : ModBaseUtils::join_string_views(
+                                           {node.begin, node.end, node.begin - 1}, mod_sequence);
+        }
+
+        if (n3d >= 0) {
+            dangle3     = P->dangle3[type][n3d];
+            dangle3_key = is_closing ? ModBaseUtils::join_string_views(
+                                           {node.begin, node.end, node.begin + 1}, mod_sequence)
+                                     : ModBaseUtils::join_string_views(
+                                           {node.begin, node.end, node.end + 1}, mod_sequence);
+        }
+
+        if (type > 2) {
+            terminal = P->TerminalAU;
+            terminal_key =
+                is_closing ? ModBaseUtils::join_string_views({node.end, node.begin}, mod_sequence)
+                           : ModBaseUtils::join_string_views({node.begin, node.end}, mod_sequence);
+        }
+
+        // Get modified energies
+        int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch,
+                                                       ModLookup::Mismatch);
+        int modDangle5  = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
+                                                       ModLookup::Dangle5);
+        int modDangle3  = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
+                                                       ModLookup::Dangle3);
+        int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
+                                                       ModLookup::TerminalAU);
+
+        // Calculate differences
+        if (vp.md.dangles == 0) {
+            return ModDiffs(modTerminal - terminal, 0, 0, 0);
+        }
+
+        int diffMismatch = modMismatch - mismatch;
+        int diff5        = modDangle5 - dangle5;
+        int diff3        = modDangle3 - dangle3;
+        int diffTerminal = modTerminal - terminal;
+
+        return ModDiffs(diffTerminal, diffMismatch, diff5, diff3);
+    }
+    static void modify_dangle_set(DangleSet& dangle_set, ModDiffs diffs) {
+        dangle_set.both_dangle += diffs.mismatch;
+        dangle_set.left_dangle += diffs.n5d;
+        dangle_set.right_dangle += diffs.n3d;
+        dangle_set += diffs.terminalAU;  // adds terminalAU diff to all configurations
     }
 };
 }  // namespace knotergy
