@@ -126,7 +126,6 @@ endif()
 
 # -------------------------------------------------------------------
 #                  ViennaRNA Library Configuration
-# This section was drafted with the help of AI. Contributions and improvements are welcome.
 # -------------------------------------------------------------------
 
 # Users may pass any of these:

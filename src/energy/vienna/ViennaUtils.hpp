@@ -203,10 +203,12 @@ class ViennaUtils {
      * @param md The ViennaRNA model details.
      * @return The encoded nucleotide.
      */
-    [[nodiscard]] static int fast_nucleotide_encode(char c, const vrna_md_t* md) {
-        c &= ~0x20;  // ASCII lowercase -> uppercase
+    [[nodiscard]] static constexpr int fast_nucleotide_encode(char c, const vrna_md_t* md) {
+        const unsigned char upper = static_cast<unsigned char>(c) & 0xDFu;
 
-        if (md->energy_set > 0) return c - 'A' + 1;
+        if (md->energy_set > 0) {
+            return static_cast<int>(upper) - 'A' + 1;
+        }
 
         switch (c) {
             case 'A': return 1;

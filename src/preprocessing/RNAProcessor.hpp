@@ -173,16 +173,30 @@ class RNAProcessor {
 
    private:
     // Lookup table for unmodified bases
-    static constexpr std::array<uint8_t, 256> unmod_lookup = [] {
-        std::array<uint8_t, 256> t{};
-        t[static_cast<unsigned char>('A')] = 1;
-        t[static_cast<unsigned char>('U')] = 1;
-        t[static_cast<unsigned char>('G')] = 1;
-        t[static_cast<unsigned char>('C')] = 1;
-        t[static_cast<unsigned char>('T')] = 1;
-        t[static_cast<unsigned char>('N')] = 1;
-        return t;
-    }();
+    [[nodiscard]] static constexpr bool is_unmodified_base(unsigned char c) noexcept {
+        switch (c) {
+            case 'A':
+            case 'C':
+            case 'G':
+            case 'N':
+            case 'T':
+            case 'U': return true;
+            default:  return false;
+        }
+    }
+
+    // Function to check if two bases can pair according to RNA base-pairing rules.
+    [[nodiscard]] static constexpr bool can_pair(char left, char right) {
+        switch (left) {
+            case 'A': return right == 'U' || right == 'T';
+            case 'U': return right == 'A' || right == 'G';
+            case 'G': return right == 'C' || right == 'U' || right == 'T';
+            case 'C': return right == 'G';
+            case 'T': return right == 'A' || right == 'G';
+            case 'N': return false;  // Should not pair with anything
+            default:  return false;
+        }
+    };
 };
 
 }  // namespace knotergy

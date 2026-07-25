@@ -38,7 +38,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
 
         // Check for invalid bases in the input sequence
         for (char base : rna.sequence) {
-            if (unmod_lookup[(unsigned char) base] == 0) {
+            if (!is_unmod_base(base)) {
                 THROW_ERROR("Sequence contains invalid base: '" + std::string(1, base) + "'");
                 break;
             }
@@ -59,6 +59,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
                              has_modified_bases};
 };
 
+// ([...)] = 5, 6, -1, -1, -1, 0, 1
 std::vector<size_t> RNAProcessor::compute_pair_table(
     const std::string& structure, const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
@@ -85,25 +86,12 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
         add_bracket(c, static_cast<char>(std::tolower(c)));
     }
 
-    // Function to check if two bases can pair according to RNA base-pairing rules.
-    auto can_pair = [](char left, char right) {
-        switch (left) {
-            case 'A': return right == 'U' || right == 'T';
-            case 'U': return right == 'A' || right == 'G';
-            case 'G': return right == 'C' || right == 'U' || right == 'T';
-            case 'C': return right == 'G';
-            case 'T': return right == 'A' || right == 'G';
-            case 'N': return false;  // Should not pair with anything
-            default:  return false;
-        }
-    };
-
     const size_t n = structure.size();
 
     // sequence and mod_sequence are optional inputs
     // If provided, it will check for valid base pairs, and warn for invalid pairs.
-    const bool check_pairs = unmodified_sequence.size() == n;
-    const bool have_mod_seq = mod_sequence.size() == n;
+    const bool check_pairs = !unmodified_sequence.empty();
+    const bool have_mod_seq = !mod_sequence.empty();
 
     // Initialize all pair_table to NULL_INDEX (unpaired).
     std::vector<size_t> pair_table(n, NULL_INDEX);
@@ -175,6 +163,7 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
     return pair_table;
 }
 
+// ([...)] = 5, 6, -1, -1, -1, 0, 1
 std::vector<size_t> RNAProcessor::compute_pair_table(
     const RNAEntry& rna, const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
@@ -231,7 +220,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     return closed_regions;
 }
 
-// ([...)] = 5, 6, -1, -1, -1, 0, 1
+// ([...)] = 6, -1, -1, -1, -1, -1, 0
 std::vector<size_t> RNAProcessor::compute_cr_pair_table(
     const std::vector<ClosedRegion>& closed_regions, size_t rna_size) {
     std::vector<size_t> closed_regions_pair_table(rna_size, NULL_INDEX);
@@ -243,6 +232,8 @@ std::vector<size_t> RNAProcessor::compute_cr_pair_table(
     return closed_regions_pair_table;
 }
 
+// prefix sum
+// ([...)] = 0, 0, 0, 1, 2, 3, 3, 3
 std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>& pair_table) {
     int count = 0;
     size_t n = pair_table.size();
@@ -256,6 +247,7 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
     return unpaired_prefix_sum;
 };
 
+// 6AAUUP -> AAAUUU
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views, const all_mod_params& mp,
     const size_t rna_length, bool& has_modified_bases) {
@@ -297,15 +289,15 @@ std::string RNAProcessor::compute_unmodified_sequence(
     return unmodified_sequence;
 }
 
-// Check if a base is unmodified (using lookup table for speed)
+// Check if a base is unmodified
 bool RNAProcessor::is_unmod_base(const std::string_view& b) {
     if (b.size() != 1)
         return false;  // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
-    return unmod_lookup[(unsigned char) b[0]] != 0;
+    return is_unmodified_base(static_cast<unsigned char>(b[0])) == true;
 }
 
 bool RNAProcessor::is_unmod_base(char b) {
-    return unmod_lookup[static_cast<unsigned char>(b)] != 0;
+    return is_unmodified_base(static_cast<unsigned char>(b)) == true;
 }
 
 }  // namespace knotergy
