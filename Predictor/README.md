@@ -3,6 +3,8 @@
 Very simple predictor that uses Knotergy to help with its predictions. 
 Can be tweaked in `src/settings.py`
 
+DISCLAIMER: This predictor's results are not reliable and can produce unrealistic structures with favorable energies. This is purely meant as a proof of concept and is NOT to be used in real world applications.
+
 ## How to use
 
 ### Install
