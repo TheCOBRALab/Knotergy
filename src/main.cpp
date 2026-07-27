@@ -85,8 +85,7 @@ int run_knotergy(int argc, char** argv) {
     std::vector<std::string> mod_param_paths;
     std::string modifications = "7I6P9D";
     const bool use_color = knotergy::should_use_color();
-
-    bool round = false;
+    int round_value = 0;  // Default round value is 0 (no rounding)
     bool verbose = false;
     int dangle = 2;
 
@@ -113,8 +112,23 @@ int run_knotergy(int argc, char** argv) {
             vienna_param_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-e" || arg == "--round") {
-            round = true;
-
+            round_value =
+                static_cast<int>(knotergy::RoundMethod::Bankers);  // Default to Banker's rounding
+            // -m /path/to/params
+            if (i + 1 < argc && argv[i + 1][0] != '-') {
+                round_value = get_numerical_arg(i, argc, argv, round_value);
+            } else {
+                // -e with no path, use default
+                round_value = 1;
+            }
+        } else if (arg.rfind("-e", 0) == 0 && arg.size() > 2) {
+            // Supports: -e2
+            try {
+                round_value = std::stoi(arg.substr(2));
+            } catch (const std::exception&) {
+                std::cerr << ERROR << " Invalid round value: " << arg.substr(2) << '\n';
+                return EXIT_FAILURE;
+            }
         } else if (arg == "-m" || arg == "--mod-params") {
             // -m /path/to/params
             if (i + 1 < argc && argv[i + 1][0] != '-') {
@@ -204,12 +218,20 @@ int run_knotergy(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    if (round_value < 0 || round_value > 5) {
+        std::cerr << ERROR << " Invalid round value: " << round_value
+                  << ". Round must be 0, 1, 2, 3, 4, or 5.\n";
+        return EXIT_FAILURE;
+    }
+    const knotergy::RoundMethod round_method = static_cast<knotergy::RoundMethod>(round_value);
+
     // ------------------------- Load ViennaRNA Parameters -----------------------
     knotergy::vrna_md_param vp =
         knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
-    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudo_param_file);
+    knotergy::pk_param pkp =
+        knotergy::PseudoknotParams::load_pk_param(pseudo_param_file, round_method);
 
     // ------------------------- Load Modified Base Parameters -----------------------
     std::vector<knotergy::modified_base_param> modified_params;
@@ -243,7 +265,7 @@ int run_knotergy(int argc, char** argv) {
 
         // Compute the energy.
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,
-                                                  mp, round, verbose);
+                                                  mp, verbose);
 
         // Output results.
         if (energy_calculator.getInfiniteEnergyFlag()) {

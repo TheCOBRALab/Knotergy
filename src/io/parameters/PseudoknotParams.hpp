@@ -21,6 +21,32 @@ namespace knotergy {
     return path;
 }
 
+enum class RoundMethod {
+    None = 0,            ///< No rounding
+    Bankers = 1,         ///< Banker's rounding (default)
+    RoundToNearest = 2,  ///< Round to nearest integer
+    RoundDown = 3,       ///< Round down (floor)
+    RoundUp = 4,         ///< Round up (ceil)
+    Truncate = 5         ///< Truncate decimal part
+};
+
+[[nodiscard]] constexpr std::string_view to_string(RoundMethod method) noexcept {
+    switch (method) {
+        case RoundMethod::None:           return "None";
+        case RoundMethod::Bankers:        return "Bankers";
+        case RoundMethod::RoundToNearest: return "RoundToNearest";
+        case RoundMethod::RoundDown:      return "RoundDown";
+        case RoundMethod::RoundUp:        return "RoundUp";
+        case RoundMethod::Truncate:       return "Truncate";
+    }
+
+    return "Unknown";
+}
+
+inline std::ostream& operator<<(std::ostream& os, RoundMethod method) {
+    return os << to_string(method);
+}
+
 /**
  * @brief Pseudoknot energy parameters.
  *
@@ -45,7 +71,8 @@ struct pk_param {
           pk_internal_x(0.74),
           pk_mloop_init(341),
           pk_mloop_bp(56),
-          pk_mloop_unpaired(12) {}
+          pk_mloop_unpaired(12),
+          round(RoundMethod::None) {}
 
     /**
      * @brief Construct with custom pseudoknot parameters.
@@ -62,11 +89,12 @@ struct pk_param {
      * @param pk_mloop_init_pen Multiloop spanning band initialization penalty.
      * @param pk_mloop_bp_pen Base pair in multiloop spanning band penalty.
      * @param pk_mloop_unpaired_pen Unpaired bases in multiloop spanning band penalty.
+     * @param round Rounding method to use.
      */
     pk_param(const std::string& param_name, int pk_ext, int pk_multi, int pk_pk, int band_pen,
              int unpaired_pk, int cr_in_pk_pen, double pk_stack_multiplier,
              double pk_internal_multiplier, int pk_mloop_init_pen, int pk_mloop_bp_pen,
-             int pk_mloop_unpaired_pen)
+             int pk_mloop_unpaired_pen, RoundMethod round_method = RoundMethod::None)
         : name(param_name),
           pk_in_ext(pk_ext),
           pk_in_mloop(pk_multi),
@@ -78,7 +106,8 @@ struct pk_param {
           pk_internal_x(pk_internal_multiplier),
           pk_mloop_init(pk_mloop_init_pen),
           pk_mloop_bp(pk_mloop_bp_pen),
-          pk_mloop_unpaired(pk_mloop_unpaired_pen) {}
+          pk_mloop_unpaired(pk_mloop_unpaired_pen),
+          round(round_method) {}
 
     const std::string name;       ///< Parameter set name.
     const int pk_in_ext;          ///< Pseudoknot in exterior loop penalty.
@@ -92,7 +121,7 @@ struct pk_param {
     const int pk_mloop_init;      ///< Multiloop spanning band initialization penalty.
     const int pk_mloop_bp;        ///< Base pair in multiloop spanning band penalty.
     const int pk_mloop_unpaired;  ///< Unpaired bases in multiloop spanning band penalty.
-
+    const RoundMethod round;      ///< Rounding method to use.
     // ------- Details about loading the parameters, for reporting purposes -------
 
     [[nodiscard]] const ParamSourceInfo& get_source_info() const { return source_info; }
@@ -119,7 +148,8 @@ class PseudoknotParams {
      * @throws DetailedException if file not found or invalid.
      */
     [[nodiscard]] static pk_param load_pk_param(
-        const std::string& paramFile = default_pk_param_path()) {
+        const std::string& paramFile = default_pk_param_path(),
+        RoundMethod round_method = RoundMethod::None) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;
@@ -134,7 +164,8 @@ class PseudoknotParams {
                              "hard-coded defaults.\n";
             }
 
-            pk_param pkp = file_exists ? parse_pk_json(default_pk_param_path()) : pk_param();
+            pk_param pkp =
+                file_exists ? parse_pk_json(default_pk_param_path(), round_method) : pk_param();
             info.status = ParamStatus::Defaulted;
             pkp.set_source_info(info);  // Set the source info for reporting purposes
             return pkp;
@@ -148,7 +179,7 @@ class PseudoknotParams {
             THROW_ERROR("Pseudoknot parameters path \"" + paramFile + "\" is not a file.");
         }
 
-        pk_param pkp = parse_pk_json(paramFile);
+        pk_param pkp = parse_pk_json(paramFile, round_method);
 
         info.status = ParamStatus::LoadedUserFile;
         info.resolved_path = paramFile;
@@ -166,7 +197,8 @@ class PseudoknotParams {
      * @return Parsed pk_param structure.
      * @throws DetailedException if file cannot be opened or parsed.
      */
-    [[nodiscard]] static pk_param parse_pk_json(const std::string& jsonFile) {
+    [[nodiscard]] static pk_param parse_pk_json(const std::string& jsonFile,
+                                                RoundMethod round_method = RoundMethod::None) {
         std::ifstream f(jsonFile);
         if (!f.is_open()) {
             THROW_ERROR("Error: Unable to open pseudoknot parameter file: " + jsonFile);
@@ -185,7 +217,8 @@ class PseudoknotParams {
                         pk.at("band").get<int>(), pk.at("unpaired_in_pk").get<int>(),
                         pk.at("cr_in_pk").get<int>(), pk.at("pk_stack_x").get<double>(),
                         pk.at("pk_internal_x").get<double>(), pk.at("pk_mloop_init").get<int>(),
-                        pk.at("pk_mloop_bp").get<int>(), pk.at("pk_mloop_unpaired").get<int>());
+                        pk.at("pk_mloop_bp").get<int>(), pk.at("pk_mloop_unpaired").get<int>(),
+                        round_method);
     }
 };
 

@@ -4,17 +4,17 @@
 #include <vector>
 
 namespace {
-const bool round = true;
-const bool dont_round = false;
+const int dont_round = 0;
 
 std::pair<double, double> get_turner_results(const std::string& sequence,
-                                             const std::string& structure, const int dangle = 2) {
+                                             const std::string& structure, const int dangle = 2,
+                                             const int round = 1) {
     double turner_result = get_energy(sequence, structure, dangle, dont_round, turner_file);
     double turner_rounded = get_energy(sequence, structure, dangle, round, turner_file);
     return {turner_result, turner_rounded};
 }
 std::pair<double, double> get_dp_results(const std::string& sequence, const std::string& structure,
-                                         const int dangle = 2) {
+                                         const int dangle = 2, const int round = 1) {
     double dp_result = get_energy(sequence, structure, dangle, dont_round, DP_file);
     double dp_rounded = get_energy(sequence, structure, dangle, round, DP_file);
     return {dp_result, dp_rounded};
@@ -24,6 +24,7 @@ TEST(PK_energies, InfiniteEnergy_DP) {
     std::string sequence = "GGCC";
     std::string structure = "[(])";
     const int dangle = 2;
+    const int round = 1;
     double dp_result = get_energy(sequence, structure, dangle, round, DP_file);
 
     EXPECT_NEAR(dp_result, 200003.5400, 0.000005);
@@ -33,6 +34,7 @@ TEST(PK_energies, InfiniteEnergy_Turner) {
     std::string sequence = "GGCC";
     std::string structure = "[(])";
     const int dangle = 2;
+    const int round = 1;
     double turner_result = get_energy(sequence, structure, dangle, round, turner_file);
 
     EXPECT_NEAR(turner_result, 200003.5400, 0.000005);
@@ -229,6 +231,31 @@ TEST(PK_energies, many_children_few_bands_DP) {
 
     EXPECT_NEAR(dp_result, 37.82, 0.000005);
     EXPECT_NEAR(dp_rounded, 37.82, 0.000005);
+}
+
+// Tests if all rounding methods are working correctly for the DP method
+TEST(PK_energies, multiple_rounds_DP) {
+    std::string sequence = "CUAAAAUAGCAAAAAAUUAUGAAGC";
+    std::string structure = "(......([[......)...)..]]";
+    const int dangle = 2;
+    const int banker_round = 1;      // default round method is banker's rounding
+    const int round_to_nearest = 2;  // round to nearest integer
+    const int round_down = 3;        // round down
+    const int round_up = 4;          // round up
+    const int round_truncate = 5;    // truncate
+
+    auto [dp_result, dp_rounded] = get_dp_results(sequence, structure, dangle, banker_round);
+    double dp_rounded_nearest = get_energy(sequence, structure, dangle, round_to_nearest, DP_file);
+    double dp_rounded_down = get_energy(sequence, structure, dangle, round_down, DP_file);
+    double dp_rounded_up = get_energy(sequence, structure, dangle, round_up, DP_file);
+    double dp_rounded_truncate = get_energy(sequence, structure, dangle, round_truncate, DP_file);
+
+    EXPECT_NEAR(dp_result, 3.7626, 0.000005);
+    EXPECT_NEAR(dp_rounded, 3.76, 0.000005);
+    EXPECT_NEAR(dp_rounded_nearest, 3.77, 0.000005);
+    EXPECT_NEAR(dp_rounded_down, 3.75, 0.000005);
+    EXPECT_NEAR(dp_rounded_up, 3.77, 0.000005);
+    EXPECT_NEAR(dp_rounded_truncate, 3.76, 0.000005);
 }
 
 TEST(PK_energies, dangle_1) {

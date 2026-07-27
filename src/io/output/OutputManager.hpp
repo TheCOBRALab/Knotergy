@@ -42,7 +42,9 @@ class OutputManager {
                   << " (Dangle Model: " << vienna_params.md.dangles << ")\n";
 
         std::cout << std::left << std::setw(W)
-                  << "Pseudoknot:" << pk_params.get_source_info().resolved_name << '\n';
+                  << "Pseudoknot:" << pk_params.get_source_info().resolved_name
+                  << " (Round Method: " << static_cast<int>(pk_params.round) << " ("
+                  << pk_params.round << "))\n";
 
         std::cout << std::left << std::setw(W)
                   << "Modified bases:" << std::to_string(mp.size()) + " loaded"

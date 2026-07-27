@@ -121,6 +121,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
     // ----- Resolve parameter source first -----
     if (!paramFile.empty() && FileUtils::file_exists(paramFile)) {
+        // If user provides a param file and it exists, use it.
         source_kind = SourceKind::UserFile;
         cache_key = paramFile;
         load_path = paramFile;
@@ -130,12 +131,14 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         source_info.resolved_path = paramFile;
         source_info.resolved_name = FileUtils::strip_extension(paramFile);
     } else if (seq.find('T') != std::string::npos) {
+        // If user never provided a param file, and the sequence contains T, use DNA parameters.
         source_kind = SourceKind::BuiltinDNA;
         cache_key = "builtin:dna_Mathews2004";
 
         source_info.status = ParamStatus::Fallback;
         source_info.resolved_name = "Mathews 2004 (DNA)";
     } else if (FileUtils::file_exists(default_param_path())) {
+        // If no param file was provided, and the default RNA parameter file exists, use it.
         source_kind = SourceKind::DefaultRNAFile;
         cache_key = default_param_path();
         load_path = default_param_path();
@@ -145,6 +148,8 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         source_info.resolved_path = default_param_path();
         source_info.resolved_name = "Dirks & Pierce 2009";
     } else {
+        // If the default param path was not found, fall back to built-in Turner 2004 parameters.
+        // This will never fail since it's hardcoded into ViennaRNA.
         std::cout << WARNING
                   << " Default RNA parameter file not found, falling back to built-in Turner 2004 "
                      "parameters.\n";
@@ -197,7 +202,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
     md_param.set_source_info(source_info);
 
-    // ----- Always save cache -----
+    // ----- Save cache with the loaded parameters -----
     save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
 
     return md_param;

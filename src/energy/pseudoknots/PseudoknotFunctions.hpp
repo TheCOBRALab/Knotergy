@@ -30,14 +30,12 @@ class PseudoknotFunctions {
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
      * @param is_inf If the energy is infinite (distance between base pairs < 3)
-     * @param round Whether to round energy values (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
     [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
                                                   vrna_md_param& vp, const all_mod_params& mp,
-                                                  const pk_param& pkp, bool& is_inf,
-                                                  bool round = false);
+                                                  const pk_param& pkp, bool& is_inf);
 
    private:
     /**
@@ -63,15 +61,13 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param round Whether to round energy values.
      * @param is_inf Whether an infinite energy condition was encountered.
      * @return Total loop penalties in centicalories.
      */
     [[nodiscard]] static double loop_penalties(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp, const all_mod_params& mp,
-                                               const knotergy::pk_param& pkp, bool round,
-                                               bool& is_inf);
+                                               const knotergy::pk_param& pkp, bool& is_inf);
 
     /**
      * @brief Calculate stacking energy for base pairs in a pseudoknot band.
@@ -84,13 +80,12 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param round Whether to round the energy value.
      * @return Stacking energy with pseudoknot multiplier in centicalories.
      */
     [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
                                                 vrna_md_param& vp, const all_mod_params& mp,
-                                                const knotergy::pk_param& pkp, bool round);
+                                                const knotergy::pk_param& pkp);
 
     /**
      * @brief Calculate internal loop energy for base pairs in a pseudoknot band.
@@ -103,13 +98,12 @@ class PseudoknotFunctions {
      * @param processed_rna The processed RNA entry with structural information.
      * @param vp ViennaRNA model parameters.
      * @param pkp Pseudoknot parameters.
-     * @param round Whether to round the energy value.
      * @return Internal loop energy with pseudoknot multiplier in centicalories.
      */
     [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp, const knotergy::pk_param& pkp,
-                                                   bool round);
+                                                   vrna_md_param& vp,
+                                                   const knotergy::pk_param& pkp);
 
     /**
      * @brief Calculate multiloop energy nested between base pairs in a pseudoknot band.
@@ -125,6 +119,8 @@ class PseudoknotFunctions {
     [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
                                                     const ProcessedRNAEntry& processed_rna,
                                                     const knotergy::pk_param& pkp);
+
+    [[nodiscard]] static double round_energy(double energy, RoundMethod round);
 };
 
 }  // namespace knotergy

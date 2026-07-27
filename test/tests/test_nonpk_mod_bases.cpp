@@ -2,7 +2,7 @@
 
 namespace {
 
-const bool round = false;
+const int round = 0;
 
 std::tuple<double, double, double, double> pipeline(std::string sequence, std::string structure,
                                                     std::string param_file = turner_file,

@@ -217,6 +217,31 @@ Show all available options:
 
 ---
 
+### Pseudoknot energy rounding
+
+Use `-e` or `--round` to control rounding of **individual pseudoknot stacking and internal-loop energy contributions after their pseudoknot multipliers are applied**. Rounding occurs before these contributions are added to the total energy. Other energy terms are not affected.
+
+```bash
+./build/Knotergy -i input.fa -e        # Banker's rounding
+./build/Knotergy -i input.fa -e 2      # Round to nearest
+./build/Knotergy -i input.fa -e2       # Compact form
+./build/Knotergy -i input.fa --round 3
+```
+
+| Value | Method                                         |
+| ----: | ---------------------------------------------- |
+|   `0` | No rounding *(used by HotKnots)*               |
+|   `1` | Banker's rounding *(used by HFold and Knotty)* |
+|   `2` | Round to nearest integer                       |
+|   `3` | Round down (`floor`)                           |
+|   `4` | Round up (`ceil`)                              |
+|   `5` | Truncate toward zero                           |
+
+
+Without `-e`, no rounding is applied. Using `-e` without a value selects Banker's rounding.
+
+---
+
 ## Command-line options
 
 ### 🔧 General options
@@ -260,8 +285,9 @@ Show all available options:
 
 ### 🧪 Calculation options
 
-- `-e`, `--round`  
-  Round pseudoknot energies to integers. This matches the behavior of some predictors such as HFold and Knotty, which trade accuracy for speed. Knotergy itself does not gain performance from this option.
+* `-e`, `--round [0-5]`
+  Select how pseudoknot stacking and internal-loop energy contributions are rounded after applying their pseudoknot multipliers. Use `0` for no rounding, `1` for Banker's rounding, or `2`–`5` for the other supported methods. (default 0)
 
-- `-d`, `--dangle`  
+
+- `-d`, `--dangle [0-3]`  
   Dangle model to use (default: `2`)

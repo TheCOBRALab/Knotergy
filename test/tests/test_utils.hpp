@@ -22,13 +22,15 @@ const std::string pkp_file =
 const std::string mod_folder = knotergy::FileUtils::resolve_data_path("params/modified_bases");
 
 inline static double get_energy(std::string sequence, std::string structure, int dangle = 2,
-                                bool round = false, std::string param_file = turner_file,
+                                int round = 0, std::string param_file = turner_file,
                                 std::string pseudoknot_param_file = pkp_file,
                                 std::string mod_param_file = mod_folder) {
-    // Load parameters
+    knotergy::RoundMethod round_method =
+        static_cast<knotergy::RoundMethod>(round);  // Load parameters
     knotergy::vrna_md_param vp =
         knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
-    knotergy::pk_param pkp = knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file);
+    knotergy::pk_param pkp =
+        knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file, round_method);
     std::vector<knotergy::modified_base_param> mod_params =
         knotergy::ModParams::load_modified_energy_parameters(mod_param_file);
 
@@ -48,7 +50,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
     return energy.getEnergy();
 }
 
-inline static double get_energy(knotergy::RNAEntry rna, int dangle = 2, bool round = false,
+inline static double get_energy(knotergy::RNAEntry rna, int dangle = 2, int round = 0,
                                 std::string param_file = turner_file,
                                 std::string pseudoknot_param_file = pkp_file,
                                 std::string mod_param_file = mod_folder) {
@@ -59,6 +61,6 @@ inline static double get_energy(knotergy::RNAEntry rna, int dangle = 2, bool rou
 inline static double get_energy(std::string sequence, std::string structure,
                                 std::string param_file = turner_file) {
     const int dangle = 2;
-    const bool round = false;
+    const int round = 0;
     return get_energy(sequence, structure, dangle, round, param_file);
 }
