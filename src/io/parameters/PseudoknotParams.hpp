@@ -64,7 +64,7 @@ struct pk_param {
           pk_in_ext(-138),
           pk_in_mloop(1007),
           pk_in_pk(1500),
-          band(246),
+          band_penalty(246),
           unpaired_in_pk(6),
           cr_in_pk(96),
           pk_stack_x(0.89),
@@ -81,7 +81,7 @@ struct pk_param {
      * @param pk_ext Pseudoknot in exterior loop penalty.
      * @param pk_multi Pseudoknot in multiloop penalty.
      * @param pk_pk Pseudoknot in pseudoloop penalty.
-     * @param band_pen Band penalty.
+     * @param band Band penalty.
      * @param unpaired_pk Unpaired bases in pseudoknot penalty.
      * @param cr_in_pk_pen Closed region nested in pseudoknot penalty.
      * @param pk_stack_multiplier Stacked pair spanning band multiplier.
@@ -91,7 +91,7 @@ struct pk_param {
      * @param pk_mloop_unpaired_pen Unpaired bases in multiloop spanning band penalty.
      * @param round Rounding method to use.
      */
-    pk_param(const std::string& param_name, int pk_ext, int pk_multi, int pk_pk, int band_pen,
+    pk_param(const std::string& param_name, int pk_ext, int pk_multi, int pk_pk, int band,
              int unpaired_pk, int cr_in_pk_pen, double pk_stack_multiplier,
              double pk_internal_multiplier, int pk_mloop_init_pen, int pk_mloop_bp_pen,
              int pk_mloop_unpaired_pen, RoundMethod round_method = RoundMethod::None)
@@ -99,7 +99,7 @@ struct pk_param {
           pk_in_ext(pk_ext),
           pk_in_mloop(pk_multi),
           pk_in_pk(pk_pk),
-          band(band_pen),
+          band_penalty(band),
           unpaired_in_pk(unpaired_pk),
           cr_in_pk(cr_in_pk_pen),
           pk_stack_x(pk_stack_multiplier),
@@ -113,7 +113,7 @@ struct pk_param {
     const int pk_in_ext;          ///< Pseudoknot in exterior loop penalty.
     const int pk_in_mloop;        ///< Pseudoknot in multiloop penalty.
     const int pk_in_pk;           ///< Pseudoknot in pseudoloop penalty.
-    const int band;               ///< Band penalty.
+    const int band_penalty;       ///< Band penalty.
     const int unpaired_in_pk;     ///< Unpaired bases in pseudoknot penalty.
     const int cr_in_pk;           ///< Closed region nested in pseudoknot penalty.
     const double pk_stack_x;      ///< Stacked pair spanning band multiplier.
@@ -214,7 +214,7 @@ class PseudoknotParams {
 
         return pk_param(pk.value("name", std::string{"Nameless"}), pk.at("pk_in_ext").get<int>(),
                         pk.at("pk_in_mloop").get<int>(), pk.at("pk_in_pk").get<int>(),
-                        pk.at("band").get<int>(), pk.at("unpaired_in_pk").get<int>(),
+                        pk.at("band_penalty").get<int>(), pk.at("unpaired_in_pk").get<int>(),
                         pk.at("cr_in_pk").get<int>(), pk.at("pk_stack_x").get<double>(),
                         pk.at("pk_internal_x").get<double>(), pk.at("pk_mloop_init").get<int>(),
                         pk.at("pk_mloop_bp").get<int>(), pk.at("pk_mloop_unpaired").get<int>(),

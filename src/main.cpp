@@ -106,7 +106,7 @@ int run_knotergy(int argc, char** argv) {
             vienna_param_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-p") {
-            std::cerr << "\033[1;33m[WARNING]\033[0m " << "-p is deprecated. " << "Use -P instead. "
+            std::cerr << WARNING << "-p is deprecated. " << "Use -P instead. "
                       << "-p will stop working on full release." << '\n';
 
             vienna_param_file = get_trimmed_arg(i, argc, argv);
