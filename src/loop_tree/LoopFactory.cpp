@@ -135,8 +135,8 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
     for (const std::unique_ptr<LoopNode>& child_node : node.children) {
         if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
             ++node.number_of_withinband_children;
-        } else if (child_node->pseudo_type == PseudoNestedType::Nested) {
-            ++node.number_of_nested_children;
+        } else if (child_node->pseudo_type == PseudoNestedType::OutsideBandIntervals) {
+            ++node.number_of_outsideband_children;
         }
     }
 }
@@ -164,7 +164,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     // Non-linear method is preferred when it has less operations than the linear method.
     if (linear_complexity <= non_linear_complexity) {
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-            child_node->pseudo_type = PseudoNestedType::Nested;
+            child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
         }
         for (const Band& band : node.bands) {
             if (band.get_number_of_children() == 0) continue;
@@ -191,7 +191,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
             if (within_band_start_idx.count(child_node->begin)) {
                 child_node->pseudo_type = PseudoNestedType::WithinBand;
             } else {
-                child_node->pseudo_type = PseudoNestedType::Nested;
+                child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
             }
         }
     }

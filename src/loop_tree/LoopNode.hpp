@@ -23,7 +23,7 @@ enum class LoopType { Unknown, Stack, Hairpin, Internal, Multibranch, External, 
  * Nested      (((..(...).[[[...)))]]]
  * This hairpin     ^   ^ is nested inside a band
  */
-enum class PseudoNestedType { None, WithinBand, Nested };
+enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
 
 [[nodiscard]] static inline const char* loop_name(LoopType t);
 
@@ -55,10 +55,10 @@ struct LoopNode {
     LoopType loop_type = LoopType::Unknown;                 ///< Type of this loop.
     PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
     int exclusive_unpaired_bases_count = 0;                 ///< Unpaired bases only in this loop.
-    int total_unpaired_bases_count = 0;     ///< Unpaired bases in loop + nested children.
-    int number_of_withinband_children = 0;  ///< Count of children within pseudoknot bands.
-    int number_of_nested_children = 0;      ///< Count of nested children.
-    LoopNode* parent = nullptr;             ///< Parent loop node (weak to avoid cycles).
+    int total_unpaired_bases_count = 0;      ///< Unpaired bases in loop + nested children.
+    int number_of_withinband_children = 0;   ///< Count of children within pseudoknot bands.
+    int number_of_outsideband_children = 0;  ///< Count of nested children.
+    LoopNode* parent = nullptr;              ///< Parent loop node (weak to avoid cycles).
     std::vector<std::unique_ptr<LoopNode>> children;  ///< Child loop nodes. (sorted by start)
     std::vector<Band> bands;             ///< Pseudoknot bands (empty if not pseudoknotted).
     int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
@@ -147,16 +147,16 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
 
     os << "  pseudo_type: ";
     switch (node.pseudo_type) {
-        case PseudoNestedType::None:       os << "None"; break;
-        case PseudoNestedType::WithinBand: os << "WithinBand"; break;
-        case PseudoNestedType::Nested:     os << "Nested"; break;
+        case PseudoNestedType::None:                 os << "None"; break;
+        case PseudoNestedType::WithinBand:           os << "WithinBand"; break;
+        case PseudoNestedType::OutsideBandIntervals: os << "OutsideBandIntervals"; break;
     }
     os << "\n";
 
     os << "  exclusive_unpaired_bases_count: " << node.exclusive_unpaired_bases_count << "\n";
     os << "  total_unpaired_bases_count: " << node.total_unpaired_bases_count << "\n";
     os << "  number_of_children_inside_band: " << node.number_of_withinband_children << "\n";
-    os << "  number_of_nested_children: " << node.number_of_nested_children << "\n";
+    os << "  number_of_outsideband_children: " << node.number_of_outsideband_children << "\n";
     os << "  number_of_bands: " << node.bands.size() << "\n";
     os << "  bands:\n";
     for (const auto& band : node.bands) {

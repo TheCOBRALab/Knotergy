@@ -33,7 +33,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     energy += init_penalty(node, pkp);
     energy += pkp.band_penalty * static_cast<int>(node.bands.size());
     energy += pkp.unpaired_in_pk * unpaired;
-    energy += pkp.cr_in_pk * node.number_of_nested_children;
+    energy += pkp.cr_in_pk * node.number_of_outsideband_children;
     energy += loop_penalties(node, processed_rna, vp, mp, pkp, is_inf);
 
     // Children that are nested within a band are considered to be in a pseudoknotted multiloop,
