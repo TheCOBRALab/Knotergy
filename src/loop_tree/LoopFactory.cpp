@@ -162,7 +162,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     size_t non_linear_complexity = node.children.size() * node.bands.size();
 
     // Non-linear method is preferred when it has less operations than the linear method.
-    if (linear_complexity <= non_linear_complexity) {
+    if (non_linear_complexity <= linear_complexity) {
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {
             child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
         }
