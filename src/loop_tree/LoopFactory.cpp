@@ -165,15 +165,14 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
     if (non_linear_complexity <= linear_complexity) {
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {
             child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
-        }
-        for (const Band& band : node.bands) {
-            if (band.get_number_of_children() == 0) continue;
-            for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-                // If start index is in the band, by definition, the end index must also be in the
-                // band.
-                if (child_node && band.contains(child_node->begin)) {
+
+            for (const Band& band : node.bands) {
+                if (band.get_number_of_children() == 0) continue;
+
+                if (band.contains(child_node->begin)) {
                     child_node->pseudo_type = PseudoNestedType::WithinBand;
-                };
+                    break;
+                }
             }
         }
     } else {  // Linear method is preferred when it has less operations than the non-linear method.
@@ -188,6 +187,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
             }
         }
         for (const std::unique_ptr<LoopNode>& child_node : node.children) {
+            if (!child_node) continue;
             if (within_band_start_idx.count(child_node->begin)) {
                 child_node->pseudo_type = PseudoNestedType::WithinBand;
             } else {
