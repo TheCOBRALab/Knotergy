@@ -159,7 +159,7 @@ class ModBaseUtils {
 
     // THIS HURTS, BUT I WILL FIX IT LATER
     [[nodiscard]] static int get_dangle5_mod_energy(
-        size_t i, size_t j, std::string sequence, const std::vector<std::string_view>& mod_sequence,
+        size_t i, size_t j, const std::string& sequence, const std::vector<std::string_view>& mod_sequence,
         vrna_md_param& vp, const all_mod_params& mp, bool is_closing = false) {
         if (i > 0) {
             unsigned int type;
