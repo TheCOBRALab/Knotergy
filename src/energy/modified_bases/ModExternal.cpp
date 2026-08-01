@@ -42,12 +42,13 @@ ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const Proc
 int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
                                             const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                             const all_mod_params& mp) {
-    int energy = ViennaFunctions::external_energy(children, pRNA, vp);
-
     if (vp.md.dangles != 0 && vp.md.dangles != 2) {
         THROW_ERROR("external_dangle_0_2_energy should only be called when dangles == 0 or 2");
     }
-    for (const auto& child : children) {
+
+    int energy = ViennaFunctions::external_energy(children, pRNA, vp);
+
+    for (const std::unique_ptr<LoopNode>& child : children) {
         unsigned int type = ViennaUtils::get_pair_type(pRNA.get_sequence()[child->begin],
                                                        pRNA.get_sequence()[child->end], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);

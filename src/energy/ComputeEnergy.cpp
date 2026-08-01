@@ -3,8 +3,8 @@
 #include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
+#include "energy/modified_bases/ModMultiloop.hpp"
 #include "energy/modified_bases/ModStack.hpp"
-#include "energy/modified_bases/ModifiedBasesFunctions.hpp"
 
 namespace knotergy {
 
@@ -64,8 +64,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
 
         case LoopType::Multibranch:
             if (has_modified_bases_) {
-                node_energy = ModifiedBasesFunctions::find_mod_multiloop_energy(
-                    node, pRNA_, mod_sequence_, vp_, mp_);
+                node_energy = ModMultiloop::find_mod_multiloop_energy(node, pRNA_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::multibranch_energy(node, pRNA_, vp_);
             }
