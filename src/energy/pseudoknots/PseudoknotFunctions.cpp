@@ -1,5 +1,8 @@
 #include "PseudoknotFunctions.hpp"
 
+#include "energy/modified_bases/ModInternal.hpp"
+#include "energy/modified_bases/ModStack.hpp"
+
 #include <cmath>
 #include <iostream>
 
@@ -35,17 +38,6 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     energy += pkp.unpaired_in_pk * unpaired;
     energy += pkp.cr_in_pk * node.number_of_outsideband_children;
     energy += loop_penalties(node, processed_rna, vp, mp, pkp, is_inf);
-
-    // Children that are nested within a band are considered to be in a pseudoknotted multiloop,
-    // so we multiply the number of children within bands by the multiloop base pair penalty.
-    energy += node.number_of_withinband_children * pkp.pk_mloop_bp;
-
-    // Personal note: I find it dumb that the number of children is what used for base pair penalty
-    // If a child is a pseudoknot, it can have multiple base pairs.
-    // Like an H-type pseudoknot has 2 bands. Why tf does it only get 1 base pair penalty?
-    // But this is how the original HotKnotsV2 implementation did it. HFold and other programs
-    // also use the same convention, so I guess we have to do it too for consistency.
-    // But if you're reading this, maybe this could be a paper? idk.
 
     return energy;
 }
@@ -106,10 +98,10 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
             const BasePair& next_bp = bps[idx + 1];
 
             if (bp.is_stack(next_bp)) {
-                energy += pk_stack_energy(bp, next_bp, processed_rna, vp, mp, pkp);
+                energy += pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else if (bp.children.empty()) {
                 // if no nested structure between two base pairs of a band, it's an internal loop
-                energy += pk_internal_energy(bp, next_bp, processed_rna, vp, pkp);
+                energy += pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else {
                 energy += pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
             }
@@ -121,26 +113,30 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
 
 double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                             const ProcessedRNAEntry& processed_rna,
-                                            vrna_md_param& vp, const all_mod_params& mp,
-                                            const knotergy::pk_param& pkp) {
+                                            vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                            const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
 
     int stack_energy = processed_rna.has_modified_bases()
                            ? ModStack::find_mod_stack_energy(bp, next_bp, processed_rna, vp, mp)
                            : ViennaFunctions::stack_energy(bp, next_bp, sequence, vp);
 
-    double stack_penalty = stack_energy * pkp.pk_stack_x;
-    return round_energy(stack_penalty, pkp.round);
+    double stack_pk_energy = stack_energy * pkp.pk_stack_x;
+    return round_energy(stack_pk_energy, pkp.round);
 }
 
 double PseudoknotFunctions::pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp, const knotergy::pk_param& pkp) {
+                                               vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                               const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
-    double internal_penalty =
-        ViennaFunctions::internal_loop_energy(bp, next_bp, sequence, vp) * pkp.pk_internal_x;
+    int internal_energy =
+        processed_rna.has_modified_bases()
+            ? ModInternal::find_mod_internal_energy(bp, next_bp, processed_rna, vp, mp)
+            : ViennaFunctions::internal_loop_energy(bp, next_bp, sequence, vp);
+    double internal_pk_energy = internal_energy * pkp.pk_internal_x;
 
-    return round_energy(internal_penalty, pkp.round);
+    return round_energy(internal_pk_energy, pkp.round);
 }
 
 double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
@@ -149,8 +145,16 @@ double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp, const BasePa
     double multiloop_penalty = pkp.pk_mloop_init;
 
     // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty
-    // We add the child base pairs at a different part of the energy calculation
-    multiloop_penalty += pkp.pk_mloop_bp * 2;
+    // plus the number of children * bp_penalty for each child nested within the multiloop
+
+    // Personal note: I find it weird that the number of children is what used
+    // for base pair penalty. If a child is a pseudoknot, it can have multiple base pairs.
+    // Like an H-type pseudoknot has 2 bands. Why does it only get 1 base pair penalty?
+    // But this is how the original HotKnotsV2 implementation did it. HFold and other programs
+    // also use the same convention, so we have to do it too for consistency.
+    // But if you're reading this, maybe this could be a paper? idk.
+    multiloop_penalty +=
+        pkp.pk_mloop_bp * 2 + static_cast<int>(bp.children.size()) * pkp.pk_mloop_bp;
 
     // Get unpaired bases between the two base pairs of the multiloop
     // then subtract any unpaired bases that are part of children
@@ -161,8 +165,7 @@ double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp, const BasePa
     }
 
     // get unpaired penalty
-    int pk_mloop_unpaired_energy = unpaired * pkp.pk_mloop_unpaired;
-    multiloop_penalty += pk_mloop_unpaired_energy;
+    multiloop_penalty += unpaired * pkp.pk_mloop_unpaired;
 
     return multiloop_penalty;
 }

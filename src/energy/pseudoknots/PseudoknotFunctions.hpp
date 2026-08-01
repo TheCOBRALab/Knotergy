@@ -1,6 +1,5 @@
 #pragma once
 
-#include "energy/modified_bases/ModStack.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
@@ -83,8 +82,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
-                                                vrna_md_param& vp, const all_mod_params& mp,
-                                                const knotergy::pk_param& pkp);
+                                                vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                                const all_mod_params& mp);
 
     /**
      * @brief Calculate internal loop energy for base pairs in a pseudoknot band.
@@ -101,8 +100,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp,
-                                                   const knotergy::pk_param& pkp);
+                                                   vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                                   const all_mod_params& mp);
 
     /**
      * @brief Calculate multiloop energy nested between base pairs in a pseudoknot band.

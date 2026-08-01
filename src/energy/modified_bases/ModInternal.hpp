@@ -10,6 +10,9 @@ class ModInternal {
                                         const std::vector<std::string_view>& mod_sequence,
                                         const std::string& sequence, vrna_md_param& vp,
                                         const all_mod_params& mp);
+    static int find_mod_internal_energy(const BasePair& bp, const BasePair& next_bp,
+                                        const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
+                                        const all_mod_params& mp);
 };
 
 }  // namespace knotergy

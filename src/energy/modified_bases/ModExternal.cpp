@@ -45,12 +45,12 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<Lo
     if (vp.md.dangles != 0 && vp.md.dangles != 2) {
         THROW_ERROR("external_dangle_0_2_energy should only be called when dangles == 0 or 2");
     }
-
+    const std::string& sequence = pRNA.get_sequence();
     int energy = ViennaFunctions::external_energy(children, pRNA, vp);
 
     for (const std::unique_ptr<LoopNode>& child : children) {
-        unsigned int type = ViennaUtils::get_pair_type(pRNA.get_sequence()[child->begin],
-                                                       pRNA.get_sequence()[child->end], vp.md);
+        unsigned int type =
+            ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
         ModDiffs diffs = ModExternal::get_external_child_diffs(*child, pRNA, vp, mp);
 

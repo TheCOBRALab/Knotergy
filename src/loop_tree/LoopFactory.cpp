@@ -129,12 +129,22 @@ LoopType LoopFactory::find_loop_type(const LoopNode& node) {
 
 void LoopFactory::pseudo_nested_check(LoopNode& node) {
     if (node.loop_type != LoopType::Pseudoknot) return;
+    if (node.children.empty()) return;
 
-    for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-        if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
-            ++node.number_of_withinband_children;
-        } else if (child_node->pseudo_type == PseudoNestedType::OutsideBandIntervals) {
-            ++node.number_of_outsideband_children;
+    // Count the number of children that are within bands and outside bands.
+    if (node.bands.size() <= node.children.size()) {
+        for (const Band& band : node.bands) {
+            node.number_of_withinband_children += band.get_number_of_children();
+        }
+        int total_children = static_cast<int>(node.children.size());
+        node.number_of_outsideband_children = total_children - node.number_of_withinband_children;
+    } else {
+        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
+            if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
+                ++node.number_of_withinband_children;
+            } else if (child_node->pseudo_type == PseudoNestedType::OutsideBandIntervals) {
+                ++node.number_of_outsideband_children;
+            }
         }
     }
 }
