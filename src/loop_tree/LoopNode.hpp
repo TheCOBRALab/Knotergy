@@ -65,16 +65,6 @@ struct LoopNode {
     double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
     bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
 
-    // ---------------- Vienna-esque values ---------------
-    unsigned int pair_type;
-    unsigned int r_pair_type;  // reverse pair type
-    int i_encoded = -1;
-    int j_encoded = -1;
-    int n5d_inner = -1;
-    int n3d_inner = -1;
-    int n5d_outer = -1;
-    int n3d_outer = -1;
-
     /**
      * @brief Generate a formatted string for energy breakdown output.
      *

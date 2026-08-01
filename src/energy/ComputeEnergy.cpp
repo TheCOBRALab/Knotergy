@@ -39,7 +39,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_,
                     mod_sequence_, vp_, mp_);
             } else {
-                node_energy = ViennaFunctions::stack_energy(node, vp_);
+                node_energy = ViennaFunctions::stack_energy(node, sequence_, vp_);
             }
             break;
 
@@ -48,7 +48,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
                 node_energy = ModHairpin::find_mod_hairpin_energy(node, pRNA_, mod_sequence_, vp_,
                                                                   mp_, is_inf);
             } else {
-                node_energy = ViennaFunctions::hairpin_energy(node, pRNA_, is_inf, vp_);
+                node_energy = ViennaFunctions::hairpin_energy(node, sequence_, is_inf, vp_);
             }
             break;
 
@@ -58,7 +58,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
                     node.begin, node.end, node.children[0]->begin, node.children[0]->end,
                     mod_sequence_, sequence_, vp_, mp_);
             } else {
-                node_energy = ViennaFunctions::internal_loop_energy(node, vp_);
+                node_energy = ViennaFunctions::internal_loop_energy(node, sequence_, vp_);
             }
             break;
 

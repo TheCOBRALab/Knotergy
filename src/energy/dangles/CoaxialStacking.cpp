@@ -25,7 +25,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     }
 
     const size_t dangle_pos = stem.begin - 1;
-    const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos], &vp.md);
+    const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos]);
 
     int ld5;
     if (pRNA.has_modified_bases()) {
@@ -69,22 +69,40 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
 
+    const std::string& sequence = pRNA.get_sequence();
+
     for (const auto& child : node.children) {
         if (child->loop_type == LoopType::Pseudoknot) {
             continue;
         }
-        int dangle5 = child->n5d_outer >= 0 ? vp.p->dangle5[child->pair_type][child->n5d_outer] : 0;
-        int dangle3 = child->n3d_outer >= 0 ? vp.p->dangle3[child->pair_type][child->n3d_outer] : 0;
-        stems.push_back(MultiloopStem{child->begin, child->end, child->end, child->pair_type,
-                                      dangle5, dangle3});
+
+        auto [n5d_outer, n3d_outer] =
+            ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
+
+        // Child stems use their normal pair orientation.
+        unsigned int pair_type =
+            ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
+
+        int dangle5 = n5d_outer >= 0 ? vp.p->dangle5[pair_type][n5d_outer] : 0;
+
+        int dangle3 = n3d_outer >= 0 ? vp.p->dangle3[pair_type][n3d_outer] : 0;
+
+        stems.push_back(
+            MultiloopStem{child->begin, child->end, child->end, pair_type, dangle5, dangle3});
     }
 
-    // The closing pair is encountered from its 3' side while walking the multiloop.
-    // n3d_inner and n5d_inner are reversed because the closing pair is flipped in orientation
-    int dangle5_closing = node.n3d_inner >= 0 ? vp.p->dangle5[node.r_pair_type][node.n3d_inner] : 0;
-    int dangle3_closing = node.n5d_inner >= 0 ? vp.p->dangle3[node.r_pair_type][node.n5d_inner] : 0;
-    stems.push_back(MultiloopStem{node.end, node.begin, node.begin, node.r_pair_type,
-                                  dangle5_closing, dangle3_closing});
+    // The multiloop closing pair is encountered in reverse orientation.
+    auto [n5d_inner, n3d_inner] =
+        ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
+
+    unsigned int r_pair_type =
+        ViennaUtils::reverse_pair_type(sequence[node.begin], sequence[node.end], vp.md);
+
+    int dangle5_closing = n3d_inner >= 0 ? vp.p->dangle5[r_pair_type][n3d_inner] : 0;
+    int dangle3_closing = n5d_inner >= 0 ? vp.p->dangle3[r_pair_type][n5d_inner] : 0;
+
+    stems.push_back(MultiloopStem{node.end, node.begin, node.begin, r_pair_type, dangle5_closing,
+                                  dangle3_closing});
 
     MultiloopStem& closing_stem = stems.back();
     closing_stem.initial_ld5 = compute_initial_ld5_for_d3(closing_stem, pRNA, vp, mp);
@@ -141,7 +159,7 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
         if (begin > 0) {
             curr_dang5 =
                 stem.dangle5;  // vp.p->dangle5[current_type][ViennaUtils::fast_nucleotide_encode(sequence[begin
-                               // - 1], &vp.md)];
+                               // - 1])];
             curr_dang5 = std::min(curr_dang5, 0);  // don't apply dangle bonus if it's positive
                                                    // (dangles should never be a penalty)
         }

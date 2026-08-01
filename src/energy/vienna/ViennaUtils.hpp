@@ -27,62 +27,16 @@ class ViennaUtils {
     ~ViennaUtils() = default;
 
     /**
-     * @brief Populate ViennaRNA encoding fields for a LoopNode based on its position and the RNA
-     * sequence.
-     *
-     * This function encodes the nucleotides at the loop boundaries and their adjacent positions
-     * according to ViennaRNA's encoding scheme. It also determines the pair type and reverse pair
-     * type for the loop's closing pair. The encoding of dangling nucleotides is determined based on
-     * ViennaRNA's dangle settings and whether adjacent positions are paired or unpaired.
-     *
-     * @param node The LoopNode to populate with ViennaRNA encodings.
-     * @param pRNA The ProcessedRNAEntry containing the RNA sequence and pairing information.
-     * @param vp The ViennaRNA model parameters for encoding.
-     */
-    static void populate_node_encodings(LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                        vrna_md_param& vp) {
-        if (node.loop_type == LoopType::External) return;  // Doesn't have pairings
-        const std::string& sequence = pRNA.get_sequence();
-        const std::vector<size_t>& pair_table = pRNA.get_pair_table();
-        vrna_md_s& md = vp.md;
-
-        size_t i = node.begin;
-        size_t j = node.end;
-        char ni = sequence[i];  // nucleotide i
-        char nj = sequence[j];  // nucleotide j
-
-        // Encode the pair's nucleotides
-        std::tie(node.i_encoded, node.j_encoded) = encode_nucleotides(ni, nj, md);
-
-        // Encode the pair type and reverse pair type
-        node.pair_type = vrna_get_ptype_md(node.i_encoded, node.j_encoded, &md);
-        node.r_pair_type = reverse_pair_type(node.pair_type, md);
-
-        // NOTE: Not using this file's helper functions since encoding nucleotides multiple times
-        // is surpiseingly expensive.
-
-        // Encode dangling nucleotides based on ViennaRNA's dangle settings
-        std::tie(node.n5d_outer, node.n3d_outer) =
-            encode_outer_dangles(i, j, sequence, pair_table, md);
-
-        // Stacked pairs don't have inner dangles even in dangle mode 2
-        if (node.loop_type != LoopType::Stack) {
-            std::tie(node.n5d_inner, node.n3d_inner) =
-                encode_inner_dangles(i, j, sequence, pair_table, md);
-        }
-    }
-
-    /**
      * @brief Encode two nucleotides for ViennaRNA functions.
      *
      * @param i First nucleotide character.
      * @param j Second nucleotide character.
+     * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded_i, encoded_j) in ViennaRNA format.
      */
-    [[nodiscard]] static std::tuple<int, int> encode_nucleotides(const char& i, const char& j,
-                                                                 vrna_md_t& md) {
-        int encoded_i = fast_nucleotide_encode(i, &md);
-        int encoded_j = fast_nucleotide_encode(j, &md);
+    [[nodiscard]] static std::tuple<int, int> encode_nucleotides(const char& i, const char& j) {
+        int encoded_i = fast_nucleotide_encode(i);
+        int encoded_j = fast_nucleotide_encode(j);
         return std::make_tuple(encoded_i, encoded_j);
     }
 
@@ -104,8 +58,8 @@ class ViennaUtils {
         bool has_3d_dangle_out = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
                                                              (md.dangles != 1 && md.dangles != 3));
 
-        int n5d_dangle = has_5d_dangle_out ? fast_nucleotide_encode(sequence[i - 1], &md) : -1;
-        int n3d_dangle = has_3d_dangle_out ? fast_nucleotide_encode(sequence[j + 1], &md) : -1;
+        int n5d_dangle = has_5d_dangle_out ? fast_nucleotide_encode(sequence[i - 1]) : -1;
+        int n3d_dangle = has_3d_dangle_out ? fast_nucleotide_encode(sequence[j + 1]) : -1;
         return std::make_tuple(n5d_dangle, n3d_dangle);
     }
 
@@ -142,8 +96,8 @@ class ViennaUtils {
         bool has_3d_dangle_in =
             (pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
 
-        int encoded_i = has_5d_dangle_in ? fast_nucleotide_encode(sequence[i + 1], &md) : -1;
-        int encoded_j = has_3d_dangle_in ? fast_nucleotide_encode(sequence[j - 1], &md) : -1;
+        int encoded_i = has_5d_dangle_in ? fast_nucleotide_encode(sequence[i + 1]) : -1;
+        int encoded_j = has_3d_dangle_in ? fast_nucleotide_encode(sequence[j - 1]) : -1;
         return std::make_tuple(encoded_i, encoded_j);
     }
 
@@ -170,7 +124,7 @@ class ViennaUtils {
      * @return ViennaRNA pair type identifier (0 for non-canonical pairs).
      */
     [[nodiscard]] static unsigned int get_pair_type(const char& i, const char& j, vrna_md_t& md) {
-        auto [encoded_i, encoded_j] = encode_nucleotides(i, j, md);
+        auto [encoded_i, encoded_j] = encode_nucleotides(i, j);
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
     }
 
@@ -199,17 +153,10 @@ class ViennaUtils {
     /**
      * @brief A faster version of ViennaRNA's vrna_nucleotide_encode.
      *
-     * @param c The nucleotide character to encode.
-     * @param md The ViennaRNA model details.
+     * @param c The nucleotide character to encode.s.
      * @return The encoded nucleotide.
      */
-    [[nodiscard]] static constexpr int fast_nucleotide_encode(char c, const vrna_md_t* md) {
-        const unsigned char upper = static_cast<unsigned char>(c) & 0xDFu;
-
-        if (md->energy_set > 0) {
-            return static_cast<int>(upper) - 'A' + 1;
-        }
-
+    [[nodiscard]] static constexpr int fast_nucleotide_encode(char c) {
         switch (c) {
             case 'A': return 1;
             case 'C': return 2;

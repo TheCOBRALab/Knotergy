@@ -42,7 +42,16 @@ class ViennaFunctions {
     [[nodiscard]] static int stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                                           const std::string& sequence, vrna_md_param& vp);
 
-    [[nodiscard]] static int stack_energy(const LoopNode& node, vrna_md_param& vp);
+    /**
+     * @brief Calculate stacking energy for two consecutive base pairs.
+     *
+     * @param node The loop node representing the stacking pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param vp The ViennaRNA model parameters.
+     * @return Stacking energy in centicalories.
+     */
+    [[nodiscard]] static int stack_energy(const LoopNode& node, const std::string& sequence,
+                                          vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for two consecutive base pairs.
@@ -67,7 +76,15 @@ class ViennaFunctions {
     [[nodiscard]] static int hairpin_energy(size_t i, size_t j, const std::string& sequence,
                                             bool& is_inf, vrna_md_param& vp);
 
-    [[nodiscard]] static int hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+    /**
+     * @brief Calculate hairpin loop energy.
+     *
+     * @param node The loop node representing the hairpin loop.
+     * @param sequence The RNA nucleotide sequence.
+     * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
+     * @return Hairpin loop energy in centicalories.
+     */
+    [[nodiscard]] static int hairpin_energy(const LoopNode& node, const std::string& sequence,
                                             bool& is_inf, vrna_md_param& vp);
 
     /**
@@ -94,7 +111,8 @@ class ViennaFunctions {
     [[nodiscard]] static int internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,
                                                   const std::string& sequence, vrna_md_param& vp);
 
-    [[nodiscard]] static int internal_loop_energy(const LoopNode& node, vrna_md_param& vp);
+    [[nodiscard]] static int internal_loop_energy(const LoopNode& node, const std::string& sequence,
+                                                  vrna_md_param& vp);
 
     /**
      * @brief Calculate internal loop or bulge energy.

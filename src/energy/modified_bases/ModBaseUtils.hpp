@@ -166,7 +166,7 @@ class ModBaseUtils {
             int dangle_encoding;
             if (is_closing) {
                 type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
-                dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
+                dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);
                 std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
                 std::vector<std::string_view> unique_mod_bases =
                     ModBaseUtils::unique_modified_bases_at_indices({j, i, j - 1}, mod_sequence);
@@ -177,7 +177,7 @@ class ModBaseUtils {
             std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
             std::vector<std::string_view> unique_mod_bases =
                 ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);
-            dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
+            dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
             return get_mod_energy(key, unique_mod_bases, mp, vp.p->dangle5[type][dangle_encoding],
                                   ModLookup::Dangle5);
         } else {

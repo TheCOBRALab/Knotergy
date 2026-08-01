@@ -80,8 +80,6 @@ void LoopFactory::populate_node(LoopNode& node) {
         node.total_number_of_base_pairs = count_total_base_pairs(node);
         label_pseudonested_children(node);
         pseudo_nested_check(node);
-    } else {
-        ViennaUtils::populate_node_encodings(node, pRNA_, vp_);
     }
 }
 

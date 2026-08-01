@@ -17,8 +17,10 @@ int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
     return vp.p->stack[type][child_type];
 }
 
-int ViennaFunctions::stack_energy(const LoopNode& node, vrna_md_param& vp) {
-    return vp.p->stack[node.pair_type][node.children[0]->r_pair_type];
+int ViennaFunctions::stack_energy(const LoopNode& node, const std::string& sequence,
+                                  vrna_md_param& vp) {
+    return stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end,
+                        sequence, vp);
 }
 
 // Helper function for stack_energy that takes BasePair objects instead of indices
@@ -47,8 +49,8 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     }
 
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);
-    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);
+    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
+    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);
 
     // If loop size < 7, you MUST pass the loop sequence substring
     // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
@@ -62,35 +64,9 @@ int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& seque
     return vrna_E_hairpin(size, pair_type, si1, sj1, loop_seq, vp.p);
 }
 
-int ViennaFunctions::hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                    bool& is_inf, vrna_md_param& vp) {
-    const std::string& sequence = pRNA.get_sequence();
-
-    size_t i = node.begin;
-    size_t j = node.end;
-
-    // loop size
-    unsigned int size = static_cast<unsigned int>(node.end - node.begin - 1);
-
-    // Max size for hairpin loop is 30 in ViennaRNA
-    if (size <= 30 && vp.p->hairpin[size] == INF) {
-        std::cerr
-            << "Warning: Hairpin loop size is too small (usually < 3). Infinite Energy. Pairing: "
-            << sequence[i] << "-" << sequence[j] << " i: " << i << ", j: " << j << std::endl;
-        is_inf = true;
-        return INF;
-    }
-
-    // If loop size < 7, you MUST pass the loop sequence substring
-    // https://github.com/ViennaRNA/ViennaRNA/blob/219394580aec203a9d6f0d5450021e22642d5a83/src/ViennaRNA/eval/hairpin.h#L78C1-L81C94
-    const char* loop_seq = nullptr;
-    std::string loop_subseq;
-    if (size < 7) {
-        loop_subseq = sequence.substr(i, size + 2);  // length == size
-        loop_seq = loop_subseq.c_str();              // temporary c-string
-    }
-
-    return vrna_E_hairpin(size, node.pair_type, node.n5d_inner, node.n3d_inner, loop_seq, vp.p);
+int ViennaFunctions::hairpin_energy(const LoopNode& node, const std::string& sequence, bool& is_inf,
+                                    vrna_md_param& vp) {
+    return hairpin_energy(node.begin, node.end, sequence, is_inf, vp);
 }
 
 int ViennaFunctions::hairpin_energy(const BasePair& pair, const std::string& sequence, bool& is_inf,
@@ -111,29 +87,17 @@ int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t 
     unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
     unsigned int type1 = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int type2 = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
-    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1], &vp.md);   // 5' nt of closing
-    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1], &vp.md);   // 3' nt of closing
-    int sp1 = ViennaUtils::fast_nucleotide_encode(sequence[ci - 1], &vp.md);  // 5' nt of child
-    int sq1 = ViennaUtils::fast_nucleotide_encode(sequence[cj + 1], &vp.md);  // 3' nt of child
+    int si1 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);   // 5' nt of closing
+    int sj1 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);   // 3' nt of closing
+    int sp1 = ViennaUtils::fast_nucleotide_encode(sequence[ci - 1]);  // 5' nt of child
+    int sq1 = ViennaUtils::fast_nucleotide_encode(sequence[cj + 1]);  // 3' nt of child
     return vrna_E_internal(n1, n2, type1, type2, si1, sj1, sp1, sq1, vp.p);
 }
 
-int ViennaFunctions::internal_loop_energy(const LoopNode& node, vrna_md_param& vp) {
-    size_t i = node.begin;
-    size_t j = node.end;
-    LoopNode* child = node.children[0].get();
-    size_t ci = child->begin;
-    size_t cj = child->end;
-    unsigned int type = node.pair_type;
-    unsigned int rc_type = child->r_pair_type;
-    int si1 = node.n5d_inner;
-    int sj1 = node.n3d_inner;
-    int sp1 = child->n5d_outer;
-    int sq1 = child->n3d_outer;
-
-    unsigned int n1 = static_cast<unsigned int>(ci - i - 1);  // unpaired bases 5' side
-    unsigned int n2 = static_cast<unsigned int>(j - cj - 1);  // unpaired bases 3' side
-    return vrna_E_internal(n1, n2, type, rc_type, si1, sj1, sp1, sq1, vp.p);
+int ViennaFunctions::internal_loop_energy(const LoopNode& node, const std::string& sequence,
+                                          vrna_md_param& vp) {
+    return internal_loop_energy(node.begin, node.end, node.children[0]->begin,
+                                node.children[0]->end, sequence, vp);
 }
 
 int ViennaFunctions::internal_loop_energy(BasePair pair, BasePair child,
@@ -158,15 +122,28 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
 
     int energy = penalties;
 
+    const std::string& sequence = pRNA.get_sequence();
     // ------------------ Closing Pair Energy ------------------
-    energy += vrna_E_multibranch_stem(node.r_pair_type, node.n3d_inner, node.n5d_inner, vp.p);
+    unsigned int pair_type =
+        ViennaUtils::reverse_pair_type(sequence[node.begin], sequence[node.end], vp.md);
+    auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
+
+    energy += vrna_E_multibranch_stem(pair_type, n3d, n5d, vp.p);
 
     // ------------------ Child Stems Energy ------------------
     for (const std::unique_ptr<LoopNode>& child : node.children) {
         if (child->loop_type == LoopType::Pseudoknot) continue;
-        int n5d_outer = vp.md.dangles != 0 ? child->n5d_outer : -1;
-        int n3d_outer = vp.md.dangles != 0 ? child->n3d_outer : -1;
-        energy += vrna_E_multibranch_stem(child->pair_type, n5d_outer, n3d_outer, vp.p);
+
+        size_t ci = child->begin;
+        size_t cj = child->end;
+        unsigned int c_pair_type =
+            ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
+        auto [n5d_outer, n3d_outer] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
+
+        n5d_outer = vp.md.dangles != 0 ? n5d_outer : -1;
+        n3d_outer = vp.md.dangles != 0 ? n3d_outer : -1;
+
+        energy += vrna_E_multibranch_stem(c_pair_type, n5d_outer, n3d_outer, vp.p);
     }
 
     return energy;
@@ -179,15 +156,21 @@ int ViennaFunctions::external_energy(const std::vector<std::unique_ptr<LoopNode>
         return Dangle1::get_external_dangle_1(children, pRNA, vp);
     }
 
+    const std::string& sequence = pRNA.get_sequence();
+
     // ------------------ No dangles or dangle type 2 ------------------
     int energy = 0;
     for (const std::unique_ptr<LoopNode>& child : children) {
         if (child->loop_type == LoopType::Pseudoknot) {
             continue;
         }
-        int n5d_outer = vp.md.dangles != 0 ? child->n5d_outer : -1;
-        int n3d_outer = vp.md.dangles != 0 ? child->n3d_outer : -1;
-        energy += vrna_E_exterior_stem(child->pair_type, n5d_outer, n3d_outer, vp.p);
+        auto [n5d_outer, n3d_outer] =
+            ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
+        unsigned int pair_type =
+            ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
+        n5d_outer = vp.md.dangles != 0 ? n5d_outer : -1;
+        n3d_outer = vp.md.dangles != 0 ? n3d_outer : -1;
+        energy += vrna_E_exterior_stem(pair_type, n5d_outer, n3d_outer, vp.p);
     }
     return energy;
 }
