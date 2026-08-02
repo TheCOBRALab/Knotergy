@@ -28,6 +28,7 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         // Scan from outer pair toward 5'
         for (size_t k = i; sequence[k] == bulged_base; --k) {
             ++count;
+            if (k == 0) break;  // Prevent underflow
         }
 
         // Scan from inner pair toward 3'
@@ -40,6 +41,7 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         // Scan from inner pair toward 5'
         for (size_t k = cj; sequence[k] == bulged_base; --k) {
             ++count;
+            if (k == 0) break;  // Prevent underflow
         }
 
         // Scan from outer pair toward 3'
