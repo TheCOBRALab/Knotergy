@@ -28,11 +28,12 @@ class ComputeEnergy {
      * @param pseudo_params Pseudoknot energy parameters.
      * @param mod_params Vector of modified base parameters for computing energy with modified
      * nucleotides.
+     * @param efn2_correction Whether to apply the efn2 single-bulge correction (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
     ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
                   const knotergy::pk_param& pkp, const all_mod_params& mp = {},
-                  bool verbose = false)
+                  bool efn2_correction = false, bool verbose = false)
         : root_node_{root_node},
           pRNA_{processed_rna},
           vp_{vp},
@@ -40,6 +41,7 @@ class ComputeEnergy {
           mp_{mp},
           sequence_{processed_rna.get_sequence()},
           mod_sequence_{processed_rna.get_modified_sequence()},
+          efn2_correction_{efn2_correction},
           has_modified_bases_{processed_rna.has_modified_bases()} {
         process_tree(root_node_, verbose);
     };
@@ -63,6 +65,8 @@ class ComputeEnergy {
     double energy_ = 0.0;
     bool infinite_energy_flag_ =
         false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
+    bool efn2_correction_ =
+        false;  ///< Flag to indicate if the efn2 single-bulge correction should be applied.
     bool has_modified_bases_ = false;  ///< Flag to indicate if the RNA contains modified bases, for
                                        ///< energy calculation purposes.
 

@@ -35,7 +35,8 @@ void help() {
               << "  -e, --round                           Rounds all decimal places in pseudoknot "
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
-                 "(base is 2)\n";
+                 "(base is 2)\n"
+              << "  --efn2-correction                     Apply efn2 single-bulge correction\n";
 }
 
 bool has_verbose_flag(int argc, char** argv) {
@@ -88,6 +89,7 @@ int run_knotergy(int argc, char** argv) {
     int round_value = 0;  // Default round value is 0 (no rounding)
     bool verbose = false;
     int dangle = 2;
+    bool efn2_correction = false;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -163,6 +165,9 @@ int run_knotergy(int argc, char** argv) {
 
         } else if (arg == "-v" || arg == "--verbose") {
             verbose = true;
+
+        } else if (arg == "--efn2-correction") {
+            efn2_correction = true;
 
         } else {
             std::cerr << ERROR << " Unknown option or missing value: " << arg << '\n';
@@ -250,7 +255,7 @@ int run_knotergy(int argc, char** argv) {
         knotergy::RNAInputManager::get_all_inputs(input_file, sequence, structure);
 
     // ------------------------- Print Parameter Report -----------------------
-    knotergy::OutputManager::print_parameter_report(vp, pkp, mp);
+    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, efn2_correction);
 
     // ------------------------- Main Processing Loop ----------------------------
     for (const knotergy::RNAEntry& rna : inputs) {
@@ -265,7 +270,7 @@ int run_knotergy(int argc, char** argv) {
 
         // Compute the energy.
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,
-                                                  mp, verbose);
+                                                  mp, efn2_correction, verbose);
 
         // Output results.
         if (energy_calculator.getInfiniteEnergyFlag()) {

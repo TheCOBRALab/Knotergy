@@ -8,8 +8,7 @@
 
 namespace knotergy {
 
-// This is currently not used. But it fills the gap between ViennaRNA
-// and RNAstructure for single-bulge corrections.
+// Fills the gap between ViennaRNA and RNAstructure for single-bulge corrections.
 int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
                                  const std::string& sequence, const vrna_md_param& vp) {
     const size_t n1 = ci - i - 1;
@@ -27,7 +26,7 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         bulged_base = sequence[i + 1];
 
         // Scan from outer pair toward 5'
-        for (int k = static_cast<int>(i); k >= 0 && sequence[k] == bulged_base; --k) {
+        for (size_t k = i; sequence[k] == bulged_base; --k) {
             ++count;
         }
 
@@ -39,7 +38,7 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         bulged_base = sequence[j - 1];
 
         // Scan from inner pair toward 5'
-        for (int k = static_cast<int>(cj); k >= 0 && sequence[k] == bulged_base; --k) {
+        for (size_t k = cj; sequence[k] == bulged_base; --k) {
             ++count;
         }
 

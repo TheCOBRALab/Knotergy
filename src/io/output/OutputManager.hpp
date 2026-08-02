@@ -29,7 +29,8 @@ class OutputManager {
     static void print_version() { std::cout << "Knotergy " << version() << '\n'; }
 
     static void print_parameter_report(const vrna_md_param& vienna_params,
-                                       const pk_param& pk_params, const all_mod_params& mp) {
+                                       const pk_param& pk_params, const all_mod_params& mp,
+                                       bool efn2_correction) {
         constexpr int W = 18;
 
         print_version();
@@ -49,6 +50,10 @@ class OutputManager {
         std::cout << std::left << std::setw(W)
                   << "Modified bases:" << std::to_string(mp.size()) + " loaded"
                   << (mp.empty() ? " (use -m to load)" : "") << '\n';
+
+        if (efn2_correction) {
+            std::cout << std::left << std::setw(W) << "efn2 correction" << "Enabled\n";
+        }
 
         if (!mp.empty()) {
             std::cout << "\nModified bases\n";

@@ -1,5 +1,6 @@
 #include "ComputeEnergy.hpp"
 
+#include "energy/efn2/efn2.hpp"
 #include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
@@ -59,6 +60,11 @@ double ComputeEnergy::process_node(LoopNode& node) {
                     mod_sequence_, sequence_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::internal_loop_energy(node, sequence_, vp_);
+            }
+            if (efn2_correction_) {
+                node_energy +=
+                    efn2_single_bulge_correction(node.begin, node.end, node.children[0]->begin,
+                                                 node.children[0]->end, sequence_, vp_);
             }
             break;
 
