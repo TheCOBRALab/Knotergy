@@ -279,4 +279,14 @@ TEST(PK_energies, dangle_1) {
     EXPECT_NEAR(dp_result, -40.8830, 0.000005);
     EXPECT_NEAR(dp_rounded, -40.9100, 0.000005);
 }
+
+TEST(PK_energies, dangle_1_pseudoknot_child_external_loop) {
+    std::string sequence = "AAAUUUUAGGGGGGGGGAAAAAAAUUCCCCCCCCCUUUUUUUAAAAU";
+    std::string structure = "((...)).[[[[[[[[...(((...]]]]]]]]...))).(...)..";
+    const int dangle = 1;
+    auto [dp_result, dp_rounded] = get_dp_results(sequence, structure, dangle);
+
+    EXPECT_NEAR(dp_result, -1.6215, 0.000005);
+    EXPECT_NEAR(dp_rounded, -1.6, 0.000005);
+}
 }  // namespace

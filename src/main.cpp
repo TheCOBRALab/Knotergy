@@ -36,8 +36,8 @@ void help() {
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
                  "(base is 2)\n"
-            //   << "  --efn2-correction                     Apply efn2 single-bulge correction\n"
-              ;
+        //   << "  --efn2-correction                     Apply efn2 single-bulge correction\n"
+        ;
 }
 
 bool has_verbose_flag(int argc, char** argv) {

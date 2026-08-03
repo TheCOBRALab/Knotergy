@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * RNAstructure's efn2 corrections for ViennaRNA.
+ * This is still incomplete, but it is a start. The efn2 corrections are only applied to
+ * single-bulge loops. Multiloop corrections are not yet implemented, but is planned for the future.
+ *
+ * Note: Knotergy should also support efn2's --simple mode.
+ */
+
 #include "io/parameters/ViennaParams.hpp"
 
 #include <cmath>

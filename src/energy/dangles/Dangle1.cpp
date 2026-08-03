@@ -102,37 +102,30 @@ std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
     return dangle_energies;
 }
 
-// Identify chains of children that share dangles
 std::vector<std::vector<size_t>> Dangle1::get_dangle_chains(
     const std::vector<std::unique_ptr<LoopNode>>& children) {
-    std::vector<std::vector<size_t>> dangle_chains;
-    // Stores child indices in each chain. Initialize with first child.
-    dangle_chains.reserve(children.size());
-    if (!children.empty()) dangle_chains.push_back({0});
+    std::vector<std::vector<size_t>> chains;
+    chains.reserve(children.size());
+    size_t previous = NULL_INDEX;  // index of the previous child in the chain
 
-    // Iterate through children to identify chains
-    for (size_t i = 1; i < children.size(); ++i) {
-        const std::unique_ptr<LoopNode>& child = children[i];
-        const std::unique_ptr<LoopNode>& prev_child = children[i - 1];
-        if (child->loop_type == LoopType::Pseudoknot) {
+    // Stores chains of children that can dangle together (0 or 1 unpaired bases in between)
+    // Psuedoknotted children break the chain and are treated separately (no dangle energy)
+    for (size_t i = 0; i < children.size(); ++i) {
+        if (children[i]->loop_type == LoopType::Pseudoknot) {
+            previous = NULL_INDEX;  // break the chain
             continue;
         }
 
-        // Check if current child is contiguous with previous child (shares a dangle or is adjacent)
-        if (child->begin - prev_child->end <= 2) {
-            dangle_chains.back().push_back(i);
-        } else {  // start new chain
-            dangle_chains.push_back({i});
+        if (previous == NULL_INDEX || children[i]->begin - children[previous]->end > 2) {
+            chains.push_back({i});
+        } else {
+            chains.back().push_back(i);
         }
+
+        previous = i;
     }
-    // for (const auto& chain : dangle_chains) {
-    //     std::cout << "Dangle chain: ";
-    //     for (size_t idx : chain) {
-    //         std::cout << idx << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-    return dangle_chains;
+
+    return chains;
 }
 
 // Dynamic programming to compute optimal dangle energies for a single chain of children
