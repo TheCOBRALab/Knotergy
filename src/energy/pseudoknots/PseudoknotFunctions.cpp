@@ -33,7 +33,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
 
     double energy = 0;
 
-    energy += init_penalty(node, pkp);
+    energy += init_penalty(node, vp, pkp);
     energy += pkp.band_penalty * static_cast<int>(node.bands.size());
     energy += pkp.unpaired_in_pk * unpaired;
     energy += pkp.cr_in_pk * node.number_of_outsideband_children;
@@ -42,12 +42,13 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     return energy;
 }
 
-double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
+double PseudoknotFunctions::init_penalty(const LoopNode& node, vrna_md_param& vp,
+                                         const knotergy::pk_param& pkp) {
     // initialization penalties
     double energy = 0;
     switch (node.parent->loop_type) {
         case (LoopType::External):    energy += pkp.pk_in_ext; break;
-        case (LoopType::Multibranch): energy += pkp.pk_in_mloop; break;
+        case (LoopType::Multibranch): energy += pkp.pk_in_mloop + vp.p->MLintern[1]; break;
         case (LoopType::Pseudoknot):
             energy +=
                 node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;

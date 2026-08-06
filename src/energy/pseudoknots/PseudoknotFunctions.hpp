@@ -43,10 +43,12 @@ class PseudoknotFunctions {
      * multibranch loop, or nested within another pseudoknot.
      *
      * @param node The pseudoknot loop node.
+     * @param vp ViennaRNA model parameters.
      * @param pkp Pseudoknot parameters.
      * @return Initialization penalty in centicalories.
      */
-    [[nodiscard]] static double init_penalty(const LoopNode& node, const knotergy::pk_param& pkp);
+    [[nodiscard]] static double init_penalty(const LoopNode& node, vrna_md_param& vp,
+                                             const knotergy::pk_param& pkp);
 
     /**
      * @brief Calculate loop-specific energy penalties in a pseudoknot.
