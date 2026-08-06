@@ -36,6 +36,7 @@ void help() {
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
                  "(base is 2)\n"
+              << "  --show-input                          Show the input sequence and structure\n"
         //   << "  --efn2-correction                     Apply efn2 single-bulge correction\n"
         ;
 }
@@ -91,6 +92,7 @@ int run_knotergy(int argc, char** argv) {
     bool verbose = false;
     int dangle = 2;
     bool efn2_correction = false;
+    bool show_sequence_and_struct = false;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -106,12 +108,6 @@ int run_knotergy(int argc, char** argv) {
             input_file = get_trimmed_arg(i, argc, argv);
 
         } else if ((arg == "-P" || arg == "--paramFile") && i + 1 < argc) {
-            vienna_param_file = get_trimmed_arg(i, argc, argv);
-
-        } else if (arg == "-p") {
-            std::cerr << WARNING << "-p is deprecated. " << "Use -P instead. "
-                      << "-p will stop working on full release." << '\n';
-
             vienna_param_file = get_trimmed_arg(i, argc, argv);
 
         } else if (arg == "-e" || arg == "--round") {
@@ -170,6 +166,8 @@ int run_knotergy(int argc, char** argv) {
         } else if (arg == "--efn2-correction") {
             efn2_correction = true;
 
+        } else if (arg == "--show-input") {
+            show_sequence_and_struct = true;
         } else {
             std::cerr << ERROR << " Unknown option or missing value: " << arg << '\n';
             return EXIT_FAILURE;
@@ -261,6 +259,10 @@ int run_knotergy(int argc, char** argv) {
     // ------------------------- Main Processing Loop ----------------------------
     for (const knotergy::RNAEntry& rna : inputs) {
         std::cout << "\n--------- Name: " << rna.name << " ---------" << '\n';
+        if (show_sequence_and_struct) {
+            std::cout << "Sequence : " << rna.sequence << '\n';
+            std::cout << "Structure: " << rna.structure << '\n';
+        }
 
         // Preprocess the RNA entry to compute pair_table, closed regions, etc.
         const knotergy::ProcessedRNAEntry& processed_rna =
