@@ -2,9 +2,9 @@
 
 #include "utils/colors.hpp"
 
-#include <ViennaRNA/model.h>
-#include <ViennaRNA/params/basic.h>
-#include <ViennaRNA/params/io.h>
+#include <ViennaRNA/model.hpp>
+#include <ViennaRNA/params/basic.hpp>
+#include <ViennaRNA/params/io.hpp>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -15,6 +15,8 @@
 #include <fstream>
 #include <memory>
 #include <string>
+
+namespace viennarna = thermorna::viennarna;
 
 namespace knotergy {
 
@@ -51,18 +53,19 @@ bool load_param_cache(const std::string& cachePath, int expectedDangle,
     const ParamCacheHeader expected{};
     if (std::memcmp(hdr.magic, expected.magic, sizeof(hdr.magic)) != 0) return false;
     if (hdr.cache_version != expected.cache_version) return false;
-    if (hdr.param_struct_size != sizeof(vrna_param_t)) return false;
-    if (hdr.md_struct_size != sizeof(vrna_md_t)) return false;
+    if (hdr.param_struct_size != sizeof(viennarna::vrna_param_t)) return false;
+    if (hdr.md_struct_size != sizeof(viennarna::vrna_md_t)) return false;
     if (hdr.endian_marker != BigEndianMarker) return false;
     if (hdr.dangles != expectedDangle) return false;
     if (hdr.source_mtime != expectedSourceMtime) return false;
 
     // Allocate memory for vrna_param_t
-    vrna_param_t* p = static_cast<vrna_param_t*>(std::malloc(sizeof(vrna_param_t)));
+    viennarna::vrna_param_t* p =
+        static_cast<viennarna::vrna_param_t*>(std::malloc(sizeof(viennarna::vrna_param_t)));
     if (!p) return false;
 
     // Load parameter into the allocated memory
-    in.read(reinterpret_cast<char*>(p), sizeof(vrna_param_t));
+    in.read(reinterpret_cast<char*>(p), sizeof(viennarna::vrna_param_t));
     if (!in) {
         std::free(p);
         return false;
@@ -81,7 +84,7 @@ bool load_param_cache(const std::string& cachePath, int expectedDangle,
 }
 
 void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t sourceMtime,
-                      const vrna_param_t& p) {
+                      const viennarna::vrna_param_t& p) {
     size_t slash = cachePath.find_last_of("/\\");
     if (slash != std::string::npos) {
         std::string dir = cachePath.substr(0, slash);
@@ -98,7 +101,7 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
     hdr.source_mtime = sourceMtime;
 
     out.write(reinterpret_cast<const char*>(&hdr), sizeof(hdr));
-    out.write(reinterpret_cast<const char*>(&p), sizeof(vrna_param_t));
+    out.write(reinterpret_cast<const char*>(&p), sizeof(viennarna::vrna_param_t));
 }
 }  // namespace
 
@@ -149,7 +152,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         source_info.resolved_name = "Dirks & Pierce 2009";
     } else {
         // If the default param path was not found, fall back to built-in Turner 2004 parameters.
-        // This will never fail since it's hardcoded into ViennaRNA.
+        // This should never fail since it's hardcoded into ViennaRNA.
         std::cout << WARNING
                   << " Default RNA parameter file not found, falling back to built-in Turner 2004 "
                      "parameters.\n";
@@ -171,7 +174,8 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     switch (source_kind) {
         case SourceKind::UserFile:
         case SourceKind::DefaultRNAFile: {
-            int loaded = vrna_params_load(load_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
+            int loaded =
+                viennarna::vrna_params_load(load_path.c_str(), VRNA_PARAMETER_FORMAT_DEFAULT);
             if (!loaded) {
                 THROW_ERROR("Failed to load parameter file: " + load_path);
             }
@@ -179,23 +183,23 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         }
 
         case SourceKind::BuiltinDNA:
-            if (!vrna_params_load_DNA_Mathews2004()) {
+            if (!viennarna::vrna_params_load_DNA_Mathews2004()) {
                 THROW_ERROR("Failed to load built-in DNA parameters");
             }
             break;
 
         case SourceKind::BuiltinRNA:
-            if (!vrna_params_load_RNA_Turner2004()) {
+            if (!viennarna::vrna_params_load_RNA_Turner2004()) {
                 THROW_ERROR("Failed to load built-in RNA parameters");
             }
             break;
     }
 
     // ----- Initialize md after loading params -----
-    vrna_md_set_default(&md_param.md);
+    viennarna::vrna_md_set_default(&md_param.md);
     md_param.md.dangles = dangle;
 
-    md_param.p = vrna_params(&md_param.md);
+    md_param.p = viennarna::vrna_params(&md_param.md);
     if (!md_param.p) {
         THROW_ERROR("Failed to create scaled ViennaRNA parameter table");
     }

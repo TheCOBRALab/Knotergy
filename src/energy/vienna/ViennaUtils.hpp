@@ -7,11 +7,11 @@
 #include "loop_tree/LoopNode.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 
+#include <ViennaRNA/sequences/alphabet.hpp>
+
 #include <tuple>
 
-extern "C" {
-#include <ViennaRNA/sequences/alphabet.h>
-}
+namespace viennarna = thermorna::viennarna;
 
 namespace knotergy {
 /**
@@ -51,7 +51,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
         const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pair_table, vrna_md_t& md) {
+        const std::vector<size_t>& pair_table, viennarna::vrna_md_t& md) {
         bool has_5d_dangle_out =
             i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
 
@@ -74,7 +74,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
-                                                                   vrna_md_t& md) {
+                                                                   viennarna::vrna_md_t& md) {
         return encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 
@@ -90,7 +90,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
         const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pair_table, vrna_md_t& md) {
+        const std::vector<size_t>& pair_table, viennarna::vrna_md_t& md) {
         bool has_5d_dangle_in =
             (pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
         bool has_3d_dangle_in =
@@ -112,7 +112,7 @@ class ViennaUtils {
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
                                                                    const ProcessedRNAEntry& entry,
-                                                                   vrna_md_t& md) {
+                                                                   viennarna::vrna_md_t& md) {
         return encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
     }
 
@@ -123,7 +123,8 @@ class ViennaUtils {
      * @param j Second nucleotide character.
      * @return ViennaRNA pair type identifier (0 for non-canonical pairs).
      */
-    [[nodiscard]] static unsigned int get_pair_type(const char& i, const char& j, vrna_md_t& md) {
+    [[nodiscard]] static unsigned int get_pair_type(const char& i, const char& j,
+                                                    viennarna::vrna_md_t& md) {
         auto [encoded_i, encoded_j] = encode_nucleotides(i, j);
         return vrna_get_ptype_md(encoded_i, encoded_j, &md);
     }
@@ -134,7 +135,8 @@ class ViennaUtils {
      * @param type ViennaRNA pair type identifier.
      * @return Reversed pair type identifier.
      */
-    [[nodiscard]] static unsigned int reverse_pair_type(unsigned int type, vrna_md_t& md) {
+    [[nodiscard]] static unsigned int reverse_pair_type(unsigned int type,
+                                                        viennarna::vrna_md_t& md) {
         return static_cast<unsigned int>(md.rtype[type]);
     }
 
@@ -146,7 +148,7 @@ class ViennaUtils {
      * @return Reversed pair type identifier.
      */
     [[nodiscard]] static unsigned int reverse_pair_type(const char& i, const char& j,
-                                                        vrna_md_t& md) {
+                                                        viennarna::vrna_md_t& md) {
         return reverse_pair_type(get_pair_type(i, j, md), md);
     }
 

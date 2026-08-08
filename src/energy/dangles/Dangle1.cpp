@@ -2,15 +2,16 @@
 
 #include "energy/vienna/ViennaUtils.hpp"
 
-extern "C" {
-#include <ViennaRNA/eval/exterior.h>
-#include <ViennaRNA/eval/hairpin.h>
-#include <ViennaRNA/eval/internal.h>
-#include <ViennaRNA/eval/multibranch.h>
-#include <ViennaRNA/model.h>
-#include <ViennaRNA/sequences/alphabet.h>
-#include <ViennaRNA/utils/basic.h>
-}
+#include <ViennaRNA/eval/exterior.hpp>
+#include <ViennaRNA/eval/hairpin.hpp>
+#include <ViennaRNA/eval/internal.hpp>
+#include <ViennaRNA/eval/multibranch.hpp>
+#include <ViennaRNA/model.hpp>
+#include <ViennaRNA/params/basic.hpp>
+#include <ViennaRNA/sequences/alphabet.hpp>
+#include <ViennaRNA/utils/basic.hpp>
+
+namespace viennarna = thermorna::viennarna;
 
 namespace knotergy {
 int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
@@ -55,10 +56,10 @@ DangleSet Dangle1::get_ml_closing_dangle_energy(const LoopNode& node, const Proc
 
     // closing pair dangles
     DangleSet ml_dangle{
-        vrna_E_multibranch_stem(pair_type, -1, -1, vp.p),   // No dangle
-        vrna_E_multibranch_stem(pair_type, -1, n5d, vp.p),  // Left dangle
-        vrna_E_multibranch_stem(pair_type, n3d, -1, vp.p),  // Right dangle
-        vrna_E_multibranch_stem(pair_type, n3d, n5d, vp.p)  // Both dangles
+        viennarna::vrna_E_multibranch_stem(pair_type, -1, -1, vp.p),   // No dangle
+        viennarna::vrna_E_multibranch_stem(pair_type, -1, n5d, vp.p),  // Left dangle
+        viennarna::vrna_E_multibranch_stem(pair_type, n3d, -1, vp.p),  // Right dangle
+        viennarna::vrna_E_multibranch_stem(pair_type, n3d, n5d, vp.p)  // Both dangles
     };
 
     return ml_dangle;
@@ -73,7 +74,8 @@ DangleSet Dangle1::get_child_dangle_energy(const LoopNode& node, const Processed
     auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
     unsigned int pair_type = ViennaUtils::get_pair_type(sequence[ci], sequence[cj], vp.md);
 
-    auto vrna_E_stem = is_external ? vrna_E_exterior_stem : vrna_E_multibranch_stem;
+    auto vrna_E_stem =
+        is_external ? viennarna::vrna_E_exterior_stem : viennarna::vrna_E_multibranch_stem;
     // closing pair dangles
     DangleSet ml_dangle{
         vrna_E_stem(pair_type, -1, -1, vp.p),   // No dangle

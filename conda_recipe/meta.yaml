@@ -1,9 +1,12 @@
 package:
   name: knotergy
-  version: "0.2.5"
+  version: "0.3.0"
 
 source:
-  - path: ..
+  path: ..
+
+build:
+  number: 0
 
 requirements:
   build:
@@ -15,14 +18,12 @@ requirements:
     - git
 
   host:
-    - viennarna =2.7.2
-    - libstdcxx-ng # [linux]
-    - libcxx       # [osx]
+    - libstdcxx-ng  # [linux]
+    - libcxx        # [osx]
 
   run:
-    - viennarna =2.7.2
-    - libstdcxx-ng # [linux]
-    - libcxx       # [osx]
+    - libstdcxx-ng  # [linux]
+    - libcxx        # [osx]
 
 test:
   commands:

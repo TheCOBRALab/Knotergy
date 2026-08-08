@@ -60,7 +60,7 @@ struct pk_param {
      * Hard coded values based on the original HotKnotsV2 implementation
      */
     pk_param()
-        : name("DirksPierce09 (Hard-coded default)"),
+        : name("Dirks & Pierce 2009 (Hard-coded default)"),
           pk_in_ext(-138),
           pk_in_mloop(1007),
           pk_in_pk(1500),
@@ -147,9 +147,8 @@ class PseudoknotParams {
      * @return Loaded pk_param structure.
      * @throws DetailedException if file not found or invalid.
      */
-    [[nodiscard]] static pk_param load_pk_param(
-        const std::string& paramFile = default_pk_param_path(),
-        RoundMethod round_method = RoundMethod::None) {
+    [[nodiscard]] static pk_param load_pk_param(const std::string& paramFile,
+                                                RoundMethod round_method = RoundMethod::None) {
         ParamSourceInfo info;
         info.label = "Pseudoknot";
         info.requested_path = paramFile;

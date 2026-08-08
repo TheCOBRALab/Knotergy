@@ -234,7 +234,7 @@ int run_knotergy(int argc, char** argv) {
         knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
-    knotergy::pk_param pkp =
+    const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pseudo_param_file, round_method);
 
     // ------------------------- Load Modified Base Parameters -----------------------
@@ -247,7 +247,7 @@ int run_knotergy(int argc, char** argv) {
         modified_params.insert(modified_params.end(), additional_mp.begin(), additional_mp.end());
     }
 
-    knotergy::all_mod_params mp(modified_params);
+    const knotergy::all_mod_params mp(modified_params);
 
     // ------------------------- Reading Inputs From File -----------------------------
     std::vector<knotergy::RNAEntry> inputs =

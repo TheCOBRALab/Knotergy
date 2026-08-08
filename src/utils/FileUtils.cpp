@@ -11,7 +11,8 @@ namespace knotergy {
 std::string FileUtils::resolve_data_path(const std::string& path, bool check_exists) {
     // Conda package path
     const char* conda_prefix = std::getenv("CONDA_PREFIX");
-    if (conda_prefix && *conda_prefix) {
+    const bool running_in_conda = conda_prefix && *conda_prefix;
+    if (running_in_conda) {
         std::string conda_path =
             join_path(join_path(std::string(conda_prefix), "share/knotergy"), path);
         if (!check_exists || file_exists(conda_path)) {
@@ -32,14 +33,19 @@ std::string FileUtils::resolve_data_path(const std::string& path, bool check_exi
 
     std::ostringstream msg;
 
-    msg << "Data file not found: " << path << "\n"
-        << "Checked source path: " << source_path << "\n"
-        << "CONDA_PREFIX: " << (conda_prefix ? conda_prefix : "not set") << "\n"
-        << "Checked conda path: "
-        << (conda_prefix ? join_path(join_path(std::string(conda_prefix), "share/knotergy"), path)
-                         : "not set");
+    msg << "Data file not found: " << source_path;
 
-    THROW_ERROR(msg.str());
+    // Only mention Conda when actually running inside an activated Conda env
+    if (running_in_conda) {
+        const std::string conda_path =
+            join_path(join_path(std::string(conda_prefix), "share/knotergy"), path);
+        msg << "Checked conda path: " << conda_path;
+    }
+
+    // THROW_ERROR(msg.str());
+    // Warn
+    std::cerr << WARNING << msg.str() << "\n";
+    return "";
 }
 
 // checks if the a slash should be added between base and path, and returns the joined path

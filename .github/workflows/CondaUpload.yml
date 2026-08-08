@@ -27,7 +27,7 @@ jobs:
         auto-update-conda: true
         auto-activate-base: false
         miniconda-version: latest
-        channels: conda-forge, bioconda, defaults
+        channels: conda-forge, defaults
         channel-priority: strict
         architecture: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
 
@@ -81,8 +81,7 @@ jobs:
         conda run -n base conda install --yes cobralab::knotergy=${KNOTERGY_VERSION} \
           --override-channels \
           -c cobralab \
-          -c conda-forge \
-          -c bioconda
+          -c conda-forge 
 
         conda run -n base Knotergy --version
         conda run -n base Knotergy -s "AAAUUUU" -r "(.....)"

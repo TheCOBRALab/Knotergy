@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(Knotergy
+    VERSION 0.3.0
     LANGUAGES CXX
     DESCRIPTION "Knotergy: A C++ library for computing energy values of pseudoknotted structures"
 )
@@ -43,6 +44,17 @@ FetchContent_Declare(uni_algo
 FetchContent_MakeAvailable(uni_algo)
 
 
+#------------------ ThermoRNA (ViennaRNA) -----------------
+set(THERMORNA_KNOTERGY OFF CACHE BOOL "" FORCE) # Knotergy implements this already
+set(THERMORNA_VIENNARNA ON CACHE BOOL "" FORCE)
+# set(FETCHCONTENT_SOURCE_DIR_THERMORNA
+#     "path/to/ThermoRNA" # Replace with the actual path to ThermoRNA for local development
+# )
+FetchContent_Declare(ThermoRNA
+    GIT_REPOSITORY https://github.com/TheCOBRALab/ThermoRNA.git
+    GIT_TAG v0.1.2
+)
+FetchContent_MakeAvailable(ThermoRNA)
 # ------------------------- Configurations -------------------------
 
 # Default build type if none is specified
@@ -122,205 +134,6 @@ After initializing the submodule, re-run CMake to enable tests.
 ============================================================")
 endif()
 
-
-
-# -------------------------------------------------------------------
-#                  ViennaRNA Library Configuration
-# -------------------------------------------------------------------
-
-# Users may pass any of these:
-#  -DVIENNARNA_LIBRARY=/path/to/libRNA.a        (file)
-#  -DVIENNARNA_LIB=/path/to/lib_or_dir          (file OR directory)
-#  -DVIENNARNA_INCLUDE_DIRECTORY=/path/to/include
-#  -DVIENNARNA_INCLUDE_DIR=/path/to/include OR /path/to/include/ViennaRNA/pair_mat.h
-
-# ---------- Normalize user inputs ----------
-set(_raw_lib "${VIENNARNA_LIBRARY}")
-if (NOT _raw_lib)
-  set(_raw_lib "${VIENNARNA_LIB}")
-endif()
-if (NOT _raw_lib)
-  set(_raw_lib "$ENV{VIENNARNA_LIBRARY}")
-endif()
-if (NOT _raw_lib)
-  set(_raw_lib "$ENV{VIENNARNA_LIB}")
-endif()
-
-# If user pointed to the static file, accept as-is. If it's a directory, search inside.
-if (_raw_lib)
-  if (EXISTS "${_raw_lib}" AND NOT IS_DIRECTORY "${_raw_lib}")
-    set(VIENNARNA_LIBRARY "${_raw_lib}" CACHE FILEPATH "Path to ViennaRNA library" FORCE)
-  elseif (IS_DIRECTORY "${_raw_lib}")
-    list(APPEND _LIB_HINTS "${_raw_lib}")
-  endif()
-endif()
-
-# Include dir normalization (user may pass the header file path or the ViennaRNA subdir).
-set(_raw_inc "${VIENNARNA_INCLUDE_DIRECTORY}")
-if (NOT _raw_inc)
-  set(_raw_inc "${VIENNARNA_INCLUDE_DIR}")
-endif()
-if (NOT _raw_inc)
-  set(_raw_inc "$ENV{VIENNARNA_INCLUDE_DIRECTORY}")
-endif()
-if (NOT _raw_inc)
-  set(_raw_inc "$ENV{VIENNARNA_INCLUDE_DIR}")
-endif()
-
-set(_inc_hint "")
-if (_raw_inc)
-  set(_inc_hint "${_raw_inc}")
-  # If a file was passed (…/ViennaRNA/pair_mat.h), strip file and ViennaRNA folder.
-  if (_inc_hint MATCHES "(.*/ViennaRNA)/pair_mat.h$")
-    get_filename_component(_inc_hint "${_inc_hint}" DIRECTORY)  # -> …/ViennaRNA
-    get_filename_component(_inc_hint "${_inc_hint}" DIRECTORY)  # -> …/include
-  elseif (_inc_hint MATCHES ".*/ViennaRNA/?$")
-    get_filename_component(_inc_hint "${_inc_hint}" DIRECTORY)  # -> …/include
-  endif()
-  if (IS_DIRECTORY "${_inc_hint}")
-    set(VIENNARNA_INCLUDE_DIRECTORY "${_inc_hint}" CACHE PATH "Path to ViennaRNA headers" FORCE)
-  endif()
-endif()
-
-# ---------- Try pkg-config first (if available) ----------
-include(CheckIncludeFileCXX)
-find_package(PkgConfig QUIET)
-if (PkgConfig_FOUND AND (NOT VIENNARNA_LIBRARY OR NOT VIENNARNA_INCLUDE_DIRECTORY))
-  # Try several common pc names; the first that resolves will fill VIENNARNA_* vars
-  foreach(pcname ViennaRNA RNAlib2 RNAlib vrna rna)
-    if (NOT VIENNARNA_LIBRARY OR NOT VIENNARNA_INCLUDE_DIRECTORY)
-      pkg_check_modules(PC_VIENNARNA QUIET ${pcname})
-      if (PC_VIENNARNA_FOUND)
-        # Prefer the first library; fall back to -l flags if needed
-        if (PC_VIENNARNA_STATIC_LIBRARIES)
-          list(GET PC_VIENNARNA_STATIC_LIBRARIES 0 _pc_lib)
-        elseif (PC_VIENNARNA_LIBRARIES)
-          list(GET PC_VIENNARNA_LIBRARIES 0 _pc_lib)
-        endif()
-        if (_pc_lib)
-          # If pkg-config gave "-lRNA" style, let find_library resolve it
-          if (_pc_lib MATCHES "^-l(.+)$")
-            set(_libname "${CMAKE_MATCH_1}")
-            find_library(VIENNARNA_LIBRARY NAMES ${_libname} vrna RNA)
-          else()
-            # Absolute path or full archive path
-            set(VIENNARNA_LIBRARY "${_pc_lib}")
-          endif()
-        endif()
-        if (PC_VIENNARNA_INCLUDE_DIRS AND NOT VIENNARNA_INCLUDE_DIRECTORY)
-          list(GET PC_VIENNARNA_INCLUDE_DIRS 0 _pc_inc)
-          set(VIENNARNA_INCLUDE_DIRECTORY "${_pc_inc}")
-        endif()
-      endif()
-    endif()
-  endforeach()
-endif()
-
-# ---------- Manual probing if still not found ----------
-# Common prefixes
-set(_COMMON_PREFIXES
-  "$ENV{CONDA_PREFIX}"
-  "$ENV{HOMEBREW_PREFIX}"
-  "/opt/homebrew"
-  "/usr/local"
-  "/opt"
-  "$ENV{HOME}/local"
-)
-
-# Library: if not already a full path from above, try to locate it
-if (NOT VIENNARNA_LIBRARY)
-  # Hints: user-provided dir plus common prefixes
-  if (_LIB_HINTS)
-    list(APPEND _COMMON_PREFIXES ${_LIB_HINTS})
-  endif()
-  list(REMOVE_DUPLICATES _COMMON_PREFIXES)
-
-  find_library(VIENNARNA_LIBRARY
-    NAMES vrna RNA
-    HINTS ${_COMMON_PREFIXES}
-    PATH_SUFFIXES lib lib64
-    DOC "Path to ViennaRNA library")
-endif()
-
-# Include directory: must contain ViennaRNA/pair_mat.h
-if (NOT VIENNARNA_INCLUDE_DIRECTORY)
-  find_path(VIENNARNA_INCLUDE_DIRECTORY
-    NAMES ViennaRNA/pair_mat.h
-    HINTS ${_inc_hint} ${_COMMON_PREFIXES}
-    PATH_SUFFIXES include
-    DOC "Path to ViennaRNA headers")
-endif()
-
-# If VIENNARNA_LIBRARY is a bare name (e.g. "RNA"), try to resolve to an absolute path.
-# If that fails, record likely link directories to use later.
-set(VIENNARNA_LINK_DIRS "")
-if (VIENNARNA_LIBRARY AND NOT IS_ABSOLUTE "${VIENNARNA_LIBRARY}")
-  find_library(_VIENNA_ABS
-    NAMES ${VIENNARNA_LIBRARY} vrna RNA
-    HINTS
-      $ENV{CONDA_PREFIX}
-      $ENV{HOMEBREW_PREFIX}
-      /opt/homebrew
-      /usr/local
-      /opt
-    PATH_SUFFIXES lib lib64
-  )
-
-  if (_VIENNA_ABS)
-    set(VIENNARNA_LIBRARY "${_VIENNA_ABS}" CACHE FILEPATH "Path to ViennaRNA library" FORCE)
-  else()
-    set(VIENNARNA_LINK_DIRS
-      $ENV{CONDA_PREFIX}/lib
-      $ENV{HOMEBREW_PREFIX}/lib
-      /opt/homebrew/lib
-      /usr/local/lib
-      /opt/lib)
-    list(REMOVE_DUPLICATES VIENNARNA_LINK_DIRS)
-  endif()
-endif()
-
-message(STATUS "VIENNARNA_LIBRARY = ${VIENNARNA_LIBRARY}")
-message(STATUS "VIENNARNA_INCLUDE_DIRECTORY = ${VIENNARNA_INCLUDE_DIRECTORY}")
-
-
-# ---------- Friendly failure message ----------
-if (NOT VIENNARNA_LIBRARY OR NOT VIENNARNA_INCLUDE_DIRECTORY)
-  string(JOIN "\n" _help
-    "❌ ViennaRNA not found."
-    ""
-    "This project needs the ViennaRNA library and headers to build."
-    "If you already have ViennaRNA installed, CMake just couldn't find it with the default settings."
-    ""
-    "Quick fix:"
-    "  Step 1: Locate the ViennaRNA library and header on your system."
-    "  They are often named 'libRNA.a' (or similar) and 'pair_mat.h'."
-    ""
-    " 🔎 To locate these files, try:"
-    "    find \$HOME /usr/local /opt -type f -name 'libRNA*' 2>/dev/null"
-    "    find \$HOME /usr/local /opt -type f -name 'pair_mat.h' 2>/dev/null"
-    ""
-    "  Step 2: Set environment variables with the paths you found:"
-    "    export VIENNARNA_LIBRARY=/path/to/libRNA.a"
-    "    export VIENNARNA_INCLUDE_DIRECTORY=/path/to/include"
-    ""
-    "  For example, if you found:"
-    "    /usr/local/lib/libRNA.a"
-    "    /usr/local/include/ViennaRNA/pair_mat.h"
-    "  then use:"
-    "    export VIENNARNA_LIBRARY=/usr/local/lib/libRNA.a"
-    "    export VIENNARNA_INCLUDE_DIRECTORY=/usr/local/include"
-    ""
-    "  Step 3: Re-run CMake:"
-    "    cmake -S . -B build"
-    ""
-    "Optional: pass the paths directly to CMake instead of environment variables:"
-    "    cmake -S . -B build \\"
-    "      -DVIENNARNA_LIBRARY=/path/to/libRNA.a \\"
-    "      -DVIENNARNA_INCLUDE_DIRECTORY=/path/to/include"
-  )
-  message(FATAL_ERROR "${_help}")
-endif()
-
 # -------------------------------------------------------------------
 #                     Knotergy Configuration
 # -------------------------------------------------------------------
@@ -338,19 +151,12 @@ add_library(KnotergyLib ${KnotergySources})
 
 target_include_directories(KnotergyLib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
-target_include_directories(KnotergyLib SYSTEM PUBLIC ${VIENNARNA_INCLUDE_DIRECTORY})
-
-# Add link directories if we couldn't resolve an absolute path earlier.
-if (VIENNARNA_LINK_DIRS)
-  target_link_directories(KnotergyLib PUBLIC ${VIENNARNA_LINK_DIRS})
-endif()
-
 # ------------------------- Link Libraries -------------------------
 target_link_libraries(KnotergyLib
   PUBLIC
-    ${VIENNARNA_LIBRARY}
     nlohmann_json::nlohmann_json
     uni-algo::uni-algo
+    ThermoRNA::ThermoRNA
 )
 
 # ------------------------- Executable -------------------------

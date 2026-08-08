@@ -26,70 +26,10 @@ conda activate
 ### Software Requirements
 
 - **CMake** ≥ 3.15
-- **ViennaRNA** ≥ 2.7.0
 
 ---
 
-## 1. Install ViennaRNA
-
-Knotergy requires ViennaRNA to compile and run.
-
-### Option 1: Install via Conda (Easiest)
-
-1. **Install ViennaRNA through conda, and activate your conda environment**
-
-   ```bash
-   conda install -c bioconda viennarna
-   conda activate
-   ```
-
-### Option 2: Manual install (Advanced / for development)
-
-1. **Download ViennaRNA 2.7.2:**
-
-   ```bash
-   curl -L -O https://github.com/ViennaRNA/ViennaRNA/releases/download/v2.7.2/ViennaRNA-2.7.2.tar.gz
-   ```
-
-2. **Install:**
-
-   ```bash
-   tar -zxvf ViennaRNA-2.7.2.tar.gz
-   cd ViennaRNA-2.7.2
-   ./configure --without-perl
-   make -j$(nproc)              # Linux
-   make -j$(sysctl -n hw.ncpu)  # macOS
-   sudo make install
-   ```
-
-### Common Installation Issues
-
-- **No admin access:**
-
-  ```bash
-  mkdir -p ~/local
-  ./configure --without-perl --prefix=$HOME/local
-  make -j$(nproc)              # Linux
-  make -j$(sysctl -n hw.ncpu)  # macOS
-  make install
-  ```
-
-- **macOS: “not 8-byte aligned”**
-
-  ```bash
-  make clean
-  export AR=/usr/bin/ar
-  export RANLIB=/usr/bin/ranlib
-  ./configure --without-perl
-  make -j$(sysctl -n hw.ncpu)
-  sudo make install
-  ```
-
-For full details, see the [ViennaRNA GitHub repo](https://github.com/ViennaRNA/ViennaRNA).
-
----
-
-## 2. Install CMake
+## 1. Install CMake
 
 Knotergy requires **CMake ≥ 3.15**.
 
@@ -118,7 +58,7 @@ brew install cmake
 
 ---
 
-## 3. Download & Build Knotergy
+## 2. Download & Build Knotergy
 
 ### Clone the repository
 

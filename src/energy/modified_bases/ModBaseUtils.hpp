@@ -3,6 +3,8 @@
 #include "energy/vienna/ViennaUtils.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 
+namespace viennarna = thermorna::viennarna;
+
 #include <vector>
 
 namespace knotergy {
@@ -195,7 +197,7 @@ class ModBaseUtils {
             THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");
         }
 
-        vrna_param_t* P = vp.p;
+        viennarna::vrna_param_t* P = vp.p;
         int mismatch = 0;
         int dangle5 = 0;
         int dangle3 = 0;

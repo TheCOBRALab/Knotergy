@@ -9,16 +9,6 @@
 
 #include <algorithm>
 
-extern "C" {
-#include <ViennaRNA/eval/exterior.h>
-#include <ViennaRNA/eval/hairpin.h>
-#include <ViennaRNA/eval/internal.h>
-#include <ViennaRNA/eval/multibranch.h>
-#include <ViennaRNA/model.h>
-#include <ViennaRNA/sequences/alphabet.h>
-#include <ViennaRNA/utils/basic.h>
-}
-
 namespace knotergy {
 /**
  * @brief Provides ViennaRNA-based energy calculation functions for RNA secondary structures.

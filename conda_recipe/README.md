@@ -7,13 +7,13 @@
 ## How to build the package
 
 - Start in the Knotergy folder
-- Run `conda config --add channels bioconda` to add support for viennarna 2.7.2
+- Run `Conda activate` if conda isn't currently active
 - Run `conda config --add channels conda-forge`
 - Run `conda build ./conda_recipe` to build package
 - Run `conda install --use-local knotergy` to install (case sensitive)
 - Run `Knotergy --help` to insure it installed properly (case sensitive)
 
-If you want to uninstall the package, run `conda remove Knotergy`
+If you want to uninstall the package, run `conda remove Knotergy` & `conda build purge`
 
 ## Automated Package Upload
 
