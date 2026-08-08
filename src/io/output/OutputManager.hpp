@@ -10,7 +10,7 @@ namespace knotergy {
 
 class OutputManager {
    public:
-    static constexpr std::string_view version() { return "0.2.4"; }
+    static constexpr std::string_view version() { return "0.2.5"; }
 
     static void print_banner() {
         std::cout << R"(                                    
