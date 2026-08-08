@@ -101,7 +101,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug; cmake --build build --parallel; cm
 
 ---
 
-## 4. Usage
+## 3. Usage
 
 ```bash
 ./build/Knotergy [flags]
