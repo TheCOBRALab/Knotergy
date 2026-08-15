@@ -7,9 +7,9 @@
 
 namespace knotergy {
 
-LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna, vrna_md_param& vp)
-    : pRNA_{processed_rna}, vp_{vp} {
+LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : pRNA_{processed_rna} {
     // CLOSED REGIONS MUST BE SORTED BY START INDEX FOR THE BUILDING ALGORITHM TO WORK CORRECTLY
+    // A check is performed in build_tree() to ensure this precondition is met.
     build_tree(processed_rna.get_closed_regions());
 }
 

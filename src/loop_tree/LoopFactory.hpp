@@ -22,9 +22,8 @@ class LoopFactory {
      * processed RNA entry's closed regions.
      *
      * @param processed_rna The processed RNA entry containing structure and pairing information.
-     * @param vp ViennaRNA model parameters for vienna encoding population.
      */
-    LoopFactory(const ProcessedRNAEntry& processed_rna, vrna_md_param& vp);
+    LoopFactory(const ProcessedRNAEntry& processed_rna);
 
     /**
      * @brief Destroy the LoopFactory and its associated loop tree.
@@ -64,7 +63,6 @@ class LoopFactory {
     std::unique_ptr<LoopNode> root_node_;
     size_t structure_length_;
     std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
-    vrna_md_param& vp_;  ///< ViennaRNA model parameters for energy calculations.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

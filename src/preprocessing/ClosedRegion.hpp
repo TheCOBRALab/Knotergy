@@ -44,8 +44,7 @@ struct ClosedRegion {
         return begin == rhs.begin && end == rhs.end;
     }
 
-    // Should never be needed, but it's to safeguard against unsorted closed regions breaking the
-    // loop factory algorithm.
+    // Used to verify that closed regions are sorted by start index for the loop factory algorithm.
     [[nodiscard]] bool operator<(const ClosedRegion& rhs) const {
         return std::tie(begin, end) < std::tie(rhs.begin, rhs.end);
     }
