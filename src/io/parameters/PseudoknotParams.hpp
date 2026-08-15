@@ -60,7 +60,7 @@ struct pk_param {
      * Hard coded values based on the original HotKnotsV2 implementation
      */
     pk_param()
-        : name("Dirks & Pierce 2009 (Hard-coded default)"),
+        : name("Dirks-Pierce 2009 (Hard-coded default)"),
           pk_in_ext(-138),
           pk_in_mloop(1007),
           pk_in_pk(1500),

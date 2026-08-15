@@ -149,7 +149,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
         source_info.status = ParamStatus::Fallback;
         source_info.resolved_path = default_param_path();
-        source_info.resolved_name = "Dirks & Pierce 2009";
+        source_info.resolved_name = "Dirks-Pierce 2009";
     } else {
         // If the default param path was not found, fall back to built-in Turner 2004 parameters.
         // This should never fail since it's hardcoded into ViennaRNA.
