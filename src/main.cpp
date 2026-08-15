@@ -1,13 +1,13 @@
 #include "energy/ComputeEnergy.hpp"
 #include "io/input/RNAInputManager.hpp"
 #include "io/output/OutputManager.hpp"
+#include "io/output/colors.hpp"
 #include "io/parameters/ModParams.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "loop_tree/LoopFactory.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "preprocessing/RNAEntry.hpp"
-#include "utils/colors.hpp"
 #include "utils/common.hpp"
 
 #include <cstdlib>
@@ -172,8 +172,7 @@ int run_knotergy(int argc, char** argv) {
             show_sequence_and_struct = true;
         } else if (arg == "--disable-cache") {
             disable_cache = true;
-        }
-        else {
+        } else {
             std::cerr << ERROR << " Unknown option or missing value: " << arg << '\n';
             return EXIT_FAILURE;
         }
@@ -235,8 +234,8 @@ int run_knotergy(int argc, char** argv) {
     const knotergy::RoundMethod round_method = static_cast<knotergy::RoundMethod>(round_value);
 
     // ------------------------- Load ViennaRNA Parameters -----------------------
-    knotergy::vrna_md_param vp =
-        knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence, disable_cache);
+    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(
+        vienna_param_file, dangle, sequence, disable_cache);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
     const knotergy::pk_param pkp =

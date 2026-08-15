@@ -1,8 +1,8 @@
 #pragma once
 
 #include "io/output/Report.hpp"
+#include "io/output/colors.hpp"
 #include "utils/FileUtils.hpp"
-#include "utils/colors.hpp"
 #include "utils/common.hpp"
 
 #include <nlohmann/json.hpp>

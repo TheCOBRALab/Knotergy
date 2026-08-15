@@ -71,7 +71,7 @@ class ProcessedRNAEntry {
           unpaired_prefix_sum_{std::move(unpaired_prefix_sum)},
           has_modified_bases_{has_modified_bases} {
         if (has_modified_bases) {
-            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
+            mod_sequence_views_ = parse_modified_sequence(raw_sequence_, structure_);
         }
     }
 
@@ -112,7 +112,7 @@ class ProcessedRNAEntry {
           unpaired_prefix_sum_(std::move(other.unpaired_prefix_sum_)),
           has_modified_bases_(other.has_modified_bases_) {
         if (has_modified_bases_) {
-            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
+            mod_sequence_views_ = parse_modified_sequence(raw_sequence_, structure_);
         }
     }
 
@@ -135,7 +135,7 @@ class ProcessedRNAEntry {
             unpaired_prefix_sum_ = std::move(other.unpaired_prefix_sum_);
             has_modified_bases_ = other.has_modified_bases_;
             if (has_modified_bases_) {
-                mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
+                mod_sequence_views_ = parse_modified_sequence(raw_sequence_, structure_);
             }
         }
         return *this;
@@ -159,7 +159,7 @@ class ProcessedRNAEntry {
           unpaired_prefix_sum_(other.unpaired_prefix_sum_),
           has_modified_bases_(other.has_modified_bases_) {
         if (has_modified_bases_) {
-            mod_sequence_views_ = compute_modified_sequence_views(raw_sequence_, structure_);
+            mod_sequence_views_ = parse_modified_sequence(raw_sequence_, structure_);
         }
     }
 
@@ -232,7 +232,7 @@ class ProcessedRNAEntry {
 
     // grapheme is a user-perceived character, which may be multiple bytes. (e.g. Ψ is 2 bytes)
     // It's defined here since adding it to RNAProcessor would create a circular dependency
-    [[nodiscard]] static std::vector<std::string_view> compute_modified_sequence_views(
+    [[nodiscard]] static std::vector<std::string_view> parse_modified_sequence(
         const std::string& sequence, const std::string& structure = "") {
         std::vector<std::string_view> out;
         out.reserve(sequence.size());
@@ -253,7 +253,7 @@ class ProcessedRNAEntry {
                 // Fall back to multi-byte parsing for the entire sequence.
                 if (c & 0x80) {
                     // No structure provided = Use multi-byte parsing.
-                    return compute_modified_sequence_views(sequence);
+                    return parse_modified_sequence(sequence);
                 }
                 out.emplace_back(sequence.data() + i, 1);
             }

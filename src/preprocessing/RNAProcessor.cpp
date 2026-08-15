@@ -19,31 +19,23 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
 
     // Modified bases present
     if (!modified_params.empty()) {
-        mod_sequence =
-            ProcessedRNAEntry::compute_modified_sequence_views(rna.sequence, rna.structure);
-
-        // Check sequence.size() == structure.size()
+        mod_sequence = ProcessedRNAEntry::parse_modified_sequence(rna.sequence, rna.structure);
         validate_sequence_structure_length(mod_sequence.size());
-
-        // Gets unmodified version of the sequence, and checks for invalid bases in the input
-        // sequence This also detects if there are any modified bases present in the sequence
         unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(),
                                                           has_modified_bases);
     }
 
     // No modified bases present
     else {
-        // Check sequence.size() == structure.size()
-        validate_sequence_structure_length(rna.sequence.size());
-
         // Check for invalid bases in the input sequence
         for (char base : rna.sequence) {
-            if (!is_unmod_base(base)) {
+            if (!is_unmodified_base(base)) {
                 THROW_ERROR("Sequence contains invalid base: '" + std::string(1, base) + "'");
                 break;
             }
         }
 
+        validate_sequence_structure_length(rna.sequence.size());
         unmodified_sequence = rna.sequence;
     }
 
@@ -176,27 +168,31 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
 // sort step.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     const std::vector<size_t>& pair_table, size_t number_of_pairs) {
+    // Initialization and preallocation
     std::vector<ClosedRegion> closed_regions;
     std::vector<ClosedRegion> stack;
-
-    const size_t n = pair_table.size();
     closed_regions.reserve(number_of_pairs);
     stack.reserve(std::min(number_of_pairs, size_t{32}));  // rough estimate of stack depth
 
-    for (size_t i = n; i-- > 0;) {
-        size_t paired_idx = pair_table[i];
-        if (paired_idx == NULL_INDEX) continue;
+    // Traverse the pair_table from right to left
+    for (size_t idx = pair_table.size(); idx-- > 0;) {
+        size_t paired_idx = pair_table[idx];
+        if (paired_idx == NULL_INDEX) continue;  // Skip unpaired bases
 
-        if (i > paired_idx) {
-            // Closing base: push raw pair; its left boundary may be extended later.
-            stack.emplace_back(paired_idx, i);
+        // Closing base: e.g. ")" or "]".
+        if (idx > paired_idx) {
+            stack.emplace_back(paired_idx, idx);
             continue;
         }
 
-        const ClosedRegion current_pair(i, paired_idx);
+        // Opening base: e.g. "(" or "[".
+
+        // Merging pairs extends the left boundary (Hence smallest_left)
+        // Popping from stack extends the right boundary
+        const ClosedRegion current_pair(idx, paired_idx);
         size_t smallest_left = current_pair.begin;
 
-        // Merge any nested regions whose end lies within [i, close)
+        // Merge any nested regions whose end lies within [idx, current_pair.end)
         while (!stack.empty() && (stack.back().end < current_pair.end)) {
             smallest_left = std::min(smallest_left, stack.back().begin);
             stack.pop_back();
@@ -264,7 +260,7 @@ std::string RNAProcessor::compute_unmodified_sequence(
         }
 
         // If it's an unmodified base, just append it
-        if (is_unmod_base(mod_base)) {
+        if (is_unmodified_base(mod_base)) {
             unmodified_sequence.append(mod_base);
             continue;
         }
@@ -290,13 +286,13 @@ std::string RNAProcessor::compute_unmodified_sequence(
 }
 
 // Check if a base is unmodified
-bool RNAProcessor::is_unmod_base(const std::string_view& b) {
+bool RNAProcessor::is_unmodified_base(const std::string_view& b) {
     if (b.size() != 1)
         return false;  // Multi-character "base" are considered modified (e.g. ❤️‍🩹)
     return is_unmodified_base(static_cast<unsigned char>(b[0])) == true;
 }
 
-bool RNAProcessor::is_unmod_base(char b) {
+bool RNAProcessor::is_unmodified_base(char b) {
     return is_unmodified_base(static_cast<unsigned char>(b)) == true;
 }
 

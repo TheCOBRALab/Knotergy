@@ -1,12 +1,12 @@
 #pragma once
 
+#include "io/output/colors.hpp"
 #include "io/parameters/ModParams.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
 #include "preprocessing/ClosedRegion.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "preprocessing/RNAEntry.hpp"
-#include "utils/colors.hpp"
 
 #include <array>
 #include <vector>
@@ -162,14 +162,14 @@ class RNAProcessor {
      * This is used to validate the input and ensure that modified bases are properly handled.
      *
      * Example:
-     * is_unmod_base('A') -> true
-     * is_unmod_base('6') -> false
+     * is_unmodified_base('A') -> true
+     * is_unmodified_base('6') -> false
      *
      * @param base The base to check, as a string_view or char.
      * @return true if the base is unmodified, false otherwise.
      */
-    [[nodiscard]] static bool is_unmod_base(const std::string_view& base);
-    [[nodiscard]] static bool is_unmod_base(char base);
+    [[nodiscard]] static bool is_unmodified_base(const std::string_view& base);
+    [[nodiscard]] static bool is_unmodified_base(char base);
 
    private:
     // Lookup table for unmodified bases

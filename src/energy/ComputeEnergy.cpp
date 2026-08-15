@@ -6,6 +6,7 @@
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModMultiloop.hpp"
 #include "energy/modified_bases/ModStack.hpp"
+#include "io/output/EnergyBreakdown.hpp"
 
 namespace knotergy {
 
@@ -20,7 +21,7 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
 
         energy_ += process_node(*node);
         if (verbose) {
-            std::cout << node->energy_breakdown(sequence_.size());
+            std::cout << EnergyBreakdown::node_energy_breakdown(node, pRNA_);
         }
 
         for (auto it = node->children.rbegin(); it != node->children.rend(); ++it) {

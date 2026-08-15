@@ -74,7 +74,7 @@ class ModBaseUtils {
             return modified;  // no modified sequence provided, return empty vector
         modified.reserve(indices.size());
         for (size_t idx : indices) {
-            if (!RNAProcessor::is_unmod_base(mod_sequence[idx]) &&
+            if (!RNAProcessor::is_unmodified_base(mod_sequence[idx]) &&
                 std::find(modified.begin(), modified.end(), mod_sequence[idx]) == modified.end()) {
                 modified.push_back(mod_sequence[idx]);
             }

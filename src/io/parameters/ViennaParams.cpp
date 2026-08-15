@@ -1,6 +1,6 @@
 #include "ViennaParams.hpp"
 
-#include "utils/colors.hpp"
+#include "io/output/colors.hpp"
 
 #include <ViennaRNA/model.hpp>
 #include <ViennaRNA/params/basic.hpp>
@@ -108,7 +108,8 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
-                                                   const std::string& seq, const bool disable_cache) {
+                                                   const std::string& seq,
+                                                   const bool disable_cache) {
     vrna_md_param md_param{};
     ParamSourceInfo source_info;
 
@@ -210,7 +211,6 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     if (!disable_cache) {
         save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
     }
-    
 
     return md_param;
 }
