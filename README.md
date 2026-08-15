@@ -195,6 +195,12 @@ Without `-e`, no rounding is applied. Using `-e` without a value selects Banker'
 - `-v`, `--verbose`  
   Enable detailed output, including per-motif energy breakdown
 
+- `--show-input`
+  Shows input sequence and structure in output
+
+- `--disable-cache`
+  Disables saving and loading cache files for ViennaRNA parameters
+
 ---
 
 ### 📥 Input options

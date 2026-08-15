@@ -77,7 +77,8 @@ class ViennaParams {
      */
     [[nodiscard]] static vrna_md_param load_energy_parameters(const std::string& paramFile = "",
                                                               int dangle = 2,
-                                                              const std::string& seq = "");
+                                                              const std::string& seq = "",
+                                                              const bool disable_cache = false);
 };
 
 }  // namespace knotergy

@@ -37,6 +37,7 @@ void help() {
               << "  -d, --dangles                         Specify the dangle model to be used "
                  "(base is 2)\n"
               << "  --show-input                          Show the input sequence and structure\n"
+              << "  --disable-cache                        Disable parameter caching\n"
         //   << "  --efn2-correction                     Apply efn2 single-bulge correction\n"
         ;
 }
@@ -93,6 +94,7 @@ int run_knotergy(int argc, char** argv) {
     int dangle = 2;
     bool efn2_correction = false;
     bool show_sequence_and_struct = false;
+    bool disable_cache = false;
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -168,7 +170,10 @@ int run_knotergy(int argc, char** argv) {
 
         } else if (arg == "--show-input") {
             show_sequence_and_struct = true;
-        } else {
+        } else if (arg == "--disable-cache") {
+            disable_cache = true;
+        }
+        else {
             std::cerr << ERROR << " Unknown option or missing value: " << arg << '\n';
             return EXIT_FAILURE;
         }
@@ -231,7 +236,7 @@ int run_knotergy(int argc, char** argv) {
 
     // ------------------------- Load ViennaRNA Parameters -----------------------
     knotergy::vrna_md_param vp =
-        knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence);
+        knotergy::ViennaParams::load_energy_parameters(vienna_param_file, dangle, sequence, disable_cache);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
     const knotergy::pk_param pkp =

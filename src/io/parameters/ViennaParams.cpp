@@ -108,7 +108,7 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
-                                                   const std::string& seq) {
+                                                   const std::string& seq, const bool disable_cache) {
     vrna_md_param md_param{};
     ParamSourceInfo source_info;
 
@@ -163,9 +163,9 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         source_info.resolved_name = "Turner 2004";
     }
 
-    // ----- Always try cache -----
+    // ----- Try cache if not disabled -----
     const std::string cachePath = make_cache_path(cache_key, dangle, seq);
-    if (load_param_cache(cachePath, dangle, srcMtime, md_param)) {
+    if (!disable_cache && load_param_cache(cachePath, dangle, srcMtime, md_param)) {
         md_param.set_source_info(source_info);
         return md_param;
     }
@@ -207,7 +207,10 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     md_param.set_source_info(source_info);
 
     // ----- Save cache with the loaded parameters -----
-    save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
+    if (!disable_cache) {
+        save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
+    }
+    
 
     return md_param;
 }
