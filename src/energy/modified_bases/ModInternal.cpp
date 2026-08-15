@@ -128,7 +128,7 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
 //     return (mod_mismatch1 + mod_mismatch2) - (unmod_mismatch1 + unmod_mismatch2);
 // }
 
-int ModInternal::find_mod_internal_energy(const BasePair& bp, const BasePair& next_bp,
+int ModInternal::find_mod_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                           const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                           const all_mod_params& mp) {
     return find_mod_internal_energy(bp.i, bp.j, next_bp.i, next_bp.j, pRNA.get_modified_sequence(),

@@ -51,7 +51,7 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Stacking energy in centicalories.
      */
-    [[nodiscard]] static int stack_energy(BasePair pair, BasePair child,
+    [[nodiscard]] static int stack_energy(PKBasePair pair, PKBasePair child,
                                           const std::string& sequence, vrna_md_param& vp);
 
     /**
@@ -85,7 +85,7 @@ class ViennaFunctions {
      * @param is_inf Whether the energy is infinite (hairpin loop size < 3).
      * @return Hairpin loop energy in centicalories.
      */
-    [[nodiscard]] static int hairpin_energy(const BasePair& pair, const std::string& sequence,
+    [[nodiscard]] static int hairpin_energy(const PKBasePair& pair, const std::string& sequence,
                                             bool& is_inf, vrna_md_param& vp);
 
     /**
@@ -112,7 +112,7 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return Internal loop energy in centicalories.
      */
-    [[nodiscard]] static int internal_loop_energy(BasePair pair, BasePair child,
+    [[nodiscard]] static int internal_loop_energy(PKBasePair pair, PKBasePair child,
                                                   const std::string& sequence, vrna_md_param& vp);
 
     /**

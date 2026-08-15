@@ -82,7 +82,7 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Stacking energy with pseudoknot multiplier in centicalories.
      */
-    [[nodiscard]] static double pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
+    [[nodiscard]] static double pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
                                                 vrna_md_param& vp, const knotergy::pk_param& pkp,
                                                 const all_mod_params& mp);
@@ -100,7 +100,7 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Internal loop energy with pseudoknot multiplier in centicalories.
      */
-    [[nodiscard]] static double pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
+    [[nodiscard]] static double pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp, const knotergy::pk_param& pkp,
                                                    const all_mod_params& mp);
@@ -116,7 +116,7 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Multiloop energy in centicalories.
      */
-    [[nodiscard]] static double pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
+    [[nodiscard]] static double pk_multiloop_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                     const ProcessedRNAEntry& processed_rna,
                                                     const knotergy::pk_param& pkp);
 

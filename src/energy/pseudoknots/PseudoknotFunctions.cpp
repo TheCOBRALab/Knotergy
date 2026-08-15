@@ -69,7 +69,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
     double energy = 0;
 
     for (const Band& band : node.bands) {
-        const std::vector<BasePair>& bps = band.base_pairs();
+        const std::vector<PKBasePair>& bps = band.base_pairs();
         const size_t n = bps.size();
 
         // Sanity check: left inner border must be less than right inner border
@@ -95,8 +95,8 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
 
         // loops through each base pair in band (except last one)
         for (size_t idx = 0; idx + 1 < n; ++idx) {
-            const BasePair& bp = bps[idx];
-            const BasePair& next_bp = bps[idx + 1];
+            const PKBasePair& bp = bps[idx];
+            const PKBasePair& next_bp = bps[idx + 1];
 
             if (bp.is_stack(next_bp)) {
                 energy += pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
@@ -112,7 +112,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
     return energy;
 }
 
-double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& next_bp,
+double PseudoknotFunctions::pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                             const ProcessedRNAEntry& processed_rna,
                                             vrna_md_param& vp, const knotergy::pk_param& pkp,
                                             const all_mod_params& mp) {
@@ -126,7 +126,7 @@ double PseudoknotFunctions::pk_stack_energy(const BasePair& bp, const BasePair& 
     return round_energy(stack_pk_energy, pkp.round);
 }
 
-double PseudoknotFunctions::pk_internal_energy(const BasePair& bp, const BasePair& next_bp,
+double PseudoknotFunctions::pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp, const knotergy::pk_param& pkp,
                                                const all_mod_params& mp) {
@@ -140,7 +140,7 @@ double PseudoknotFunctions::pk_internal_energy(const BasePair& bp, const BasePai
     return round_energy(internal_pk_energy, pkp.round);
 }
 
-double PseudoknotFunctions::pk_multiloop_energy(const BasePair& bp, const BasePair& next_bp,
+double PseudoknotFunctions::pk_multiloop_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
                                                 const knotergy::pk_param& pkp) {
     double multiloop_penalty = pkp.pk_mloop_init;

@@ -188,7 +188,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
         within_band_start_idx.reserve(node.children.size());
 
         for (const Band& band : node.bands) {
-            for (const BasePair& base_pair : band.base_pairs()) {
+            for (const PKBasePair& base_pair : band.base_pairs()) {
                 for (const ClosedRegion& child : base_pair.children) {
                     within_band_start_idx.insert(child.begin);
                 }

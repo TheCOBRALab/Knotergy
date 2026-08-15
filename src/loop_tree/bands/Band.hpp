@@ -49,20 +49,20 @@ struct BandBounds {
  * @param right_index 3' position of the base pair.
  * @param child_regions Nested base pairs (closed regions) within this pair.
  */
-struct BasePair {
-    BasePair(size_t left_index, size_t right_index, std::vector<ClosedRegion> child_regions = {})
+struct PKBasePair {
+    PKBasePair(size_t left_index, size_t right_index, std::vector<ClosedRegion> child_regions = {})
         : i{left_index}, j{right_index}, children{std::move(child_regions)} {}
     size_t i;
     size_t j;
     std::vector<ClosedRegion> children;
 
-    [[nodiscard]] bool is_stack(const BasePair& child) const {
+    [[nodiscard]] bool is_stack(const PKBasePair& child) const {
         return i + 1 == child.i && j - 1 == child.j;
     }
 };
 
 struct Band {
-    Band(size_t lb, size_t li, size_t ri, size_t rb, std::vector<BasePair> base_pairs,
+    Band(size_t lb, size_t li, size_t ri, size_t rb, std::vector<PKBasePair> base_pairs,
          int number_of_children = 0)
         : left_border_{lb},
           left_inner_{li},
@@ -71,7 +71,7 @@ struct Band {
           base_pairs_{std::move(base_pairs)},
           number_of_children_{number_of_children} {};
 
-    Band(BandBounds bounds, std::vector<BasePair> base_pairs, int number_of_children = 0)
+    Band(BandBounds bounds, std::vector<PKBasePair> base_pairs, int number_of_children = 0)
         : Band(bounds.left_border, bounds.left_inner, bounds.right_inner, bounds.right_border,
                std::move(base_pairs), number_of_children) {}
 
@@ -96,7 +96,7 @@ struct Band {
 
     [[nodiscard]] int get_number_of_children() const { return number_of_children_; }
 
-    [[nodiscard]] const std::vector<BasePair>& base_pairs() const { return base_pairs_; }
+    [[nodiscard]] const std::vector<PKBasePair>& base_pairs() const { return base_pairs_; }
 
    private:
     size_t left_border_;
@@ -104,7 +104,7 @@ struct Band {
     size_t right_inner_;
     size_t right_border_;
 
-    std::vector<BasePair> base_pairs_;
+    std::vector<PKBasePair> base_pairs_;
     int number_of_children_ = 0;
 };
 
@@ -113,7 +113,7 @@ inline std::ostream& operator<<(std::ostream& os, const Band& band) {
     os << "Band(" << band.left_border() << ", " << band.left_inner() << ", " << band.right_inner()
        << ", " << band.right_border() << ")";
     for (const auto& base_pair : band.base_pairs()) {
-        os << "    BasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
+        os << "    PKBasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
     }
     return os;
 }

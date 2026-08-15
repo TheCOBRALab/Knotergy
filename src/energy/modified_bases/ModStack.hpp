@@ -50,10 +50,11 @@ class ModStack {
     }
 
     /**
-     * @brief Overload of find_mod_stack_energy that takes BasePair objects and a ProcessedRNAEntry.
+     * @brief Overload of find_mod_stack_energy that takes PKBasePair objects and a
+     * ProcessedRNAEntry.
      *
      * This is a convenience function that extracts the necessary information from the
-     * BasePair objects and ProcessedRNAEntry to call the main find_mod_stack_energy function.
+     * PKBasePair objects and ProcessedRNAEntry to call the main find_mod_stack_energy function.
      *
      * @param bp The outer base pair.
      * @param next_bp The inner base pair that stacks with the outer base pair.
@@ -63,7 +64,7 @@ class ModStack {
      * @return Stacking energy in centicalories, accounting for modified bases.
      *
      */
-    [[nodiscard]] static int find_mod_stack_energy(const BasePair& bp, const BasePair& next_bp,
+    [[nodiscard]] static int find_mod_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp, const all_mod_params& mp) {
         const std::string& sequence = processed_rna.get_sequence();

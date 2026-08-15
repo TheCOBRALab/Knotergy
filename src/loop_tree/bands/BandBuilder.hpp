@@ -45,26 +45,24 @@ class BandBuilder {
      * @param pair_table Base-pair index mapping for the structure.
      * @param cr_pair_table Closed region pairing indices.
      * @param child_count Reference to the count of child nodes.
-     * @return Vector of BasePair objects representing the base pairs in the band.
+     * @return Vector of PKBasePair objects representing the base pairs in the band.
      *
      */
-    static std::vector<BasePair> find_base_pairs_left_scan(size_t lb, size_t li, size_t ri,
-                                                           size_t rb,
-                                                           const std::vector<size_t>& pair_table,
-                                                           const std::vector<size_t>& cr_pair_table,
-                                                           int& child_count);
+    static std::vector<PKBasePair> find_base_pairs_left_scan(
+        size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pair_table,
+        const std::vector<size_t>& cr_pair_table, int& child_count);
 
     /**
      * @brief Populate closed region children from children of the right arm.
      *
-     * @param base_pairs Vector of BasePair objects to populate.
+     * @param base_pairs Vector of PKBasePair objects to populate.
      * @param ri Right inner position.
      * @param rb Right border position.
      * @param cr_pair_table Closed region pairing indices.
      * @param child_count Reference to the count of child nodes.
      */
-    static void populate_right_arm_children(std::vector<BasePair>& base_pairs, size_t ri, size_t rb,
-                                            const std::vector<size_t>& cr_pair_table,
+    static void populate_right_arm_children(std::vector<PKBasePair>& base_pairs, size_t ri,
+                                            size_t rb, const std::vector<size_t>& cr_pair_table,
                                             int& child_count);
 };
 

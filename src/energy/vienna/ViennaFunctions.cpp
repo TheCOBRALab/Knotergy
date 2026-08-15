@@ -32,8 +32,8 @@ int ViennaFunctions::stack_energy(const LoopNode& node, const std::string& seque
                         sequence, vp);
 }
 
-// Helper function for stack_energy that takes BasePair objects instead of indices
-int ViennaFunctions::stack_energy(BasePair pair, BasePair child, const std::string& sequence,
+// Helper function for stack_energy that takes PKBasePair objects instead of indices
+int ViennaFunctions::stack_energy(PKBasePair pair, PKBasePair child, const std::string& sequence,
                                   vrna_md_param& vp) {
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
@@ -78,8 +78,8 @@ int ViennaFunctions::hairpin_energy(const LoopNode& node, const std::string& seq
     return hairpin_energy(node.begin, node.end, sequence, is_inf, vp);
 }
 
-int ViennaFunctions::hairpin_energy(const BasePair& pair, const std::string& sequence, bool& is_inf,
-                                    vrna_md_param& vp) {
+int ViennaFunctions::hairpin_energy(const PKBasePair& pair, const std::string& sequence,
+                                    bool& is_inf, vrna_md_param& vp) {
     return hairpin_energy(pair.i, pair.j, sequence, is_inf, vp);
 }
 
@@ -109,7 +109,7 @@ int ViennaFunctions::internal_loop_energy(const LoopNode& node, const std::strin
                                 node.children[0]->end, sequence, vp);
 }
 
-int ViennaFunctions::internal_loop_energy(BasePair pair, BasePair child,
+int ViennaFunctions::internal_loop_energy(PKBasePair pair, PKBasePair child,
                                           const std::string& sequence, vrna_md_param& vp) {
     return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }

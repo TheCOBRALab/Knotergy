@@ -125,7 +125,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
         os << "    Band(" << band.left_border() << ", " << band.left_inner() << ", "
            << band.right_inner() << ", " << band.right_border() << ")\n";
         for (const auto& base_pair : band.base_pairs()) {
-            os << "        BasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
+            os << "        PKBasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
         }
     }
     os << "  children count: " << node.children.size() << "\n";

@@ -78,7 +78,7 @@ TEST(ProcessedRNAEntry, GetClosedRegions_IsDeterministicForPseudoknotNotation) {
     EXPECT_EQ(processed_rna1.get_closed_regions(), expected_closed_regions);
 }
 
-TEST(ProcessedRNAEntry, GetClosedRegions_HandlesPseudoknotWithNestedBasePair) {
+TEST(ProcessedRNAEntry, GetClosedRegions_HandlesPseudoknotWithNestedPKBasePair) {
     std::string sequence = "AAGGUAGUU";
     std::string structure = "[(..().])";
     knotergy::RNAEntry rna(sequence, structure);
