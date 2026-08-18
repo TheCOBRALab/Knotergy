@@ -43,11 +43,12 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pair_table);
     size_t number_of_pairs = (rna.size() - static_cast<size_t>(unpaired_prefix_sum.back())) / 2;
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pair_table, number_of_pairs);
-    std::vector<size_t> cr_pair_table = compute_cr_pair_table(closed_regions, rna.size());
 
-    return ProcessedRNAEntry{std::move(rna),           std::move(unmodified_sequence),
-                             std::move(pair_table),    std::move(closed_regions),
-                             std::move(cr_pair_table), std::move(unpaired_prefix_sum),
+    return ProcessedRNAEntry{std::move(rna),
+                             std::move(unmodified_sequence),
+                             std::move(pair_table),
+                             std::move(closed_regions),
+                             std::move(unpaired_prefix_sum),
                              has_modified_bases};
 };
 
@@ -214,18 +215,6 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
     // Reverse is linear, not sorting.
     std::reverse(closed_regions.begin(), closed_regions.end());
     return closed_regions;
-}
-
-// ([...)] = 6, -1, -1, -1, -1, -1, 0
-std::vector<size_t> RNAProcessor::compute_cr_pair_table(
-    const std::vector<ClosedRegion>& closed_regions, size_t rna_size) {
-    std::vector<size_t> closed_regions_pair_table(rna_size, NULL_INDEX);
-    for (ClosedRegion cr : closed_regions) {
-        if (cr.end >= rna_size) THROW_ERROR("rna_size is too small");
-        closed_regions_pair_table[cr.begin] = cr.end;
-        closed_regions_pair_table[cr.end] = cr.begin;
-    }
-    return closed_regions_pair_table;
 }
 
 // prefix sum

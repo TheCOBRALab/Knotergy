@@ -6,7 +6,7 @@ namespace knotergy {
 
 Band BandBuilder::construct_band(size_t lb, size_t li, size_t ri, size_t rb,
                                  const std::vector<size_t>& pair_table,
-                                 const std::vector<size_t>& cr_pair_table) {
+                                 const std::vector<LoopNode*>& node_table) {
     // ------------- Validate band structure and pairing -------------
     if (lb >= pair_table.size() || li >= pair_table.size() || ri >= pair_table.size() ||
         rb >= pair_table.size()) {
@@ -23,24 +23,28 @@ Band BandBuilder::construct_band(size_t lb, size_t li, size_t ri, size_t rb,
         THROW_ERROR("Band boundary indices must be correctly paired in the pair table.\n");
     };
 
+    if (node_table.size() != pair_table.size()) {
+        THROW_ERROR("Loop-node lookup size must match pair table size.");
+    }
+
     // ------------- Build and populate base pairs -------------
     int child_count = 0;
     std::vector<PKBasePair> base_pairs =
-        find_base_pairs_left_scan(lb, li, ri, rb, pair_table, cr_pair_table, child_count);
-    populate_right_arm_children(base_pairs, ri, rb, cr_pair_table, child_count);
+        find_base_pairs_left_scan(lb, li, ri, rb, pair_table, node_table, child_count);
+    populate_right_arm_children(base_pairs, ri, rb, node_table, child_count);
 
     return Band(lb, li, ri, rb, std::move(base_pairs), child_count);
 }
 
 Band BandBuilder::construct_band(BandBounds bounds, const std::vector<size_t>& pair_table,
-                                 const std::vector<size_t>& cr_pair_table) {
+                                 const std::vector<LoopNode*>& node_table) {
     return construct_band(bounds.left_border, bounds.left_inner, bounds.right_inner,
-                          bounds.right_border, pair_table, cr_pair_table);
+                          bounds.right_border, pair_table, node_table);
 }
 
 std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
     size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pair_table,
-    const std::vector<size_t>& cr_pair_table, int& child_count) {
+    const std::vector<LoopNode*>& node_table, int& child_count) {
     std::vector<PKBasePair> base_pairs;
     base_pairs.reserve(std::min(rb - ri, li - lb) + 1);  // Max possible base pairs in the band
 
@@ -48,9 +52,9 @@ std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
 
     for (size_t idx = lb + 1; idx <= li; ++idx) {
         // Skip closed region and add it as a child of the current base pair
-        if (cr_pair_table[idx] != NULL_INDEX) {
-            base_pairs.back().children.emplace_back(idx, cr_pair_table[idx]);
-            idx = cr_pair_table[idx];
+        if (node_table[idx] != nullptr) {
+            base_pairs.back().children.emplace_back(idx, node_table[idx]->end);
+            idx = node_table[idx]->end;
             ++child_count;
             continue;
         }
@@ -66,7 +70,7 @@ std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
 }
 
 void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pairs, size_t ri,
-                                              size_t rb, const std::vector<size_t>& cr_pair_table,
+                                              size_t rb, const std::vector<LoopNode*>& node_table,
                                               int& child_count) {
     if (base_pairs.empty()) {
         return;
@@ -95,9 +99,9 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
         }
 
         // Adds children to current base pair
-        if (cr_pair_table[idx] != NULL_INDEX) {
+        if (node_table[idx] != nullptr) {
             size_t right = idx;
-            size_t left = cr_pair_table[idx];
+            size_t left = node_table[idx]->begin;
 
             current_bp.children.emplace_back(left, right);
             idx = left;

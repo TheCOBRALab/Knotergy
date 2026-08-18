@@ -8,9 +8,13 @@ namespace knotergy {
 std::vector<Band> BandFinder::find_bands(size_t cr_start, size_t cr_end, LoopType loop_type,
                                          std::vector<PairedBaseNode>& aux_bands,
                                          const std::vector<size_t>& pair_table,
-                                         const std::vector<size_t>& cr_pair_table) {
+                                         const std::vector<LoopNode*>& node_table) {
     // sanity check bounds
     if (cr_end >= pair_table.size()) THROW_ERROR("Right bound exceeds the size of structure.");
+
+    if (node_table.size() != pair_table.size()) {
+        THROW_ERROR("Loop-node lookup size must match pair table size.");
+    }
 
     // If not a pseudoknot, there are no bands to find (bands only exist in pseudoknots)
     if (loop_type != LoopType::Pseudoknot) {
@@ -21,7 +25,7 @@ std::vector<Band> BandFinder::find_bands(size_t cr_start, size_t cr_end, LoopTyp
     bands.reserve(8);  // Most pseudoknots are small, so reserving some just in case
 
     // Linked list pointing to potential band boundaries
-    generate_paired_base_links(cr_start, cr_end, aux_bands, pair_table, cr_pair_table);
+    generate_paired_base_links(cr_start, cr_end, aux_bands, pair_table, node_table);
 
     // Iterate through linked paired bases only
     size_t band_start = cr_start;
@@ -49,7 +53,7 @@ std::vector<Band> BandFinder::find_bands(size_t cr_start, size_t cr_end, LoopTyp
 
         // Create the band and add to list
         BandBounds bounds{band_start, left_inner, right_inner, band_end};
-        bands.push_back(BandBuilder::construct_band(bounds, pair_table, cr_pair_table));
+        bands.push_back(BandBuilder::construct_band(bounds, pair_table, node_table));
 
         band_start = aux_bands[left_inner].next;
     }
@@ -59,10 +63,10 @@ std::vector<Band> BandFinder::find_bands(size_t cr_start, size_t cr_end, LoopTyp
 // Convenience method for LoopNode
 std::vector<Band> BandFinder::find_bands(const LoopNode& node,
                                          std::vector<PairedBaseNode>& aux_bands,
-                                         const ProcessedRNAEntry& processed_rna) {
+                                         const ProcessedRNAEntry& processed_rna,
+                                         const std::vector<LoopNode*>& node_table) {
     return find_bands(node.begin, node.end, node.loop_type, aux_bands,
-                      processed_rna.get_pair_table(),
-                      processed_rna.get_closed_regions_pair_table());
+                      processed_rna.get_pair_table(), node_table);
 }
 
 // Extends the stem to find inner band positions
@@ -101,7 +105,7 @@ std::pair<size_t, size_t> BandFinder::find_stem_inner_indices(
 void BandFinder::generate_paired_base_links(size_t cr_start, size_t cr_end,
                                             std::vector<PairedBaseNode>& aux_bands,
                                             const std::vector<size_t>& pair_table,
-                                            const std::vector<size_t>& cr_pair_table) {
+                                            const std::vector<LoopNode*>& node_table) {
     if (cr_end < cr_start) return;
 
     if (pair_table[cr_start] == NULL_INDEX) {
@@ -110,7 +114,7 @@ void BandFinder::generate_paired_base_links(size_t cr_start, size_t cr_end,
     if (pair_table[cr_end] == NULL_INDEX) {
         THROW_ERROR("Right index is not a base-pair");
     }
-    if (cr_pair_table[cr_start] != cr_end) {
+    if (node_table[cr_start] == nullptr || node_table[cr_start]->end != cr_end) {
         THROW_ERROR("Left bound and right bound do not form a closed region");
     }
 
@@ -122,8 +126,8 @@ void BandFinder::generate_paired_base_links(size_t cr_start, size_t cr_end,
         }
 
         // skip nested closed regions
-        if (cr_pair_table[i] != NULL_INDEX) {
-            i = cr_pair_table[i];
+        if (node_table[i] != nullptr) {
+            i = node_table[i]->end;  // skip to the end of the closed region
             continue;
         }
 
@@ -140,9 +144,10 @@ void BandFinder::generate_paired_base_links(size_t cr_start, size_t cr_end,
 
 void BandFinder::generate_paired_base_links(const LoopNode& node,
                                             std::vector<PairedBaseNode>& aux_bands,
-                                            const ProcessedRNAEntry& processed_entry) {
+                                            const ProcessedRNAEntry& processed_entry,
+                                            const std::vector<LoopNode*>& node_table) {
     generate_paired_base_links(node.begin, node.end, aux_bands, processed_entry.get_pair_table(),
-                               processed_entry.get_closed_regions_pair_table());
+                               node_table);
 }
 
 }  // namespace knotergy

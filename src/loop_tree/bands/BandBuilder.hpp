@@ -1,4 +1,5 @@
 #pragma once
+#include "loop_tree/LoopNode.hpp"
 #include "loop_tree/bands/Band.hpp"
 #include "preprocessing/ClosedRegion.hpp"
 
@@ -20,16 +21,16 @@ class BandBuilder {
      * @param ri Right inner position.
      * @param rb Right border position.
      * @param pair_table Base-pair index mapping for the structure.
-     * @param cr_pair_table Closed region pairing indices.
+     * @param node_table Vector of pointers to LoopNode objects for each position in the structure.
      * @throws DetailedException if band structure is invalid.
      */
     static Band construct_band(size_t lb, size_t li, size_t ri, size_t rb,
                                const std::vector<size_t>& pair_table,
-                               const std::vector<size_t>& cr_pair_table);
+                               const std::vector<LoopNode*>& node_table);
 
     // Convenience method (BandBounds stores lb, li, ri, rb)
     static Band construct_band(BandBounds bounds, const std::vector<size_t>& pair_table,
-                               const std::vector<size_t>& cr_pair_table);
+                               const std::vector<LoopNode*>& node_table);
 
    private:
     /**
@@ -43,14 +44,13 @@ class BandBuilder {
      * @param ri Right inner position.
      * @param rb Right border position.
      * @param pair_table Base-pair index mapping for the structure.
-     * @param cr_pair_table Closed region pairing indices.
      * @param child_count Reference to the count of child nodes.
      * @return Vector of PKBasePair objects representing the base pairs in the band.
      *
      */
     static std::vector<PKBasePair> find_base_pairs_left_scan(
         size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pair_table,
-        const std::vector<size_t>& cr_pair_table, int& child_count);
+        const std::vector<LoopNode*>& node_table, int& child_count);
 
     /**
      * @brief Populate closed region children from children of the right arm.
@@ -58,11 +58,11 @@ class BandBuilder {
      * @param base_pairs Vector of PKBasePair objects to populate.
      * @param ri Right inner position.
      * @param rb Right border position.
-     * @param cr_pair_table Closed region pairing indices.
+     * @param node_table Vector of pointers to LoopNode objects for each position in the structure.
      * @param child_count Reference to the count of child nodes.
      */
     static void populate_right_arm_children(std::vector<PKBasePair>& base_pairs, size_t ri,
-                                            size_t rb, const std::vector<size_t>& cr_pair_table,
+                                            size_t rb, const std::vector<LoopNode*>& node_table,
                                             int& child_count);
 };
 

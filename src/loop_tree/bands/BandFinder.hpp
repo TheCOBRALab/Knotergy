@@ -41,14 +41,13 @@ class BandFinder {
      * @param right_bound Right boundary of the region to search.
      * @param loop_type The type of loop being analyzed.
      * @param pair_table Base-pair index mapping for the structure.
-     * @param cr_pair_table Closed region pairing indices.
      * @return Vector of Band objects found in the region.
      */
     [[nodiscard]] static std::vector<Band> find_bands(size_t cr_start, size_t cr_end,
                                                       LoopType loop_type,
                                                       std::vector<PairedBaseNode>& aux_bands,
                                                       const std::vector<size_t>& pair_table,
-                                                      const std::vector<size_t>& cr_pair_table);
+                                                      const std::vector<LoopNode*>& node_table);
 
     /**
      * @brief Find all bands for a given loop node.
@@ -61,7 +60,8 @@ class BandFinder {
      */
     [[nodiscard]] static std::vector<Band> find_bands(const LoopNode& node,
                                                       std::vector<PairedBaseNode>& aux_bands,
-                                                      const ProcessedRNAEntry& processed_rna);
+                                                      const ProcessedRNAEntry& processed_rna,
+                                                      const std::vector<LoopNode*>& node_table);
 
    private:
     /**
@@ -98,9 +98,9 @@ class BandFinder {
      * 0 : prev = NULL_INDEX, next = 1
      * 1 : prev = 0,          next = 12
      * 2 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
-     * 3 : prev = NULL_INDEX, next = NULL_INDEX (non-pseudoknotted)
+     * 3 : prev = NULL_INDEX, next = NULL_INDEX (pseudoknot-free)
      * 4 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
-     * 5 : prev = NULL_INDEX, next = NULL_INDEX (non-pseudoknotted)
+     * 5 : prev = NULL_INDEX, next = NULL_INDEX (pseudoknot-free)
      * 6 : prev = NULL_INDEX, next = NULL_INDEX (unpaired)
      * 7 : prev = NULL_INDEX, next = 8
      * 8 : prev = 7,          next = 9
@@ -114,13 +114,13 @@ class BandFinder {
      * @param left_bound Left boundary of the region.
      * @param right_bound Right boundary of the region.
      * @param pair_table Base-pair index mapping.
-     * @param cr_pair_table Closed region pairing indices.
+     * @param node_table Vector of all loop nodes.
      * @return Vector of PairedBaseNode objects.
      */
     static void generate_paired_base_links(size_t cr_start, size_t cr_end,
                                            std::vector<PairedBaseNode>& aux_bands,
                                            const std::vector<size_t>& pair_table,
-                                           const std::vector<size_t>& cr_pair_table);
+                                           const std::vector<LoopNode*>& node_table);
 
     /**
      * @brief Generate band links for a given loop node.
@@ -133,6 +133,7 @@ class BandFinder {
      */
     static void generate_paired_base_links(const LoopNode& node,
                                            std::vector<PairedBaseNode>& aux_bands,
-                                           const ProcessedRNAEntry& processed_entry);
+                                           const ProcessedRNAEntry& processed_entry,
+                                           const std::vector<LoopNode*>& node_table);
 };
 }  // namespace knotergy

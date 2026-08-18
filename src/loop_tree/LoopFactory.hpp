@@ -63,6 +63,8 @@ class LoopFactory {
     std::unique_ptr<LoopNode> root_node_;
     size_t structure_length_;
     std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
+    std::vector<LoopNode*>
+        node_table_;  ///< All nodes for closed region skipping and pseudo-nested checks.
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

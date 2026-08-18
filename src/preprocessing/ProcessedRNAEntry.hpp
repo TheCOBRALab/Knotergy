@@ -36,7 +36,6 @@ class ProcessedRNAEntry {
     std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
     std::vector<size_t> pair_table_;                    // Base-pair indices for each position.
     std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
-    std::vector<size_t> closed_regions_pair_table_;     // Closed regions boundary indicies.
     std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
     bool has_modified_bases_ = false;                   // Whether modified bases are present.
 
@@ -52,14 +51,12 @@ class ProcessedRNAEntry {
      * base).
      * @param pair_table Base-pair indices for each position (NULL_INDEX for unpaired).
      * @param closed_regions List of closed regions detected in the structure.
-     * @param closed_regions_pair_table Partner indices for closed-region boundaries.
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
      * @param has_modified_bases Whether the RNA sequence contains modified bases.
      */
     ProcessedRNAEntry(std::string name, std::string raw_sequence, std::string structure,
                       std::string unmodified_sequence, std::vector<size_t> pair_table,
                       std::vector<ClosedRegion> closed_regions,
-                      std::vector<size_t> closed_regions_pair_table,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : name_{std::move(name)},
           raw_sequence_{std::move(raw_sequence)},
@@ -67,7 +64,6 @@ class ProcessedRNAEntry {
           sequence_{std::move(unmodified_sequence)},
           pair_table_{std::move(pair_table)},
           closed_regions_{std::move(closed_regions)},
-          closed_regions_pair_table_{std::move(closed_regions_pair_table)},
           unpaired_prefix_sum_{std::move(unpaired_prefix_sum)},
           has_modified_bases_{has_modified_bases} {
         if (has_modified_bases) {
@@ -86,18 +82,16 @@ class ProcessedRNAEntry {
      * @param mod_sequence_views The modified RNA sequence (raw sequence split into string_views
      * @param pair_table Base-pair indices for each position (NULL_INDEX for unpaired).
      * @param closed_regions List of closed regions detected in the structure.
-     * @param closed_regions_pair_table Partner indices for closed-region boundaries.
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
      * @param has_modified_bases Whether the RNA sequence contains modified bases.
      */
     ProcessedRNAEntry(RNAEntry rna, std::string unmodified_sequence, std::vector<size_t> pair_table,
                       std::vector<ClosedRegion> closed_regions,
-                      std::vector<size_t> closed_regions_pair_table,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : ProcessedRNAEntry(std::move(rna.name), std::move(rna.sequence), std::move(rna.structure),
                             std::move(unmodified_sequence), std::move(pair_table),
-                            std::move(closed_regions), std::move(closed_regions_pair_table),
-                            std::move(unpaired_prefix_sum), has_modified_bases) {}
+                            std::move(closed_regions), std::move(unpaired_prefix_sum),
+                            has_modified_bases) {}
 
     // Move constructor (ProcessedRNAEntry b = std::move(a);)
     ProcessedRNAEntry(ProcessedRNAEntry&& other) noexcept
@@ -108,7 +102,6 @@ class ProcessedRNAEntry {
           mod_sequence_views_(),  // rebuild
           pair_table_(std::move(other.pair_table_)),
           closed_regions_(std::move(other.closed_regions_)),
-          closed_regions_pair_table_(std::move(other.closed_regions_pair_table_)),
           unpaired_prefix_sum_(std::move(other.unpaired_prefix_sum_)),
           has_modified_bases_(other.has_modified_bases_) {
         if (has_modified_bases_) {
@@ -131,7 +124,6 @@ class ProcessedRNAEntry {
             sequence_ = std::move(other.sequence_);
             pair_table_ = std::move(other.pair_table_);
             closed_regions_ = std::move(other.closed_regions_);
-            closed_regions_pair_table_ = std::move(other.closed_regions_pair_table_);
             unpaired_prefix_sum_ = std::move(other.unpaired_prefix_sum_);
             has_modified_bases_ = other.has_modified_bases_;
             if (has_modified_bases_) {
@@ -155,7 +147,6 @@ class ProcessedRNAEntry {
           sequence_(other.sequence_),
           pair_table_(other.pair_table_),
           closed_regions_(other.closed_regions_),
-          closed_regions_pair_table_(other.closed_regions_pair_table_),
           unpaired_prefix_sum_(other.unpaired_prefix_sum_),
           has_modified_bases_(other.has_modified_bases_) {
         if (has_modified_bases_) {
@@ -187,11 +178,6 @@ class ProcessedRNAEntry {
     /// @return List of closed regions. See RNAProcessor::compute_closed_regions for details
     [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {
         return closed_regions_;
-    }
-
-    /// Get closed-region indicies. See RNAProcessor::compute_cr_pair_table for details
-    [[nodiscard]] const std::vector<size_t>& get_closed_regions_pair_table() const {
-        return closed_regions_pair_table_;
     }
 
     /// @return Whether the RNA sequence contains modified bases or not

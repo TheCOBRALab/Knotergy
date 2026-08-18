@@ -102,28 +102,6 @@ class RNAProcessor {
         const std::vector<size_t>& pair_table, size_t number_of_pairs = 32);
 
     /**
-     * @brief Build a partner-index vector for closed-region boundaries.
-     *
-     * Similar to RNAProcessor::compute_pair_table(), but stores only the closed regions,
-     * not every individual base pair.
-     *
-     * Example:
-     *   [ClosedRegion(0, 5), ClosedRegion(2, 4)] → [5, NULL_INDEX, 4, NULL_INDEX, 2, 0]
-     *
-     * This is useful for quickly skipping over nested closed regions.
-     * (e.g. [0, 5] contains [2, 4], so when we reach index 2, we can jump directly to 4)
-     *
-     * @param closed_regions All closed regions in the structure.
-     * @param rna_size The total length of the structure (used to preallocate the result).
-     * @return std::vector<size_t> of length rna_size where entries are boundary partners or
-     * NULL_INDEX.
-     *
-     * @throws std::runtime_error If any closed-region index exceeds rna_size.
-     */
-    [[nodiscard]] static std::vector<size_t> compute_cr_pair_table(
-        const std::vector<ClosedRegion>& closed_regions, size_t rna_size = NULL_INDEX);
-
-    /**
      * @brief Prefix-sum of unpaired-base counts.
      *
      * Computes a vector U of length (rna_size + 1) where:

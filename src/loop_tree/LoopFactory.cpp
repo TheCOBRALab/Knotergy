@@ -10,6 +10,8 @@ namespace knotergy {
 LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : pRNA_{processed_rna} {
     // CLOSED REGIONS MUST BE SORTED BY START INDEX FOR THE BUILDING ALGORITHM TO WORK CORRECTLY
     // A check is performed in build_tree() to ensure this precondition is met.
+    // pre populate node_table_ with nullptrs to reserve space for all nodes
+    node_table_.resize(pRNA_.size(), nullptr);
     build_tree(processed_rna.get_closed_regions());
 }
 
@@ -39,7 +41,12 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
         // A node is only popped (and processed) after all of its children have been added.
         // Therefore, its loop type, bands and pseudo-nested bands can now be determined.
         while (node_stack.back()->end < cr.begin) {
-            populate_node(*node_stack.back());
+            LoopNode* node = node_stack.back();
+
+            node_table_[node->begin] = node;
+            node_table_[node->end] = node;
+
+            populate_node(*node);
             node_stack.pop_back();
         }
 
@@ -59,6 +66,10 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
     // process all remaining nodes
     while (node_stack.back()->begin != NULL_INDEX) {
         LoopNode* node = node_stack.back();
+
+        node_table_[node->begin] = node;
+        node_table_[node->end] = node;
+
         populate_node(*node);
         node_stack.pop_back();
     }
@@ -76,7 +87,7 @@ void LoopFactory::populate_node(LoopNode& node) {
             aux_bands_.resize(pRNA_.get_structure().size());
         }
 
-        node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_);
+        node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_, node_table_);
         node.total_number_of_base_pairs = count_total_base_pairs(node);
         label_pseudonested_children(node);
         pseudo_nested_check(node);
@@ -162,7 +173,7 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
      * when there are many bands and many children and few base pairs.
      *
      * The linear method is usually slower because there are normally many more base pairs than
-     * children * bands. And it also uses a hash set which is slower than a simple vector iteration.
+     * children * bands.
      *
      */
     size_t linear_complexity = static_cast<size_t>(node.total_number_of_base_pairs) +
@@ -184,22 +195,21 @@ void LoopFactory::label_pseudonested_children(LoopNode& node) {
             }
         }
     } else {  // Linear method is preferred when it has less operations than the non-linear method.
-        std::unordered_set<size_t> within_band_start_idx;
-        within_band_start_idx.reserve(node.children.size());
+
+        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
+            child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
+        }
 
         for (const Band& band : node.bands) {
             for (const PKBasePair& base_pair : band.base_pairs()) {
                 for (const ClosedRegion& child : base_pair.children) {
-                    within_band_start_idx.insert(child.begin);
+                    LoopNode* child_node = node_table_[child.begin];
+                    if (child_node != nullptr) {
+                        child_node->pseudo_type = PseudoNestedType::WithinBand;
+                    } else {
+                        THROW_ERROR("Band child does not correspond to a loop node.");
+                    }
                 }
-            }
-        }
-        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-            if (!child_node) continue;
-            if (within_band_start_idx.count(child_node->begin)) {
-                child_node->pseudo_type = PseudoNestedType::WithinBand;
-            } else {
-                child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
             }
         }
     }
