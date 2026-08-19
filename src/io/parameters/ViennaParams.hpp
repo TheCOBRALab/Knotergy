@@ -55,6 +55,7 @@ struct ParamCacheHeader {
     std::uint32_t md_struct_size = sizeof(viennarna::vrna_md_t);
     std::uint32_t endian_marker = BigEndianMarker;
     std::int32_t dangles = 2;
+    double temperature = 37.0;
     std::uint64_t source_mtime = 0;  // 0 for built-in fallback sets
 };
 
@@ -78,6 +79,7 @@ class ViennaParams {
     [[nodiscard]] static vrna_md_param load_energy_parameters(const std::string& paramFile = "",
                                                               int dangle = 2,
                                                               const std::string& seq = "",
+                                                              const double temperature = 37.0,
                                                               const bool disable_cache = false);
 };
 

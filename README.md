@@ -237,3 +237,6 @@ Without `-e`, no rounding is applied. Using `-e` without a value selects Banker'
 
 - `-d`, `--dangle [0-3]`  
   Dangle model to use (default: `2`)
+
+- `-T`, `--temp`  
+  Calculate energies at set temperature (default 37°C)

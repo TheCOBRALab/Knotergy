@@ -24,17 +24,21 @@ namespace {
 // -------------------------- Helper functions for parameter caching --------------------------
 
 // Generate a cache file path based on the parameter file, dangle model, and sequence type
-std::string make_cache_path(const std::string& paramFile, int dangle, const std::string& seq) {
+std::string make_cache_path(const std::string& paramFile, int dangle, const double temperature,
+                            const std::string& seq) {
     std::string file_name = FileUtils::strip_extension(paramFile);
     std::string cache_dir = cache_path();
     if (!paramFile.empty()) {
-        return cache_dir + file_name + ".d" + std::to_string(dangle) + ".vrna.bin";
+        return cache_dir + file_name + ".d" + std::to_string(dangle) + ".t" +
+               std::to_string(temperature) + ".vrna.bin";
     }
 
     // Fallback cache names
     const bool is_dna = (seq.find('T') != std::string::npos);
-    return is_dna ? cache_dir + "dna_Mathews2004.d" + std::to_string(dangle) + ".vrna.bin"
-                  : cache_dir + "rna_default.d" + std::to_string(dangle) + ".vrna.bin";
+    return is_dna ? cache_dir + "dna_Mathews2004.d" + std::to_string(dangle) + ".t" +
+                        std::to_string(temperature) + ".vrna.bin"
+                  : cache_dir + "rna_default.d" + std::to_string(dangle) + ".t" +
+                        std::to_string(temperature) + ".vrna.bin";
 }
 
 // Returns true if cache was successfully loaded and is valid, false otherwise
@@ -57,6 +61,7 @@ bool load_param_cache(const std::string& cachePath, int expectedDangle,
     if (hdr.md_struct_size != sizeof(viennarna::vrna_md_t)) return false;
     if (hdr.endian_marker != BigEndianMarker) return false;
     if (hdr.dangles != expectedDangle) return false;
+    if (hdr.temperature != expected.temperature) return false;
     if (hdr.source_mtime != expectedSourceMtime) return false;
 
     // Allocate memory for vrna_param_t
@@ -83,8 +88,8 @@ bool load_param_cache(const std::string& cachePath, int expectedDangle,
     return true;
 }
 
-void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t sourceMtime,
-                      const viennarna::vrna_param_t& p) {
+void save_param_cache(const std::string& cachePath, int dangle, double temperature,
+                      std::uint64_t sourceMtime, const viennarna::vrna_param_t& p) {
     size_t slash = cachePath.find_last_of("/\\");
     if (slash != std::string::npos) {
         std::string dir = cachePath.substr(0, slash);
@@ -97,6 +102,7 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
     if (!out) return;
 
     ParamCacheHeader hdr{};
+    hdr.temperature = temperature;
     hdr.dangles = dangle;
     hdr.source_mtime = sourceMtime;
 
@@ -108,7 +114,7 @@ void save_param_cache(const std::string& cachePath, int dangle, std::uint64_t so
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
 
 vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile, int dangle,
-                                                   const std::string& seq,
+                                                   const std::string& seq, const double temperature,
                                                    const bool disable_cache) {
     vrna_md_param md_param{};
     ParamSourceInfo source_info;
@@ -165,7 +171,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     }
 
     // ----- Try cache if not disabled -----
-    const std::string cachePath = make_cache_path(cache_key, dangle, seq);
+    const std::string cachePath = make_cache_path(cache_key, dangle, temperature, seq);
     if (!disable_cache && load_param_cache(cachePath, dangle, srcMtime, md_param)) {
         md_param.set_source_info(source_info);
         return md_param;
@@ -199,6 +205,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     // ----- Initialize md after loading params -----
     viennarna::vrna_md_set_default(&md_param.md);
     md_param.md.dangles = dangle;
+    md_param.md.temperature = temperature;
 
     md_param.p = viennarna::vrna_params(&md_param.md);
     if (!md_param.p) {
@@ -209,7 +216,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
 
     // ----- Save cache with the loaded parameters -----
     if (!disable_cache) {
-        save_param_cache(cachePath, dangle, srcMtime, *md_param.p);
+        save_param_cache(cachePath, dangle, temperature, srcMtime, *md_param.p);
     }
 
     return md_param;

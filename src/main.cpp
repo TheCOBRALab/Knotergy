@@ -32,6 +32,7 @@ void help() {
               << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
               << "  -m, --mod-params <none|path|file>     Directory containing modified base "
                  "parameter files\n"
+              << "  -T --temp <temperature>               Temperature in Celsius (default: 37)\n"
               << "  -e, --round                           Rounds all decimal places in pseudoknot "
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
@@ -95,6 +96,7 @@ int run_knotergy(int argc, char** argv) {
     bool efn2_correction = false;
     bool show_sequence_and_struct = false;
     bool disable_cache = false;
+    double temperature = 37.0;  // Default temperature is 37 Celsius
 
     // ------------------------- Parse Through Flags -----------------------
     for (int i = 1; i < argc; ++i) {
@@ -158,10 +160,19 @@ int run_knotergy(int argc, char** argv) {
             help();
             return EXIT_SUCCESS;
 
-        } else if (arg == "-V" || arg == "--version") {
+        } else if (arg == "-T" || arg == "--temp") {
+            std::string temp_str = get_trimmed_arg(i, argc, argv);
+            try {
+                temperature = std::stod(temp_str);
+            } catch (const std::exception&) {
+                std::cerr << ERROR << " Invalid temperature value: " << temp_str << '\n';
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (arg == "-V" || arg == "--version") {
             knotergy::OutputManager::print_banner();
             return EXIT_SUCCESS;
-
         } else if (arg == "-v" || arg == "--verbose") {
             verbose = true;
 
@@ -235,7 +246,7 @@ int run_knotergy(int argc, char** argv) {
 
     // ------------------------- Load ViennaRNA Parameters -----------------------
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(
-        vienna_param_file, dangle, sequence, disable_cache);
+        vienna_param_file, dangle, sequence, temperature, disable_cache);
 
     // ------------------------- Load Pseudoknot Parameters -----------------------
     const knotergy::pk_param pkp =
