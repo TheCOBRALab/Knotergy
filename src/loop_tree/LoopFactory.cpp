@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <memory>
 #include <stack>
-#include <unordered_set>
 
 namespace knotergy {
 
@@ -12,6 +11,7 @@ LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : pRNA_{process
     // A check is performed in build_tree() to ensure this precondition is met.
     // pre populate node_table_ with nullptrs to reserve space for all nodes
     node_table_.resize(pRNA_.size(), nullptr);
+    nodes_.reserve(pRNA_.get_closed_regions().size() + 1);  // +1 for root node
     build_tree(processed_rna.get_closed_regions());
 }
 
@@ -29,12 +29,13 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
             "algorithm to fail.\n");
     }
 
-    root_node_ = std::make_unique<LoopNode>(ClosedRegion{NULL_INDEX, pRNA_.size()});
+    nodes_.emplace_back(ClosedRegion{NULL_INDEX, pRNA_.size()});
+    root_node_ = &nodes_.back();
     root_node_->loop_type = LoopType::External;
 
     std::vector<LoopNode*> node_stack;
     node_stack.reserve(closed_regions.size() + 1);
-    node_stack.push_back(root_node_.get());
+    node_stack.push_back(root_node_);
 
     for (const ClosedRegion& cr : closed_regions) {
         // Pop until node_stack.end() is the parent of current node
@@ -52,15 +53,15 @@ void LoopFactory::build_tree(const std::vector<ClosedRegion>& closed_regions) {
 
         // parent = parent of current node. child = current node
         LoopNode* parent = node_stack.back();
+        nodes_.emplace_back(cr);
 
-        std::unique_ptr<LoopNode> child = std::make_unique<LoopNode>(cr);
+        LoopNode* child = &nodes_.back();
         child->parent = parent;
         child->total_unpaired_bases_count = pRNA_.get_unpaired_count(cr);
 
-        LoopNode* child_raw = child.get();
-        parent->children.emplace_back(std::move(child));
+        parent->children.emplace_back(child);
 
-        node_stack.push_back(child_raw);
+        node_stack.push_back(child);
     }
 
     // process all remaining nodes
@@ -93,8 +94,6 @@ void LoopFactory::populate_node(LoopNode& node) {
     }
 }
 
-void LoopFactory::populate_node(const std::unique_ptr<LoopNode>& node) { populate_node(*node); }
-
 int LoopFactory::count_total_base_pairs(const LoopNode& node) {
     size_t total = 0;
     for (const Band& band : node.bands) {
@@ -105,7 +104,7 @@ int LoopFactory::count_total_base_pairs(const LoopNode& node) {
 
 int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
     int total = node.total_unpaired_bases_count;
-    for (const std::unique_ptr<LoopNode>& child : node.children) {
+    for (const LoopNode* child : node.children) {
         total -= child->total_unpaired_bases_count;
     }
     return total;
@@ -149,7 +148,7 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
         int total_children = static_cast<int>(node.children.size());
         node.number_of_outsideband_children = total_children - node.number_of_withinband_children;
     } else {
-        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
+        for (const LoopNode* child_node : node.children) {
             if (child_node->pseudo_type == PseudoNestedType::WithinBand) {
                 ++node.number_of_withinband_children;
             } else if (child_node->pseudo_type == PseudoNestedType::OutsideBandIntervals) {
@@ -160,13 +159,12 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
 }
 
 void LoopFactory::print_tree(bool debug) const {
-    for (const auto& child : root_node_->children) {
+    for (const LoopNode* child : root_node_->children) {
         print_tree(child, 0, debug);
     }
 }
 
-void LoopFactory::print_tree(const std::unique_ptr<LoopNode>& node, size_t depth,
-                             bool debug) const {
+void LoopFactory::print_tree(const LoopNode* node, size_t depth, bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
               << "  unpaired=" << node->exclusive_unpaired_bases_count
@@ -176,28 +174,8 @@ void LoopFactory::print_tree(const std::unique_ptr<LoopNode>& node, size_t depth
         std::cout << *node << '\n';
     }
 
-    for (const auto& child : node->children) {
+    for (const LoopNode* child : node->children) {
         print_tree(child, depth + 1, debug);
-    }
-}
-
-// Iteratively destroy the loop tree to free memory.
-void LoopFactory::destroy_tree_iterative() {
-    if (!root_node_) return;
-
-    std::vector<std::unique_ptr<LoopNode>> work;
-    work.emplace_back(std::move(root_node_));
-
-    while (!work.empty()) {
-        auto node = std::move(work.back());
-        work.pop_back();
-
-        for (auto& child : node->children) {
-            if (child) work.emplace_back(std::move(child));
-        }
-
-        node->children.clear();
-        // no parent reset needed; parent is now a raw non-owning pointer
     }
 }
 

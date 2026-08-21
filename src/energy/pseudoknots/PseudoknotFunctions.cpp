@@ -25,7 +25,7 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     // that are within the band. Since the base pairs of all children were already removed in
     // exclusive_unpaired_bases_count, we need to add them back due to double counting. We can
     // identify these base pairs as the children that are within bands (pseudo_type == WithinBand)
-    for (const std::unique_ptr<LoopNode>& child : node.children) {
+    for (const LoopNode* child : node.children) {
         if (child->pseudo_type == PseudoNestedType::WithinBand) {
             unpaired += child->total_unpaired_bases_count;
         }

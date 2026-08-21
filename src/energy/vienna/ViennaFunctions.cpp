@@ -140,7 +140,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
     energy += viennarna::vrna_E_multibranch_stem(pair_type, n3d, n5d, vp.p);
 
     // ------------------ Child Stems Energy ------------------
-    for (const std::unique_ptr<LoopNode>& child : node.children) {
+    for (const LoopNode* child : node.children) {
         if (child->loop_type == LoopType::Pseudoknot) continue;
 
         size_t ci = child->begin;
@@ -158,7 +158,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
     return energy;
 }
 
-int ViennaFunctions::external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
+int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
                                      const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     // ------------------ Dangle 1 Energy ------------------
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
@@ -169,7 +169,7 @@ int ViennaFunctions::external_energy(const std::vector<std::unique_ptr<LoopNode>
 
     // ------------------ No dangles or dangle type 2 ------------------
     int energy = 0;
-    for (const std::unique_ptr<LoopNode>& child : children) {
+    for (const LoopNode* child : children) {
         if (child->loop_type == LoopType::Pseudoknot) {
             continue;
         }

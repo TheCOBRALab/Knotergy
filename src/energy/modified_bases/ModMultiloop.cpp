@@ -121,7 +121,7 @@ int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const Proces
     }
 
     // Correct every child stem.
-    for (const std::unique_ptr<LoopNode>& child_ptr : node.children) {
+    for (const LoopNode* child_ptr : node.children) {
         const LoopNode& child = *child_ptr;
 
         const unsigned int type =

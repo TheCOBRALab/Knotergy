@@ -25,7 +25,7 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
         }
 
         for (auto it = node->children.rbegin(); it != node->children.rend(); ++it) {
-            stack.push_back(it->get());
+            stack.push_back(*it);
         }
     }
 }

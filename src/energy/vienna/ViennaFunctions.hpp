@@ -132,7 +132,7 @@ class ViennaFunctions {
      * @param sequence The RNA nucleotide sequence.
      * @return External loop energy in centicalories.
      */
-    [[nodiscard]] static int external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
+    [[nodiscard]] static int external_energy(const std::vector<LoopNode*>& children,
                                              const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
 };
 }  // namespace knotergy

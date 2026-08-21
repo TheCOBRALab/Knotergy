@@ -26,14 +26,6 @@ class LoopFactory {
     LoopFactory(const ProcessedRNAEntry& processed_rna);
 
     /**
-     * @brief Destroy the LoopFactory and its associated loop tree.
-     *
-     * This destructor ensures that all dynamically allocated LoopNode objects are properly
-     * deallocated to prevent memory leaks. This is needed for deeply nested structures.
-     */
-    ~LoopFactory() { destroy_tree_iterative(); };
-
-    /**
      * @brief Get the root node of the loop tree.
      *
      * The root node represents the external loop containing all other loops.
@@ -56,15 +48,15 @@ class LoopFactory {
      * @param depth Current depth in the tree (for indentation).
      * @param debug Whether to include debug information (default: false).
      */
-    void print_tree(const std::unique_ptr<LoopNode>& node, size_t depth, bool debug = false) const;
+    void print_tree(const LoopNode* node, size_t depth, bool debug = false) const;
 
    private:
     const ProcessedRNAEntry& pRNA_;
-    std::unique_ptr<LoopNode> root_node_;
+    std::vector<LoopNode> nodes_;  ///< Root node of the loop tree (external loop).
+    LoopNode* root_node_;
     size_t structure_length_;
     std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
-    std::vector<LoopNode*>
-        node_table_;  ///< All nodes for closed region skipping and pseudo-nested checks.
+    std::vector<LoopNode*> node_table_;      ///< All nodes indexed by their begin and end positions
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.
@@ -104,13 +96,6 @@ class LoopFactory {
     void populate_node(LoopNode& node);
 
     /**
-     * @brief Populate a loop node (unique pointer version).
-     *
-     * @param node Unique pointer to the loop node to populate.
-     */
-    void populate_node(const std::unique_ptr<LoopNode>& node);
-
-    /**
      * @brief Count the total number of base pairs in a loop node.
      *
      * @param node The loop node to analyze.
@@ -148,17 +133,9 @@ class LoopFactory {
      *
      * Identifies and stores Band objects for pseudoknotted loops.
      *
-     * @param node Unique pointer to the loop node to annotate.
+     * @param node The loop node to annotate.
      */
-    void annotate_bands(const std::unique_ptr<LoopNode>& node);
-
-    /**
-     * @brief Iteratively destroy the loop tree to free memory.
-     *
-     * This method uses a stack to traverse the tree and delete nodes without recursion,
-     * preventing potential stack overflow for deeply nested structures.
-     */
-    void destroy_tree_iterative();
+    void annotate_bands(const LoopNode* node);
 };
 
 }  // namespace knotergy

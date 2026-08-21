@@ -8,7 +8,7 @@ int is_closing = false;  // external loop energy correction does not apply to cl
 int is_external = true;  // external loop energy correction applies to children of external loop
 }  // namespace
 
-int ModExternal::find_mod_external_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
+int ModExternal::find_mod_external_energy(const std::vector<LoopNode*>& children,
                                           const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                           const all_mod_params& mp) {
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
@@ -39,7 +39,7 @@ ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const Proc
     return diffs;
 }
 
-int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
+int ModExternal::external_dangle_0_2_energy(const std::vector<LoopNode*>& children,
                                             const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                             const all_mod_params& mp) {
     if (vp.md.dangles != 0 && vp.md.dangles != 2) {
@@ -48,7 +48,7 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<Lo
     const std::string& sequence = pRNA.get_sequence();
     int energy = ViennaFunctions::external_energy(children, pRNA, vp);
 
-    for (const std::unique_ptr<LoopNode>& child : children) {
+    for (const LoopNode* child : children) {
         unsigned int type =
             ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
@@ -67,7 +67,7 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<std::unique_ptr<Lo
     return energy;
 }
 
-int ModExternal::external_dangle_1_energy(const std::vector<std::unique_ptr<LoopNode>>& children,
+int ModExternal::external_dangle_1_energy(const std::vector<LoopNode*>& children,
                                           const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                           const all_mod_params& mp) {
     if (vp.md.dangles != 1 && vp.md.dangles != 3) {

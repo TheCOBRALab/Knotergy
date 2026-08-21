@@ -14,13 +14,13 @@
 namespace viennarna = thermorna::viennarna;
 
 namespace knotergy {
-int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
+int Dangle1::get_external_dangle_1(const std::vector<LoopNode*>& children,
                                    const std::vector<DangleSet>& dangle_energies) {
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
     return process_chains(dangle_chains, dangle_energies);
 }
 
-int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>& children,
+int Dangle1::get_external_dangle_1(const std::vector<LoopNode*>& children,
                                    const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, pRNA, vp);
     return get_external_dangle_1(children, dangle_energies);
@@ -28,7 +28,7 @@ int Dangle1::get_external_dangle_1(const std::vector<std::unique_ptr<LoopNode>>&
 
 int Dangle1::get_multibranch_dangle_1(const LoopNode& node, std::vector<DangleSet> dangle_energies,
                                       DangleSet closing) {
-    const std::vector<std::unique_ptr<LoopNode>>& children = node.children;
+    const std::vector<LoopNode*>& children = node.children;
     std::vector<std::vector<size_t>> dangle_chains = get_dangle_chains(children);
 
     return process_ml_chains(dangle_chains, children, dangle_energies, node, closing);
@@ -37,7 +37,7 @@ int Dangle1::get_multibranch_dangle_1(const LoopNode& node, std::vector<DangleSe
 int Dangle1::get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                       vrna_md_param& vp) {
     bool is_external = false;
-    const std::vector<std::unique_ptr<LoopNode>>& children = node.children;
+    const std::vector<LoopNode*>& children = node.children;
     std::vector<DangleSet> dangle_energies =
         populate_children_dangle_energies(children, pRNA, vp, is_external);
     DangleSet closing = get_ml_closing_dangle_energy(node, pRNA, vp);
@@ -89,8 +89,8 @@ DangleSet Dangle1::get_child_dangle_energy(const LoopNode& node, const Processed
 
 // Precompute dangle energies for all children in the loop
 std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
-    const std::vector<std::unique_ptr<LoopNode>>& children, const ProcessedRNAEntry& pRNA,
-    vrna_md_param& vp, bool is_external) {
+    const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+    bool is_external) {
     std::vector<DangleSet> dangle_energies;
     dangle_energies.reserve(children.size());
     for (const auto& child : children) {
@@ -105,7 +105,7 @@ std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
 }
 
 std::vector<std::vector<size_t>> Dangle1::get_dangle_chains(
-    const std::vector<std::unique_ptr<LoopNode>>& children) {
+    const std::vector<LoopNode*>& children) {
     std::vector<std::vector<size_t>> chains;
     chains.reserve(children.size());
     size_t previous = NULL_INDEX;  // index of the previous child in the chain
@@ -193,7 +193,7 @@ int Dangle1::process_chains(const std::vector<std::vector<size_t>>& dangle_chain
 
 // Specialized processing for multibranch loops with closing pair dangles
 int Dangle1::process_ml_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                               const std::vector<std::unique_ptr<LoopNode>>& children,
+                               const std::vector<LoopNode*>& children,
                                const std::vector<DangleSet>& dangle_energies, const LoopNode& node,
                                const DangleSet closing) {
     if (children.empty()) {
