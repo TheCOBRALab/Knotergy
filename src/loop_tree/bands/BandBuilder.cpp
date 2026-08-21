@@ -53,6 +53,7 @@ std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
     for (size_t idx = lb + 1; idx <= li; ++idx) {
         // Skip closed region and add it as a child of the current base pair
         if (node_table[idx] != nullptr) {
+            node_table[idx]->pseudo_type = PseudoNestedType::WithinBand;
             base_pairs.back().children.emplace_back(idx, node_table[idx]->end);
             idx = node_table[idx]->end;
             ++child_count;
@@ -102,6 +103,8 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
         if (node_table[idx] != nullptr) {
             size_t right = idx;
             size_t left = node_table[idx]->begin;
+
+            node_table[idx]->pseudo_type = PseudoNestedType::WithinBand;
 
             current_bp.children.emplace_back(left, right);
             idx = left;

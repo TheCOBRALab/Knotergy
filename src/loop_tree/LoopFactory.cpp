@@ -89,7 +89,6 @@ void LoopFactory::populate_node(LoopNode& node) {
 
         node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_, node_table_);
         node.total_number_of_base_pairs = count_total_base_pairs(node);
-        label_pseudonested_children(node);
         pseudo_nested_check(node);
     }
 }
@@ -155,61 +154,6 @@ void LoopFactory::pseudo_nested_check(LoopNode& node) {
                 ++node.number_of_withinband_children;
             } else if (child_node->pseudo_type == PseudoNestedType::OutsideBandIntervals) {
                 ++node.number_of_outsideband_children;
-            }
-        }
-    }
-}
-
-// Expects bands to already be populated for the node
-void LoopFactory::label_pseudonested_children(LoopNode& node) {
-    /* only pseudoknots need bands; leave the rest untouched */
-    if (node.loop_type != LoopType::Pseudoknot) return;
-    if (node.children.empty()) return;
-
-    /**
-     * There are two methods: Linear & Non-Linear
-     *
-     * Non-linear method is only performs more operations than the linear method
-     * when there are many bands and many children and few base pairs.
-     *
-     * The linear method is usually slower because there are normally many more base pairs than
-     * children * bands.
-     *
-     */
-    size_t linear_complexity = static_cast<size_t>(node.total_number_of_base_pairs) +
-                               node.children.size() + node.bands.size();
-    size_t non_linear_complexity = node.children.size() * node.bands.size();
-
-    // Non-linear method is preferred when it has less operations than the linear method.
-    if (non_linear_complexity <= linear_complexity) {
-        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-            child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
-
-            for (const Band& band : node.bands) {
-                if (band.get_number_of_children() == 0) continue;
-
-                if (band.contains(child_node->begin)) {
-                    child_node->pseudo_type = PseudoNestedType::WithinBand;
-                    break;
-                }
-            }
-        }
-    } else {  // Linear method is preferred when it has less operations than the non-linear method.
-
-        for (const std::unique_ptr<LoopNode>& child_node : node.children) {
-            child_node->pseudo_type = PseudoNestedType::OutsideBandIntervals;
-        }
-
-        for (const Band& band : node.bands) {
-            for (const PKBasePair& base_pair : band.base_pairs()) {
-                for (const ClosedRegion& child : base_pair.children) {
-                    LoopNode* child_node = node_table_[child.begin];
-                    if (child_node != nullptr) {
-                        child_node->pseudo_type = PseudoNestedType::WithinBand;
-                    } else {
-                        THROW_ERROR("Band child does not correspond to a loop node.");
-                    }
-                }
             }
         }
     }

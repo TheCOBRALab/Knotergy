@@ -144,13 +144,6 @@ class LoopFactory {
     void pseudo_nested_check(LoopNode& node);
 
     /**
-     * @brief Label child nodes that are pseudo-nested or within bands.
-     *
-     * @param node The parent loop node containing children to label.
-     */
-    void label_pseudonested_children(LoopNode& node);
-
-    /**
      * @brief Annotate a loop node with pseudoknot band information.
      *
      * Identifies and stores Band objects for pseudoknotted loops.

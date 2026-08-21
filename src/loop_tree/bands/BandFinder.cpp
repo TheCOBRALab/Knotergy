@@ -127,7 +127,10 @@ void BandFinder::generate_paired_base_links(size_t cr_start, size_t cr_end,
 
         // skip nested closed regions
         if (node_table[i] != nullptr) {
-            i = node_table[i]->end;  // skip to the end of the closed region
+            // Will be updated to withinBand later if it is part of a band
+            node_table[i]->pseudo_type = PseudoNestedType::OutsideBandIntervals;
+            // skip to the end of the closed region
+            i = node_table[i]->end;
             continue;
         }
 
