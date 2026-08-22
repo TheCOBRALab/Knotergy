@@ -307,7 +307,6 @@ int run_knotergy(int argc, char** argv) {
 }  // namespace
 
 int main(int argc, char** argv) {
-    std::ios::sync_with_stdio(false);
     const bool verbose = has_verbose_flag(argc, argv);
 
     try {
