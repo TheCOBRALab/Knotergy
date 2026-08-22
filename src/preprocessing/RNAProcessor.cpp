@@ -1,7 +1,5 @@
 #include "RNAProcessor.hpp"
 
-#include <unordered_map>
-#include <unordered_set>
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params) {
     bool has_modified_bases = false;

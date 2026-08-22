@@ -163,6 +163,23 @@ target_link_libraries(KnotergyLib
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
 
+
+# ------------------------ Platform-Specific Link Options -------------------------
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_options(${PROJECT_NAME} PRIVATE
+            "$<$<CONFIG:Release>:-static-libstdc++>"
+            "$<$<CONFIG:Release>:-static-libgcc>"
+        )
+    endif()
+
+elseif(APPLE)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        "$<$<CONFIG:Release>:-Wl,-dead_strip>"
+    )
+endif()
+
+
 # ------------------------- Install -------------------------
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/params DESTINATION share/knotergy)
