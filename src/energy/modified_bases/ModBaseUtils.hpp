@@ -187,10 +187,29 @@ class ModBaseUtils {
                                 : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
 
         int dangle_encoding = is_closing ? ViennaUtils::fast_nucleotide_encode(sequence[j - 1])
-                                         : ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
+                                         : ViennaUtils::fast_nucleotide_encode(sequence[i - 1]);
 
         return get_mod_energy(dangle5_key, unique_mod_bases, mp,
                               vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
+    }
+
+    [[nodiscard]] static int get_dangle3_mod_energy(
+        size_t i, size_t j, const std::string& sequence,
+        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+        const all_mod_params& mp, bool is_closing = false) {
+        std::string dangle3_key = get_dangle3_key(i, j, mod_sequence, is_closing);
+        std::vector<std::string_view> unique_mod_bases =
+            unique_modified_bases_in_string(dangle3_key);
+
+        unsigned int type = is_closing
+                                ? ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md)
+                                : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+
+        int dangle_encoding = is_closing ? ViennaUtils::fast_nucleotide_encode(sequence[i + 1])
+                                         : ViennaUtils::fast_nucleotide_encode(sequence[j + 1]);
+
+        return get_mod_energy(dangle3_key, unique_mod_bases, mp,
+                              vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle3);
     }
 
     [[nodiscard]] static std::string get_mismatch_key(
@@ -205,7 +224,7 @@ class ModBaseUtils {
     [[nodiscard]] static std::string get_dangle3_key(
         size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
         if (is_closing) {
-            return ModBaseUtils::join_string_views({j, i, i - 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({j, i, i + 1}, mod_sequence);
         } else {
             return ModBaseUtils::join_string_views({i, j, j + 1}, mod_sequence);
         }
@@ -216,7 +235,7 @@ class ModBaseUtils {
         if (is_closing) {
             return ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
         } else {
-            return ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({i, j, i - 1}, mod_sequence);
         }
     }
 
