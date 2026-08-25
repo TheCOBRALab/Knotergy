@@ -11,7 +11,8 @@ namespace knotergy {
 double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
                                               vrna_md_param& vp, const all_mod_params& mp,
-                                              const pk_param& pkp, bool& is_inf) {
+                                              const pk_param& pkp, bool& is_inf,
+                                              const bool pk_dangles) {
     int unpaired = node.exclusive_unpaired_bases_count;
 
     // remove unpaired bases within bands since they're already included in ViennaRNA's energy
@@ -38,6 +39,9 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     energy += pkp.unpaired_in_pk * unpaired;
     energy += pkp.cr_in_pk * node.number_of_outsideband_children;
     energy += loop_penalties(node, processed_rna, vp, mp, pkp, is_inf);
+    if (pk_dangles) {
+        energy += pk_dangling_energy(node, processed_rna, vp, mp);
+    }
 
     return energy;
 }
@@ -105,6 +109,47 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
                 energy += pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else {
                 energy += pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
+            }
+        }
+    }
+
+    return energy;
+}
+
+double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
+                                               const ProcessedRNAEntry& processed_rna,
+                                               vrna_md_param& vp, const all_mod_params& mp) {
+    double energy = 0;
+    const std::string& sequence = processed_rna.get_sequence();
+    const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
+
+    for (const Band& band : node.bands) {
+        size_t i = band.left_border();
+        size_t j = band.right_border();
+
+        unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
+
+        n5d = vp.md.dangles != 0 ? n5d : -1;
+        n3d = vp.md.dangles != 0 ? n3d : -1;
+
+        if (n5d > 0) {
+            int n5d_unmod_energy = vp.p->dangle5[pair_type][n5d];
+            if (processed_rna.has_modified_bases()) {
+                energy +=
+                    ModBaseUtils::get_dangle5_mod_energy(i, j, n5d_unmod_energy, mod_sequence, mp);
+            } else {
+                energy += n5d_unmod_energy;
+            }
+        }
+
+        if (n3d > 0) {
+            int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
+            if (processed_rna.has_modified_bases()) {
+                energy +=
+                    ModBaseUtils::get_dangle3_mod_energy(i, j, n3d_unmod_energy, mod_sequence, mp);
+            } else {
+                energy += n3d_unmod_energy;
             }
         }
     }

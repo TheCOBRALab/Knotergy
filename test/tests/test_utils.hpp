@@ -21,6 +21,8 @@ const std::string pkp_file =
     knotergy::FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
 const std::string mod_folder = knotergy::FileUtils::resolve_data_path("params/modified_bases");
 
+const bool pk_dangles = false;
+
 inline static double get_energy(std::string sequence, std::string structure, int dangle = 2,
                                 int round = 0, std::string param_file = turner_file,
                                 std::string pseudoknot_param_file = pkp_file,
@@ -46,7 +48,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
 
     // compute energy
     bool efn2_correction = false;
-    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp,
+    knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp, pk_dangles,
                                    efn2_correction, round);
 
     return energy.getEnergy();

@@ -28,12 +28,14 @@ class PseudoknotFunctions {
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
      * @param is_inf If the energy is infinite (distance between base pairs < 3)
+     * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
     [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
                                                   vrna_md_param& vp, const all_mod_params& mp,
-                                                  const pk_param& pkp, bool& is_inf);
+                                                  const pk_param& pkp, bool& is_inf,
+                                                  const bool pk_dangles = false);
 
    private:
     /**
@@ -121,6 +123,21 @@ class PseudoknotFunctions {
                                                     const knotergy::pk_param& pkp);
 
     [[nodiscard]] static double round_energy(double energy, RoundMethod round);
+
+    /**
+     * @brief Calculate dangling end energy for a loop node in a pseudoknot.
+     *
+     * @param node The loop node for which to calculate dangling end energy.
+     * @param processed_rna The processed RNA entry with structural information.
+     * @param vp ViennaRNA model parameters.
+     * @param mp Modified base parameters.
+     * @param pkp Pseudoknot parameters.
+     * @param is_inf A reference to a boolean indicating if the energy is infinite.
+     * @return Dangling end energy in centicalories.
+     */
+    [[nodiscard]] static double pk_dangling_energy(const LoopNode& node,
+                                                   const ProcessedRNAEntry& processed_rna,
+                                                   vrna_md_param& vp, const all_mod_params& mp);
 };
 
 }  // namespace knotergy

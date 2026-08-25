@@ -28,12 +28,13 @@ class ComputeEnergy {
      * @param pseudo_params Pseudoknot energy parameters.
      * @param mod_params Vector of modified base parameters for computing energy with modified
      * nucleotides.
+     * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @param efn2_correction Whether to apply the efn2 single-bulge correction (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
     ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
                   const knotergy::pk_param& pkp, const all_mod_params& mp = {},
-                  bool efn2_correction = false, bool verbose = false)
+                  bool pk_dangles = false, bool efn2_correction = false, bool verbose = false)
         : root_node_{root_node},
           pRNA_{processed_rna},
           vp_{vp},
@@ -41,6 +42,7 @@ class ComputeEnergy {
           mp_{mp},
           sequence_{processed_rna.get_sequence()},
           mod_sequence_{processed_rna.get_modified_sequence()},
+          pk_dangles_{pk_dangles},
           efn2_correction_{efn2_correction},
           has_modified_bases_{processed_rna.has_modified_bases()} {
         process_tree(root_node_, verbose);
@@ -63,12 +65,10 @@ class ComputeEnergy {
     const std::string& sequence_;
     const std::vector<std::string_view>& mod_sequence_;
     double energy_ = 0.0;
-    bool infinite_energy_flag_ =
-        false;  ///< Flag to indicate if any loop has infinite energy (e.g., invalid structures).
-    bool efn2_correction_ =
-        false;  ///< Flag to indicate if the efn2 single-bulge correction should be applied.
-    bool has_modified_bases_ = false;  ///< Flag to indicate if the RNA contains modified bases, for
-                                       ///< energy calculation purposes.
+    bool infinite_energy_flag_ = false;  ///< True if any loop produces infinite energy
+    bool pk_dangles_ = false;            ///< Include pseudoknot dangle energy contributions
+    bool efn2_correction_ = false;       ///< Flag for efn2 single-bulge correction
+    bool has_modified_bases_ = false;    ///< True if the RNA sequence contains modified bases
 
     /**
      * @brief Process the entire loop tree and calculate energies.

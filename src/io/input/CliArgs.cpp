@@ -107,6 +107,7 @@ void print_help() {
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
                  "(base is 2)\n"
+              << "  --pk-dangles                          Enable pseudoknot dangle calculations\n"
               << "      --show-input                      Show the input sequence and structure\n"
               << "      --disable-cache                   Disable parameter caching\n"
         //   << "      --efn2-correction                 Apply efn2 single-bulge correction\n"
@@ -196,6 +197,9 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
 
         } else if (arg == "--show-input") {
             out.show_input = true;
+
+        } else if (arg == "--pk-dangles") {
+            out.pk_dangles = true;
 
         } else if (arg == "--disable-cache") {
             out.disable_cache = true;

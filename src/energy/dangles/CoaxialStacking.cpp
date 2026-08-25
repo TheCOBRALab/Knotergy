@@ -29,8 +29,9 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
 
     int ld5;
     if (pRNA.has_modified_bases()) {
-        ld5 = ModBaseUtils::get_dangle5_mod_energy(stem.begin, stem.end, sequence,
-                                                   pRNA.get_modified_sequence(), vp, mp, false);
+        ld5 = ModBaseUtils::get_dangle5_mod_energy(stem.begin, stem.end,
+                                                   vp.p->dangle5[stem.type][encoding],
+                                                   pRNA.get_modified_sequence(), mp, false);
     } else {
         ld5 = vp.p->dangle5[stem.type][encoding];
     }

@@ -70,7 +70,8 @@ int run_knotergy(const knotergy::CliArgs& args) {
 
         // Compute the energy.
         knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,
-                                                  mp, args.efn2_correction, args.verbose);
+                                                  mp, args.pk_dangles, args.efn2_correction,
+                                                  args.verbose);
 
         // Output results.
         if (energy_calculator.getInfiniteEnergyFlag()) {

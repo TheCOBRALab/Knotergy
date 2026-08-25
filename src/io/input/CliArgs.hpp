@@ -37,6 +37,7 @@ struct CliArgs {
     bool efn2_correction = false;
     bool show_input = false;
     bool disable_cache = false;
+    bool pk_dangles = false;
 
     // Reads argv into `out`. Problems are reported on stderr, so the caller
     // only has to act on the returned status.
