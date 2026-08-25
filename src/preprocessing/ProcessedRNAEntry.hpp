@@ -199,7 +199,7 @@ class ProcessedRNAEntry {
      * @throws std::out_of_range if indices are out of bounds.
      */
     [[nodiscard]] int get_unpaired_count(size_t from, size_t to) const {
-        if (from >= unpaired_prefix_sum_.size() || to > unpaired_prefix_sum_.size()) {
+        if (from >= unpaired_prefix_sum_.size() || to >= unpaired_prefix_sum_.size()) {
             throw std::out_of_range("Index out of range in get_unpaired_count");
         }
         if (from >= to) return 0;

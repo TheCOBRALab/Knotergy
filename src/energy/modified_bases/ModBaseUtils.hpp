@@ -188,6 +188,42 @@ class ModBaseUtils {
         }
     }
 
+    [[nodiscard]] static std::string get_mismatch_key(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        if (is_closing) {
+            return ModBaseUtils::join_string_views({j, j - 1, i, i + 1}, mod_sequence);
+        } else {
+            return ModBaseUtils::join_string_views({i, i - 1, j, j + 1}, mod_sequence);
+        }
+    }
+
+    [[nodiscard]] static std::string get_dangle3_key(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        if (is_closing) {
+            return ModBaseUtils::join_string_views({j, i, i - 1}, mod_sequence);
+        } else {
+            return ModBaseUtils::join_string_views({i, j, j + 1}, mod_sequence);
+        }
+    }
+
+    [[nodiscard]] static std::string get_dangle5_key(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        if (is_closing) {
+            return ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
+        } else {
+            return ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
+        }
+    }
+
+    [[nodiscard]] static std::string get_terminal_key(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        if (is_closing) {
+            return ModBaseUtils::join_string_views({j, i}, mod_sequence);
+        } else {
+            return ModBaseUtils::join_string_views({i, j}, mod_sequence);
+        }
+    }
+
     [[nodiscard]] static ModDiffs get_mod_diffs(
         const LoopNode& node, int n5d, int n3d, unsigned int type,
         const std::vector<std::string_view>& unique_mod_bases,
@@ -206,35 +242,22 @@ class ModBaseUtils {
         // Unmodified energies for exterior stem (mismatch, dangle5, dangle3, terminalAU)
         if (n5d >= 0 && n3d >= 0) {
             mismatch = is_external ? P->mismatchExt[type][n5d][n3d] : P->mismatchM[type][n5d][n3d];
-            mismatch_key =
-                is_closing
-                    ? ModBaseUtils::join_string_views(
-                          {node.end, node.end - 1, node.begin, node.begin + 1}, mod_sequence)
-                    : ModBaseUtils::join_string_views(
-                          {node.begin, node.begin - 1, node.end, node.end + 1}, mod_sequence);
+            mismatch_key = get_mismatch_key(node.begin, node.end, mod_sequence, is_closing);
         }
 
         if (n5d >= 0) {
             dangle5 = P->dangle5[type][n5d];
-            dangle5_key = is_closing ? ModBaseUtils::join_string_views(
-                                           {node.begin, node.end, node.end - 1}, mod_sequence)
-                                     : ModBaseUtils::join_string_views(
-                                           {node.begin, node.end, node.begin - 1}, mod_sequence);
+            dangle5_key = get_dangle5_key(node.begin, node.end, mod_sequence, is_closing);
         }
 
         if (n3d >= 0) {
             dangle3 = P->dangle3[type][n3d];
-            dangle3_key = is_closing ? ModBaseUtils::join_string_views(
-                                           {node.begin, node.end, node.begin + 1}, mod_sequence)
-                                     : ModBaseUtils::join_string_views(
-                                           {node.begin, node.end, node.end + 1}, mod_sequence);
+            dangle3_key = get_dangle3_key(node.begin, node.end, mod_sequence, is_closing);
         }
 
         if (type > 2) {
             terminal = P->TerminalAU;
-            terminal_key =
-                is_closing ? ModBaseUtils::join_string_views({node.end, node.begin}, mod_sequence)
-                           : ModBaseUtils::join_string_views({node.begin, node.end}, mod_sequence);
+            terminal_key = get_terminal_key(node.begin, node.end, mod_sequence, is_closing);
         }
 
         // Get modified energies
