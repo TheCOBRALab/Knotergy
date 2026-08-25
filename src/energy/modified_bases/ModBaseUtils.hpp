@@ -82,6 +82,21 @@ class ModBaseUtils {
         return modified;
     }
 
+    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_in_string(
+        const std::string& str) {
+        std::vector<std::string_view> graphemes = ProcessedRNAEntry::parse_modified_sequence(str);
+        std::vector<std::string_view> unique_mod_bases;
+
+        for (const std::string_view& g : graphemes) {
+            if (!RNAProcessor::is_unmodified_base(g) &&
+                std::find(unique_mod_bases.begin(), unique_mod_bases.end(), g) ==
+                    unique_mod_bases.end()) {
+                unique_mod_bases.push_back(g);
+            }
+        }
+        return unique_mod_bases;
+    }
+
     [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_inner_edge(
         size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
         return unique_modified_bases_at_indices({i, j, i + 1, j - 1}, mod_sequence);
@@ -159,33 +174,23 @@ class ModBaseUtils {
         return static_cast<int>(unmod_energy);
     }
 
-    // THIS HURTS, BUT I WILL FIX IT LATER
     [[nodiscard]] static int get_dangle5_mod_energy(
         size_t i, size_t j, const std::string& sequence,
         const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
         const all_mod_params& mp, bool is_closing = false) {
-        if (i > 0) {
-            unsigned int type;
-            int dangle_encoding;
-            if (is_closing) {
-                type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
-                dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);
-                std::string key = ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
-                std::vector<std::string_view> unique_mod_bases =
-                    ModBaseUtils::unique_modified_bases_at_indices({j, i, j - 1}, mod_sequence);
-                return get_mod_energy(key, unique_mod_bases, mp,
-                                      vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
-            }
-            type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-            std::string key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
-            std::vector<std::string_view> unique_mod_bases =
-                ModBaseUtils::unique_modified_bases_at_indices({i, j, i + 1}, mod_sequence);
-            dangle_encoding = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
-            return get_mod_energy(key, unique_mod_bases, mp, vp.p->dangle5[type][dangle_encoding],
-                                  ModLookup::Dangle5);
-        } else {
-            return 0;
-        }
+        std::string dangle5_key = get_dangle5_key(i, j, mod_sequence, is_closing);
+        std::vector<std::string_view> unique_mod_bases =
+            unique_modified_bases_in_string(dangle5_key);
+
+        unsigned int type = is_closing
+                                ? ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md)
+                                : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+
+        int dangle_encoding = is_closing ? ViennaUtils::fast_nucleotide_encode(sequence[j - 1])
+                                         : ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
+
+        return get_mod_energy(dangle5_key, unique_mod_bases, mp,
+                              vp.p->dangle5[type][dangle_encoding], ModLookup::Dangle5);
     }
 
     [[nodiscard]] static std::string get_mismatch_key(
