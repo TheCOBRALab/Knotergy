@@ -1,6 +1,7 @@
 #include "ModInternal.hpp"
 
 #include "energy/modified_bases/ModStack.hpp"
+#include "utils/common.hpp"
 
 // All the commented stuff is things that should be implemented but isn't currently
 // implemented in ViennaRNA. Our goal is to align with ViennaRNA's energy model,
@@ -44,17 +45,18 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
             } else {
                 if (type1 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
-                    int mod_AU_penalty =
-                        ModBaseUtils::get_mod_energy(AU_key, closing_unique_mod_bases, mp,
-                                                     vp.p->TerminalAU, ModLookup::TerminalAU);
-                    e += mod_AU_penalty - vp.p->TerminalAU;
+                    int mod_AU_penalty = ModBaseUtils::get_mod_energy(
+                        AU_key, closing_unique_mod_bases, mp, ModLookup::TerminalAU);
+
+                    int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
+                    e += modAU - vp.p->TerminalAU;
                 }
                 if (type2 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({ci, cj}, mod_sequence);
-                    int mod_AU_penalty =
-                        ModBaseUtils::get_mod_energy(AU_key, nested_unique_mod_bases, mp,
-                                                     vp.p->TerminalAU, ModLookup::TerminalAU);
-                    e += mod_AU_penalty - vp.p->TerminalAU;
+                    int mod_AU_penalty = ModBaseUtils::get_mod_energy(
+                        AU_key, nested_unique_mod_bases, mp, ModLookup::TerminalAU);
+                    int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
+                    e += modAU - vp.p->TerminalAU;
                 }
             }
             break;

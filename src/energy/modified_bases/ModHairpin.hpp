@@ -3,6 +3,7 @@
 #include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "loop_tree/LoopNode.hpp"
+#include "utils/common.hpp"
 
 namespace knotergy {
 
@@ -31,12 +32,11 @@ class ModHairpin {
 
         // Create a key for modified base lookup
         std::string key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
+        int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, ModLookup::TerminalAU);
+        modAU = modAU != NULL_ENERGY ? modAU : vp.p->TerminalAU;
 
         // Look up the modified hairpin energy
-        return unmod_energy +
-               ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, unmod_energy,
-                                            ModLookup::TerminalAU) -
-               vp.p->TerminalAU;
+        return unmod_energy + modAU - vp.p->TerminalAU;
     }
 
     static int find_mod_hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,

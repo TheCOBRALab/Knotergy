@@ -2,6 +2,7 @@
 #include "energy/dangles/Dangle1.hpp"
 #include "energy/vienna/ViennaUtils.hpp"
 #include "preprocessing/RNAProcessor.hpp"
+#include "utils/common.hpp"
 
 namespace viennarna = thermorna::viennarna;
 
@@ -128,11 +129,10 @@ class ModBaseUtils {
      */
     [[nodiscard]] static int get_mod_energy(const std::string& key,
                                             const std::vector<std::string_view>& unique_mod_bases,
-                                            const all_mod_params& mp, int unmod_energy,
-                                            ModLookup lookup_type) {
+                                            const all_mod_params& mp, ModLookup lookup_type) {
         // If no modified bases are present, return the unmodified energy
         if (unique_mod_bases.empty()) {
-            return static_cast<int>(unmod_energy);
+            return NULL_ENERGY;
         }
 
         // Get the pointer to the correct energy map based on lookup type
@@ -171,7 +171,7 @@ class ModBaseUtils {
             }
         }
 
-        return static_cast<int>(unmod_energy);
+        return NULL_ENERGY;
     }
 
     [[nodiscard]] static int get_dangle5_mod_energy(
@@ -180,8 +180,8 @@ class ModBaseUtils {
         std::string dangle5_key = get_dangle5_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases =
             unique_modified_bases_in_string(dangle5_key);
-
-        return get_mod_energy(dangle5_key, unique_mod_bases, mp, unmod_energy, ModLookup::Dangle5);
+        int mod_energy = get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5);
+        return mod_energy != NULL_ENERGY ? mod_energy : unmod_energy;
     }
 
     [[nodiscard]] static int get_dangle3_mod_energy(
@@ -190,8 +190,8 @@ class ModBaseUtils {
         std::string dangle3_key = get_dangle3_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases =
             unique_modified_bases_in_string(dangle3_key);
-
-        return get_mod_energy(dangle3_key, unique_mod_bases, mp, unmod_energy, ModLookup::Dangle3);
+        int mod_energy = get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
+        return mod_energy != NULL_ENERGY ? mod_energy : unmod_energy;
     }
 
     [[nodiscard]] static std::string get_mismatch_key(
@@ -267,24 +267,29 @@ class ModBaseUtils {
         }
 
         // Get modified energies
-        int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, mismatch,
-                                                       ModLookup::Mismatch);
-        int modDangle5 = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, dangle5,
-                                                      ModLookup::Dangle5);
-        int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, dangle3,
-                                                      ModLookup::Dangle3);
-        int modTerminal = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, terminal,
-                                                       ModLookup::TerminalAU);
+        int modMismatch =
+            ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, ModLookup::Mismatch);
+        int modDangle5 =
+            ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5);
+        int modDangle3 =
+            ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
+        int modTerminalAU =
+            ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, ModLookup::TerminalAU);
+
+        modMismatch = modMismatch != NULL_ENERGY ? modMismatch : mismatch;
+        modDangle5 = modDangle5 != NULL_ENERGY ? modDangle5 : dangle5;
+        modDangle3 = modDangle3 != NULL_ENERGY ? modDangle3 : dangle3;
+        modTerminalAU = modTerminalAU != NULL_ENERGY ? modTerminalAU : terminal;
 
         // Calculate differences
         if (vp.md.dangles == 0) {
-            return ModDiffs(modTerminal - terminal, 0, 0, 0);
+            return ModDiffs(modTerminalAU - terminal, 0, 0, 0);
         }
 
         int diffMismatch = modMismatch - mismatch;
         int diff5 = modDangle5 - dangle5;
         int diff3 = modDangle3 - dangle3;
-        int diffTerminal = modTerminal - terminal;
+        int diffTerminal = modTerminalAU - terminal;
 
         return ModDiffs(diffTerminal, diffMismatch, diff5, diff3);
     }

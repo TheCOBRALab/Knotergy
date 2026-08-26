@@ -27,26 +27,21 @@ class ModStack {
         int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
 
         // Find all modified bases at the inner edge of the stack (i, j, i+1, j-1)
-        std::vector<std::string_view> unique_mod_bases =
-            ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
+        std::vector<std::string_view> unique_mod_bases = ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
         if (unique_mod_bases.empty()) return unmod_energy;
 
         // Used to look up stacking energies in modified base parameters
         std::string l_key = ModBaseUtils::join_string_views({i, ci, j, cj}, mod_sequence);
-
-        // Get mod base energy correction (returns original energy if no modifications found)
-        int e = ModBaseUtils::get_mod_energy(l_key, unique_mod_bases, mp, unmod_energy,
-                                             ModLookup::Stacking);
+        int e = ModBaseUtils::get_mod_energy(l_key, unique_mod_bases, mp, ModLookup::Stacking);
 
         // Due to the symmetrical nature of stacks, if the key was not found, we check the reverse
         // order (ci, i, cj, j) for modified bases
-        if (e == unmod_energy) {
+        if (e == NULL_ENERGY) {
             std::string r_key = ModBaseUtils::join_string_views({cj, j, ci, i}, mod_sequence);
-            e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, unmod_energy,
-                                             ModLookup::Stacking);
+            e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, ModLookup::Stacking);
         }
 
-        return e;
+        return e != NULL_ENERGY ? e : unmod_energy;
     }
 
     /**
