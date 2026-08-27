@@ -61,7 +61,7 @@ ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const Processed
 
     if (is_closing) {
         unique_mod_bases =
-            ModBaseUtils::unique_modified_bases_at_inner_edge(node.begin, node.end, mod_sequence);
+            ModBaseUtils::unique_mod_bases_at_inner_edge(node.begin, node.end, mod_sequence);
 
         if (unique_mod_bases.empty()) {
             return ModDiffs{};

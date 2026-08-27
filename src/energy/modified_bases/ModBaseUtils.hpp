@@ -83,7 +83,7 @@ class ModBaseUtils {
         return modified;
     }
 
-    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_in_string(
+    [[nodiscard]] static std::vector<std::string_view> unique_mod_bases_in_string(
         const std::string& str) {
         std::vector<std::string_view> graphemes = ProcessedRNAEntry::parse_modified_sequence(str);
         std::vector<std::string_view> unique_mod_bases;
@@ -98,7 +98,7 @@ class ModBaseUtils {
         return unique_mod_bases;
     }
 
-    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_inner_edge(
+    [[nodiscard]] static std::vector<std::string_view> unique_mod_bases_at_inner_edge(
         size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
         return unique_modified_bases_at_indices({i, j, i + 1, j - 1}, mod_sequence);
     }
@@ -174,24 +174,52 @@ class ModBaseUtils {
         return NULL_ENERGY;
     }
 
-    [[nodiscard]] static int get_dangle5_mod_energy(
-        size_t i, size_t j, int unmod_energy, const std::vector<std::string_view>& mod_sequence,
+    [[nodiscard]] static int get_mismatch_mod_energy(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
+        if (mod_sequence.empty()) {
+            return NULL_ENERGY;
+        }
+        std::string mismatch_key = get_mismatch_key(i, j, mod_sequence, is_closing);
+        std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(mismatch_key);
+        int mod_energy = get_mod_energy(mismatch_key, unique_mod_bases, mp, ModLookup::Mismatch);
+        return mod_energy;
+    }
+
+    [[nodiscard]] static int get_dangle5_mod_energy(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        const all_mod_params& mp, bool is_closing = false) {
+        if (mod_sequence.empty()) {
+            return NULL_ENERGY;
+        }
         std::string dangle5_key = get_dangle5_key(i, j, mod_sequence, is_closing);
-        std::vector<std::string_view> unique_mod_bases =
-            unique_modified_bases_in_string(dangle5_key);
+        std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(dangle5_key);
         int mod_energy = get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5);
-        return mod_energy != NULL_ENERGY ? mod_energy : unmod_energy;
+        return mod_energy;
     }
 
     [[nodiscard]] static int get_dangle3_mod_energy(
-        size_t i, size_t j, int unmod_energy, const std::vector<std::string_view>& mod_sequence,
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
+        if (mod_sequence.empty()) {
+            return NULL_ENERGY;
+        }
         std::string dangle3_key = get_dangle3_key(i, j, mod_sequence, is_closing);
-        std::vector<std::string_view> unique_mod_bases =
-            unique_modified_bases_in_string(dangle3_key);
+        std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(dangle3_key);
         int mod_energy = get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
-        return mod_energy != NULL_ENERGY ? mod_energy : unmod_energy;
+        return mod_energy;
+    }
+
+    [[nodiscard]] static int get_terminalAU_mod_energy(
+        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        const all_mod_params& mp, bool is_closing = false) {
+        if (mod_sequence.empty()) {
+            return NULL_ENERGY;
+        }
+        std::string terminal_key = get_terminal_key(i, j, mod_sequence, is_closing);
+        std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(terminal_key);
+        int mod_energy = get_mod_energy(terminal_key, unique_mod_bases, mp, ModLookup::TerminalAU);
+        return mod_energy;
     }
 
     [[nodiscard]] static std::string get_mismatch_key(

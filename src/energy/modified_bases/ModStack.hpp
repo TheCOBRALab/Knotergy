@@ -27,7 +27,8 @@ class ModStack {
         int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
 
         // Find all modified bases at the inner edge of the stack (i, j, i+1, j-1)
-        std::vector<std::string_view> unique_mod_bases = ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
+        std::vector<std::string_view> unique_mod_bases =
+            ModBaseUtils::unique_mod_bases_at_inner_edge(i, j, mod_sequence);
         if (unique_mod_bases.empty()) return unmod_energy;
 
         // Used to look up stacking energies in modified base parameters

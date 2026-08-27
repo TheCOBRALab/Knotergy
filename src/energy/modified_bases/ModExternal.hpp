@@ -22,5 +22,10 @@ class ModExternal {
     [[nodiscard]] static int external_dangle_1_energy(const std::vector<LoopNode*>& children,
                                                       const ProcessedRNAEntry& pRNA,
                                                       vrna_md_param& vp, const all_mod_params& mp);
+
+    [[nodiscard]] static int mod_exterior_stem(const LoopNode& node, int n5d, int n3d,
+                                               unsigned int type,
+                                               const std::vector<std::string_view>& mod_sequence,
+                                               vrna_md_param& vp, const all_mod_params& mp);
 };
 }  // namespace knotergy

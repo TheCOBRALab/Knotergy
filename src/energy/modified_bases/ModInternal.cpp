@@ -15,9 +15,9 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
                                           const all_mod_params& mp) {
     int unmod_energy = ViennaFunctions::internal_loop_energy(i, j, ci, cj, sequence, vp);
     std::vector<std::string_view> closing_unique_mod_bases =
-        ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
+        ModBaseUtils::unique_mod_bases_at_inner_edge(i, j, mod_sequence);
     std::vector<std::string_view> nested_unique_mod_bases =
-        ModBaseUtils::unique_modified_bases_at_inner_edge(ci, cj, mod_sequence);
+        ModBaseUtils::unique_mod_bases_at_inner_edge(ci, cj, mod_sequence);
     if (closing_unique_mod_bases.empty() && nested_unique_mod_bases.empty()) {
         return unmod_energy;
     }
@@ -120,9 +120,9 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
 //     std::string mismatch1_key = ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
 //     std::string mismatch2_key = ModBaseUtils::join_string_views({ci, cj, ci - 1}, mod_sequence);
 //     std::vector<std::string_view> closing_unique_mod_bases =
-//     ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence);
+//     ModBaseUtils::unique_mod_bases_at_inner_edge(i, j, mod_sequence);
 //     std::vector<std::string_view> nested_unique_mod_bases  =
-//     ModBaseUtils::unique_modified_bases_at_inner_edge(ci, cj, mod_sequence); int mod_mismatch1 =
+//     ModBaseUtils::unique_mod_bases_at_inner_edge(ci, cj, mod_sequence); int mod_mismatch1 =
 //     ModBaseUtils::get_mod_energy(mismatch1_key, closing_unique_mod_bases, mp, unmod_mismatch1,
 //     ModLookup::Mismatch); int mod_mismatch2 = ModBaseUtils::get_mod_energy(mismatch2_key,
 //     nested_unique_mod_bases, mp, unmod_mismatch2, ModLookup::Mismatch);

@@ -7,11 +7,15 @@
 namespace knotergy {
 
 LoopFactory::LoopFactory(const ProcessedRNAEntry& processed_rna) : pRNA_{processed_rna} {
+    node_table_.resize(pRNA_.size(), nullptr);
+
+    // Reserve space for all nodes (including root node)
+    // NOTICE: Avoid reallocations. That would invalidate pointers.
+    nodes_.reserve(pRNA_.get_closed_regions().size() + 1);  // +1 for root node
+
     // CLOSED REGIONS MUST BE SORTED BY START INDEX FOR THE BUILDING ALGORITHM TO WORK CORRECTLY
     // A check is performed in build_tree() to ensure this precondition is met.
     // pre populate node_table_ with nullptrs to reserve space for all nodes
-    node_table_.resize(pRNA_.size(), nullptr);
-    nodes_.reserve(pRNA_.get_closed_regions().size() + 1);  // +1 for root node
     build_tree(processed_rna.get_closed_regions());
 }
 

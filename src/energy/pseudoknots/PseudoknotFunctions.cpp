@@ -136,8 +136,8 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
         if (n5d > 0) {
             int n5d_unmod_energy = vp.p->dangle5[pair_type][n5d];
             if (processed_rna.has_modified_bases()) {
-                energy +=
-                    ModBaseUtils::get_dangle5_mod_energy(i, j, n5d_unmod_energy, mod_sequence, mp);
+                int mod_d5 = ModBaseUtils::get_dangle5_mod_energy(i, j, mod_sequence, mp);
+                energy += mod_d5 != NULL_ENERGY ? mod_d5 : n5d_unmod_energy;
             } else {
                 energy += n5d_unmod_energy;
             }
@@ -146,8 +146,8 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
         if (n3d > 0) {
             int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
             if (processed_rna.has_modified_bases()) {
-                energy +=
-                    ModBaseUtils::get_dangle3_mod_energy(i, j, n3d_unmod_energy, mod_sequence, mp);
+                int mod_d3 = ModBaseUtils::get_dangle3_mod_energy(i, j, mod_sequence, mp);
+                energy += mod_d3 != NULL_ENERGY ? mod_d3 : n3d_unmod_energy;
             } else {
                 energy += n3d_unmod_energy;
             }
