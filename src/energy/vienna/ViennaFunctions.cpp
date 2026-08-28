@@ -12,6 +12,10 @@
 namespace viennarna = thermorna::viennarna;
 
 namespace knotergy {
+
+// --------------------------------------------
+//               Stack Energy
+// --------------------------------------------
 int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                                   const std::string& sequence, vrna_md_param& vp) {
     bool stacked = i + 1 == ci && j == cj + 1 && ci < cj && j < sequence.size();
@@ -38,6 +42,9 @@ int ViennaFunctions::stack_energy(PKBasePair pair, PKBasePair child, const std::
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
+// --------------------------------------------
+//             Hairpin Energy
+// --------------------------------------------
 int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& sequence, bool& is_inf,
                                     vrna_md_param& vp) {
     if (j <= i || j >= sequence.size()) {
@@ -83,6 +90,9 @@ int ViennaFunctions::hairpin_energy(const PKBasePair& pair, const std::string& s
     return hairpin_energy(pair.i, pair.j, sequence, is_inf, vp);
 }
 
+// --------------------------------------------
+//            Internal Loop Energy
+// --------------------------------------------
 int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,
                                           const std::string& sequence, vrna_md_param& vp) {
     // c = child or nested bp
@@ -113,6 +123,10 @@ int ViennaFunctions::internal_loop_energy(PKBasePair pair, PKBasePair child,
                                           const std::string& sequence, vrna_md_param& vp) {
     return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
+
+// --------------------------------------------
+//            Multibranch Energy
+// --------------------------------------------
 
 int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                         vrna_md_param& vp) {
@@ -157,6 +171,10 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
 
     return energy;
 }
+
+// --------------------------------------------
+//            External Loop Energy
+// --------------------------------------------
 
 int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
                                      const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
