@@ -11,29 +11,6 @@ constexpr bool kIsExternal = false;
 constexpr bool kIsClosing = true;
 constexpr bool kIsNotClosing = false;
 
-/**
- * Apply modified-base corrections when ViennaRNA uses dangles 0 or 2.
- *
- * For dangles == 0, only terminal-AU contributes.
- * For dangles == 2, mismatch/dangle corrections and terminal-AU contribute.
- */
-void add_dangle_0_2_diffs(int& energy, const ModDiffs& diffs, int n5d, int n3d, unsigned int type,
-                          int dangles) {
-    if (dangles == 2) {
-        if (n5d >= 0 && n3d >= 0) {
-            energy += diffs.mismatch;
-        } else if (n5d >= 0) {
-            energy += diffs.n5d;
-        } else if (n3d >= 0) {
-            energy += diffs.n3d;
-        }
-    }
-
-    if (type > 2) {
-        energy += diffs.terminalAU;
-    }
-}
-
 }  // namespace
 
 int ModMultiloop::find_mod_multiloop_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
@@ -103,36 +80,42 @@ int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const Proces
             "multiloop_dangle_0_2_energy should only be called when "
             "dangles == 0 or 2");
     }
-
-    int energy = ViennaFunctions::multibranch_energy(node, pRNA, vp);
+    int penalties = vp.p->MLclosing + node.exclusive_unpaired_bases_count * vp.p->MLbase;
+    int energy = penalties;
     const std::string& sequence = pRNA.get_sequence();
 
-    // Correct the closing stem.
+    // Calculate the energy of the closing stem.
     {
         const unsigned int type =
             ViennaUtils::reverse_pair_type(sequence[node.begin], sequence[node.end], vp.md);
 
-        const auto [n5d, n3d] =
-            ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
+        auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
 
-        const ModDiffs diffs = get_multiloop_diffs(node, pRNA, kIsClosing, vp, mp);
+        if (vp.md.dangles == 0) {
+            n5d = -1;
+            n3d = -1;
+        }
 
-        add_dangle_0_2_diffs(energy, diffs, n5d, n3d, type, vp.md.dangles);
+        energy += mod_multibranch_stem(node, n3d, n5d, type, pRNA.get_modified_sequence(), vp, mp,
+                                       kIsClosing);
     }
 
-    // Correct every child stem.
+    // Calculate the energy of each child stem.
     for (const LoopNode* child_ptr : node.children) {
         const LoopNode& child = *child_ptr;
 
         const unsigned int type =
             ViennaUtils::get_pair_type(sequence[child.begin], sequence[child.end], vp.md);
 
-        const auto [n5d, n3d] =
-            ViennaUtils::encode_outer_dangles(child.begin, child.end, pRNA, vp.md);
+        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child.begin, child.end, pRNA, vp.md);
 
-        const ModDiffs diffs = get_multiloop_diffs(child, pRNA, kIsNotClosing, vp, mp);
+        if (vp.md.dangles == 0) {
+            n5d = -1;
+            n3d = -1;
+        }
 
-        add_dangle_0_2_diffs(energy, diffs, n5d, n3d, type, vp.md.dangles);
+        energy += mod_multibranch_stem(child, n5d, n3d, type, pRNA.get_modified_sequence(), vp, mp,
+                                       kIsNotClosing);
     }
 
     return energy;
@@ -219,6 +202,34 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
         vp.p->MLclosing + static_cast<int>(node.exclusive_unpaired_bases_count) * vp.p->MLbase;
 
     energy += CoaxialStacking::get_multibranch_dangle_3(node, multiloop_stems, pRNA, vp, mp);
+
+    return energy;
+}
+
+int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, unsigned int type,
+                                       const std::vector<std::string_view>& mod_sequence,
+                                       vrna_md_param& vp, const all_mod_params& mp,
+                                       const bool is_closing) {
+    int energy = vp.p->MLintern[type];
+
+    if (si1 >= 0 && sj1 >= 0) {
+        int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp,
+                                                           is_closing);
+        energy += mod_mm != NULL_ENERGY ? mod_mm : vp.p->mismatchM[type][si1][sj1];
+    } else if (si1 >= 0) {
+        int mod_d5 = ModBaseUtils::get_dangle5_mod_energy(node.begin, node.end, mod_sequence, mp,
+                                                          is_closing);
+        energy += mod_d5 != NULL_ENERGY ? mod_d5 : vp.p->dangle5[type][si1];
+    } else if (sj1 >= 0) {
+        int mod_d3 = ModBaseUtils::get_dangle3_mod_energy(node.begin, node.end, mod_sequence, mp,
+                                                          is_closing);
+        energy += mod_d3 != NULL_ENERGY ? mod_d3 : vp.p->dangle3[type][sj1];
+    }
+    if (type > 2) {
+        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end,
+                                                                   mod_sequence, mp, is_closing);
+        energy += mod_terminal != NULL_ENERGY ? mod_terminal : vp.p->TerminalAU;
+    }
 
     return energy;
 }
