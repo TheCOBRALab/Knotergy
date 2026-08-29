@@ -106,6 +106,7 @@ double PseudoknotFunctions::loop_penalties(const LoopNode& node,
                 energy += pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else if (bp.children.empty()) {
                 // if no nested structure between two base pairs of a band, it's an internal loop
+                // or a bulge.
                 energy += pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else {
                 energy += pk_multiloop_energy(bp, next_bp, processed_rna, pkp);

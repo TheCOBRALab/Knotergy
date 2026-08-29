@@ -132,7 +132,11 @@ LoopType LoopFactory::find_loop_type(const LoopNode& node) {
         if ((node.children[0]->begin == node.begin + 1) && node.children[0]->end == node.end - 1) {
             return LoopType::Stack;
         }
-        // ...and if not stacked, then bulge or internal loop
+        // ...and if not stacked, and the child is adjacent to either border, then it's a bulge
+        if (node.children[0]->begin == node.begin + 1 || node.children[0]->end == node.end - 1) {
+            return LoopType::Bulge;
+        }
+        // ...otherwise, it's an internal loop.
         return LoopType::Internal;
     }
 

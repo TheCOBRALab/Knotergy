@@ -54,6 +54,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
             }
             break;
 
+        case LoopType::Bulge:
         case LoopType::Internal:
             if (has_modified_bases_) {
                 node_energy = ModInternal::find_mod_internal_energy(
