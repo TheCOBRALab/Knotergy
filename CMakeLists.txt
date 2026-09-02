@@ -20,41 +20,63 @@ add_compile_definitions(
     KNOTERGY_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
-# ------------------------- External Dependencies ------------------------- 
+# ------------------------- External Dependencies -------------------------
 include(FetchContent)
 
 message(STATUS "Fetching external dependencies... this may take a while on the first run")
+
+# Helper for visible dependency progress
+function(fetch_dependency NAME)
+    message(STATUS "")
+    message(STATUS "============================================================")
+    message(STATUS "Fetching dependency: ${NAME}")
+    message(STATUS "============================================================")
+
+    FetchContent_MakeAvailable(${NAME})
+
+    message(STATUS "Loaded dependency: ${NAME}")
+endfunction()
+
 
 # ----------------- nlohmann/json -----------------
 set(JSON_Install OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(nlohmann_json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG        v3.12.0
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.12.0
 )
-FetchContent_MakeAvailable(nlohmann_json)
+
+fetch_dependency(nlohmann_json)
+
 
 # ----------------- uni-algo -----------------
 set(UNI_ALGO_HEADER_ONLY ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(uni_algo
-  GIT_REPOSITORY https://github.com/uni-algo/uni-algo.git
-  GIT_TAG        v1.2.0
+    GIT_REPOSITORY https://github.com/uni-algo/uni-algo.git
+    GIT_TAG        v1.2.0
 )
-FetchContent_MakeAvailable(uni_algo)
+
+fetch_dependency(uni_algo)
 
 
-#------------------ ThermoRNA (ViennaRNA) -----------------
-set(THERMORNA_KNOTERGY OFF CACHE BOOL "" FORCE) # Knotergy implements this already
+# ----------------- ThermoRNA (ViennaRNA) -----------------
 set(THERMORNA_VIENNARNA ON CACHE BOOL "" FORCE)
+
 # set(FETCHCONTENT_SOURCE_DIR_THERMORNA
 #     "path/to/ThermoRNA" # Replace with the actual path to ThermoRNA for local development
 # )
+
 FetchContent_Declare(ThermoRNA
     GIT_REPOSITORY https://github.com/TheCOBRALab/ThermoRNA.git
-    GIT_TAG v0.1.2
+    GIT_TAG        v0.1.3
 )
-FetchContent_MakeAvailable(ThermoRNA)
+
+fetch_dependency(ThermoRNA)
+
+message(STATUS "")
+message(STATUS "All external dependencies loaded successfully.")
+
 # ------------------------- Configurations -------------------------
 
 # Default build type if none is specified

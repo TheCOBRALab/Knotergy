@@ -39,19 +39,18 @@ int run_knotergy(const knotergy::CliArgs& args) {
 
     // ------------------------- Load Parameters -----------------------
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(
-        args.vienna_param_file, args.dangle, args.sequence, args.temperature, args.disable_cache);
+        args.vienna_param_file, args.dangle, args.temperature, args.salt, args.disable_cache);
 
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(args.pseudo_param_file, args.round_method());
 
     const knotergy::all_mod_params mp = load_modified_params(args.mod_param_paths);
 
+    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, args.efn2_correction);
+
     // ------------------------- Reading Inputs From File -----------------------------
     const std::vector<knotergy::RNAEntry> inputs =
         knotergy::RNAInputManager::get_all_inputs(args.input_file, args.sequence, args.structure);
-
-    // ------------------------- Print Parameter Report -----------------------
-    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, args.efn2_correction);
 
     // ------------------------- Main Processing Loop ----------------------------
     for (const knotergy::RNAEntry& rna : inputs) {

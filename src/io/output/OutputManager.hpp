@@ -37,7 +37,8 @@ class OutputManager {
         print_version();
 
         std::cout << "------------------------------------------------\n";
-        std::cout << "Parameters at " << vienna_params.md.temperature << "°C\n";
+        std::cout << "Parameters at " << vienna_params.md.temperature << "°C and "
+                  << vienna_params.md.salt << " M salt\n";
 
         std::cout << std::left << std::setw(W)
                   << "ViennaRNA:" << vienna_params.get_source_info().resolved_name

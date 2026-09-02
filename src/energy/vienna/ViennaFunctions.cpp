@@ -24,10 +24,13 @@ int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
                     std::to_string(i) + ", j: " + std::to_string(j) +
                     ", ci: " + std::to_string(ci) + ", cj: " + std::to_string(cj));
     }
+
     // c = child or nested base pair
     unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int child_type = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
-    return vp.p->stack[type][child_type];
+
+    int salt_stack_correction = vp.p->SaltStack;
+    return vp.p->stack[type][child_type] + salt_stack_correction;
 }
 
 int ViennaFunctions::stack_energy(const LoopNode& node, const std::string& sequence,

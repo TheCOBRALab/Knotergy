@@ -41,8 +41,8 @@ class ModStack {
             std::string r_key = ModBaseUtils::join_string_views({cj, j, ci, i}, mod_sequence);
             e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, ModLookup::Stacking);
         }
-
-        return e != NULL_ENERGY ? e : unmod_energy;
+        int salt_stack_correction = vp.p->SaltStack;
+        return e != NULL_ENERGY ? e + salt_stack_correction : unmod_energy;
     }
 
     /**

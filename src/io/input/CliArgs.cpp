@@ -107,9 +107,12 @@ void print_help() {
                  "calculations\n"
               << "  -d, --dangles                         Specify the dangle model to be used "
                  "(base is 2)\n"
-              << "  --pk-dangles                          Enable pseudoknot dangle calculations\n"
+              << "      --pk-dangles                      Enable pseudoknot dangle calculations\n"
               << "      --show-input                      Show the input sequence and structure\n"
               << "      --disable-cache                   Disable parameter caching\n"
+              << "      --salt <salt>                     Salt Concentration (default: 1.021)"
+        //   << "      --convertU                        Convert T to U"
+        //   << "      --convertT                        Convert U to T"
         //   << "      --efn2-correction                 Apply efn2 single-bulge correction\n"
         ;
 }
@@ -181,6 +184,11 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
                 return ParseStatus::ExitFailure;
             }
 
+        } else if (arg == "--salt") {
+            if (!take_double_value(i, argc, argv, "salt", out.salt)) {
+                return ParseStatus::ExitFailure;
+            }
+
         } else if (arg == "-h" || arg == "--help") {
             print_help();
             return ParseStatus::ExitSuccess;
@@ -203,6 +211,12 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
 
         } else if (arg == "--disable-cache") {
             out.disable_cache = true;
+
+        } else if (arg == "--convertU") {
+            out.convert = Convert::UtoT;
+
+        } else if (arg == "--convertT") {
+            out.convert = Convert::TtoU;
 
         } else {
             std::cerr << ERROR << " Unknown option: " << arg << '\n';

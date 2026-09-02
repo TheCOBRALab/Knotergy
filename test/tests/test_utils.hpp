@@ -29,8 +29,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
                                 std::string mod_param_file = mod_folder) {
     knotergy::RoundMethod round_method =
         static_cast<knotergy::RoundMethod>(round);  // Load parameters
-    knotergy::vrna_md_param vp =
-        knotergy::ViennaParams::load_energy_parameters(param_file, dangle, sequence);
+    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(param_file, dangle);
     knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pseudoknot_param_file, round_method);
     std::vector<knotergy::modified_base_param> mod_params =

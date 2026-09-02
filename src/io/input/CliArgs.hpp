@@ -15,6 +15,8 @@ enum class ParseStatus {
     ExitFailure,  // The command line was malformed; a message was already printed.
 };
 
+enum class Convert { None, TtoU, UtoT };
+
 // Every setting Knotergy takes from the command line.
 struct CliArgs {
     // Input.
@@ -29,6 +31,7 @@ struct CliArgs {
 
     // Energy model.
     double temperature = 37.0;  // Celsius.
+    double salt = 1.021;        // M
     int dangle = 2;
     int round_value = 0;  // 0 means no rounding; see RoundMethod.
 
@@ -38,6 +41,7 @@ struct CliArgs {
     bool show_input = false;
     bool disable_cache = false;
     bool pk_dangles = false;
+    Convert convert = Convert::None;  // U to T or T to U
 
     // Reads argv into `out`. Problems are reported on stderr, so the caller
     // only has to act on the returned status.
