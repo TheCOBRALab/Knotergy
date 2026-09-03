@@ -1,6 +1,8 @@
 #pragma once
 
+#include "energy/pseudoknots/PKEnergyBreakdown.hpp"
 #include "io/output/colors.hpp"
+#include "loop_tree/LoopTypes.hpp"
 #include "loop_tree/bands/Band.hpp"
 #include "preprocessing/ClosedRegion.hpp"
 
@@ -10,22 +12,6 @@
 #include <sstream>
 
 namespace knotergy {
-/**
- * @brief Enumeration of loop types in RNA secondary structures.
- */
-enum class LoopType { Unknown, Stack, Hairpin, Internal, Bulge, Multibranch, External, Pseudoknot };
-
-/**
- * @brief Enumeration of pseudoknot nesting types.
- *
- * Within Band (((..(...).(.[[[.)..)))]]]
- * This hairpin     ^   ^ is within a band
- * Nested      (((..(...).[[[...)))]]]
- * This hairpin     ^   ^ is nested inside a band
- */
-enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
-
-[[nodiscard]] static inline const char* loop_name(LoopType t);
 
 /**
  * @brief Represents a node in the loop tree of an RNA secondary structure.
@@ -37,6 +23,7 @@ enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
  */
 struct LoopNode {
    public:
+    //  -------------- Constructors -------------------
     /**
      * @brief Construct a LoopNode from a closed region.
      *
@@ -49,6 +36,7 @@ struct LoopNode {
      */
     LoopNode() : begin{NULL_INDEX}, end{NULL_INDEX} {}
 
+    //  ------------ Member Variables -------------------
     size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
     size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
@@ -64,27 +52,8 @@ struct LoopNode {
     int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
     double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
     bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
+    PKEnergyBreakdown pk_energy_breakdown;  ///< Detailed breakdown of pseudoknot energy.
 };
-
-/**
- * @brief Get a human-readable name for a loop type.
- *
- * @param t The loop type.
- * @return String representation of the loop type.
- */
-const char* loop_name(LoopType t) {
-    switch (t) {
-        case LoopType::Stack:       return "Stack        ";
-        case LoopType::Bulge:       return "Bulge        ";
-        case LoopType::Hairpin:     return "Hairpin  loop";
-        case LoopType::Internal:    return "Internal loop";
-        case LoopType::Multibranch: return "Multi    loop";
-        case LoopType::External:    return "External loop";
-        case LoopType::Pseudoknot:  return "Pseudo   loop";
-        case LoopType::Unknown:     return "Unknown  loop";
-    }
-    return "Unknown  loop";
-}
 
 /**
  * @brief Stream insertion operator for LoopNode.
@@ -109,11 +78,7 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "\n";
 
     os << "  pseudo_type: ";
-    switch (node.pseudo_type) {
-        case PseudoNestedType::None:                 os << "None"; break;
-        case PseudoNestedType::WithinBand:           os << "WithinBand"; break;
-        case PseudoNestedType::OutsideBandIntervals: os << "OutsideBandIntervals"; break;
-    }
+    os << pk_nested_type(node.pseudo_type);
     os << "\n";
 
     os << "  exclusive_unpaired_bases_count: " << node.exclusive_unpaired_bases_count << "\n";
@@ -122,15 +87,15 @@ inline std::ostream& operator<<(std::ostream& os, const LoopNode& node) {
     os << "  number_of_outsideband_children: " << node.number_of_outsideband_children << "\n";
     os << "  number_of_bands: " << node.bands.size() << "\n";
     os << "  bands:\n";
-    for (const auto& band : node.bands) {
+    for (const Band& band : node.bands) {
         os << "    Band(" << band.left_border() << ", " << band.left_inner() << ", "
            << band.right_inner() << ", " << band.right_border() << ")\n";
-        for (const auto& base_pair : band.base_pairs()) {
+        for (const PKBasePair& base_pair : band.base_pairs()) {
             os << "        PKBasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
         }
     }
     os << "  children count: " << node.children.size() << "\n";
-    for (const auto& child : node.children) {
+    for (const LoopNode* child : node.children) {
         os << "    Child -> begin: " << child->begin << ", end: " << child->end << "\n";
     }
     os << "}\n";

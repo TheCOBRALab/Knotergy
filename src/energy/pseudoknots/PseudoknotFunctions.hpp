@@ -27,17 +27,22 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param is_inf If the energy is infinite (distance between base pairs < 3)
+     * @param breakdown Reference to a PKEnergyBreakdown object to store detailed energy components.
      * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
     [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
                                                   vrna_md_param& vp, const all_mod_params& mp,
-                                                  const pk_param& pkp, bool& is_inf,
+                                                  const pk_param& pkp, PKEnergyBreakdown& breakdown,
                                                   const bool pk_dangles = false);
 
    private:
+    static void populate_pk_energy_breakdown(const LoopNode& node,
+                                             const ProcessedRNAEntry& processed_rna,
+                                             vrna_md_param& vp, const all_mod_params& mp,
+                                             const pk_param& pkp, PKEnergyBreakdown& breakdown);
+
     /**
      * @brief Calculate initialization penalty for a pseudoknot based on its parent loop type.
      *
@@ -53,7 +58,22 @@ class PseudoknotFunctions {
                                              const knotergy::pk_param& pkp);
 
     /**
-     * @brief Calculate loop-specific energy penalties in a pseudoknot.
+     * @brief Calculate the number of unpaired bases in a pseudoknot, excluding those within bands.
+     *
+     * This function counts unpaired bases in the pseudoknot loop while excluding those that
+     * are part of pseudoknot bands, as they are already accounted for in ViennaRNA's energy
+     * calculations for internal loops. And multiloops spanning bands are handled separately
+     * in the pseudoknot energy model.
+     *
+     * @param node The pseudoknot loop node.
+     * @param processed_rna The processed RNA entry with structural information.
+     * @return Count of unpaired bases outside of bands.
+     */
+    [[nodiscard]] static int get_unpaired_outside_of_bands(const LoopNode& node,
+                                                           const ProcessedRNAEntry& processed_rna);
+
+    /**
+     * @brief Calculate loop-specific energies in a pseudoknot.
      *
      * Iterates through each band in the pseudoknot and calculates stacking, internal loop, and
      * multiloop energies for each base pair in the band.
@@ -63,13 +83,26 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param is_inf Whether an infinite energy condition was encountered.
-     * @return Total loop penalties in centicalories.
+     * @param breakdown Reference to a PKEnergyBreakdown object to store detailed energy components.
+     * @return Total loop energies in centicalories.
      */
-    [[nodiscard]] static double loop_penalties(const LoopNode& node,
-                                               const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp, const all_mod_params& mp,
-                                               const knotergy::pk_param& pkp, bool& is_inf);
+    static void loop_energies(const LoopNode& node, const ProcessedRNAEntry& processed_rna,
+                              vrna_md_param& vp, const all_mod_params& mp,
+                              const knotergy::pk_param& pkp, PKEnergyBreakdown& breakdown);
+
+    /**
+     * @brief Checks if the innermost base pair has infinite energy.
+     *
+     * This function checks if the innermost base pair of a pseudoknot band is too close
+     * (less than 3 base pairs apart)
+     *
+     * @param bp The innermost base pair of the pseudoknot band.
+     * @param vp ViennaRNA model parameters.
+     * @param is_inf Reference to a boolean that will be set to true if the energy is infinite.
+     * @return The energy of the innermost base pair (0 if valid, INF if invalid).
+     */
+    [[nodiscard]] static double pk_innermost_energy(const PKBasePair& bp, vrna_md_param& vp,
+                                                    bool& is_inf);
 
     /**
      * @brief Calculate stacking energy for base pairs in a pseudoknot band.
