@@ -99,7 +99,7 @@ std::vector<RNAEntry> RNAInputManager::get_all_inputs(const std::string& input_f
     }
 
     // Saves the last entry
-    if (!current.name.empty() && !current.name.empty() && !current.structure.empty()) {
+    if (!current.name.empty() && !current.sequence.empty() && !current.structure.empty()) {
         entries.push_back(current);
     } else if (!current.name.empty() && (current.sequence.empty() || current.structure.empty())) {
         THROW_ERROR("Sequence and/or structure are empty for entry: " + current.name +
