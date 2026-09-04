@@ -60,7 +60,6 @@ class CoaxialStacking {
                                                         const ProcessedRNAEntry& pRNA,
                                                         vrna_md_param& vp,
                                                         const all_mod_params& mp);
-    [[nodiscard]] static int add_or_inf(int a, int b);
 
     [[nodiscard]] static int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                                                           std::size_t start_prev,

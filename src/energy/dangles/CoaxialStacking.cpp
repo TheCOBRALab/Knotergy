@@ -1,15 +1,9 @@
 #include "CoaxialStacking.hpp"
 
+#include "energy/dangles/DangleUtils.hpp"
 #include "energy/modified_bases/ModStack.hpp"
 
 namespace knotergy {
-
-int CoaxialStacking::add_or_inf(int a, int b) {
-    if (a >= INF || b >= INF) {
-        return INF;
-    }
-    return a + b;
-}
 
 // applies to closing pair and first child
 int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,

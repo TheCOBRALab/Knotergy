@@ -1,5 +1,6 @@
 #include "Dangle1.hpp"
 
+#include "energy/dangles/DangleUtils.hpp"
 #include "energy/vienna/ViennaUtils.hpp"
 
 #include <ViennaRNA/eval/exterior.hpp>
@@ -93,9 +94,11 @@ std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
     bool is_external) {
     std::vector<DangleSet> dangle_energies;
     dangle_energies.reserve(children.size());
-    for (const auto& child : children) {
+    for (const LoopNode* child : children) {
         if (child->loop_type == LoopType::Pseudoknot) {
-            dangle_energies.push_back(DangleSet{0, 0, 0, 0});
+            // basepair penalty for pseudoknot stems must be added for multibranch loops.
+            int b = is_external ? 0 : vp.p->MLintern[1];
+            dangle_energies.push_back(DangleSet{b, INF, INF, INF});
             continue;
         }
         dangle_energies.push_back(get_child_dangle_energy(*child, pRNA, vp, is_external));
@@ -113,10 +116,10 @@ std::vector<std::vector<std::size_t>> Dangle1::get_dangle_chains(
     // Stores chains of children that can dangle together (0 or 1 unpaired bases in between)
     // Psuedoknotted children break the chain and are treated separately (no dangle energy)
     for (std::size_t i = 0; i < children.size(); ++i) {
-        if (children[i]->loop_type == LoopType::Pseudoknot) {
-            previous = NULL_INDEX;  // break the chain
-            continue;
-        }
+        // if (children[i]->loop_type == LoopType::Pseudoknot) {
+        //     previous = NULL_INDEX;  // break the chain
+        //     continue;
+        // }
 
         if (previous == NULL_INDEX || children[i]->begin - children[previous]->end > 2) {
             chains.push_back({i});
@@ -145,12 +148,12 @@ int Dangle1::process_chain(const std::vector<std::size_t>& chain,
 
         const bool disable_right_dangle = (idx == chain.back() && disable_last_right_dangle);
 
-        int RFreeD0 = prev[RightFree] + energies.no_dangle;
-        int RFreeDL = prev[RightFree] + energies.left_dangle;
-        int RFreeDR = prev[RightFree] + energies.right_dangle;
-        int RFreeDB = prev[RightFree] + energies.both_dangle;
-        int RTakenD0 = prev[RightTaken] + energies.no_dangle;
-        int RTakenDR = prev[RightTaken] + energies.right_dangle;
+        int RFreeD0 = add_or_inf(prev[RightFree] + energies.no_dangle, 0);
+        int RFreeDL = add_or_inf(prev[RightFree] + energies.left_dangle, 0);
+        int RFreeDR = add_or_inf(prev[RightFree] + energies.right_dangle, 0);
+        int RFreeDB = add_or_inf(prev[RightFree] + energies.both_dangle, 0);
+        int RTakenD0 = add_or_inf(prev[RightTaken] + energies.no_dangle, 0);
+        int RTakenDR = add_or_inf(prev[RightTaken] + energies.right_dangle, 0);
 
         // Update touching_right based on previous state and current possibilities
         if (disable_right_dangle) {
@@ -167,7 +170,8 @@ int Dangle1::process_chain(const std::vector<std::size_t>& chain,
 
         prev = cur;
     }
-    return std::min(prev[RightFree] + closing.best(), prev[RightTaken] + closing.best_left());
+    return std::min(add_or_inf(prev[RightFree], closing.best()),
+                    add_or_inf(prev[RightTaken], closing.best_left()));
 }
 
 // Process multiple chains of children and aggregate their dangle energies

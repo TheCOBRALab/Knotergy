@@ -159,7 +159,10 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
 
     // ------------------ Child Stems Energy ------------------
     for (const LoopNode* child : node.children) {
-        if (child->loop_type == LoopType::Pseudoknot) continue;
+        if (child->loop_type == LoopType::Pseudoknot) {
+            energy += vp.p->MLintern[1];
+            continue;
+        }
 
         std::size_t ci = child->begin;
         std::size_t cj = child->end;

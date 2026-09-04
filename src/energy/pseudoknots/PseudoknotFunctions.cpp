@@ -84,7 +84,7 @@ double PseudoknotFunctions::init_penalty(const LoopNode& node, vrna_md_param& vp
     double energy = 0;
     switch (node.parent->loop_type) {
         case (LoopType::External):    energy += pkp.pk_in_ext; break;
-        case (LoopType::Multibranch): energy += pkp.pk_in_mloop + vp.p->MLintern[1]; break;
+        case (LoopType::Multibranch): energy += pkp.pk_in_mloop; break;
         case (LoopType::Pseudoknot):
             energy +=
                 node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;
