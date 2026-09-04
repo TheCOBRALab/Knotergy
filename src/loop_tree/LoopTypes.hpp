@@ -4,7 +4,7 @@ namespace knotergy {
 /**
  * @brief Enumeration of loop types in RNA secondary structures.
  */
-enum class LoopType { Unknown, Stack, Hairpin, Internal, Bulge, Multibranch, External, Pseudoknot };
+enum class LoopType { Unknown, Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
 
 /**
  * @brief Enumeration of pseudoknot nesting types.
@@ -25,9 +25,8 @@ enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
 [[nodiscard]] static inline const char* loop_name(LoopType t) {
     switch (t) {
         case LoopType::Stack:       return "Stack        ";
-        case LoopType::Bulge:       return "Bulge        ";
         case LoopType::Hairpin:     return "Hairpin  loop";
-        case LoopType::Internal:    return "Internal loop";
+        case LoopType::Internal:    return "Interior loop";
         case LoopType::Multibranch: return "Multi    loop";
         case LoopType::External:    return "External loop";
         case LoopType::Pseudoknot:  return "Pseudo   loop";
