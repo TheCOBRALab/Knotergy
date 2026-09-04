@@ -12,10 +12,17 @@
 
 namespace knotergy {
 
+enum class VerbosityLevel { Quiet = 0, Verbose = 1, Detailed = 2 };
+
 class EnergyBreakdown {
    public:
     static std::string node_energy_breakdown(const LoopNode* node,
-                                             const ProcessedRNAEntry& rna_entry) {
+                                             const ProcessedRNAEntry& rna_entry,
+                                             VerbosityLevel verbosity = VerbosityLevel::Quiet) {
+        if (verbosity == VerbosityLevel::Quiet) {
+            return "";
+        }
+
         const bool use_color = should_use_color();
 
         const auto color = [use_color](const char* ansi_code) -> const char* {

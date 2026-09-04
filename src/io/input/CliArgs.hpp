@@ -1,5 +1,6 @@
 #pragma once
 
+#include "io/output/EnergyBreakdown.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "utils/common.hpp"
 
@@ -36,7 +37,7 @@ struct CliArgs {
     int round_value = 0;  // 0 means no rounding; see RoundMethod.
 
     // Behaviour.
-    bool verbose = false;
+    VerbosityLevel verbosity = VerbosityLevel::Quiet;
     bool efn2_correction = false;
     bool show_input = false;
     bool disable_cache = false;

@@ -11,7 +11,7 @@
 namespace knotergy {
 
 // A stack is used instead of recursion to avoid stack overflows on deeply nested structures.
-void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
+void ComputeEnergy::process_tree(LoopNode& root, VerbosityLevel verbosity) {
     std::vector<LoopNode*> stack;
     stack.push_back(&root);
 
@@ -20,9 +20,7 @@ void ComputeEnergy::process_tree(LoopNode& root, bool verbose) {
         stack.pop_back();
 
         energy_ += process_node(*node);
-        if (verbose) {
-            std::cout << EnergyBreakdown::node_energy_breakdown(node, pRNA_);
-        }
+        std::cout << EnergyBreakdown::node_energy_breakdown(node, pRNA_, verbosity);
 
         for (auto it = node->children.rbegin(); it != node->children.rend(); ++it) {
             stack.push_back(*it);

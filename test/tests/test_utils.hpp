@@ -48,7 +48,7 @@ inline static double get_energy(std::string sequence, std::string structure, int
     // compute energy
     bool efn2_correction = false;
     knotergy::ComputeEnergy energy(factory.get_root_node(), processed_rna, vp, pkp, mp, pk_dangles,
-                                   efn2_correction, round);
+                                   efn2_correction);
 
     return energy.getEnergy();
 }

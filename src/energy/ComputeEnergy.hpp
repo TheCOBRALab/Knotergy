@@ -1,6 +1,7 @@
 #pragma once
 #include "energy/pseudoknots/PseudoknotFunctions.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
+#include "io/output/EnergyBreakdown.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "loop_tree/LoopNode.hpp"
 #include "preprocessing/ProcessedRNAEntry.hpp"
@@ -34,7 +35,8 @@ class ComputeEnergy {
      */
     ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
                   const knotergy::pk_param& pkp, const all_mod_params& mp = {},
-                  bool pk_dangles = false, bool efn2_correction = false, bool verbose = false)
+                  bool pk_dangles = false, bool efn2_correction = false,
+                  VerbosityLevel verbose = VerbosityLevel::Quiet)
         : root_node_{root_node},
           pRNA_{processed_rna},
           vp_{vp},
@@ -76,9 +78,9 @@ class ComputeEnergy {
      * Recursively traverses the loop tree and computes energy for each node.
      *
      * @param root_node The root node of the loop tree to process.
-     * @param verbose Whether to print verbose energy breakdown (default: false).
+     * @param verbosity The level of verbosity for the energy breakdown (default: Quiet).
      */
-    void process_tree(LoopNode& root_node, bool verbose = false);
+    void process_tree(LoopNode& root_node, VerbosityLevel verbosity = VerbosityLevel::Quiet);
 
     /**
      * @brief Process a single loop node and compute its energy contribution.

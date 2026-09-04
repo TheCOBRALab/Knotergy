@@ -198,8 +198,20 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
             return ParseStatus::ExitSuccess;
 
         } else if (arg == "-v" || arg == "--verbose") {
-            out.verbose = true;
+            if (next_is_value(i, argc, argv)) {
+                int verbosity_value;
+                if (!take_int_value(i, argc, argv, verbosity_value))
+                    return ParseStatus::ExitFailure;
 
+                if (verbosity_value < 0 || verbosity_value > 2) {
+                    std::cerr << ERROR << " Invalid verbosity value: " << verbosity_value
+                              << ". Verbose must be between 0 and 2.\n";
+                    return ParseStatus::ExitFailure;
+                }
+                out.verbosity = static_cast<VerbosityLevel>(verbosity_value);
+            } else {
+                out.verbosity = VerbosityLevel::Verbose;
+            }
         } else if (arg == "--efn2-correction") {
             out.efn2_correction = true;
 
