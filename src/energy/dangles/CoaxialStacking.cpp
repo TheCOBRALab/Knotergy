@@ -237,14 +237,18 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
     return energy;
 }
 
-int CoaxialStacking::get_multibranch_dangle_3(const LoopNode& node,
+// I disagree with ViennaRNA's implementation of coaxial stacking. I'll likely re-write this
+// entire file. Pseudoknots aren't properly handled, but this is a good start.
+// Will fix in the re-write of the coaxial stacking code.
+// For now, this is a direct translation of ViennaRNA's d3 multiloop walk.
+int CoaxialStacking::get_multibranch_dangle_3([[maybe_unused]] const LoopNode& node,
                                               const std::vector<MultiloopStem>& stems,
                                               const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                               const all_mod_params& mp) {
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the
     // last child back into the closing pair at the final edge of this walk.
-    int best = walk_multiloop_d3_from_start(pRNA, node.children.size(), stems, vp, mp);
+    int best = walk_multiloop_d3_from_start(pRNA, stems.size() - 1, stems, vp, mp);
 
     // Second walk:
     // start from the first child. This disallows stacking of the closing pair
