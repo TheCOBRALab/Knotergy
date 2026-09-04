@@ -11,12 +11,12 @@ class EnergyBreakdown {
    public:
     static std::string node_energy_breakdown(const LoopNode* node,
                                              const ProcessedRNAEntry& rna_entry) {
-        size_t max_idx = rna_entry.size();
+        std::size_t max_idx = rna_entry.size();
         LoopType loop_type = node->loop_type;
         bool is_inf = node->is_inf;
         double energy = node->energy;
-        size_t begin = node->begin;
-        size_t end = node->end;
+        std::size_t begin = node->begin;
+        std::size_t end = node->end;
 
         std::ostringstream out;
         const bool use_color = should_use_color();

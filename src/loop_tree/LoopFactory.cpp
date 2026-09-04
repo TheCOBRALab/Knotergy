@@ -99,7 +99,7 @@ void LoopFactory::populate_node(LoopNode& node) {
 }
 
 int LoopFactory::count_total_base_pairs(const LoopNode& node) {
-    size_t total = 0;
+    std::size_t total = 0;
     for (const Band& band : node.bands) {
         total += band.base_pairs().size();
     }
@@ -115,7 +115,7 @@ int LoopFactory::count_unpaired_bases_excluding_children(const LoopNode& node) {
 }
 
 LoopType LoopFactory::find_loop_type(const LoopNode& node) {
-    const std::vector<size_t>& pair_table = pRNA_.get_pair_table();
+    const std::vector<std::size_t>& pair_table = pRNA_.get_pair_table();
 
     if (pair_table[node.begin] != node.end) {
         return LoopType::Pseudoknot;
@@ -172,7 +172,7 @@ void LoopFactory::print_tree(bool debug) const {
     }
 }
 
-void LoopFactory::print_tree(const LoopNode* node, size_t depth, bool debug) const {
+void LoopFactory::print_tree(const LoopNode* node, std::size_t depth, bool debug) const {
     std::cout << std::string(depth, '.')  // indent with dots
               << '[' << node->begin << ',' << node->end << "]  "
               << "  unpaired=" << node->exclusive_unpaired_bases_count

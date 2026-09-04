@@ -155,7 +155,7 @@ class Dangle1 {
      * @param second Second index.
      * @return True if indices differ by exactly 1.
      */
-    [[nodiscard]] static bool contiguous(size_t first, size_t second) noexcept {
+    [[nodiscard]] static bool contiguous(std::size_t first, std::size_t second) noexcept {
         return (first > second ? first - second : second - first) == 1;
     }
 
@@ -181,7 +181,7 @@ class Dangle1 {
      * @param children Vector of child loop nodes.
      * @return Vector of chains, where each chain is a vector of child indices.
      */
-    [[nodiscard]] static std::vector<std::vector<size_t>> get_dangle_chains(
+    [[nodiscard]] static std::vector<std::vector<std::size_t>> get_dangle_chains(
         const std::vector<LoopNode*>& children);
 
     /**
@@ -195,7 +195,7 @@ class Dangle1 {
      * @param closing Dangle energy for closing base pair (for multiloop).
      * @return Optimal dangle energy for the chain in centicalories.
      */
-    [[nodiscard]] static int process_chain(const std::vector<size_t>& chain,
+    [[nodiscard]] static int process_chain(const std::vector<std::size_t>& chain,
                                            const std::vector<DangleSet>& dangle_energies,
                                            bool disable_last_right_dangle = false,
                                            std::array<int, 2> init = {0, INF},
@@ -212,11 +212,10 @@ class Dangle1 {
      * @param closing Dangle energy for closing base pair (for multiloop).
      * @return Total optimal dangle energy in centicalories.
      */
-    [[nodiscard]] static int process_chains(const std::vector<std::vector<size_t>>& dangle_chains,
-                                            const std::vector<DangleSet>& dangle_energies,
-                                            bool disable_last_right_dangle = false,
-                                            std::array<int, 2> init = {0, INF},
-                                            DangleSet closing = DangleSet());
+    [[nodiscard]] static int process_chains(
+        const std::vector<std::vector<std::size_t>>& dangle_chains,
+        const std::vector<DangleSet>& dangle_energies, bool disable_last_right_dangle = false,
+        std::array<int, 2> init = {0, INF}, DangleSet closing = DangleSet());
 
     /**
      * @brief Process chains for multibranch loop dangle energy calculation.
@@ -229,7 +228,7 @@ class Dangle1 {
      * @return Total optimal dangle energy in centicalories.
      */
     [[nodiscard]] static int process_ml_chains(
-        const std::vector<std::vector<size_t>>& dangle_chains,
+        const std::vector<std::vector<std::size_t>>& dangle_chains,
         const std::vector<LoopNode*>& children, const std::vector<DangleSet>& dangle_energies,
         const LoopNode& node, const DangleSet ml_dangle_energy);
 };

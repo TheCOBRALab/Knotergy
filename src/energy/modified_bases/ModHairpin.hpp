@@ -10,7 +10,7 @@ namespace knotergy {
 class ModHairpin {
    public:
     // Adds an AU penalty to the modified hairpin energy
-    static int find_mod_hairpin_energy(size_t i, size_t j, const std::string& sequence,
+    static int find_mod_hairpin_energy(std::size_t i, std::size_t j, const std::string& sequence,
                                        const std::vector<std::string_view>& mod_sequence,
                                        vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
         // Get the unmodified hairpin energy

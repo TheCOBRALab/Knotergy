@@ -49,8 +49,8 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<LoopNode*>& childr
     int energy = 0;
 
     for (const LoopNode* child : children) {
-        size_t i = child->begin;
-        size_t j = child->end;
+        std::size_t i = child->begin;
+        std::size_t j = child->end;
         unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, pRNA, vp.md);
         if (vp.md.dangles == 0) {
@@ -74,7 +74,7 @@ int ModExternal::external_dangle_1_energy(const std::vector<LoopNode*>& children
         Dangle1::populate_children_dangle_energies(children, pRNA, vp, is_external);
     int energy = 0;
 
-    for (size_t idx = 0; idx < children.size(); ++idx) {
+    for (std::size_t idx = 0; idx < children.size(); ++idx) {
         const LoopNode& child = *children[idx];
         ModDiffs diffs = ModExternal::get_external_child_diffs(child, pRNA, vp, mp);
         DangleSet& current_set = all_dangle_sets[idx];

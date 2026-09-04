@@ -53,7 +53,7 @@ Clean, warning-free builds:
 ```c++
 std::vector<int> numbers{-1, 2, 3};
 for (int i = 0; i <= 2; ++i) {
-    numbers[std::static_cast<size_t>(i)];
+    numbers[std::static_cast<std::size_t>(i)];
 }
 ```
 
@@ -63,17 +63,17 @@ Here, the repeated `static_cast` is a red flag. You're forcing the compiler to s
 
 ```c++
 std::vector<int> numbers{-1, 2, 3};
-for (size_t i = 0; i < numbers.size(); ++i) {
+for (std::size_t i = 0; i < numbers.size(); ++i) {
     numbers[i];
 }
 ```
 
-By using the correct type (`size_t`) for indexing:
+By using the correct type (`std::size_t`) for indexing:
 - The code is cleaner and easier to read.
 - The variable matches the type expected by `std::vector::operator[]`.
 - No signed/unsigned comparison warnings are generated.
 
-> **Project Convention:** In Knotergy, `size_t` must be used for values representing indices. This makes intent clear and helps prevent bugs caused by using incorrect value types.
+> **Project Convention:** In Knotergy, `std::size_t` must be used for values representing indices. This makes intent clear and helps prevent bugs caused by using incorrect value types.
 
 
 ## How the program flows

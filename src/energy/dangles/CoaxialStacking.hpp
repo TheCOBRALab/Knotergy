@@ -9,9 +9,9 @@
 namespace knotergy {
 
 struct MultiloopStem {
-    size_t begin = NULL_INDEX;  // Pairing base encountered while walking the multiloop
-    size_t end = NULL_INDEX;    // Its pairing partner
-    size_t prev_end =
+    std::size_t begin = NULL_INDEX;  // Pairing base encountered while walking the multiloop
+    std::size_t end = NULL_INDEX;    // Its pairing partner
+    std::size_t prev_end =
         NULL_INDEX;  // The end of the previous stem in the walk, used for checking contiguity
     unsigned int type = 0;  // ViennaRNA pair type
 
@@ -63,7 +63,7 @@ class CoaxialStacking {
     [[nodiscard]] static int add_or_inf(int a, int b);
 
     [[nodiscard]] static int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
-                                                          size_t start_prev,
+                                                          std::size_t start_prev,
                                                           const std::vector<MultiloopStem>& stems,
                                                           vrna_md_param& vp,
                                                           const all_mod_params& mp);

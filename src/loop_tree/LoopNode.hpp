@@ -37,8 +37,8 @@ struct LoopNode {
     LoopNode() : begin{NULL_INDEX}, end{NULL_INDEX} {}
 
     //  ------------ Member Variables -------------------
-    size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
-    size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
+    std::size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
+    std::size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
     LoopType loop_type = LoopType::Unknown;                 ///< Type of this loop.
     PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.

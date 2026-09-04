@@ -19,8 +19,8 @@ namespace knotergy {
  *
  */
 struct PairedBaseNode {
-    size_t prev = NULL_INDEX;  ///< Previous position in the linked list.
-    size_t next = NULL_INDEX;  ///< Next position in the linked list.
+    std::size_t prev = NULL_INDEX;  ///< Previous position in the linked list.
+    std::size_t next = NULL_INDEX;  ///< Next position in the linked list.
 };
 
 /**
@@ -43,10 +43,10 @@ class BandFinder {
      * @param pair_table Base-pair index mapping for the structure.
      * @return Vector of Band objects found in the region.
      */
-    [[nodiscard]] static std::vector<Band> find_bands(size_t cr_start, size_t cr_end,
+    [[nodiscard]] static std::vector<Band> find_bands(std::size_t cr_start, std::size_t cr_end,
                                                       LoopType loop_type,
                                                       std::vector<PairedBaseNode>& aux_bands,
-                                                      const std::vector<size_t>& pair_table,
+                                                      const std::vector<std::size_t>& pair_table,
                                                       const std::vector<LoopNode*>& node_table);
 
     /**
@@ -76,9 +76,9 @@ class BandFinder {
      * @param pair_table Base-pair index mapping.
      * @return A pair containing the extended inner positions.
      */
-    [[nodiscard]] static std::pair<size_t, size_t> find_stem_inner_indices(
-        size_t band_start, size_t band_end, const std::vector<PairedBaseNode>& aux_bands,
-        const std::vector<size_t>& pair_table);
+    [[nodiscard]] static std::pair<std::size_t, std::size_t> find_stem_inner_indices(
+        std::size_t band_start, std::size_t band_end, const std::vector<PairedBaseNode>& aux_bands,
+        const std::vector<std::size_t>& pair_table);
 
     /**
      * @brief Generate a linked structure of potential band boundaries.
@@ -117,9 +117,9 @@ class BandFinder {
      * @param node_table Vector of all loop nodes.
      * @return Vector of PairedBaseNode objects.
      */
-    static void generate_paired_base_links(size_t cr_start, size_t cr_end,
+    static void generate_paired_base_links(std::size_t cr_start, std::size_t cr_end,
                                            std::vector<PairedBaseNode>& aux_bands,
-                                           const std::vector<size_t>& pair_table,
+                                           const std::vector<std::size_t>& pair_table,
                                            const std::vector<LoopNode*>& node_table);
 
     /**

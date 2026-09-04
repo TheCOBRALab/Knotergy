@@ -4,8 +4,8 @@
 
 namespace knotergy {
 
-Band BandBuilder::construct_band(size_t lb, size_t li, size_t ri, size_t rb,
-                                 const std::vector<size_t>& pair_table,
+Band BandBuilder::construct_band(std::size_t lb, std::size_t li, std::size_t ri, std::size_t rb,
+                                 const std::vector<std::size_t>& pair_table,
                                  const std::vector<LoopNode*>& node_table) {
     // ------------- Validate band structure and pairing -------------
     if (lb >= pair_table.size() || li >= pair_table.size() || ri >= pair_table.size() ||
@@ -36,21 +36,22 @@ Band BandBuilder::construct_band(size_t lb, size_t li, size_t ri, size_t rb,
     return Band(lb, li, ri, rb, std::move(base_pairs), child_count);
 }
 
-Band BandBuilder::construct_band(BandBounds bounds, const std::vector<size_t>& pair_table,
+Band BandBuilder::construct_band(BandBounds bounds, const std::vector<std::size_t>& pair_table,
                                  const std::vector<LoopNode*>& node_table) {
     return construct_band(bounds.left_border, bounds.left_inner, bounds.right_inner,
                           bounds.right_border, pair_table, node_table);
 }
 
 std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
-    size_t lb, size_t li, size_t ri, size_t rb, const std::vector<size_t>& pair_table,
-    const std::vector<LoopNode*>& node_table, int& child_count) {
+    std::size_t lb, std::size_t li, std::size_t ri, std::size_t rb,
+    const std::vector<std::size_t>& pair_table, const std::vector<LoopNode*>& node_table,
+    int& child_count) {
     std::vector<PKBasePair> base_pairs;
     base_pairs.reserve(std::min(rb - ri, li - lb) + 1);  // Max possible base pairs in the band
 
     base_pairs.emplace_back(lb, pair_table[lb]);
 
-    for (size_t idx = lb + 1; idx <= li; ++idx) {
+    for (std::size_t idx = lb + 1; idx <= li; ++idx) {
         // Skip closed region and add it as a child of the current base pair
         if (node_table[idx] != nullptr) {
             node_table[idx]->pseudo_type = PseudoNestedType::WithinBand;
@@ -61,7 +62,7 @@ std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
         }
 
         // Check if the current index is a base pair that belongs to the band
-        size_t paired = pair_table[idx];
+        std::size_t paired = pair_table[idx];
         if (paired >= ri && paired <= rb) {
             base_pairs.emplace_back(idx, paired);
         }
@@ -70,20 +71,22 @@ std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
     return base_pairs;
 }
 
-void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pairs, size_t ri,
-                                              size_t rb, const std::vector<LoopNode*>& node_table,
+void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pairs, std::size_t ri,
+                                              std::size_t rb,
+                                              const std::vector<LoopNode*>& node_table,
                                               int& child_count) {
     if (base_pairs.empty()) {
         return;
     }
 
-    size_t current_bp_idx = 0;  // Used to track which base pair we are currently adding children to
+    std::size_t current_bp_idx =
+        0;  // Used to track which base pair we are currently adding children to
 
-    size_t next_bp_right_border = base_pairs.size() > 1 ? base_pairs[1].j : NULL_INDEX;
+    std::size_t next_bp_right_border = base_pairs.size() > 1 ? base_pairs[1].j : NULL_INDEX;
 
     // Scans from right border towards right inner.
     // next_bp_right_border tracks the right base of the next base pair in the band
-    for (size_t idx = rb - 1; idx > ri; --idx) {
+    for (std::size_t idx = rb - 1; idx > ri; --idx) {
         PKBasePair& current_bp = base_pairs[current_bp_idx];
 
         // Keeps track of the current base pair we are adding children to.
@@ -101,8 +104,8 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
 
         // Adds children to current base pair
         if (node_table[idx] != nullptr) {
-            size_t right = idx;
-            size_t left = node_table[idx]->begin;
+            std::size_t right = idx;
+            std::size_t left = node_table[idx]->begin;
 
             node_table[idx]->pseudo_type = PseudoNestedType::WithinBand;
 

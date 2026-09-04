@@ -141,7 +141,7 @@ int ModMultiloop::multiloop_dangle_1_energy(const LoopNode& node, const Processe
     }
 
     // Apply corrections to each child stem's candidate configurations.
-    for (size_t idx = 0; idx < node.children.size(); ++idx) {
+    for (std::size_t idx = 0; idx < node.children.size(); ++idx) {
         const LoopNode& child = *node.children[idx];
 
         const ModDiffs child_diffs = get_multiloop_diffs(child, pRNA, kIsNotClosing, vp, mp);
@@ -187,7 +187,7 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
     /*
      * Child stems occupy the first node.children.size() entries.
      */
-    for (size_t idx = 0; idx < node.children.size(); ++idx) {
+    for (std::size_t idx = 0; idx < node.children.size(); ++idx) {
         const LoopNode& child = *node.children[idx];
 
         ModDiffs child_diffs = get_multiloop_diffs(child, pRNA, kIsNotClosing, vp, mp);

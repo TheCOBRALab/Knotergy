@@ -2,6 +2,7 @@
 
 #include "loop_tree/LoopTypes.hpp"
 
+#include <cstddef>
 #include <vector>
 
 namespace knotergy {
@@ -30,7 +31,7 @@ struct PKEnergyBreakdown {
     double total_loop_energy = 0;
     std::vector<PKLoopBreakdown> loop_breakdowns;  // pair of loop type and penalty
 
-    void reserve(size_t n) { loop_breakdowns.reserve(n); }
+    void reserve(std::size_t n) { loop_breakdowns.reserve(n); }
 
     double get_total_energy() const {
         return init_penalty + band_penalty + unpaired_penalty + cr_penalty + total_loop_energy;

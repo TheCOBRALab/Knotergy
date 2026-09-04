@@ -96,7 +96,7 @@ class DetailedException : public std::runtime_error {
 /// Macro to throw a DetailedException with current file, line, and function.
 #define THROW_ERROR(msg) throw ::knotergy::DetailedException((msg), __FILE__, __LINE__, __func__)
 
-/// Maximum value of size_t, used as a sentinel for "no index" or "invalid index".
+/// Maximum value of std::size_t, used as a sentinel for "no index" or "invalid index".
 constexpr std::size_t NULL_INDEX = static_cast<std::size_t>(-1);
 constexpr int NULL_ENERGY = std::numeric_limits<int>::max();
 

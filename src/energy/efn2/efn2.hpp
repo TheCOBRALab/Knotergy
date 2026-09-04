@@ -17,10 +17,10 @@
 namespace knotergy {
 
 // Fills the gap between ViennaRNA and RNAstructure for single-bulge corrections.
-int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
+int efn2_single_bulge_correction(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
                                  const std::string& sequence, const vrna_md_param& vp) {
-    const size_t n1 = ci - i - 1;
-    const size_t n2 = j - cj - 1;
+    const std::size_t n1 = ci - i - 1;
+    const std::size_t n2 = j - cj - 1;
 
     // Only applies to 1x0 or 0x1 bulges
     if (!((n1 == 1 && n2 == 0) || (n1 == 0 && n2 == 1))) {
@@ -34,26 +34,26 @@ int efn2_single_bulge_correction(size_t i, size_t j, size_t ci, size_t cj,
         bulged_base = sequence[i + 1];
 
         // Scan from outer pair toward 5'
-        for (size_t k = i; sequence[k] == bulged_base; --k) {
+        for (std::size_t k = i; sequence[k] == bulged_base; --k) {
             ++count;
             if (k == 0) break;  // Prevent underflow
         }
 
         // Scan from inner pair toward 3'
-        for (size_t k = ci; k < sequence.size() && sequence[k] == bulged_base; ++k) {
+        for (std::size_t k = ci; k < sequence.size() && sequence[k] == bulged_base; ++k) {
             ++count;
         }
     } else {
         bulged_base = sequence[j - 1];
 
         // Scan from inner pair toward 5'
-        for (size_t k = cj; sequence[k] == bulged_base; --k) {
+        for (std::size_t k = cj; sequence[k] == bulged_base; --k) {
             ++count;
             if (k == 0) break;  // Prevent underflow
         }
 
         // Scan from outer pair toward 3'
-        for (size_t k = j; k < sequence.size() && sequence[k] == bulged_base; ++k) {
+        for (std::size_t k = j; k < sequence.size() && sequence[k] == bulged_base; ++k) {
             ++count;
         }
     }

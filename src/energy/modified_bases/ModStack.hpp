@@ -19,7 +19,7 @@ class ModStack {
      * @return Stacking energy in centicalories, accounting for modified bases.
      */
     // Gets the modified energy of a stack
-    static int find_mod_stack_energy(size_t i, size_t j, size_t ci, size_t cj,
+    static int find_mod_stack_energy(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
                                      const std::string& sequence,
                                      const std::vector<std::string_view>& mod_sequence,
                                      vrna_md_param& vp, const all_mod_params& mp) {

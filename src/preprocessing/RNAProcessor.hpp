@@ -22,8 +22,8 @@ namespace knotergy {
  *
  * Conventions:
  * - Indices are 0-based.
- * - Unpaired positions are marked with NULL_INDEX (defined as static_cast<size_t>(-1)).
- *   This evaluates to the maximum size_t value; do not assume it is negative.
+ * - Unpaired positions are marked with NULL_INDEX (defined as static_cast<std::size_t>(-1)).
+ *   This evaluates to the maximum std::size_t value; do not assume it is negative.
  * - Supported bracket types: (), [], {}, <>.
  */
 class RNAProcessor {
@@ -47,22 +47,22 @@ class RNAProcessor {
      * - Indices are 0-based.
      * - Supported bracket pairs: (), [], {}, <>. Different bracket types may be nested or
      * intermixed.
-     * - NULL_INDEX (defined as static_cast<size_t>(-1)) marks unpaired bases.
-     *   This evaluates to the maximum size_t value because size_t is unsigned.
+     * - NULL_INDEX (defined as static_cast<std::size_t>(-1)) marks unpaired bases.
+     *   This evaluates to the maximum std::size_t value because std::size_t is unsigned.
      *
      * @param structure Dot-bracket RNA structure string.
      * @param unmodified_sequence (Optional) The unmodified RNA sequence corresponding to the
      * structure.
      * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views
      * per base).
-     * @return std::vector<size_t> of length rna.size(), where pair_table[i] is the index of i's
-     * partner, or NULL_INDEX if i is unpaired.
+     * @return std::vector<std::size_t> of length rna.size(), where pair_table[i] is the index of
+     * i's partner, or NULL_INDEX if i is unpaired.
      *
      * @throws std::runtime_error If the structure is malformed (e.g., unbalanced/mismatched
      * brackets).
      * @warning Invalid base *types* (e.g., A–A) are reported via warnings but do not throw.
      */
-    [[nodiscard]] static std::vector<size_t> compute_pair_table(
+    [[nodiscard]] static std::vector<std::size_t> compute_pair_table(
         const std::string& structure, const std::string& unmodified_sequence = "",
         const std::vector<std::string_view>& mod_sequence = {});
 
@@ -78,7 +78,7 @@ class RNAProcessor {
      * @param mod_sequence (Optional) Modified RNA sequence (raw sequence split into string_views
      *per base).
      **/
-    [[nodiscard]] static std::vector<size_t> compute_pair_table(
+    [[nodiscard]] static std::vector<std::size_t> compute_pair_table(
         const RNAEntry& rna, const std::string& unmodified_sequence = "",
         const std::vector<std::string_view>& mod_sequence = {});
 
@@ -99,7 +99,7 @@ class RNAProcessor {
      * @return std::vector<ClosedRegion> containing all detected closed regions.
      */
     [[nodiscard]] static std::vector<ClosedRegion> compute_closed_regions(
-        const std::vector<size_t>& pair_table, size_t number_of_pairs = 32);
+        const std::vector<std::size_t>& pair_table, std::size_t number_of_pairs = 32);
 
     /**
      * @brief Prefix-sum of unpaired-base counts.
@@ -119,7 +119,7 @@ class RNAProcessor {
      * @return std::vector<int> of size rna_size + 1 with cumulative unpaired counts.
      */
     [[nodiscard]] static std::vector<int> compute_unpaired_counts(
-        const std::vector<size_t>& pair_table);
+        const std::vector<std::size_t>& pair_table);
 
     /**
      * @brief Compute the unmodified RNA sequence from the modified sequence and parameters.
@@ -132,7 +132,7 @@ class RNAProcessor {
      */
     [[nodiscard]] static std::string compute_unmodified_sequence(
         const std::vector<std::string_view>& modified_sequence_views, const all_mod_params& params,
-        const size_t rna_length, bool& has_modified_bases);
+        const std::size_t rna_length, bool& has_modified_bases);
 
     /**
      * @brief Check if a base is an unmodified base (A, U, G, C, T, N).

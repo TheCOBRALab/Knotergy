@@ -9,7 +9,8 @@
 
 namespace knotergy {
 
-int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t cj,
+int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::size_t ci,
+                                          std::size_t cj,
                                           const std::vector<std::string_view>& mod_sequence,
                                           const std::string& sequence, vrna_md_param& vp,
                                           const all_mod_params& mp) {
@@ -83,7 +84,8 @@ int ModInternal::find_mod_internal_energy(size_t i, size_t j, size_t ci, size_t 
 }
 
 // enum class MismatchType {I1n, I23, I};
-// int internal_mismatch_diff(size_t i, size_t j, size_t ci, size_t cj, MismatchType mm_type,
+// int internal_mismatch_diff(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
+// MismatchType mm_type,
 //                   const std::vector<std::string_view>& mod_sequence,
 //                   const std::string& sequence, vrna_md_param& vp,
 //                   const all_mod_params& mp) {

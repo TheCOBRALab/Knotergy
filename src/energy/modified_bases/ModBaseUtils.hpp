@@ -39,12 +39,12 @@ class ModBaseUtils {
      * NOTE: Should move to general utils if used outside of modified base energy calculations
      */
     [[nodiscard]] static std::string join_string_views(
-        std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
+        std::vector<std::size_t> indices, const std::vector<std::string_view>& mod_sequence) {
         std::string key;
-        size_t total = 0;
+        std::size_t total = 0;
 
         // Calculate total size needed
-        for (size_t idx : indices) {
+        for (std::size_t idx : indices) {
             if (idx >= mod_sequence.size()) {
                 THROW_ERROR("Index " + std::to_string(idx) +
                             " is out of bounds for modified sequence of size " +
@@ -55,7 +55,7 @@ class ModBaseUtils {
         key.reserve(total);
 
         // Concatenate string views
-        for (size_t idx : indices) {
+        for (std::size_t idx : indices) {
             key.append(mod_sequence[idx]);
         }
         return key;
@@ -69,12 +69,12 @@ class ModBaseUtils {
      * @return Vector of unique modified base string views found at those positions.
      */
     [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_indices(
-        std::vector<size_t> indices, const std::vector<std::string_view>& mod_sequence) {
+        std::vector<std::size_t> indices, const std::vector<std::string_view>& mod_sequence) {
         std::vector<std::string_view> modified;
         if (mod_sequence.empty())
             return modified;  // no modified sequence provided, return empty vector
         modified.reserve(indices.size());
-        for (size_t idx : indices) {
+        for (std::size_t idx : indices) {
             if (!RNAProcessor::is_unmodified_base(mod_sequence[idx]) &&
                 std::find(modified.begin(), modified.end(), mod_sequence[idx]) == modified.end()) {
                 modified.push_back(mod_sequence[idx]);
@@ -99,13 +99,13 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static std::vector<std::string_view> unique_mod_bases_at_inner_edge(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence) {
         return unique_modified_bases_at_indices({i, j, i + 1, j - 1}, mod_sequence);
     }
 
     [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_outer_edge(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence) {
-        std::vector<size_t> indices;
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence) {
+        std::vector<std::size_t> indices;
         indices.reserve(4);
         indices.push_back(i);
         indices.push_back(j);
@@ -175,7 +175,7 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_mismatch_mod_energy(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
@@ -187,7 +187,7 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle5_mod_energy(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
@@ -199,7 +199,7 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle3_mod_energy(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
@@ -211,7 +211,7 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_terminalAU_mod_energy(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence,
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
@@ -223,7 +223,8 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static std::string get_mismatch_key(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
+        bool is_closing) {
         if (is_closing) {
             return ModBaseUtils::join_string_views({j, j - 1, i, i + 1}, mod_sequence);
         } else {
@@ -232,7 +233,8 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static std::string get_dangle3_key(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
+        bool is_closing) {
         if (is_closing) {
             return ModBaseUtils::join_string_views({j, i, i + 1}, mod_sequence);
         } else {
@@ -241,7 +243,8 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static std::string get_dangle5_key(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
+        bool is_closing) {
         if (is_closing) {
             return ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
         } else {
@@ -250,7 +253,8 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static std::string get_terminal_key(
-        size_t i, size_t j, const std::vector<std::string_view>& mod_sequence, bool is_closing) {
+        std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
+        bool is_closing) {
         if (is_closing) {
             return ModBaseUtils::join_string_views({j, i}, mod_sequence);
         } else {

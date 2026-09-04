@@ -48,13 +48,13 @@ class LoopFactory {
      * @param depth Current depth in the tree (for indentation).
      * @param debug Whether to include debug information (default: false).
      */
-    void print_tree(const LoopNode* node, size_t depth, bool debug = false) const;
+    void print_tree(const LoopNode* node, std::size_t depth, bool debug = false) const;
 
    private:
     const ProcessedRNAEntry& pRNA_;
     std::vector<LoopNode> nodes_;  ///< Root node of the loop tree (external loop).
     LoopNode* root_node_;
-    size_t structure_length_;
+    std::size_t structure_length_;
     std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
     std::vector<LoopNode*> node_table_;      ///< All nodes indexed by their begin and end positions
 

@@ -16,7 +16,7 @@ namespace knotergy {
 // --------------------------------------------
 //               Stack Energy
 // --------------------------------------------
-int ViennaFunctions::stack_energy(size_t i, size_t j, size_t ci, size_t cj,
+int ViennaFunctions::stack_energy(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
                                   const std::string& sequence, vrna_md_param& vp) {
     bool stacked = i + 1 == ci && j == cj + 1 && ci < cj && j < sequence.size();
     if (!stacked && vp.md.dangles != 3) {
@@ -48,8 +48,8 @@ int ViennaFunctions::stack_energy(PKBasePair pair, PKBasePair child, const std::
 // --------------------------------------------
 //             Hairpin Energy
 // --------------------------------------------
-int ViennaFunctions::hairpin_energy(size_t i, size_t j, const std::string& sequence, bool& is_inf,
-                                    vrna_md_param& vp) {
+int ViennaFunctions::hairpin_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                    bool& is_inf, vrna_md_param& vp) {
     if (j <= i || j >= sequence.size()) {
         std::cerr << "Invalid indices for hairpin energy calculation." << std::endl;
         return 0;
@@ -96,8 +96,9 @@ int ViennaFunctions::hairpin_energy(const PKBasePair& pair, const std::string& s
 // --------------------------------------------
 //            Internal Loop Energy
 // --------------------------------------------
-int ViennaFunctions::internal_loop_energy(size_t i, size_t j, size_t ci, size_t cj,
-                                          const std::string& sequence, vrna_md_param& vp) {
+int ViennaFunctions::internal_loop_energy(std::size_t i, std::size_t j, std::size_t ci,
+                                          std::size_t cj, const std::string& sequence,
+                                          vrna_md_param& vp) {
     // c = child or nested bp
 
     if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
@@ -160,8 +161,8 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
     for (const LoopNode* child : node.children) {
         if (child->loop_type == LoopType::Pseudoknot) continue;
 
-        size_t ci = child->begin;
-        size_t cj = child->end;
+        std::size_t ci = child->begin;
+        std::size_t cj = child->end;
         unsigned int c_pair_type =
             ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
         auto [n5d_outer, n3d_outer] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);

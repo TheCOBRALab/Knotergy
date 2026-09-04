@@ -7,7 +7,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
     std::vector<std::string_view> mod_sequence;
 
     // Helper lambda to validate that the sequence length matches the structure length
-    auto validate_sequence_structure_length = [&](size_t sequence_length) {
+    auto validate_sequence_structure_length = [&](std::size_t sequence_length) {
         if (sequence_length != rna.structure.size()) {
             THROW_ERROR("Sequence length does not match Structure length\nSequence length: " +
                         std::to_string(sequence_length) +
@@ -37,9 +37,11 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
         unmodified_sequence = rna.sequence;
     }
 
-    std::vector<size_t> pair_table = compute_pair_table(rna, unmodified_sequence, mod_sequence);
+    std::vector<std::size_t> pair_table =
+        compute_pair_table(rna, unmodified_sequence, mod_sequence);
     std::vector<int> unpaired_prefix_sum = compute_unpaired_counts(pair_table);
-    size_t number_of_pairs = (rna.size() - static_cast<size_t>(unpaired_prefix_sum.back())) / 2;
+    std::size_t number_of_pairs =
+        (rna.size() - static_cast<std::size_t>(unpaired_prefix_sum.back())) / 2;
     std::vector<ClosedRegion> closed_regions = compute_closed_regions(pair_table, number_of_pairs);
 
     return ProcessedRNAEntry{std::move(rna),
@@ -51,7 +53,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
 };
 
 // ([...)] = 5, 6, -1, -1, -1, 0, 1
-std::vector<size_t> RNAProcessor::compute_pair_table(
+std::vector<std::size_t> RNAProcessor::compute_pair_table(
     const std::string& structure, const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
     constexpr unsigned char MAX_CHAR = 128;
@@ -77,7 +79,7 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
         add_bracket(c, static_cast<char>(std::tolower(c)));
     }
 
-    const size_t n = structure.size();
+    const std::size_t n = structure.size();
 
     // sequence and mod_sequence are optional inputs
     // If provided, it will check for valid base pairs, and warn for invalid pairs.
@@ -85,12 +87,12 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
     const bool have_mod_seq = !mod_sequence.empty();
 
     // Initialize all pair_table to NULL_INDEX (unpaired).
-    std::vector<size_t> pair_table(n, NULL_INDEX);
+    std::vector<std::size_t> pair_table(n, NULL_INDEX);
 
     // Stacks for each type of opening bracket. Indexed by ASCII character code.
-    std::array<std::vector<size_t>, MAX_CHAR> stacks;
+    std::array<std::vector<std::size_t>, MAX_CHAR> stacks;
 
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
         const unsigned char c = static_cast<unsigned char>(structure[i]);
 
         // Skip unpaired bases
@@ -114,7 +116,7 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
             }
 
             // get's the index of the opening bracket
-            const size_t j = stack.back();
+            const std::size_t j = stack.back();
             stack.pop_back();
 
             // record the pairing
@@ -143,7 +145,7 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
     }
 
     // After processing, all stacks should be empty if the structure is well-formed
-    for (size_t c = 0; c < MAX_CHAR; ++c) {
+    for (std::size_t c = 0; c < MAX_CHAR; ++c) {
         if (!stacks[c].empty()) {
             THROW_ERROR("Invalid RNA structure: opening bracket '" +
                         std::string(1, static_cast<char>(c)) + "' at index " +
@@ -155,7 +157,7 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
 }
 
 // ([...)] = 5, 6, -1, -1, -1, 0, 1
-std::vector<size_t> RNAProcessor::compute_pair_table(
+std::vector<std::size_t> RNAProcessor::compute_pair_table(
     const RNAEntry& rna, const std::string& unmodified_sequence,
     const std::vector<std::string_view>& mod_sequence) {
     return compute_pair_table(rna.structure, unmodified_sequence, mod_sequence);
@@ -166,16 +168,16 @@ std::vector<size_t> RNAProcessor::compute_pair_table(
 // Traverses from right to left to ensure it's sorted by start index without needing an explicit
 // sort step.
 std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
-    const std::vector<size_t>& pair_table, size_t number_of_pairs) {
+    const std::vector<std::size_t>& pair_table, std::size_t number_of_pairs) {
     // Initialization and preallocation
     std::vector<ClosedRegion> closed_regions;
     std::vector<ClosedRegion> stack;
     closed_regions.reserve(number_of_pairs);
-    stack.reserve(std::min(number_of_pairs, size_t{32}));  // rough estimate of stack depth
+    stack.reserve(std::min(number_of_pairs, std::size_t{32}));  // rough estimate of stack depth
 
     // Traverse the pair_table from right to left
-    for (size_t idx = pair_table.size(); idx-- > 0;) {
-        size_t paired_idx = pair_table[idx];
+    for (std::size_t idx = pair_table.size(); idx-- > 0;) {
+        std::size_t paired_idx = pair_table[idx];
         if (paired_idx == NULL_INDEX) continue;  // Skip unpaired bases
 
         // Closing base: e.g. ")" or "]".
@@ -189,7 +191,7 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
         // Merging pairs extends the left boundary (Hence smallest_left)
         // Popping from stack extends the right boundary
         const ClosedRegion current_pair(idx, paired_idx);
-        size_t smallest_left = current_pair.begin;
+        std::size_t smallest_left = current_pair.begin;
 
         // Merge any nested regions whose end lies within [idx, current_pair.end)
         while (!stack.empty() && (stack.back().end < current_pair.end)) {
@@ -217,13 +219,13 @@ std::vector<ClosedRegion> RNAProcessor::compute_closed_regions(
 
 // prefix sum
 // ([...)] = 0, 0, 0, 1, 2, 3, 3, 3
-std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>& pair_table) {
+std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<std::size_t>& pair_table) {
     int count = 0;
-    size_t n = pair_table.size();
+    std::size_t n = pair_table.size();
     std::vector<int> unpaired_prefix_sum;
 
     unpaired_prefix_sum.assign(n + 1, 0);
-    for (size_t i = 0; i < n; ++i) {
+    for (std::size_t i = 0; i < n; ++i) {
         count += (pair_table[i] == NULL_INDEX);
         unpaired_prefix_sum[i + 1] = count;
     }
@@ -233,7 +235,7 @@ std::vector<int> RNAProcessor::compute_unpaired_counts(const std::vector<size_t>
 // 6AAUUP -> AAAUUU
 std::string RNAProcessor::compute_unmodified_sequence(
     const std::vector<std::string_view>& modified_sequence_views, const all_mod_params& mp,
-    const size_t rna_length, bool& has_modified_bases) {
+    const std::size_t rna_length, bool& has_modified_bases) {
     std::string unmodified_sequence;
     unmodified_sequence.reserve(rna_length);
 

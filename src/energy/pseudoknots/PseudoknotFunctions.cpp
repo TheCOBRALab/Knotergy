@@ -50,7 +50,7 @@ void PseudoknotFunctions::populate_pk_energy_breakdown(const LoopNode& node,
     breakdown.cr_penalty = pkp.cr_in_pk * breakdown.number_of_outsideband_children;
 
     // Compute loop-specific energies for each band in the pseudoknot
-    breakdown.reserve(static_cast<size_t>(node.total_number_of_base_pairs));
+    breakdown.reserve(static_cast<std::size_t>(node.total_number_of_base_pairs));
     loop_energies(node, processed_rna, vp, mp, pkp, breakdown);
 }
 
@@ -114,10 +114,10 @@ void PseudoknotFunctions::loop_energies(const LoopNode& node,
         }
 
         const std::vector<PKBasePair>& bps = band.base_pairs();
-        const size_t n = bps.size();
+        const std::size_t n = bps.size();
 
         // loops through each base pair in band (except last one)
-        for (size_t idx = 0; idx + 1 < n; ++idx) {
+        for (std::size_t idx = 0; idx + 1 < n; ++idx) {
             const PKBasePair& bp = bps[idx];
             const PKBasePair& next_bp = bps[idx + 1];
             PKLoopBreakdown loop_breakdown;
@@ -157,8 +157,8 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
     const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
 
     for (const Band& band : node.bands) {
-        size_t i = band.left_border();
-        size_t j = band.right_border();
+        std::size_t i = band.left_border();
+        std::size_t j = band.right_border();
 
         unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
@@ -194,7 +194,7 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
 double PseudoknotFunctions::pk_innermost_energy(const PKBasePair& bp, vrna_md_param& vp,
                                                 bool& is_inf) {
     // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
-    size_t size = bp.j - bp.i - 1;
+    std::size_t size = bp.j - bp.i - 1;
 
     if (size <= 30 && vp.p->hairpin[size] == INF) {
         std::cout << "Warning: Band with borders (" << bp.i << ", " << bp.j

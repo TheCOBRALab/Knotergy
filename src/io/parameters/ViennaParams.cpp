@@ -86,7 +86,7 @@ bool load_param_cache(const std::string& cachePath, const int expectedDangle,
 void save_param_cache(const std::string& cachePath, const int dangle, const double temperature,
                       const double salt, std::uint64_t sourceMtime,
                       const viennarna::vrna_param_t& p) {
-    size_t slash = cachePath.find_last_of("/\\");
+    std::size_t slash = cachePath.find_last_of("/\\");
     if (slash != std::string::npos) {
         std::string dir = cachePath.substr(0, slash);
         if (!dir.empty() && !FileUtils::is_directory(dir)) {

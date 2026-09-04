@@ -34,11 +34,11 @@ namespace knotergy {
  * @see RNAProcessor::compute_closed_regions() for region extraction logic.
  */
 struct ClosedRegion {
-    size_t begin{};
-    size_t end{};
+    std::size_t begin{};
+    std::size_t end{};
 
     ClosedRegion() = default;
-    ClosedRegion(size_t b, size_t e) : begin{b}, end{e} {}
+    ClosedRegion(std::size_t b, std::size_t e) : begin{b}, end{e} {}
 
     [[nodiscard]] bool operator==(const ClosedRegion& rhs) const {
         return begin == rhs.begin && end == rhs.end;

@@ -50,8 +50,8 @@ class ViennaUtils {
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
-        const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pair_table, viennarna::vrna_md_t& md) {
+        const std::size_t i, const std::size_t j, const std::string& sequence,
+        const std::vector<std::size_t>& pair_table, viennarna::vrna_md_t& md) {
         bool has_5d_dangle_out =
             i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
 
@@ -72,7 +72,8 @@ class ViennaUtils {
      * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded 5' dangle, encoded 3' dangle). Returns -1 if out of bounds.
      */
-    [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const size_t i, const size_t j,
+    [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(const std::size_t i,
+                                                                   const std::size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    viennarna::vrna_md_t& md) {
         return encode_outer_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);
@@ -89,8 +90,8 @@ class ViennaUtils {
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
-        const size_t i, const size_t j, const std::string& sequence,
-        const std::vector<size_t>& pair_table, viennarna::vrna_md_t& md) {
+        const std::size_t i, const std::size_t j, const std::string& sequence,
+        const std::vector<std::size_t>& pair_table, viennarna::vrna_md_t& md) {
         bool has_5d_dangle_in =
             (pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
         bool has_3d_dangle_in =
@@ -110,7 +111,8 @@ class ViennaUtils {
      * @param md ViennaRNA model details for encoding.
      * @return Tuple of (encoded nucleotide at i+1, encoded nucleotide at j-1).
      */
-    [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const size_t i, const size_t j,
+    [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(const std::size_t i,
+                                                                   const std::size_t j,
                                                                    const ProcessedRNAEntry& entry,
                                                                    viennarna::vrna_md_t& md) {
         return encode_inner_dangles(i, j, entry.get_sequence(), entry.get_pair_table(), md);

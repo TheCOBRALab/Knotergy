@@ -34,7 +34,7 @@ class ProcessedRNAEntry {
     std::string structure_;                             // Dot-bracket RNA structure string.
     std::string sequence_;                              // Unmodified RNA nucleotide sequence.
     std::vector<std::string_view> mod_sequence_views_;  // Modified RNA sequence.
-    std::vector<size_t> pair_table_;                    // Base-pair indices for each position.
+    std::vector<std::size_t> pair_table_;               // Base-pair indices for each position.
     std::vector<ClosedRegion> closed_regions_;          // All closed regions in the structure.
     std::vector<int> unpaired_prefix_sum_;              // Prefix-sum of unpaired-base counts.
     bool has_modified_bases_ = false;                   // Whether modified bases are present.
@@ -55,7 +55,7 @@ class ProcessedRNAEntry {
      * @param has_modified_bases Whether the RNA sequence contains modified bases.
      */
     ProcessedRNAEntry(std::string name, std::string raw_sequence, std::string structure,
-                      std::string unmodified_sequence, std::vector<size_t> pair_table,
+                      std::string unmodified_sequence, std::vector<std::size_t> pair_table,
                       std::vector<ClosedRegion> closed_regions,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : name_{std::move(name)},
@@ -85,8 +85,8 @@ class ProcessedRNAEntry {
      * @param unpaired_prefix_sum Prefix-sum array of unpaired-base counts (size = rna.size() + 1).
      * @param has_modified_bases Whether the RNA sequence contains modified bases.
      */
-    ProcessedRNAEntry(RNAEntry rna, std::string unmodified_sequence, std::vector<size_t> pair_table,
-                      std::vector<ClosedRegion> closed_regions,
+    ProcessedRNAEntry(RNAEntry rna, std::string unmodified_sequence,
+                      std::vector<std::size_t> pair_table, std::vector<ClosedRegion> closed_regions,
                       std::vector<int> unpaired_prefix_sum, bool has_modified_bases)
         : ProcessedRNAEntry(std::move(rna.name), std::move(rna.sequence), std::move(rna.structure),
                             std::move(unmodified_sequence), std::move(pair_table),
@@ -173,7 +173,7 @@ class ProcessedRNAEntry {
 
     /// @return Base-pair indices for each position. See RNAProcessor::compute_pair_table for
     /// details
-    [[nodiscard]] const std::vector<size_t>& get_pair_table() const { return pair_table_; }
+    [[nodiscard]] const std::vector<std::size_t>& get_pair_table() const { return pair_table_; }
 
     /// @return List of closed regions. See RNAProcessor::compute_closed_regions for details
     [[nodiscard]] const std::vector<ClosedRegion>& get_closed_regions() const {
@@ -184,7 +184,7 @@ class ProcessedRNAEntry {
     [[nodiscard]] bool has_modified_bases() const { return has_modified_bases_; }
 
     /// @return The length of the RNA sequence/structure.
-    [[nodiscard]] size_t size() const { return structure_.size(); }
+    [[nodiscard]] std::size_t size() const { return structure_.size(); }
 
     /**
      * @brief Compute the number of unpaired bases in a half-open interval [from, to).
@@ -198,7 +198,7 @@ class ProcessedRNAEntry {
      * @return Number of unpaired bases between from and to.
      * @throws std::out_of_range if indices are out of bounds.
      */
-    [[nodiscard]] int get_unpaired_count(size_t from, size_t to) const {
+    [[nodiscard]] int get_unpaired_count(std::size_t from, std::size_t to) const {
         if (from >= unpaired_prefix_sum_.size() || to >= unpaired_prefix_sum_.size()) {
             throw std::out_of_range("Index out of range in get_unpaired_count");
         }
@@ -232,7 +232,7 @@ class ProcessedRNAEntry {
             }
         } else {
             // Assumes each grapheme is a single character (Faster).
-            for (size_t i = 0; i < sequence.size(); ++i) {
+            for (std::size_t i = 0; i < sequence.size(); ++i) {
                 unsigned char c = static_cast<unsigned char>(sequence[i]);
 
                 // If the 0x80 bit is set, it's a multi-byte grapheme.

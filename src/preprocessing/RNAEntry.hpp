@@ -44,7 +44,7 @@ struct RNAEntry {
      *
      * @return Size of the structure string.
      */
-    [[nodiscard]] size_t size() const { return structure.size(); }
+    [[nodiscard]] std::size_t size() const { return structure.size(); }
 };
 
 }  // namespace knotergy

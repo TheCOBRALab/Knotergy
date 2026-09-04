@@ -16,7 +16,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
                                                 const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
-    const std::vector<size_t>& pair_table = pRNA.get_pair_table();
+    const std::vector<std::size_t>& pair_table = pRNA.get_pair_table();
 
     if (stem.begin == 0) {
         THROW_ERROR(
@@ -24,7 +24,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
             "ML with no closing pair does not make sense.");
     }
 
-    const size_t dangle_pos = stem.begin - 1;
+    const std::size_t dangle_pos = stem.begin - 1;
     const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos]);
 
     int ld5;
@@ -47,12 +47,12 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
         return ld5;
     }
 
-    const size_t closing_5 = stem.begin - 2;
-    const size_t closing_3 = pair_table[closing_5];
+    const std::size_t closing_5 = stem.begin - 2;
+    const std::size_t closing_3 = pair_table[closing_5];
 
     if (closing_3 != NULL_INDEX) {
         const unsigned int closing_type = ViennaUtils::get_pair_type(
-            sequence[static_cast<size_t>(closing_3)], sequence[closing_5], vp.md);
+            sequence[static_cast<std::size_t>(closing_3)], sequence[closing_5], vp.md);
 
         const int competing_dangle3 = vp.p->dangle3[closing_type][encoding];
 
@@ -115,19 +115,20 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
     return stems;
 }
 
-int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA, size_t start_prev,
+int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
+                                                  std::size_t start_prev,
                                                   const std::vector<MultiloopStem>& stems,
                                                   vrna_md_param& vp, const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
-    const size_t stem_count = stems.size();
+    const std::size_t stem_count = stems.size();
 
     const MultiloopStem& start_stem = stems[start_prev];
 
     unsigned int prev_type = start_stem.type;
 
     // This is the index of the last base of the previous stem
-    size_t prev_end_idx = start_stem.prev_end;
-    size_t current = (start_prev + 1) % stem_count;
+    std::size_t prev_end_idx = start_stem.prev_end;
+    std::size_t current = (start_prev + 1) % stem_count;
 
     // ld5 is the 5' dangle of the previous stem. (left dangle 5)
     int ld5 = start_stem.initial_ld5;
@@ -135,12 +136,12 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
     int cx_energy = INF;  // Energy for coaxial
     int coaxial_ml_base_energy = vp.p->MLintern[1];
 
-    for (size_t step = 0; step < stem_count; ++step) {
+    for (std::size_t step = 0; step < stem_count; ++step) {
         const MultiloopStem& stem = stems[current];
         const MultiloopStem& prev_stem = stems[(current + stem_count - 1) % stem_count];
 
-        const size_t begin = stem.begin;
-        const size_t end = stem.end;
+        const std::size_t begin = stem.begin;
+        const std::size_t end = stem.end;
         const unsigned int current_type = stem.type;
 
         int new_cx = INF;  // potential new coaxial energy
