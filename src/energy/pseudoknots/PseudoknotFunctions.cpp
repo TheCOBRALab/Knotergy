@@ -44,7 +44,7 @@ void PseudoknotFunctions::populate_pk_energy_breakdown(const LoopNode& node,
     breakdown.number_of_outsideband_children = node.number_of_outsideband_children;
 
     // Calculate the total energy of the pseudoknot
-    breakdown.init_penalty = init_penalty(node, vp, pkp);
+    breakdown.init_penalty = init_penalty(node, pkp);
     breakdown.band_penalty = pkp.band_penalty * breakdown.number_of_bands;
     breakdown.unpaired_penalty = pkp.unpaired_in_pk * breakdown.unpaired_count;
     breakdown.cr_penalty = pkp.cr_in_pk * breakdown.number_of_outsideband_children;
@@ -78,8 +78,7 @@ int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
     return unpaired;
 }
 
-double PseudoknotFunctions::init_penalty(const LoopNode& node, vrna_md_param& vp,
-                                         const knotergy::pk_param& pkp) {
+double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
     double energy = 0;
     switch (node.parent->loop_type) {

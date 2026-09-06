@@ -54,8 +54,7 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Initialization penalty in centicalories.
      */
-    [[nodiscard]] static double init_penalty(const LoopNode& node, vrna_md_param& vp,
-                                             const knotergy::pk_param& pkp);
+    [[nodiscard]] static double init_penalty(const LoopNode& node, const knotergy::pk_param& pkp);
 
     /**
      * @brief Calculate the number of unpaired bases in a pseudoknot, excluding those within bands.
