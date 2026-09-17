@@ -98,6 +98,7 @@ void print_help() {
               << "  -s, --sequence <string>               Input sequence\n"
               << "  -r, --structure <string>              Input structure\n"
               << "  -i, --input <file>                    Input file\n"
+              << "  -j, --jobs <n>                        Number of parallel jobs (default: 1)\n"
               << "  -P, --paramFile <file>                Parameter file\n"
               << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
               << "  -m, --mod-params <none|path|file>     Directory containing modified base "
@@ -148,6 +149,13 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
 
         } else if (arg == "-k" || arg == "--pk-paramFile") {
             if (!take_value(i, argc, argv, out.pseudo_param_file)) return ParseStatus::ExitFailure;
+
+        } else if (arg == "-j" || arg == "--jobs") {
+            if (!take_int_value(i, argc, argv, out.jobs)) return ParseStatus::ExitFailure;
+
+        } else if (is_attached_form(arg, "-j")) {
+            // Supports: -j8 (no space between -j and the number)
+            if (!parse_attached_int(arg, "jobs", out.jobs)) return ParseStatus::ExitFailure;
 
         } else if (arg == "-e" || arg == "--round") {
             // -e <n>, or bare -e for the default rounding method.

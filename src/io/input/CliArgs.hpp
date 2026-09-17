@@ -35,6 +35,7 @@ struct CliArgs {
     double salt = 1.021;        // M
     int dangle = 2;
     int round_value = 0;  // 0 means no rounding; see RoundMethod.
+    int jobs = 1;         // Number of parallel jobs to run. Default is 1
 
     // Behaviour.
     VerbosityLevel verbosity = VerbosityLevel::Quiet;

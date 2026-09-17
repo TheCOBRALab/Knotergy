@@ -180,10 +180,32 @@ target_link_libraries(KnotergyLib
     uni-algo::uni-algo
     ThermoRNA::ThermoRNA
 )
+# ------------------------ OpenMP Support -------------------------
+find_package(OpenMP QUIET)
 
 # ------------------------- Executable -------------------------
 add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE KnotergyLib)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        KnotergyLib
+)
+
+if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP found: enabling parallel input processing")
+
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+            OpenMP::OpenMP_CXX
+    )
+
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            KNOTERGY_ENABLE_PARALLEL
+    )
+else()
+    message(STATUS "OpenMP not found: parallel input processing disabled")
+endif()
 
 
 # ------------------------ Platform-Specific Link Options -------------------------

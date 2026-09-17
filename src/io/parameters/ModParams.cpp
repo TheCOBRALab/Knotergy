@@ -94,4 +94,17 @@ void ModParams::warn_if_missing(const json& j, const std::string& key, const std
     }
 }
 
+std::vector<modified_base_param> ModParams::load_modified_params(
+    const std::vector<std::string>& paths) {
+    std::vector<modified_base_param> params;
+
+    for (const std::string& path : paths) {
+        std::vector<modified_base_param> additional = load_modified_energy_parameters(path);
+
+        params.insert(params.end(), additional.begin(), additional.end());
+    }
+
+    return all_mod_params(std::move(params)).get_all_params();
+}
+
 }  // namespace knotergy

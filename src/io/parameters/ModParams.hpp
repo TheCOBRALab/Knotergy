@@ -174,6 +174,9 @@ class ModParams {
      */
     [[nodiscard]] static modified_base_param parse_modified_base_json(const std::string& jsonFile);
 
+    [[nodiscard]] static std::vector<modified_base_param> load_modified_params(
+        const std::vector<std::string>& paths);
+
    private:
     /**
      * @brief Warn if a required JSON key is missing.
