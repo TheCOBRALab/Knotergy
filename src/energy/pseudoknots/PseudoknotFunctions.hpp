@@ -171,8 +171,6 @@ class PseudoknotFunctions {
     [[nodiscard]] static double pk_dangling_energy(const LoopNode& node,
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp, const all_mod_params& mp);
-
-
 };
 
 }  // namespace knotergy

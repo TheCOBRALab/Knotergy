@@ -156,6 +156,13 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
     for (const Band& band : node.bands) {
         std::size_t i = band.left_border();
         std::size_t j = band.right_border();
+
+        if (i == node.begin || j == node.end) {
+            // If the band is at the edge of the loop, skip it. This will be handled by the
+            // multiloop or external loop energy calculation.
+            continue;
+        }
+
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
 
         if (n5d && n3d) {
