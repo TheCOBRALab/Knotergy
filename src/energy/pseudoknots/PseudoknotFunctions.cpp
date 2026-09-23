@@ -152,38 +152,12 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp, const all_mod_params& mp) {
     double energy = 0;
-    const std::string& sequence = processed_rna.get_sequence();
-    const std::vector<std::string_view>& mod_sequence = processed_rna.get_modified_sequence();
 
     for (const Band& band : node.bands) {
         std::size_t i = band.left_border();
         std::size_t j = band.right_border();
-
-        unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
-
-        n5d = vp.md.dangles != 0 ? n5d : -1;
-        n3d = vp.md.dangles != 0 ? n3d : -1;
-
-        if (n5d > 0) {
-            int n5d_unmod_energy = vp.p->dangle5[pair_type][n5d];
-            if (processed_rna.has_modified_bases()) {
-                int mod_d5 = ModBaseUtils::get_dangle5_mod_energy(i, j, mod_sequence, mp);
-                energy += mod_d5 != NULL_ENERGY ? mod_d5 : n5d_unmod_energy;
-            } else {
-                energy += n5d_unmod_energy;
-            }
-        }
-
-        if (n3d > 0) {
-            int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
-            if (processed_rna.has_modified_bases()) {
-                int mod_d3 = ModBaseUtils::get_dangle3_mod_energy(i, j, mod_sequence, mp);
-                energy += mod_d3 != NULL_ENERGY ? mod_d3 : n3d_unmod_energy;
-            } else {
-                energy += n3d_unmod_energy;
-            }
-        }
+        energy += ModBaseUtils::get_dangle5_energy(i, j, processed_rna, vp, mp);
+        energy += ModBaseUtils::get_dangle3_energy(i, j, processed_rna, vp, mp);
     }
 
     return energy;

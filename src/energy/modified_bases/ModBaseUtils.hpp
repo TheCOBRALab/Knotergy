@@ -1,5 +1,6 @@
 #pragma once
 #include "energy/dangles/Dangle1.hpp"
+#include "energy/vienna/ViennaFunctions.hpp"
 #include "energy/vienna/ViennaUtils.hpp"
 #include "preprocessing/RNAProcessor.hpp"
 #include "utils/common.hpp"
@@ -198,6 +199,24 @@ class ModBaseUtils {
         return mod_energy;
     }
 
+    [[nodiscard]] static int get_dangle5_energy(std::size_t i, std::size_t j,
+                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                const all_mod_params& mp, bool is_closing = false) {
+        const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+        const std::string& sequence = pRNA.get_sequence();
+
+        int energy = get_dangle5_mod_energy(i, j, mod_sequence, mp, is_closing);
+        if (energy != NULL_ENERGY) {
+            return energy;
+        } else {
+            // Fallback to unmodified energy
+            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            int n5d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? j - 1 : i - 1]);
+            int n5d_unmod_energy = vp.p->dangle5[pair_type][n5d];
+            return n5d_unmod_energy;
+        }
+    }
+
     [[nodiscard]] static int get_dangle3_mod_energy(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
@@ -208,6 +227,24 @@ class ModBaseUtils {
         std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(dangle3_key);
         int mod_energy = get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
         return mod_energy;
+    }
+
+    [[nodiscard]] static int get_dangle3_energy(std::size_t i, std::size_t j,
+                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                const all_mod_params& mp, bool is_closing = false) {
+        const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+        const std::string& sequence = pRNA.get_sequence();
+
+        int energy = get_dangle3_mod_energy(i, j, mod_sequence, mp, is_closing);
+        if (energy != NULL_ENERGY) {
+            return energy;
+        } else {
+            // Fallback to unmodified energy
+            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            int n3d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? i + 1 : j + 1]);
+            int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
+            return n3d_unmod_energy;
+        }
     }
 
     [[nodiscard]] static int get_terminalAU_mod_energy(

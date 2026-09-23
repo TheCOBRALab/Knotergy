@@ -21,15 +21,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
     const std::size_t dangle_pos = stem.begin - 1;
     const int encoding = ViennaUtils::fast_nucleotide_encode(sequence[dangle_pos]);
 
-    int ld5;
-    int unmod_ld5 = vp.p->dangle5[stem.type][encoding];
-    if (pRNA.has_modified_bases()) {
-        ld5 = ModBaseUtils::get_dangle5_mod_energy(stem.begin, stem.end,
-                                                   pRNA.get_modified_sequence(), mp, false);
-        ld5 = ld5 != NULL_ENERGY ? ld5 : unmod_ld5;
-    } else {
-        ld5 = unmod_ld5;
-    }
+    int ld5 = ModBaseUtils::get_dangle5_energy(stem.begin, stem.end, pRNA, vp, mp, false);
 
     // begin is end for closing pair
     if (stem.begin < 2) {
