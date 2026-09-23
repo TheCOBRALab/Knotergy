@@ -187,6 +187,38 @@ class ModBaseUtils {
         return mod_energy;
     }
 
+    [[nodiscard]] static int get_mismatch_energy(std::size_t i, std::size_t j,
+                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                 const all_mod_params& mp, bool is_external = false,
+                                                 bool is_closing = false) {
+        const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+        const std::string& sequence = pRNA.get_sequence();
+
+        int energy = get_mismatch_mod_energy(i, j, mod_sequence, mp, is_closing);
+        if (energy != NULL_ENERGY) {
+            return energy;
+        } else {
+            // Fallback to unmodified energy
+            int n5d, n3d;
+            unsigned int pair_type;
+            if (is_closing) {
+                std::tie(n3d, n5d) = ViennaUtils::encode_inner_dangles(i, j, pRNA, vp.md);
+                pair_type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
+            } else {
+                std::tie(n5d, n3d) = ViennaUtils::encode_outer_dangles(i, j, pRNA, vp.md);
+                pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            }
+            int unmod_mismatch_energy;
+            if (is_external) {
+                unmod_mismatch_energy = vp.p->mismatchExt[pair_type][n5d][n3d];
+            } else {
+                unmod_mismatch_energy = vp.p->mismatchM[pair_type][n5d][n3d];
+            }
+
+            return unmod_mismatch_energy;
+        }
+    }
+
     [[nodiscard]] static int get_dangle5_mod_energy(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
@@ -210,8 +242,16 @@ class ModBaseUtils {
             return energy;
         } else {
             // Fallback to unmodified energy
-            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-            int n5d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? j - 1 : i - 1]);
+            unsigned int pair_type;
+            int n5d;
+            if (is_closing) {
+                n5d = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);
+                pair_type = ViennaUtils::get_pair_type(sequence[j], sequence[i], vp.md);
+            } else {
+                n5d = ViennaUtils::fast_nucleotide_encode(sequence[i - 1]);
+                pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            }
+
             int n5d_unmod_energy = vp.p->dangle5[pair_type][n5d];
             return n5d_unmod_energy;
         }
@@ -240,8 +280,16 @@ class ModBaseUtils {
             return energy;
         } else {
             // Fallback to unmodified energy
-            unsigned int pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-            int n3d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? i + 1 : j + 1]);
+            unsigned int pair_type;
+            int n3d;
+            if (is_closing) {
+                n3d = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
+                pair_type = ViennaUtils::get_pair_type(sequence[j], sequence[i], vp.md);
+            } else {
+                n3d = ViennaUtils::fast_nucleotide_encode(sequence[j + 1]);
+                pair_type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            }
+
             int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
             return n3d_unmod_energy;
         }

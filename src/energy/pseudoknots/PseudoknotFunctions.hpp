@@ -1,5 +1,6 @@
 #pragma once
 
+#include "energy/dangles/DangleUtils.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
@@ -170,6 +171,8 @@ class PseudoknotFunctions {
     [[nodiscard]] static double pk_dangling_energy(const LoopNode& node,
                                                    const ProcessedRNAEntry& processed_rna,
                                                    vrna_md_param& vp, const all_mod_params& mp);
+
+
 };
 
 }  // namespace knotergy

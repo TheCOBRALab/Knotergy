@@ -156,8 +156,15 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
     for (const Band& band : node.bands) {
         std::size_t i = band.left_border();
         std::size_t j = band.right_border();
-        energy += ModBaseUtils::get_dangle5_energy(i, j, processed_rna, vp, mp);
-        energy += ModBaseUtils::get_dangle3_energy(i, j, processed_rna, vp, mp);
+        auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
+
+        if (n5d && n3d) {
+            energy += ModBaseUtils::get_mismatch_energy(i, j, processed_rna, vp, mp);
+        } else if (n5d) {
+            energy += ModBaseUtils::get_dangle5_energy(i, j, processed_rna, vp, mp);
+        } else if (n3d) {
+            energy += ModBaseUtils::get_dangle3_energy(i, j, processed_rna, vp, mp);
+        }
     }
 
     return energy;
