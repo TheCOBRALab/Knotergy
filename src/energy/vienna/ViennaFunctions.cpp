@@ -170,9 +170,6 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
             ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
         auto [n5d_outer, n3d_outer] = ViennaUtils::encode_outer_dangles(ci, cj, pRNA, vp.md);
 
-        n5d_outer = vp.md.dangles != 0 ? n5d_outer : -1;
-        n3d_outer = vp.md.dangles != 0 ? n3d_outer : -1;
-
         energy += viennarna::vrna_E_multibranch_stem(c_pair_type, n5d_outer, n3d_outer, vp.p);
     }
 
@@ -202,8 +199,6 @@ int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
             ViennaUtils::encode_outer_dangles(child->begin, child->end, pRNA, vp.md);
         unsigned int pair_type =
             ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
-        n5d_outer = vp.md.dangles != 0 ? n5d_outer : -1;
-        n3d_outer = vp.md.dangles != 0 ? n3d_outer : -1;
         energy += viennarna::vrna_E_exterior_stem(pair_type, n5d_outer, n3d_outer, vp.p);
     }
     return energy;

@@ -91,11 +91,6 @@ int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const Proces
 
         auto [n5d, n3d] = ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
 
-        if (vp.md.dangles == 0) {
-            n5d = -1;
-            n3d = -1;
-        }
-
         energy += mod_multibranch_stem(node, n3d, n5d, type, pRNA.get_modified_sequence(), vp, mp,
                                        kIsClosing);
     }
@@ -108,11 +103,6 @@ int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const Proces
             ViennaUtils::get_pair_type(sequence[child.begin], sequence[child.end], vp.md);
 
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(child.begin, child.end, pRNA, vp.md);
-
-        if (vp.md.dangles == 0) {
-            n5d = -1;
-            n3d = -1;
-        }
 
         energy += mod_multibranch_stem(child, n5d, n3d, type, pRNA.get_modified_sequence(), vp, mp,
                                        kIsNotClosing);

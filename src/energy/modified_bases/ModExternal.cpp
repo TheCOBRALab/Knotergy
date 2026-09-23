@@ -53,10 +53,6 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<LoopNode*>& childr
         std::size_t j = child->end;
         unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, pRNA, vp.md);
-        if (vp.md.dangles == 0) {
-            n5d = -1;
-            n3d = -1;
-        }
         energy += ModExternal::mod_exterior_stem(*child, n5d, n3d, type,
                                                  pRNA.get_modified_sequence(), vp, mp);
     }

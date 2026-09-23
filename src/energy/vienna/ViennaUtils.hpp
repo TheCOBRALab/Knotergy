@@ -52,11 +52,14 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_outer_dangles(
         const std::size_t i, const std::size_t j, const std::string& sequence,
         const std::vector<std::size_t>& pair_table, viennarna::vrna_md_t& md) {
-        bool has_5d_dangle_out =
-            i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
+        if (md.dangles == 0) {
+            return std::make_tuple(-1, -1);
+        }
 
-        bool has_3d_dangle_out = j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX ||
-                                                             (md.dangles != 1 && md.dangles != 3));
+        bool has_5d_dangle_out = i > 0 && (pair_table[i - 1] == NULL_INDEX || (md.dangles == 2));
+
+        bool has_3d_dangle_out =
+            j + 1 < sequence.size() && (pair_table[j + 1] == NULL_INDEX || (md.dangles == 2));
 
         int n5d_dangle = has_5d_dangle_out ? fast_nucleotide_encode(sequence[i - 1]) : -1;
         int n3d_dangle = has_3d_dangle_out ? fast_nucleotide_encode(sequence[j + 1]) : -1;
@@ -92,10 +95,12 @@ class ViennaUtils {
     [[nodiscard]] static std::tuple<int, int> encode_inner_dangles(
         const std::size_t i, const std::size_t j, const std::string& sequence,
         const std::vector<std::size_t>& pair_table, viennarna::vrna_md_t& md) {
-        bool has_5d_dangle_in =
-            (pair_table[i + 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
-        bool has_3d_dangle_in =
-            (pair_table[j - 1] == NULL_INDEX || (md.dangles != 1 && md.dangles != 3));
+        if (md.dangles == 0) {
+            return std::make_tuple(-1, -1);
+        }
+
+        bool has_5d_dangle_in = (pair_table[i + 1] == NULL_INDEX || (md.dangles == 2));
+        bool has_3d_dangle_in = (pair_table[j - 1] == NULL_INDEX || (md.dangles == 2));
 
         int encoded_i = has_5d_dangle_in ? fast_nucleotide_encode(sequence[i + 1]) : -1;
         int encoded_j = has_3d_dangle_in ? fast_nucleotide_encode(sequence[j - 1]) : -1;
