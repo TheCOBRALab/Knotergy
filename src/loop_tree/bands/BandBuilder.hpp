@@ -66,6 +66,16 @@ class BandBuilder {
                                             std::size_t rb,
                                             const std::vector<LoopNode*>& node_table,
                                             int& child_count);
+
+    /**
+     * @brief Assign loop types to each base pair in the band.
+     *
+     * Determines if each base pair is part of a stack, internal loop, or multibranch loop
+     * based on its relationship with the next base pair and any nested children.
+     *
+     * @param base_pairs Vector of PKBasePair objects to assign loop types to.
+     */
+    static void assign_loop_types(std::vector<PKBasePair>& base_pairs);
 };
 
 }  // namespace knotergy

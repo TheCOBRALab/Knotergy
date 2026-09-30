@@ -40,11 +40,12 @@ double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntr
     int unpaired_penalty = pkp.unpaired_in_pk * node.unpaired_outside_bands_count;
     int cr_penalty = pkp.cr_in_pk * node.number_of_outsideband_children;
 
+    node.pk_level_energy = init_penalty + band_penalty + unpaired_penalty + cr_penalty;
+
     // Compute loop-specific energies for each band in the pseudoknot
     double loop_energies = compute_loop_energies(node, processed_rna, vp, mp, pkp, is_inf);
 
-    return round_energy(init_penalty + band_penalty + unpaired_penalty + cr_penalty + loop_energies,
-                        pkp.round);
+    return round_energy(node.pk_level_energy + loop_energies, pkp.round);
 }
 
 int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
@@ -106,34 +107,43 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
         }
 
         std::vector<PKBasePair>& bps = band.base_pairs();
-        const std::size_t n = bps.size();
 
         // loops through each base pair in band (except last one)
-        for (std::size_t idx = 0; idx + 1 < n; ++idx) {
+        for (std::size_t idx = 0; idx + 1 < bps.size(); ++idx) {
             PKBasePair& bp = bps[idx];
             PKBasePair& next_bp = bps[idx + 1];
-
-            if (bp.is_stack(next_bp)) {
-                bp.loop_type = LoopType::Stack;
-                bp.energy = pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
-            } else if (bp.children.empty()) {
-                // if no nested structure between two base pairs of a band, it's an internal loop
-                // or a bulge.
-                bp.loop_type = LoopType::Internal;
-                bp.energy = pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
-            } else {
-                bp.loop_type = LoopType::Multibranch;
-                bp.energy = pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
+            switch (bp.loop_type) {
+                case LoopType::Stack:
+                    bp.energy = pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
+                    break;
+                case LoopType::Internal:
+                    bp.energy = pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
+                    break;
+                case LoopType::Multibranch:
+                    bp.energy = pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
+                    break;
+                default:
+                    THROW_ERROR("Invalid loop type for base pair (" + std::to_string(bp.i) + ", " +
+                                std::to_string(bp.j) + ") in pseudoknot (" +
+                                std::to_string(node.begin) + ", " + std::to_string(node.end) +
+                                "). Loop type must be Stack, Internal, or Multibranch.");
             }
             energy += bp.energy;
         }
 
         // Handle the innermost base pair of the band (last base pair)
         PKBasePair& innermost_bp = bps.back();
-        innermost_bp.loop_type = LoopType::Hairpin;  // Not a real hairpin
         innermost_bp.energy = pk_innermost_energy(innermost_bp, vp, is_inf);
-
         energy += innermost_bp.energy;
+
+        // Sanity check: innermost base pair must be a "hairpin" loop
+        if (innermost_bp.loop_type != LoopType::Hairpin) {
+            THROW_ERROR("Invalid loop type for innermost base pair (" +
+                        std::to_string(innermost_bp.i) + ", " + std::to_string(innermost_bp.j) +
+                        ") in pseudoknot (" + std::to_string(node.begin) + ", " +
+                        std::to_string(node.end) +
+                        "). Loop type must be Hairpin (innermost base pair of a band).");
+        }
     }
 
     return energy;

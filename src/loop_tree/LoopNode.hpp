@@ -36,26 +36,27 @@ struct LoopNode {
     LoopNode() : begin{NULL_INDEX}, end{NULL_INDEX} {}
 
     //  ------------ Member Variables -------------------
-    std::size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
-    std::size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
+    std::size_t begin;  // 5' boundary position (or NULL_INDEX for external loop).
+    std::size_t end;    // 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType loop_type = LoopType::Unknown;  ///< Type of this loop.
+    LoopType loop_type = LoopType::Unknown;  // Type of this loop.
     PseudoNestedType pseudo_type =
-        PseudoNestedType::None;              ///< if its within a pseudoknot band or outside of it.
-    int exclusive_unpaired_bases_count = 0;  ///< Unpaired bases only in this loop.
-    int total_unpaired_bases_count = 0;      ///< Unpaired bases in loop + nested children.
+        PseudoNestedType::None;              // if its within a pseudoknot band or outside of it.
+    int exclusive_unpaired_bases_count = 0;  // Unpaired bases only in this loop.
+    int total_unpaired_bases_count = 0;      // Unpaired bases in loop + nested children.
 
-    LoopNode* parent = nullptr;          ///< Parent loop node (weak to avoid cycles).
-    std::vector<LoopNode*> children;     ///< Child loop nodes. (sorted by start)
-    int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
-    double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
-    bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
+    LoopNode* parent = nullptr;          // Parent loop node (weak to avoid cycles).
+    std::vector<LoopNode*> children;     // Child loop nodes. (sorted by start)
+    int total_number_of_base_pairs = 1;  // # of pairs in this closed region (excluding children)
+    double energy = 0;                   // Computed energy (set by ComputeEnergy).
+    bool is_inf = false;                 // Flag for infinite energy (e.g., invalid structures).
 
     // ------------- Pseudoknot specific -------------------
-    std::vector<Band> bands;                 ///< Pseudoknot bands (empty if not pseudoknotted).
-    int number_of_withinband_children = 0;   ///< Count of children within pseudoknot bands.
-    int number_of_outsideband_children = 0;  ///< Count of nested children.
-    int unpaired_outside_bands_count = 0;    ///< Count of unpaired bases outside pseudoknot bands.
+    std::vector<Band> bands;                 // Pseudoknot bands (empty if not pseudoknotted).
+    double pk_level_energy = 0;              // initialization + band + unpaired + nested penalties.
+    int number_of_withinband_children = 0;   // Count of children within pseudoknot bands.
+    int number_of_outsideband_children = 0;  // Count of nested children.
+    int unpaired_outside_bands_count = 0;    // Count of unpaired bases outside pseudoknot bands.
 };
 
 /**

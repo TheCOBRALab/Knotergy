@@ -33,6 +33,8 @@ Band BandBuilder::construct_band(std::size_t lb, std::size_t li, std::size_t ri,
         find_base_pairs_left_scan(lb, li, ri, rb, pair_table, node_table, child_count);
     populate_right_arm_children(base_pairs, ri, rb, node_table, child_count);
 
+    assign_loop_types(base_pairs);
+
     return Band(lb, li, ri, rb, std::move(base_pairs), child_count);
 }
 
@@ -122,5 +124,23 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
         }
     }
 };
+
+void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs) {
+    for (std::size_t idx = 0; idx + 1 < base_pairs.size(); ++idx) {
+        PKBasePair& bp = base_pairs[idx];
+        PKBasePair& next_bp = base_pairs[idx + 1];
+
+        if (bp.is_stack(next_bp)) {
+            bp.loop_type = LoopType::Stack;
+        } else if (bp.children.empty()) {
+            bp.loop_type = LoopType::Internal;
+        } else {
+            bp.loop_type = LoopType::Multibranch;
+        }
+    }
+
+    // Innermost base pair (Not a real hairpin)
+    base_pairs.back().loop_type = LoopType::Hairpin;
+}
 
 }  // namespace knotergy
