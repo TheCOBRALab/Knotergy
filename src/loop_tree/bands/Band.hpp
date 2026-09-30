@@ -58,6 +58,7 @@ struct PKBasePair {
     std::vector<ClosedRegion> children;
     LoopType loop_type = LoopType::Unknown;
     double energy = 0.0;
+    bool is_inf = false;
 
     [[nodiscard]] bool is_stack(const PKBasePair& child) const {
         return i + 1 == child.i && j - 1 == child.j;

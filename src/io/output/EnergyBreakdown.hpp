@@ -191,8 +191,15 @@ class EnergyBreakdown {
                         out << std::string(band_description_width - bp_visible_width, ' ');
                     }
 
-                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5) << bp.energy
-                        << color(ANSI_COLOR_RESET) << '\n';
+                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(7);
+
+                    if (bp.is_inf) {
+                        out << "INF";
+                    } else {
+                        out << bp.energy;
+                    }
+
+                    out << color(ANSI_COLOR_RESET) << '\n';
                 }
             }
         }

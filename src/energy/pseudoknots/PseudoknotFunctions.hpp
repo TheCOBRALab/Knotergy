@@ -103,8 +103,7 @@ class PseudoknotFunctions {
      * @param is_inf Reference to a boolean that will be set to true if the energy is infinite.
      * @return The energy of the innermost base pair (0 if valid, INF if invalid).
      */
-    [[nodiscard]] static double pk_innermost_energy(const PKBasePair& bp, vrna_md_param& vp,
-                                                    bool& is_inf);
+    [[nodiscard]] static double pk_innermost_energy(PKBasePair& bp, vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for base pairs in a pseudoknot band.

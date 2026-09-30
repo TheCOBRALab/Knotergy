@@ -134,7 +134,8 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
 
         // Handle the innermost base pair of the band (last base pair)
         PKBasePair& innermost_bp = bps.back();
-        innermost_bp.energy = pk_innermost_energy(innermost_bp, vp, is_inf);
+        innermost_bp.energy = pk_innermost_energy(innermost_bp, vp);
+        is_inf = is_inf | innermost_bp.is_inf;
         energy += innermost_bp.energy;
 
         // Sanity check: the innermost base pair must have loop type InnermostBP
@@ -179,8 +180,7 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
 }
 
 // Checks if innermost base pair is infinite energy or not
-double PseudoknotFunctions::pk_innermost_energy(const PKBasePair& bp, vrna_md_param& vp,
-                                                bool& is_inf) {
+double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, vrna_md_param& vp) {
     // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
     std::size_t size = bp.j - bp.i - 1;
 
@@ -188,7 +188,7 @@ double PseudoknotFunctions::pk_innermost_energy(const PKBasePair& bp, vrna_md_pa
         std::cout << WARNING << "Band with borders (" << bp.i + 1 << ", " << bp.j + 1
                   << ") are too close (usually < 3 base pairs), resulting in infinite energy."
                   << std::endl;
-        is_inf = true;
+        bp.is_inf = true;
         return INF;
     }
     return 0;
