@@ -2,25 +2,22 @@
 
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
-#include "energy/pseudoknots/PKEnergyBreakdown.hpp"
 
 #include <cmath>
 #include <iostream>
 
 namespace knotergy {
 
-double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
+double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
                                               vrna_md_param& vp, const all_mod_params& mp,
-                                              const pk_param& pkp, PKEnergyBreakdown& breakdown,
+                                              const pk_param& pkp, bool& is_inf,
                                               const bool pk_dangles) {
     // Where most of the energy calculations are done
     // Populate the breakdown with all the energies and information for reporting
-    populate_pk_energy_breakdown(node, processed_rna, vp, mp, pkp, breakdown);
+    double energy = get_pk_energy(node, processed_rna, vp, mp, pkp, is_inf);
 
-    double energy = breakdown.get_total_energy();
-
-    // WIP, will add dangles to breakdown once implementation is complete
+    // WIP, will add dangles to get_pk_energy once implementation is complete
     if (pk_dangles) {
         energy += pk_dangling_energy(node, processed_rna, vp, mp);
     }
@@ -28,30 +25,26 @@ double PseudoknotFunctions::pseudoknot_energy(const LoopNode& node,
     return energy;
 }
 
-void PseudoknotFunctions::populate_pk_energy_breakdown(const LoopNode& node,
-                                                       const ProcessedRNAEntry& processed_rna,
-                                                       vrna_md_param& vp, const all_mod_params& mp,
-                                                       const pk_param& pkp,
-                                                       PKEnergyBreakdown& breakdown) {
+double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntry& processed_rna,
+                                          vrna_md_param& vp, const all_mod_params& mp,
+                                          const pk_param& pkp, bool& is_inf) {
     // Calculate the number of unpaired bases outside of bands
-    int unpaired = get_unpaired_outside_of_bands(node, processed_rna);
 
     // Store breakdown information (excluding energies)
-    breakdown.parent_loop_type = node.parent->loop_type;
-    breakdown.pk_nested_type = node.pseudo_type;
-    breakdown.number_of_bands = static_cast<int>(node.bands.size());
-    breakdown.unpaired_count = unpaired;
-    breakdown.number_of_outsideband_children = node.number_of_outsideband_children;
+    node.unpaired_outside_bands_count = get_unpaired_outside_of_bands(node, processed_rna);
+    int number_of_bands = static_cast<int>(node.bands.size());
 
     // Calculate the total energy of the pseudoknot
-    breakdown.init_penalty = init_penalty(node, pkp);
-    breakdown.band_penalty = pkp.band_penalty * breakdown.number_of_bands;
-    breakdown.unpaired_penalty = pkp.unpaired_in_pk * breakdown.unpaired_count;
-    breakdown.cr_penalty = pkp.cr_in_pk * breakdown.number_of_outsideband_children;
+    double init_penalty = get_init_penalty(node, pkp);
+    int band_penalty = pkp.band_penalty * number_of_bands;
+    int unpaired_penalty = pkp.unpaired_in_pk * node.unpaired_outside_bands_count;
+    int cr_penalty = pkp.cr_in_pk * node.number_of_outsideband_children;
 
     // Compute loop-specific energies for each band in the pseudoknot
-    breakdown.reserve(static_cast<std::size_t>(node.total_number_of_base_pairs));
-    loop_energies(node, processed_rna, vp, mp, pkp, breakdown);
+    double loop_energies = compute_loop_energies(node, processed_rna, vp, mp, pkp, is_inf);
+
+    return round_energy(init_penalty + band_penalty + unpaired_penalty + cr_penalty + loop_energies,
+                        pkp.round);
 }
 
 int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
@@ -78,7 +71,7 @@ int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
     return unpaired;
 }
 
-double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
+double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
     double energy = 0;
     switch (node.parent->loop_type) {
@@ -97,13 +90,13 @@ double PseudoknotFunctions::init_penalty(const LoopNode& node, const knotergy::p
     return energy;
 }
 
-void PseudoknotFunctions::loop_energies(const LoopNode& node,
-                                        const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
-                                        const all_mod_params& mp, const knotergy::pk_param& pkp,
-                                        PKEnergyBreakdown& breakdown) {
+double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
+                                                  const ProcessedRNAEntry& processed_rna,
+                                                  vrna_md_param& vp, const all_mod_params& mp,
+                                                  const knotergy::pk_param& pkp, bool& is_inf) {
     double energy = 0;
 
-    for (const Band& band : node.bands) {
+    for (Band& band : node.bands) {
         // Sanity check: left inner border must be less than right inner border
         if (band.left_inner() >= band.right_inner()) {
             THROW_ERROR("Invalid band with borders (" + std::to_string(band.left_border()) + ", " +
@@ -112,40 +105,38 @@ void PseudoknotFunctions::loop_energies(const LoopNode& node,
                         "). Left inner border must be less than right inner border.");
         }
 
-        const std::vector<PKBasePair>& bps = band.base_pairs();
+        std::vector<PKBasePair>& bps = band.base_pairs();
         const std::size_t n = bps.size();
 
         // loops through each base pair in band (except last one)
         for (std::size_t idx = 0; idx + 1 < n; ++idx) {
-            const PKBasePair& bp = bps[idx];
-            const PKBasePair& next_bp = bps[idx + 1];
-            PKLoopBreakdown loop_breakdown;
+            PKBasePair& bp = bps[idx];
+            PKBasePair& next_bp = bps[idx + 1];
 
             if (bp.is_stack(next_bp)) {
-                loop_breakdown.loop_type = LoopType::Stack;
-                loop_breakdown.energy = pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
+                bp.loop_type = LoopType::Stack;
+                bp.energy = pk_stack_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else if (bp.children.empty()) {
                 // if no nested structure between two base pairs of a band, it's an internal loop
                 // or a bulge.
-                loop_breakdown.loop_type = LoopType::Internal;
-                loop_breakdown.energy = pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
+                bp.loop_type = LoopType::Internal;
+                bp.energy = pk_internal_energy(bp, next_bp, processed_rna, vp, pkp, mp);
             } else {
-                loop_breakdown.loop_type = LoopType::Multibranch;
-                loop_breakdown.energy = pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
+                bp.loop_type = LoopType::Multibranch;
+                bp.energy = pk_multiloop_energy(bp, next_bp, processed_rna, pkp);
             }
-            breakdown.loop_breakdowns.push_back(loop_breakdown);
-            energy += loop_breakdown.energy;
+            energy += bp.energy;
         }
 
         // Handle the innermost base pair of the band (last base pair)
-        PKLoopBreakdown innermost_loop_breakdown;
-        innermost_loop_breakdown.loop_type = LoopType::Hairpin;  // Not a real hairpin
-        innermost_loop_breakdown.energy = pk_innermost_energy(bps.back(), vp, breakdown.is_inf);
-        breakdown.loop_breakdowns.push_back(innermost_loop_breakdown);
-        energy += innermost_loop_breakdown.energy;
+        PKBasePair& innermost_bp = bps.back();
+        innermost_bp.loop_type = LoopType::Hairpin;  // Not a real hairpin
+        innermost_bp.energy = pk_innermost_energy(innermost_bp, vp, is_inf);
+
+        energy += innermost_bp.energy;
     }
 
-    breakdown.total_loop_energy = energy;
+    return energy;
 }
 
 double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,

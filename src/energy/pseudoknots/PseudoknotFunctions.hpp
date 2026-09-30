@@ -28,21 +28,21 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param breakdown Reference to a PKEnergyBreakdown object to store detailed energy components.
+     * @param is_inf Reference to a boolean flag indicating if the energy is infinite.
      * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
-    [[nodiscard]] static double pseudoknot_energy(const LoopNode& node,
+    [[nodiscard]] static double pseudoknot_energy(LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
                                                   vrna_md_param& vp, const all_mod_params& mp,
-                                                  const pk_param& pkp, PKEnergyBreakdown& breakdown,
+                                                  const pk_param& pkp, bool& is_inf,
                                                   const bool pk_dangles = false);
 
    private:
-    static void populate_pk_energy_breakdown(const LoopNode& node,
-                                             const ProcessedRNAEntry& processed_rna,
-                                             vrna_md_param& vp, const all_mod_params& mp,
-                                             const pk_param& pkp, PKEnergyBreakdown& breakdown);
+    [[nodiscard]] static double get_pk_energy(LoopNode& node,
+                                              const ProcessedRNAEntry& processed_rna,
+                                              vrna_md_param& vp, const all_mod_params& mp,
+                                              const pk_param& pkp, bool& is_inf);
 
     /**
      * @brief Calculate initialization penalty for a pseudoknot based on its parent loop type.
@@ -55,7 +55,8 @@ class PseudoknotFunctions {
      * @param pkp Pseudoknot parameters.
      * @return Initialization penalty in centicalories.
      */
-    [[nodiscard]] static double init_penalty(const LoopNode& node, const knotergy::pk_param& pkp);
+    [[nodiscard]] static double get_init_penalty(const LoopNode& node,
+                                                 const knotergy::pk_param& pkp);
 
     /**
      * @brief Calculate the number of unpaired bases in a pseudoknot, excluding those within bands.
@@ -83,12 +84,13 @@ class PseudoknotFunctions {
      * @param vp ViennaRNA model parameters.
      * @param mp Modified base parameters.
      * @param pkp Pseudoknot parameters.
-     * @param breakdown Reference to a PKEnergyBreakdown object to store detailed energy components.
+     * @param is_inf Reference to a boolean flag indicating if the energy is infinite.
      * @return Total loop energies in centicalories.
      */
-    static void loop_energies(const LoopNode& node, const ProcessedRNAEntry& processed_rna,
-                              vrna_md_param& vp, const all_mod_params& mp,
-                              const knotergy::pk_param& pkp, PKEnergyBreakdown& breakdown);
+    [[nodiscard]] static double compute_loop_energies(LoopNode& node,
+                                                      const ProcessedRNAEntry& processed_rna,
+                                                      vrna_md_param& vp, const all_mod_params& mp,
+                                                      const knotergy::pk_param& pkp, bool& is_inf);
 
     /**
      * @brief Checks if the innermost base pair has infinite energy.

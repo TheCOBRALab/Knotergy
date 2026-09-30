@@ -56,6 +56,8 @@ struct PKBasePair {
     std::size_t i;
     std::size_t j;
     std::vector<ClosedRegion> children;
+    LoopType loop_type = LoopType::Unknown;
+    double energy = 0.0;
 
     [[nodiscard]] bool is_stack(const PKBasePair& child) const {
         return i + 1 == child.i && j - 1 == child.j;
@@ -101,6 +103,8 @@ struct Band {
 
     [[nodiscard]] int get_number_of_children() const { return number_of_children_; }
 
+    [[nodiscard]] std::vector<PKBasePair>& base_pairs() { return base_pairs_; }
+
     [[nodiscard]] const std::vector<PKBasePair>& base_pairs() const { return base_pairs_; }
 
    private:
@@ -117,7 +121,7 @@ struct Band {
 inline std::ostream& operator<<(std::ostream& os, const Band& band) {
     os << "Band(" << band.left_border() << ", " << band.left_inner() << ", " << band.right_inner()
        << ", " << band.right_border() << ")";
-    for (const auto& base_pair : band.base_pairs()) {
+    for (const PKBasePair& base_pair : band.base_pairs()) {
         os << "    PKBasePair(" << base_pair.i << ", " << base_pair.j << ")\n";
     }
     return os;

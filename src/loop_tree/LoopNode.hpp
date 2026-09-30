@@ -1,6 +1,5 @@
 #pragma once
 
-#include "energy/pseudoknots/PKEnergyBreakdown.hpp"
 #include "io/output/colors.hpp"
 #include "loop_tree/LoopTypes.hpp"
 #include "loop_tree/bands/Band.hpp"
@@ -40,19 +39,23 @@ struct LoopNode {
     std::size_t begin;  ///< 5' boundary position (or NULL_INDEX for external loop).
     std::size_t end;    ///< 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType loop_type = LoopType::Unknown;                 ///< Type of this loop.
-    PseudoNestedType pseudo_type = PseudoNestedType::None;  ///< Pseudoknot nesting type.
-    int exclusive_unpaired_bases_count = 0;                 ///< Unpaired bases only in this loop.
+    LoopType loop_type = LoopType::Unknown;  ///< Type of this loop.
+    PseudoNestedType pseudo_type =
+        PseudoNestedType::None;              ///< if its within a pseudoknot band or outside of it.
+    int exclusive_unpaired_bases_count = 0;  ///< Unpaired bases only in this loop.
     int total_unpaired_bases_count = 0;      ///< Unpaired bases in loop + nested children.
-    int number_of_withinband_children = 0;   ///< Count of children within pseudoknot bands.
-    int number_of_outsideband_children = 0;  ///< Count of nested children.
-    LoopNode* parent = nullptr;              ///< Parent loop node (weak to avoid cycles).
-    std::vector<LoopNode*> children;         ///< Child loop nodes. (sorted by start)
-    std::vector<Band> bands;                 ///< Pseudoknot bands (empty if not pseudoknotted).
+
+    LoopNode* parent = nullptr;          ///< Parent loop node (weak to avoid cycles).
+    std::vector<LoopNode*> children;     ///< Child loop nodes. (sorted by start)
     int total_number_of_base_pairs = 1;  ///< # of pairs in this closed region (excluding children)
     double energy = 0;                   ///< Computed energy (set by ComputeEnergy).
     bool is_inf = false;                 ///< Flag for infinite energy (e.g., invalid structures).
-    PKEnergyBreakdown pk_energy_breakdown;  ///< Detailed breakdown of pseudoknot energy.
+
+    // ------------- Pseudoknot specific -------------------
+    std::vector<Band> bands;                 ///< Pseudoknot bands (empty if not pseudoknotted).
+    int number_of_withinband_children = 0;   ///< Count of children within pseudoknot bands.
+    int number_of_outsideband_children = 0;  ///< Count of nested children.
+    int unpaired_outside_bands_count = 0;    ///< Count of unpaired bases outside pseudoknot bands.
 };
 
 /**
