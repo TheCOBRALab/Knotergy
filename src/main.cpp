@@ -44,12 +44,19 @@ void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CliAr
 
 void print_results(const knotergy::ComputeEnergy& energy_calculator, const bool use_color) {
     if (energy_calculator.getInfiniteEnergyFlag()) {
-        printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
-    } else if (use_color) {
-        printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, energy_calculator.getEnergy(),
-               ANSI_COLOR_RESET);
+        if (use_color) {
+            printf("\nENERGY:%s Infinite (%.4f kcal/mol)%s\n", ANSI_COLOR_RED,
+                   energy_calculator.getEnergy(), ANSI_COLOR_RESET);
+        } else {
+            printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
+        }
     } else {
-        printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
+        if (use_color) {
+            printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, energy_calculator.getEnergy(),
+                   ANSI_COLOR_RESET);
+        } else {
+            printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
+        }
     }
 }
 

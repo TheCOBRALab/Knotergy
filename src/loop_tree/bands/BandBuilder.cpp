@@ -139,8 +139,7 @@ void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs) {
         }
     }
 
-    // Innermost base pair (Not a real hairpin)
-    base_pairs.back().loop_type = LoopType::Hairpin;
+    base_pairs.back().loop_type = LoopType::InnermostBP;
 }
 
 }  // namespace knotergy

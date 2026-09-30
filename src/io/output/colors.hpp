@@ -16,6 +16,7 @@ namespace knotergy {
 #define ANSI_COLOR_BLUE "\x1b[34m"     // Blue:    #000080 or #0000FF
 #define ANSI_COLOR_MAGENTA "\x1b[35m"  // Magenta: #800080 or #FF00FF
 #define ANSI_COLOR_CYAN "\x1b[36m"     // Cyan:    #008080 or #00FFFF
+#define ANSI_COLOR_GRAY "\x1b[90m"     // Gray:    #555555
 
 #define ANSI_COLOR_RED_B "\x1b[1;31m"      // Bright red:     #FF0000
 #define ANSI_COLOR_GREEN_B "\x1b[1;32m"    // Bright green:   #00FF00
@@ -26,8 +27,8 @@ namespace knotergy {
 
 #define ANSI_COLOR_RESET "\x1b[0m"  // Reset / default terminal color
 
-#define WARNING (ANSI_COLOR_YELLOW + std::string("[WARNING]") + ANSI_COLOR_RESET)
-#define ERROR (ANSI_COLOR_RED_B + std::string("[ERROR]  ") + ANSI_COLOR_RESET)
+#define WARNING (ANSI_COLOR_YELLOW + std::string("[WARNING] ") + ANSI_COLOR_RESET)
+#define ERROR (ANSI_COLOR_RED_B + std::string("[ERROR] ") + ANSI_COLOR_RESET)
 
 inline static bool should_use_color() {
     if (std::getenv("NO_COLOR") != nullptr) {

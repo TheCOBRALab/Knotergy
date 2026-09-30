@@ -159,7 +159,7 @@ class PseudoknotParams {
             bool file_exists = FileUtils::file_exists(default_pk_param_path());
             if (!file_exists) {
                 std::cout << WARNING
-                          << " Warning: Default pseudoknot parameter file not found. Using "
+                          << "Default pseudoknot parameter file not found. Using "
                              "hard-coded defaults.\n";
             }
 

@@ -83,7 +83,8 @@ double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knoterg
                 node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;
             break;
         default:
-            std::cerr << "Warning: Parent of this node is not a pseudoknot, external, or "
+            std::cerr << WARNING
+                      << "Parent of this node is not a pseudoknot, external, or "
                          "multiloop"
                       << node << std::endl;
             break;
@@ -136,13 +137,12 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
         innermost_bp.energy = pk_innermost_energy(innermost_bp, vp, is_inf);
         energy += innermost_bp.energy;
 
-        // Sanity check: innermost base pair must be a "hairpin" loop
-        if (innermost_bp.loop_type != LoopType::Hairpin) {
+        // Sanity check: the innermost base pair must have loop type InnermostBP
+        if (innermost_bp.loop_type != LoopType::InnermostBP) {
             THROW_ERROR("Invalid loop type for innermost base pair (" +
                         std::to_string(innermost_bp.i) + ", " + std::to_string(innermost_bp.j) +
                         ") in pseudoknot (" + std::to_string(node.begin) + ", " +
-                        std::to_string(node.end) +
-                        "). Loop type must be Hairpin (innermost base pair of a band).");
+                        std::to_string(node.end) + "). Loop type must be InnermostBP.");
         }
     }
 
@@ -185,7 +185,7 @@ double PseudoknotFunctions::pk_innermost_energy(const PKBasePair& bp, vrna_md_pa
     std::size_t size = bp.j - bp.i - 1;
 
     if (size <= 30 && vp.p->hairpin[size] == INF) {
-        std::cout << "Warning: Band with borders (" << bp.i << ", " << bp.j
+        std::cout << WARNING << "Band with borders (" << bp.i + 1 << ", " << bp.j + 1
                   << ") are too close (usually < 3 base pairs), resulting in infinite energy."
                   << std::endl;
         is_inf = true;

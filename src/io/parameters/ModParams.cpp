@@ -1,5 +1,6 @@
 #include "ModParams.hpp"
 
+#include "io/output/colors.hpp"
 #include "utils/FileUtils.hpp"
 
 #include <iostream>
@@ -89,8 +90,8 @@ modified_base_param ModParams::parse_modified_base_json(const std::string& jsonF
 
 void ModParams::warn_if_missing(const json& j, const std::string& key, const std::string& file) {
     if (!j.contains(key)) {
-        std::cerr << "Warning: modified_base missing required key '" << key << "' in file " << file
-                  << std::endl;
+        std::cerr << WARNING << "modified_base missing required key '" << key << "' in file "
+                  << file << std::endl;
     }
 }
 

@@ -3,8 +3,18 @@
 namespace knotergy {
 /**
  * @brief Enumeration of loop types in RNA secondary structures.
+ * InnermostBP is the innermost base pair of a band
  */
-enum class LoopType { Unknown, Stack, Hairpin, Internal, Multibranch, External, Pseudoknot };
+enum class LoopType {
+    Unknown,
+    Stack,
+    Hairpin,
+    Internal,
+    Multibranch,
+    External,
+    Pseudoknot,
+    InnermostBP
+};
 
 /**
  * @brief Enumeration of pseudoknot nesting types.
@@ -30,6 +40,7 @@ enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
         case LoopType::Multibranch: return "Multi    loop";
         case LoopType::External:    return "External loop";
         case LoopType::Pseudoknot:  return "Pseudo   loop";
+        case LoopType::InnermostBP: return "Innermost BP ";
         case LoopType::Unknown:     return "Unknown  loop";
     }
     return "Unknown  loop";

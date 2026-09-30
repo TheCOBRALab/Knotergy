@@ -74,8 +74,8 @@ class EnergyBreakdown {
         const std::size_t visible_width =
             std::string(loop_name(node->loop_type)).size() + detail_string.size();
 
-        // ViennaRNA aligns ':' at column 41 (40 characters before it).
-        constexpr std::size_t DESCRIPTION_WIDTH = 40;
+        // ViennaRNA aligns ':' at column 45 (44 characters before it).
+        constexpr std::size_t DESCRIPTION_WIDTH = 44;
 
         // ------------------------------------------------------------
         // Loop description
@@ -87,6 +87,7 @@ class EnergyBreakdown {
         if (visible_width < DESCRIPTION_WIDTH) {
             out << std::string(DESCRIPTION_WIDTH - visible_width, ' ');
         }
+
         // ------------------------------------------------------------
         // Energy
         // ------------------------------------------------------------
@@ -99,6 +100,102 @@ class EnergyBreakdown {
         }
 
         out << color(ANSI_COLOR_RESET) << '\n';
+
+        // ------------------------------------------------------------
+        // Detailed pseudoknot band breakdown
+        // ------------------------------------------------------------
+        if (node->loop_type == LoopType::Pseudoknot && verbosity == VerbosityLevel::Detailed) {
+            const std::string pk_label = "Pseudoknot-level energy (excludes bands)";
+
+            // Longest band row:
+            //
+            //     Interior loop (  86, 886) AU; (  88, 884) GU
+            //
+            // 4  = indentation
+            // 13 = loop_name() width
+            // first pair  = 7 + 2 * idx_w
+            // second pair = 8 + 2 * idx_w
+            const std::size_t band_description_width = 4 + 13 + (7 + 2 * idx_w) + (8 + 2 * idx_w);
+
+            // --------------------------------------------------------
+            // Pseudoknot-level energy
+            // --------------------------------------------------------
+            out << "    " << color(ANSI_COLOR_BLUE) << pk_label << color(ANSI_COLOR_RESET);
+
+            const std::size_t pk_visible_width = 4 + pk_label.size();
+
+            if (pk_visible_width < band_description_width) {
+                out << std::string(band_description_width - pk_visible_width, ' ');
+            }
+
+            out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5)
+                << std::llround(node->pk_level_energy) << color(ANSI_COLOR_RESET) << '\n';
+
+            // --------------------------------------------------------
+            // Bands
+            // --------------------------------------------------------
+            for (std::size_t band_idx = 0; band_idx < node->bands.size(); ++band_idx) {
+                const Band& band = node->bands[band_idx];
+
+                out << "  " << color(ANSI_COLOR_BLUE) << "Band " << band_idx + 1
+                    << color(ANSI_COLOR_RESET) << " (" << band.left_border() + 1 << ", "
+                    << band.left_inner() + 1 << ", " << band.right_inner() + 1 << ", "
+                    << band.right_border() + 1 << ")\n";
+
+                const std::vector<PKBasePair>& bps = band.base_pairs();
+
+                // ----------------------------------------------------
+                // Base pairs in this band
+                // ----------------------------------------------------
+                for (std::size_t idx = 0; idx < bps.size(); ++idx) {
+                    const PKBasePair& bp = bps[idx];
+
+                    std::ostringstream bp_details;
+                    std::ostringstream styled_bp_details;
+
+                    // Current base pair
+                    bp_details << " (" << std::right << std::setw(static_cast<int>(idx_w))
+                               << bp.i + 1 << "," << std::setw(static_cast<int>(idx_w)) << bp.j + 1
+                               << ") " << sequence[bp.i] << sequence[bp.j];
+
+                    styled_bp_details << " (" << std::right << std::setw(static_cast<int>(idx_w))
+                                      << bp.i + 1 << "," << std::setw(static_cast<int>(idx_w))
+                                      << bp.j + 1 << ") " << color(ANSI_COLOR_BRIGHT)
+                                      << sequence[bp.i] << sequence[bp.j]
+                                      << color(ANSI_COLOR_RESET);
+
+                    // Stack and internal loops are defined relative to
+                    // the next base pair in the band.
+                    if ((bp.loop_type == LoopType::Stack || bp.loop_type == LoopType::Internal) &&
+                        idx + 1 < bps.size()) {
+                        const PKBasePair& next_bp = bps[idx + 1];
+
+                        bp_details << "; (" << std::setw(static_cast<int>(idx_w)) << next_bp.i + 1
+                                   << "," << std::setw(static_cast<int>(idx_w)) << next_bp.j + 1
+                                   << ") " << sequence[next_bp.i] << sequence[next_bp.j];
+
+                        styled_bp_details
+                            << "; (" << std::setw(static_cast<int>(idx_w)) << next_bp.i + 1 << ","
+                            << std::setw(static_cast<int>(idx_w)) << next_bp.j + 1 << ") "
+                            << color(ANSI_COLOR_BRIGHT) << sequence[next_bp.i]
+                            << sequence[next_bp.j] << color(ANSI_COLOR_RESET);
+                    }
+
+                    const std::size_t bp_visible_width =
+                        4 + std::string(loop_name(bp.loop_type)).size() + bp_details.str().size();
+
+                    out << "    " << color(ANSI_COLOR_BLUE) << loop_name(bp.loop_type)
+                        << color(ANSI_COLOR_RESET) << styled_bp_details.str();
+
+                    if (bp_visible_width < band_description_width) {
+                        out << std::string(band_description_width - bp_visible_width, ' ');
+                    }
+
+                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5)
+                        << std::llround(bp.energy) << color(ANSI_COLOR_RESET) << '\n';
+                }
+            }
+        }
 
         return out.str();
     }

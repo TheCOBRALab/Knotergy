@@ -205,21 +205,27 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
             OutputManager::print_banner();
             return ParseStatus::ExitSuccess;
 
-        } else if (arg == "-v" || arg == "--verbose") {
-            if (next_is_value(i, argc, argv)) {
-                int verbosity_value;
-                if (!take_int_value(i, argc, argv, verbosity_value))
+        } else if (arg == "-v" || arg == "--verbose" || is_attached_form(arg, "-v")) {
+            int verbosity_value = static_cast<int>(VerbosityLevel::Verbose);
+
+            if (is_attached_form(arg, "-v")) {
+                // -v2
+                if (!parse_attached_int(arg, "verbosity", verbosity_value))
                     return ParseStatus::ExitFailure;
 
-                if (verbosity_value < 0 || verbosity_value > 2) {
-                    std::cerr << ERROR << " Invalid verbosity value: " << verbosity_value
-                              << ". Verbose must be between 0 and 2.\n";
+            } else if (next_is_value(i, argc, argv)) {
+                // -v 2 / --verbose 2
+                if (!take_int_value(i, argc, argv, verbosity_value))
                     return ParseStatus::ExitFailure;
-                }
-                out.verbosity = static_cast<VerbosityLevel>(verbosity_value);
-            } else {
-                out.verbosity = VerbosityLevel::Verbose;
             }
+
+            if (verbosity_value < 0 || verbosity_value > 2) {
+                std::cerr << ERROR << " Invalid verbosity value: " << verbosity_value
+                          << ". Verbosity must be between 0 and 2.\n";
+                return ParseStatus::ExitFailure;
+            }
+
+            out.verbosity = static_cast<VerbosityLevel>(verbosity_value);
         } else if (arg == "--efn2-correction") {
             out.efn2_correction = true;
 
