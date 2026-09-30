@@ -96,7 +96,7 @@ class EnergyBreakdown {
         if (node->is_inf) {
             out << std::right << std::setw(5) << "INF";
         } else {
-            out << std::right << std::setw(5) << std::llround(node->energy);
+            out << std::right << std::setw(5) << node->energy;
         }
 
         out << color(ANSI_COLOR_RESET) << '\n';
@@ -191,8 +191,8 @@ class EnergyBreakdown {
                         out << std::string(band_description_width - bp_visible_width, ' ');
                     }
 
-                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5)
-                        << std::llround(bp.energy) << color(ANSI_COLOR_RESET) << '\n';
+                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5) << bp.energy
+                        << color(ANSI_COLOR_RESET) << '\n';
                 }
             }
         }
