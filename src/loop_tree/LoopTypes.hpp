@@ -24,7 +24,7 @@ enum class LoopType {
  * Nested      (((..(...)..[[[...)))]]]
  * This hairpin     ^   ^ is not within a band
  */
-enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
+enum class PseudoNestedType { NotApplicable, WithinBand, OutsideBandIntervals };
 
 /**
  * @brief Get a human-readable name for a loop type.
@@ -48,7 +48,7 @@ enum class PseudoNestedType { None, WithinBand, OutsideBandIntervals };
 
 [[nodiscard]] static inline const char* pk_nested_type(PseudoNestedType t) {
     switch (t) {
-        case PseudoNestedType::None:                 return "None";
+        case PseudoNestedType::NotApplicable:        return "NotApplicable";
         case PseudoNestedType::WithinBand:           return "WithinBand";
         case PseudoNestedType::OutsideBandIntervals: return "OutsideBandIntervals";
     }

@@ -39,9 +39,8 @@ struct LoopNode {
     std::size_t begin;  // 5' boundary position (or NULL_INDEX for external loop).
     std::size_t end;    // 3' boundary position (or NULL_INDEX for external loop).
 
-    LoopType loop_type = LoopType::Unknown;  // Type of this loop.
-    PseudoNestedType pseudo_type =
-        PseudoNestedType::None;              // if its within a pseudoknot band or outside of it.
+    LoopType loop_type = LoopType::Unknown;                          // Type of this loop.
+    PseudoNestedType pseudo_type = PseudoNestedType::NotApplicable;  // if in pseudoknot band or not
     int exclusive_unpaired_bases_count = 0;  // Unpaired bases only in this loop.
     int total_unpaired_bases_count = 0;      // Unpaired bases in loop + nested children.
 

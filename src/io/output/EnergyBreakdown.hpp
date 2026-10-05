@@ -5,7 +5,6 @@
 #include "preprocessing/ProcessedRNAEntry.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -33,6 +32,9 @@ class EnergyBreakdown {
 
         // ViennaRNA uses at least 3 characters for indices.
         const std::size_t idx_w = std::max<std::size_t>(3, std::to_string(rna_entry.size()).size());
+
+        // All energies are right-aligned to the same ending column.
+        constexpr int ENERGY_WIDTH = 8;
 
         // ------------------------------------------------------------
         // Build loop details
@@ -91,12 +93,12 @@ class EnergyBreakdown {
         // ------------------------------------------------------------
         // Energy
         // ------------------------------------------------------------
-        out << ": " << color(ANSI_COLOR_GREEN);
+        out << ": " << color(ANSI_COLOR_GREEN) << std::right << std::setw(ENERGY_WIDTH);
 
         if (node->is_inf) {
-            out << std::right << std::setw(5) << "INF";
+            out << "INF";
         } else {
-            out << std::right << std::setw(5) << node->energy;
+            out << node->energy;
         }
 
         out << color(ANSI_COLOR_RESET) << '\n';
@@ -120,29 +122,66 @@ class EnergyBreakdown {
             // --------------------------------------------------------
             // Pseudoknot-level energy
             // --------------------------------------------------------
-            out << "    " << color(ANSI_COLOR_BLUE) << pk_label << color(ANSI_COLOR_RESET);
+            out << "  " << color(ANSI_COLOR_MAGENTA) << pk_label << color(ANSI_COLOR_RESET);
 
-            const std::size_t pk_visible_width = 4 + pk_label.size();
+            const std::size_t pk_visible_width = 2 + pk_label.size();
 
             if (pk_visible_width < band_description_width) {
                 out << std::string(band_description_width - pk_visible_width, ' ');
             }
 
-            out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(5)
-                << std::llround(node->pk_level_energy) << color(ANSI_COLOR_RESET) << '\n';
+            out << ": " << color(ANSI_COLOR_MAGENTA) << std::right << std::setw(ENERGY_WIDTH)
+                << node->pk_level_energy << color(ANSI_COLOR_RESET) << '\n';
 
             // --------------------------------------------------------
             // Bands
             // --------------------------------------------------------
             for (std::size_t band_idx = 0; band_idx < node->bands.size(); ++band_idx) {
                 const Band& band = node->bands[band_idx];
+                const std::vector<PKBasePair>& bps = band.base_pairs();
 
-                out << "  " << color(ANSI_COLOR_BLUE) << "Band " << band_idx + 1
+                double band_energy = 0.0;
+                bool band_is_inf = false;
+
+                for (const PKBasePair& bp : bps) {
+                    if (bp.is_inf) {
+                        band_is_inf = true;
+                    } else {
+                        band_energy += bp.energy;
+                    }
+                }
+
+                // ----------------------------------------------------
+                // Band heading
+                // ----------------------------------------------------
+                out << "  " << color(ANSI_COLOR_BLUE_B) << "Band " << band_idx + 1
                     << color(ANSI_COLOR_RESET) << " (" << band.left_border() + 1 << ", "
                     << band.left_inner() + 1 << ", " << band.right_inner() + 1 << ", "
                     << band.right_border() + 1 << ")\n";
 
-                const std::vector<PKBasePair>& bps = band.base_pairs();
+                // ----------------------------------------------------
+                // Band sum
+                // ----------------------------------------------------
+                const std::string band_sum_label = "Band sum";
+
+                out << "    " << color(ANSI_COLOR_MAGENTA) << band_sum_label
+                    << color(ANSI_COLOR_RESET);
+
+                const std::size_t band_sum_visible_width = 4 + band_sum_label.size();
+
+                if (band_sum_visible_width < band_description_width) {
+                    out << std::string(band_description_width - band_sum_visible_width, ' ');
+                }
+
+                out << ": " << color(ANSI_COLOR_MAGENTA) << std::right << std::setw(ENERGY_WIDTH);
+
+                if (band_is_inf) {
+                    out << "INF";
+                } else {
+                    out << band_energy;
+                }
+
+                out << color(ANSI_COLOR_RESET) << '\n';
 
                 // ----------------------------------------------------
                 // Base pairs in this band
@@ -191,7 +230,7 @@ class EnergyBreakdown {
                         out << std::string(band_description_width - bp_visible_width, ' ');
                     }
 
-                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(7);
+                    out << ": " << color(ANSI_COLOR_GRAY) << std::right << std::setw(ENERGY_WIDTH);
 
                     if (bp.is_inf) {
                         out << "INF";
