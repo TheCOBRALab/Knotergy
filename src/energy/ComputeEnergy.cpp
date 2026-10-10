@@ -20,7 +20,9 @@ void ComputeEnergy::process_tree(LoopNode& root, VerbosityLevel verbosity) {
         stack.pop_back();
 
         energy_ += process_node(*node);
-        std::cout << EnergyBreakdown::node_energy_breakdown(node, pRNA_, verbosity);
+        if (verbosity != VerbosityLevel::Quiet) {
+            std::cout << EnergyBreakdown::node_energy_breakdown(node, pRNA_, verbosity);
+        }
 
         for (auto it = node->children.rbegin(); it != node->children.rend(); ++it) {
             stack.push_back(*it);

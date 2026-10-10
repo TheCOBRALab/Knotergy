@@ -11,6 +11,7 @@
 #include "preprocessing/RNAEntry.hpp"
 #include "utils/common.hpp"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <exception>
@@ -34,6 +35,22 @@ knotergy::all_mod_params load_modified_params(const knotergy::CliArgs& args) {
     return knotergy::ModParams::load_modified_params(args.mod_param_paths);
 }
 
+struct EnergyResult {
+    double energy = 0.0;
+    bool infinite_energy = false;
+    std::exception_ptr error;
+};
+
+EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CliArgs& args,
+                            knotergy::vrna_md_param& vp, const knotergy::pk_param& pkp,
+                            const knotergy::all_mod_params& mp) {
+    const knotergy::ProcessedRNAEntry processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
+    knotergy::LoopFactory factory(processed_rna);
+    knotergy::ComputeEnergy calculator(factory.get_root_node(), processed_rna, vp, pkp, mp,
+                                      args.pk_dangles, args.efn2_correction, args.verbosity);
+    return {calculator.getEnergy(), calculator.getInfiniteEnergyFlag(), {}};
+}
+
 void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CliArgs& args) {
     std::cout << "\n--------- Name: " << rna.name << " ---------" << '\n';
     if (args.show_input) {
@@ -42,20 +59,20 @@ void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CliAr
     }
 }
 
-void print_results(const knotergy::ComputeEnergy& energy_calculator, const bool use_color) {
-    if (energy_calculator.getInfiniteEnergyFlag()) {
+void print_results(const EnergyResult& result, const bool use_color) {
+    if (result.infinite_energy) {
         if (use_color) {
             printf("\nENERGY:%s Infinite (%.4f kcal/mol)%s\n", ANSI_COLOR_RED,
-                   energy_calculator.getEnergy(), ANSI_COLOR_RESET);
+                   result.energy, ANSI_COLOR_RESET);
         } else {
-            printf("\nENERGY: Infinite (%.4f kcal/mol)\n", energy_calculator.getEnergy());
+            printf("\nENERGY: Infinite (%.4f kcal/mol)\n", result.energy);
         }
     } else {
         if (use_color) {
-            printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, energy_calculator.getEnergy(),
+            printf("\nENERGY:%s %.4f kcal/mol%s\n", ANSI_COLOR_GREEN, result.energy,
                    ANSI_COLOR_RESET);
         } else {
-            printf("\nENERGY: %.4f kcal/mol\n", energy_calculator.getEnergy());
+            printf("\nENERGY: %.4f kcal/mol\n", result.energy);
         }
     }
 }
@@ -77,32 +94,37 @@ int run_knotergy(const knotergy::CliArgs& args) {
         knotergy::RNAInputManager::get_all_inputs(args.input_file, args.sequence, args.structure);
 
 #ifdef KNOTERGY_ENABLE_PARALLEL
-    int jobs = std::max(1, std::min(static_cast<int>(inputs.size()), args.jobs));
+    // Detailed breakdowns still use stdout, so evaluate verbose input serially.
+    const int jobs = args.verbosity == knotergy::VerbosityLevel::Quiet
+                         ? std::max(1, std::min(static_cast<int>(inputs.size()), args.jobs))
+                         : 1;
     if (jobs > 1) {
         std::cout << "Running in parallel with " << jobs << " threads\n";
+        std::vector<EnergyResult> results(inputs.size());
+
+#pragma omp parallel for num_threads(jobs) schedule(dynamic, 32)
+        for (std::size_t i = 0; i < inputs.size(); ++i) {
+            try {
+                results[i] = evaluate_entry(inputs[i], args, vp, pkp, mp);
+            } catch (...) {
+                results[i].error = std::current_exception();
+            }
+        }
+
+        // Workers compute; the main thread prints complete records in input order.
+        for (std::size_t i = 0; i < inputs.size(); ++i) {
+            print_per_entry_header(inputs[i], args);
+            if (results[i].error) std::rethrow_exception(results[i].error);
+            print_results(results[i], use_color);
+        }
+        return EXIT_SUCCESS;
     }
-
-#pragma omp parallel for num_threads(jobs)
-
 #endif
     // ------------------------- Main Processing Loop ----------------------------
     for (const knotergy::RNAEntry& rna : inputs) {
         print_per_entry_header(rna, args);
 
-        // Preprocess the RNA entry to compute pair_table, closed regions, etc.
-        const knotergy::ProcessedRNAEntry& processed_rna =
-            knotergy::RNAProcessor::process_rna(rna, mp);
-
-        // Build loop tree.
-        knotergy::LoopFactory factory(processed_rna);
-
-        // Compute the energy.
-        knotergy::ComputeEnergy energy_calculator(factory.get_root_node(), processed_rna, vp, pkp,
-                                                  mp, args.pk_dangles, args.efn2_correction,
-                                                  args.verbosity);
-
-        // Output results.
-        print_results(energy_calculator, use_color);
+        print_results(evaluate_entry(rna, args, vp, pkp, mp), use_color);
     }
 
     return EXIT_SUCCESS;
