@@ -37,9 +37,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
     switch (node.loop_type) {
         case LoopType::Stack:
             if (has_modified_bases_) {
-                node_energy = ModStack::find_mod_stack_energy(
-                    node.begin, node.end, node.children[0]->begin, node.children[0]->end, sequence_,
-                    mod_sequence_, vp_, mp_);
+                node_energy = ModStack::find_mod_stack_energy(node, pRNA_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::stack_energy(node, sequence_, vp_);
             }
@@ -56,16 +54,12 @@ double ComputeEnergy::process_node(LoopNode& node) {
 
         case LoopType::Internal:
             if (has_modified_bases_) {
-                node_energy = ModInternal::find_mod_internal_energy(
-                    node.begin, node.end, node.children[0]->begin, node.children[0]->end,
-                    mod_sequence_, sequence_, vp_, mp_);
+                node_energy = ModInternal::find_mod_internal_energy(node, pRNA_, vp_, mp_);
             } else {
                 node_energy = ViennaFunctions::internal_loop_energy(node, sequence_, vp_);
             }
             if (efn2_correction_) {
-                node_energy +=
-                    efn2_single_bulge_correction(node.begin, node.end, node.children[0]->begin,
-                                                 node.children[0]->end, sequence_, vp_);
+                node_energy += efn2_single_bulge_correction(node, sequence_, vp_);
             }
             break;
 

@@ -14,6 +14,8 @@ class ModInternal {
     static int find_mod_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                         const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
                                         const all_mod_params& mp);
+    static int find_mod_internal_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                        vrna_md_param& vp, const all_mod_params& mp);
 };
 
 }  // namespace knotergy

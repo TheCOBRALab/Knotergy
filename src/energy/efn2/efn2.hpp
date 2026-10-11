@@ -73,4 +73,15 @@ int efn2_single_bulge_correction(std::size_t i, std::size_t j, std::size_t ci, s
 
     return correction;
 }
+
+[[nodiscard]] int efn2_single_bulge_correction(const LoopNode& node, const std::string& sequence,
+                                               const vrna_md_param& vp) {
+    if (node.loop_type != LoopType::Internal || node.children.size() != 1) {
+        THROW_ERROR("efn2_single_bulge_correction can only be applied to single-bulge loops.");
+    }
+    const LoopNode* child = node.children[0];
+    return efn2_single_bulge_correction(node.begin, node.end, child->begin, child->end, sequence,
+                                        vp);
+}
+
 }  // namespace knotergy
