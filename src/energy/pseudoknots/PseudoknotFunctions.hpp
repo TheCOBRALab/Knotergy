@@ -38,6 +38,11 @@ class PseudoknotFunctions {
                                                   const pk_param& pkp, bool& is_inf,
                                                   const bool pk_dangles = false);
 
+    [[nodiscard]] static DangleSet get_pk_dangle_set(
+        const LoopNode& node, const ProcessedRNAEntry& processed_rna,
+        const std::vector<PKBasePair*>& pk_base_pair_table, vrna_md_param& vp,
+        const all_mod_params& mp);
+
    private:
     [[nodiscard]] static double get_pk_energy(LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,

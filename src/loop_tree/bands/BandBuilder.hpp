@@ -22,15 +22,18 @@ class BandBuilder {
      * @param rb Right border position.
      * @param pair_table Base-pair index mapping for the structure.
      * @param node_table Vector of pointers to LoopNode objects for each position in the structure.
+     * @param pk_base_pair_table Vector of pointers to PKBasePair objects for pseudoknot base pairs.
      * @throws DetailedException if band structure is invalid.
      */
     static Band construct_band(std::size_t lb, std::size_t li, std::size_t ri, std::size_t rb,
                                const std::vector<std::size_t>& pair_table,
-                               const std::vector<LoopNode*>& node_table);
+                               const std::vector<LoopNode*>& node_table,
+                               std::vector<PKBasePair*>& pk_base_pair_table);
 
     // Convenience method (BandBounds stores lb, li, ri, rb)
     static Band construct_band(BandBounds bounds, const std::vector<std::size_t>& pair_table,
-                               const std::vector<LoopNode*>& node_table);
+                               const std::vector<LoopNode*>& node_table,
+                               std::vector<PKBasePair*>& pk_base_pair_table);
 
    private:
     /**
@@ -44,6 +47,7 @@ class BandBuilder {
      * @param ri Right inner position.
      * @param rb Right border position.
      * @param pair_table Base-pair index mapping for the structure.
+     * @param node_table Vector of pointers to LoopNode objects for each position in the structure.
      * @param child_count Reference to the count of child nodes.
      * @return Vector of PKBasePair objects representing the base pairs in the band.
      *
@@ -74,8 +78,10 @@ class BandBuilder {
      * based on its relationship with the next base pair and any nested children.
      *
      * @param base_pairs Vector of PKBasePair objects to assign loop types to.
+     * @param pk_base_pair_table Vector of pointers to PKBasePair objects.
      */
-    static void assign_loop_types(std::vector<PKBasePair>& base_pairs);
+    static void assign_loop_types(std::vector<PKBasePair>& base_pairs,
+                                  std::vector<PKBasePair*>& pk_base_pair_table);
 };
 
 }  // namespace knotergy

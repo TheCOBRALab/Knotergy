@@ -257,6 +257,18 @@ class ModBaseUtils {
         }
     }
 
+    [[nodiscard]] static int get_dangle5_energy(LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
+        return get_dangle5_energy(node.begin, node.end, pRNA, vp, mp, is_closing);
+    }
+
+    [[nodiscard]] static int get_dangle5_energy(PKBasePair& pk_pair, const ProcessedRNAEntry& pRNA,
+                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
+        return get_dangle5_energy(pk_pair.i, pk_pair.j, pRNA, vp, mp, is_closing);
+    }
+
     [[nodiscard]] static int get_dangle3_mod_energy(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         const all_mod_params& mp, bool is_closing = false) {
@@ -293,6 +305,18 @@ class ModBaseUtils {
             int n3d_unmod_energy = vp.p->dangle3[pair_type][n3d];
             return n3d_unmod_energy;
         }
+    }
+
+    [[nodiscard]] static int get_dangle3_energy(LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
+        return get_dangle3_energy(node.begin, node.end, pRNA, vp, mp, is_closing);
+    }
+
+    [[nodiscard]] static int get_dangle3_energy(PKBasePair& pk_pair, const ProcessedRNAEntry& pRNA,
+                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
+        return get_dangle3_energy(pk_pair.i, pk_pair.j, pRNA, vp, mp, is_closing);
     }
 
     [[nodiscard]] static int get_terminalAU_mod_energy(

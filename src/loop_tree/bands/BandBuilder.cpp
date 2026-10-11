@@ -6,7 +6,8 @@ namespace knotergy {
 
 Band BandBuilder::construct_band(std::size_t lb, std::size_t li, std::size_t ri, std::size_t rb,
                                  const std::vector<std::size_t>& pair_table,
-                                 const std::vector<LoopNode*>& node_table) {
+                                 const std::vector<LoopNode*>& node_table,
+                                 std::vector<PKBasePair*>& pk_base_pair_table) {
     // ------------- Validate band structure and pairing -------------
     if (lb >= pair_table.size() || li >= pair_table.size() || ri >= pair_table.size() ||
         rb >= pair_table.size()) {
@@ -33,15 +34,16 @@ Band BandBuilder::construct_band(std::size_t lb, std::size_t li, std::size_t ri,
         find_base_pairs_left_scan(lb, li, ri, rb, pair_table, node_table, child_count);
     populate_right_arm_children(base_pairs, ri, rb, node_table, child_count);
 
-    assign_loop_types(base_pairs);
+    assign_loop_types(base_pairs, pk_base_pair_table);
 
     return Band(lb, li, ri, rb, std::move(base_pairs), child_count);
 }
 
 Band BandBuilder::construct_band(BandBounds bounds, const std::vector<std::size_t>& pair_table,
-                                 const std::vector<LoopNode*>& node_table) {
+                                 const std::vector<LoopNode*>& node_table,
+                                 std::vector<PKBasePair*>& pk_base_pair_table) {
     return construct_band(bounds.left_border, bounds.left_inner, bounds.right_inner,
-                          bounds.right_border, pair_table, node_table);
+                          bounds.right_border, pair_table, node_table, pk_base_pair_table);
 }
 
 std::vector<PKBasePair> BandBuilder::find_base_pairs_left_scan(
@@ -125,10 +127,13 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
     }
 };
 
-void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs) {
+void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs,
+                                    std::vector<PKBasePair*>& pk_base_pair_table) {
     for (std::size_t idx = 0; idx + 1 < base_pairs.size(); ++idx) {
         PKBasePair& bp = base_pairs[idx];
         PKBasePair& next_bp = base_pairs[idx + 1];
+        pk_base_pair_table[bp.i] = &bp;
+        pk_base_pair_table[bp.j] = &bp;
 
         if (bp.is_stack(next_bp)) {
             bp.loop_type = LoopType::Stack;
@@ -139,6 +144,8 @@ void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs) {
         }
     }
 
+    pk_base_pair_table[base_pairs.back().i] = &base_pairs.back();
+    pk_base_pair_table[base_pairs.back().j] = &base_pairs.back();
     base_pairs.back().loop_type = LoopType::InnermostBP;
 }
 

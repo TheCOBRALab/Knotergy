@@ -47,7 +47,7 @@ EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CliAr
     const knotergy::ProcessedRNAEntry processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
     knotergy::LoopFactory factory(processed_rna);
     knotergy::ComputeEnergy calculator(factory.get_root_node(), processed_rna, vp, pkp, mp,
-                                      args.pk_dangles, args.efn2_correction, args.verbosity);
+                                       args.pk_dangles, args.efn2_correction, args.verbosity);
     return {calculator.getEnergy(), calculator.getInfiniteEnergyFlag(), {}};
 }
 
@@ -62,8 +62,8 @@ void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CliAr
 void print_results(const EnergyResult& result, const bool use_color) {
     if (result.infinite_energy) {
         if (use_color) {
-            printf("\nENERGY:%s Infinite (%.4f kcal/mol)%s\n", ANSI_COLOR_RED,
-                   result.energy, ANSI_COLOR_RESET);
+            printf("\nENERGY:%s Infinite (%.4f kcal/mol)%s\n", ANSI_COLOR_RED, result.energy,
+                   ANSI_COLOR_RESET);
         } else {
             printf("\nENERGY: Infinite (%.4f kcal/mol)\n", result.energy);
         }

@@ -47,7 +47,8 @@ class BandFinder {
                                                       LoopType loop_type,
                                                       std::vector<PairedBaseNode>& aux_bands,
                                                       const std::vector<std::size_t>& pair_table,
-                                                      const std::vector<LoopNode*>& node_table);
+                                                      const std::vector<LoopNode*>& node_table,
+                                                      std::vector<PKBasePair*>& pk_base_pair_table);
 
     /**
      * @brief Find all bands for a given loop node.
@@ -61,7 +62,8 @@ class BandFinder {
     [[nodiscard]] static std::vector<Band> find_bands(const LoopNode& node,
                                                       std::vector<PairedBaseNode>& aux_bands,
                                                       const ProcessedRNAEntry& processed_rna,
-                                                      const std::vector<LoopNode*>& node_table);
+                                                      const std::vector<LoopNode*>& node_table,
+                                                      std::vector<PKBasePair*>& pk_base_pair_table);
 
    private:
     /**

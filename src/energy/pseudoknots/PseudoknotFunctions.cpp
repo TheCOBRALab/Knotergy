@@ -1,7 +1,10 @@
 #include "PseudoknotFunctions.hpp"
 
+#include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
+#include "loop_tree/LoopFactory.hpp"
+#include "utils/common.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -46,6 +49,35 @@ double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntr
     double loop_energies = compute_loop_energies(node, processed_rna, vp, mp, pkp, is_inf);
 
     return round_energy(node.pk_level_energy + loop_energies, pkp.round);
+}
+
+DangleSet PseudoknotFunctions::get_pk_dangle_set(const LoopNode& node,
+                                                 const ProcessedRNAEntry& processed_rna,
+                                                 const std::vector<PKBasePair*>& pk_base_pair_table,
+                                                 vrna_md_param& vp, const all_mod_params& mp) {
+    // Implementation for getting the dangle set for a pseudoknot
+    if (node.loop_type != LoopType::Pseudoknot) {
+        THROW_ERROR("get_pk_dangle_set called on a non-pseudoknot loop node.");
+    }
+
+    LoopType parent_loop_type = node.parent->loop_type;
+
+    if (parent_loop_type != LoopType::Multibranch && parent_loop_type != LoopType::External) {
+        THROW_ERROR(
+            "get_pk_dangle_set called on a pseudoknot loop node with an invalid parent loop type.");
+    }
+
+    bool is_external = (parent_loop_type == LoopType::External);
+    int b = is_external ? 0 : vp.p->MLintern[1];
+
+    PKBasePair* first_base_pair = pk_base_pair_table[node.begin];
+    PKBasePair* last_base_pair = pk_base_pair_table[node.end];
+
+    int n5d_energy = ModBaseUtils::get_dangle5_energy(*first_base_pair, processed_rna, vp, mp);
+    int n3d_energy = ModBaseUtils::get_dangle3_energy(*last_base_pair, processed_rna, vp, mp);
+    int both_dangle_energy = n5d_energy + n3d_energy;
+
+    return DangleSet(b, n5d_energy + b, n3d_energy + b, both_dangle_energy + b);
 }
 
 int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
@@ -154,26 +186,54 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
                                                vrna_md_param& vp, const all_mod_params& mp) {
     double energy = 0;
+    int dangles = vp.md.dangles;
+    const std::vector<std::size_t>& pair_table = processed_rna.get_pair_table();
 
     for (const Band& band : node.bands) {
         std::size_t i = band.left_border();
         std::size_t j = band.right_border();
 
-        if (i == node.begin || j == node.end) {
-            // If the band is at the edge of the loop, skip it. This will be handled by the
-            // multiloop or external loop energy calculation.
-            continue;
-        }
-
         auto [n5d, n3d] = ViennaUtils::encode_outer_dangles(i, j, processed_rna, vp.md);
 
-        if (n5d && n3d) {
-            energy += ModBaseUtils::get_mismatch_energy(i, j, processed_rna, vp, mp);
-        } else if (n5d) {
-            energy += ModBaseUtils::get_dangle5_energy(i, j, processed_rna, vp, mp);
-        } else if (n3d) {
-            energy += ModBaseUtils::get_dangle3_energy(i, j, processed_rna, vp, mp);
+        int d5_energy = 0;
+        int d3_energy = 0;
+
+        if (i == node.begin) {
+            n5d = -1;
+        } else if (j == node.end) {
+            n3d = -1;
         }
+
+        if (n5d) {
+            d5_energy = ModBaseUtils::get_dangle5_energy(i, j, processed_rna, vp, mp);
+        } else if (n3d) {
+            d3_energy = ModBaseUtils::get_dangle3_energy(i, j, processed_rna, vp, mp);
+        }
+
+        // Dangle energy for dangle 1 and 3
+        if (dangles != 0 && dangles != 2) {
+            int left_bp_d3_energy = 0;
+            int right_bp_d5_energy = 0;
+            if (pair_table[i - 1] != NULL_INDEX) {
+                left_bp_d3_energy = 0;
+            } else if (pair_table[j + 1] != NULL_INDEX) {
+                right_bp_d5_energy = 0;
+            } else if (pair_table[i - 2] != NULL_INDEX && (pair_table[i - 2] < i - 2)) {
+                left_bp_d3_energy = ModBaseUtils::get_dangle3_energy(pair_table[i - 2], i - 2,
+                                                                     processed_rna, vp, mp);
+            } else if (pair_table[j + 2] != NULL_INDEX && (pair_table[j + 2] > j + 2)) {
+                right_bp_d5_energy = ModBaseUtils::get_dangle5_energy(j + 2, pair_table[j + 2],
+                                                                      processed_rna, vp, mp);
+            }
+
+            if (d5_energy <= left_bp_d3_energy) {
+                d5_energy = 0;
+            }
+            if (d3_energy < right_bp_d5_energy) {
+                d3_energy = 0;
+            }
+        }
+        energy += d5_energy + d3_energy;
     }
 
     return energy;

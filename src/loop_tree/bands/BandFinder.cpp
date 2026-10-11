@@ -8,7 +8,8 @@ namespace knotergy {
 std::vector<Band> BandFinder::find_bands(std::size_t cr_start, std::size_t cr_end,
                                          LoopType loop_type, std::vector<PairedBaseNode>& aux_bands,
                                          const std::vector<std::size_t>& pair_table,
-                                         const std::vector<LoopNode*>& node_table) {
+                                         const std::vector<LoopNode*>& node_table,
+                                         std::vector<PKBasePair*>& pk_base_pair_table) {
     // sanity check bounds
     if (cr_end >= pair_table.size()) THROW_ERROR("Right bound exceeds the size of structure.");
 
@@ -53,7 +54,8 @@ std::vector<Band> BandFinder::find_bands(std::size_t cr_start, std::size_t cr_en
 
         // Create the band and add to list
         BandBounds bounds{band_start, left_inner, right_inner, band_end};
-        bands.push_back(BandBuilder::construct_band(bounds, pair_table, node_table));
+        bands.push_back(
+            BandBuilder::construct_band(bounds, pair_table, node_table, pk_base_pair_table));
 
         band_start = aux_bands[left_inner].next;
     }
@@ -64,9 +66,10 @@ std::vector<Band> BandFinder::find_bands(std::size_t cr_start, std::size_t cr_en
 std::vector<Band> BandFinder::find_bands(const LoopNode& node,
                                          std::vector<PairedBaseNode>& aux_bands,
                                          const ProcessedRNAEntry& processed_rna,
-                                         const std::vector<LoopNode*>& node_table) {
+                                         const std::vector<LoopNode*>& node_table,
+                                         std::vector<PKBasePair*>& pk_base_pair_table) {
     return find_bands(node.begin, node.end, node.loop_type, aux_bands,
-                      processed_rna.get_pair_table(), node_table);
+                      processed_rna.get_pair_table(), node_table, pk_base_pair_table);
 }
 
 // Extends the stem to find inner band positions

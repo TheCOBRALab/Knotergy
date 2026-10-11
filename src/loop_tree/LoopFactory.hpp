@@ -50,6 +50,9 @@ class LoopFactory {
      */
     void print_tree(const LoopNode* node, std::size_t depth, bool debug = false) const;
 
+    const std::vector<LoopNode*>& get_node_table() { return node_table_; }
+    const std::vector<PKBasePair*>& get_pk_base_pair_table() { return pk_base_pair_table_; }
+
    private:
     const ProcessedRNAEntry& pRNA_;
     std::vector<LoopNode> nodes_;  ///< Root node of the loop tree (external loop).
@@ -57,6 +60,8 @@ class LoopFactory {
     std::size_t structure_length_;
     std::vector<PairedBaseNode> aux_bands_;  ///< Auxiliary structure for band finder.
     std::vector<LoopNode*> node_table_;      ///< All nodes indexed by their begin and end positions
+    std::vector<PKBasePair*>
+        pk_base_pair_table_;  ///< All base pairs in pseudoknots (for dangle calculations).
 
     /**
      * @brief Constructs a hierarchical tree of loop regions from a list of closed regions.

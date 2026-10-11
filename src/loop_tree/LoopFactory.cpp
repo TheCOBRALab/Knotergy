@@ -91,8 +91,12 @@ void LoopFactory::populate_node(LoopNode& node) {
         if (aux_bands_.empty()) {
             aux_bands_.resize(pRNA_.get_structure().size());
         }
+        if (pk_base_pair_table_.empty()) {
+            pk_base_pair_table_.resize(pRNA_.size(), nullptr);
+        }
 
-        node.bands = BandFinder::find_bands(node, aux_bands_, pRNA_, node_table_);
+        node.bands =
+            BandFinder::find_bands(node, aux_bands_, pRNA_, node_table_, pk_base_pair_table_);
         node.total_number_of_base_pairs = count_total_base_pairs(node);
         pseudo_nested_check(node);
     }
