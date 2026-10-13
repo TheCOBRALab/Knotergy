@@ -57,6 +57,8 @@ struct PKBasePair {
     std::size_t j;
     std::vector<ClosedRegion> children;
     LoopType loop_type = LoopType::Unknown;
+    PKBasePair* parent = nullptr;
+    PKBasePair* next = nullptr;
     double energy = 0.0;
     bool is_inf = false;
 

@@ -129,11 +129,15 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
 
 void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs,
                                     std::vector<PKBasePair*>& pk_base_pair_table) {
+    PKBasePair& prev_bp = base_pairs[0];
     for (std::size_t idx = 0; idx + 1 < base_pairs.size(); ++idx) {
         PKBasePair& bp = base_pairs[idx];
         PKBasePair& next_bp = base_pairs[idx + 1];
         pk_base_pair_table[bp.i] = &bp;
         pk_base_pair_table[bp.j] = &bp;
+
+        bp.parent = &prev_bp;
+        prev_bp.next = &bp;
 
         if (bp.is_stack(next_bp)) {
             bp.loop_type = LoopType::Stack;

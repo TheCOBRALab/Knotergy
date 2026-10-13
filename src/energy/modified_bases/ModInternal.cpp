@@ -40,9 +40,10 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
         case 0:
             if (nl == 1) {
                 // // This is a bulge of size 1, so we can use the modified stack energy function
-                // int unmod_stack_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
-                // int mod_stack_energy =
-                //     ModStack::find_mod_stack_energy(i, j, ci, cj, sequence, mod_sequence, vp, mp);
+                // int unmod_stack_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence,
+                // vp); int mod_stack_energy =
+                //     ModStack::find_mod_stack_energy(i, j, ci, cj, sequence, mod_sequence, vp,
+                //     mp);
                 // e += mod_stack_energy - unmod_stack_energy;
             } else {
                 if (type1 > 2) {
