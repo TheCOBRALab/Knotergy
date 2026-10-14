@@ -73,7 +73,7 @@ double ComputeEnergy::process_node(LoopNode& node) {
 
         case LoopType::Pseudoknot:
             node_energy = PseudoknotFunctions::pseudoknot_energy(node, pRNA_, vp_, mp_, pkp_,
-                                                                 is_inf, pk_dangles_);
+                                                                 is_inf, pk_dangles_, pk_model_);
             break;
 
         case LoopType::External:

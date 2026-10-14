@@ -101,6 +101,7 @@ void print_help() {
               << "  -j, --jobs <n>                        Number of parallel jobs (default: 1)\n"
               << "  -P, --paramFile <file>                Parameter file\n"
               << "  -k, --pk-paramFile <file>             Pseudoknot parameter file\n"
+              << "      --pk-model <dp|efn2>              Pseudoknot model (default: dp)\n"
               << "  -m, --mod-params <none|path|file>     Directory containing modified base "
                  "parameter files\n"
               << "  -T, --temp <temperature>              Temperature in Celsius (default: 37)\n"
@@ -149,6 +150,19 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
 
         } else if (arg == "-k" || arg == "--pk-paramFile") {
             if (!take_value(i, argc, argv, out.pseudo_param_file)) return ParseStatus::ExitFailure;
+
+        } else if (arg == "--pk-model") {
+            std::string model;
+            if (!take_value(i, argc, argv, model)) return ParseStatus::ExitFailure;
+            if (model == "dp") {
+                out.pk_model = PseudoknotModel::DirksPierce;
+            } else if (model == "efn2") {
+                out.pk_model = PseudoknotModel::Efn2Polymer;
+            } else {
+                std::cerr << ERROR << " Invalid pseudoknot model: " << model
+                          << ". Choose dp or efn2.\n";
+                return ParseStatus::ExitFailure;
+            }
 
         } else if (arg == "-j" || arg == "--jobs") {
             if (!take_int_value(i, argc, argv, out.jobs)) return ParseStatus::ExitFailure;

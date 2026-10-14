@@ -31,7 +31,8 @@ class OutputManager {
 
     static void print_parameter_report(const vrna_md_param& vienna_params,
                                        const pk_param& pk_params, const all_mod_params& mp,
-                                       bool efn2_correction) {
+                                       bool efn2_correction,
+                                       PseudoknotModel pk_model = PseudoknotModel::DirksPierce) {
         constexpr int W = 18;
 
         print_version();
@@ -44,9 +45,14 @@ class OutputManager {
                   << "ViennaRNA:" << vienna_params.get_source_info().resolved_name
                   << " (Dangle Model: " << vienna_params.md.dangles << ")\n";
 
-        std::cout << std::left << std::setw(W) << "Pseudoknot:" << pk_params.name
-                  << " (Round Method: " << static_cast<int>(pk_params.round) << " ("
-                  << pk_params.round << "))\n";
+        if (pk_model == PseudoknotModel::Efn2Polymer) {
+            std::cout << std::left << std::setw(W) << "Pseudoknot:"
+                      << "efn2 polymer (hardcoded P1=0.35, P2=0.65 kcal/mol)\n";
+        } else {
+            std::cout << std::left << std::setw(W) << "Pseudoknot:" << pk_params.name
+                      << " (Round Method: " << static_cast<int>(pk_params.round) << " ("
+                      << pk_params.round << "))\n";
+        }
 
         std::cout << std::left << std::setw(W)
                   << "Modified bases:" << std::to_string(mp.size()) + " loaded"

@@ -180,6 +180,28 @@ Use `-e` or `--round` to control rounding of **individual pseudoknot stacking an
 
 Without `-e`, no rounding is applied. Using `-e` without a value selects Banker's rounding.
 
+### Polymer pseudoknot model
+
+Use `--pk-model efn2` to count ShapeKnots/efn2 polymer features from each pseudoknot node
+and apply its polymer penalty with hardcoded parameters. Band stacking and internal-loop
+energies are unscaled, and band multiloops use ViennaRNA multiloop parameters.
+
+```sh
+./build/Knotergy -s GGGAAAAGGGAAAACCCAAAACCC -r "(((....[[[....)))....]]]" --pk-model efn2 -v2
+```
+
+Detailed output (`-v2`) includes SS, NE and spanning-helix counts. The default model is
+`--pk-model dp`; `-k` and `-e` apply to that model. Polymer penalties are summed independently
+for each closed region. Other RNAstructure corrections and efn2's full retained/removed-helix
+energy decomposition are not included in this mode.
+
+The counter uses the parsed node directly: SS starts with its unpaired count, with
+single-base bulges absorbed into helices; IL[n] counts helix segments of n pairs in its
+bands; and each ordinary child contributes one NE. Larger gaps and branches split helices.
+For a pseudoknotted child, select the noncrossing bands that retain the most pairs,
+preferring the earlier opening band on ties. Its surviving outer helices contribute NE;
+positions outside them contribute SS, including removed pair endpoints.
+
 ---
 
 ## Command-line options

@@ -32,11 +32,10 @@ class PseudoknotFunctions {
      * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @return Total pseudoknot energy in centicalories.
      */
-    [[nodiscard]] static double pseudoknot_energy(LoopNode& node,
-                                                  const ProcessedRNAEntry& processed_rna,
-                                                  vrna_md_param& vp, const all_mod_params& mp,
-                                                  const pk_param& pkp, bool& is_inf,
-                                                  const bool pk_dangles = false);
+    [[nodiscard]] static double pseudoknot_energy(
+        LoopNode& node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
+        const all_mod_params& mp, const pk_param& pkp, bool& is_inf, const bool pk_dangles = false,
+        PseudoknotModel model = PseudoknotModel::DirksPierce);
 
     [[nodiscard]] static DangleSet get_pk_dangle_set(
         const LoopNode& node, const ProcessedRNAEntry& processed_rna,

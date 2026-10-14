@@ -36,6 +36,7 @@ struct CliArgs {
     int dangle = 2;
     int round_value = 0;  // 0 means no rounding; see RoundMethod.
     int jobs = 1;         // Number of parallel jobs to run. Default is 1
+    PseudoknotModel pk_model = PseudoknotModel::DirksPierce;
 
     // Behaviour.
     VerbosityLevel verbosity = VerbosityLevel::Quiet;

@@ -1,5 +1,6 @@
 #include "PseudoknotFunctions.hpp"
 
+#include "energy/efn2/Efn2Pseudoknot.hpp"
 #include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
@@ -15,10 +16,24 @@ double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
                                               vrna_md_param& vp, const all_mod_params& mp,
                                               const pk_param& pkp, bool& is_inf,
-                                              const bool pk_dangles) {
+                                              const bool pk_dangles, PseudoknotModel model) {
     // Where most of the energy calculations are done
     // Populate the breakdown with all the energies and information for reporting
-    double energy = get_pk_energy(node, processed_rna, vp, mp, pkp, is_inf);
+    double energy;
+    if (model == PseudoknotModel::Efn2Polymer) {
+        node.efn2_features = get_efn2_features(node);
+        node.pk_level_energy = efn2_pk_penalty(*node.efn2_features);
+
+        // Reuse the band evaluator with unscaled nearest-neighbor energies and
+        // Vienna multiloop parameters. No Dirks-Pierce coefficients enter this mode.
+        const pk_param nn_params("efn2 polymer", 0, 0, 0, 0, 0, 0, 1.0, 1.0, vp.p->MLclosing,
+                                 vp.p->MLintern[1], vp.p->MLbase, RoundMethod::None);
+        energy = node.pk_level_energy +
+                 compute_loop_energies(node, processed_rna, vp, mp, nn_params, is_inf);
+    } else {
+        node.efn2_features.reset();
+        energy = get_pk_energy(node, processed_rna, vp, mp, pkp, is_inf);
+    }
 
     // WIP, will add dangles to get_pk_energy once implementation is complete
     if (pk_dangles) {
@@ -320,7 +335,7 @@ double PseudoknotFunctions::round_energy(double energy, RoundMethod round) {
         case RoundMethod::RoundToNearest: return std::round(energy);  // round to nearest integer
         case RoundMethod::RoundDown:      return std::floor(energy);  // round down
         case RoundMethod::RoundUp:        return std::ceil(energy);   // round up
-        case RoundMethod::Truncate:       return std::trunc(energy);        // truncate
+        case RoundMethod::Truncate:       return std::trunc(energy);  // truncate
         default:
             THROW_ERROR("Invalid round value: " + std::to_string(static_cast<int>(round)) +
                         ". Valid values are 0 (None), 1 (Bankers), 2 (RoundToNearest), 3 "

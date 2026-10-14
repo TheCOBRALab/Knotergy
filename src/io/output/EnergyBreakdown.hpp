@@ -107,6 +107,16 @@ class EnergyBreakdown {
         // Detailed pseudoknot band breakdown
         // ------------------------------------------------------------
         if (node->loop_type == LoopType::Pseudoknot && verbosity == VerbosityLevel::Detailed) {
+            if (node->efn2_features) {
+                const Efn2PkFeatures& features = *node->efn2_features;
+                out << "  Polymer features: SS=" << features.ss << ", NE=" << features.ne;
+                for (std::size_t n = 1; n < features.il.size(); ++n) {
+                    if (features.il[n] != 0) {
+                        out << ", IL[" << n << (n == 15 ? "+" : "") << "]=" << features.il[n];
+                    }
+                }
+                out << '\n';
+            }
             const std::string pk_label = "Pseudoknot-level energy (excludes bands)";
 
             // Longest band row:

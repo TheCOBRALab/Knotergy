@@ -129,17 +129,17 @@ void BandBuilder::populate_right_arm_children(std::vector<PKBasePair>& base_pair
 
 void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs,
                                     std::vector<PKBasePair*>& pk_base_pair_table) {
-    PKBasePair& prev_bp = base_pairs[0];
-    for (std::size_t idx = 0; idx + 1 < base_pairs.size(); ++idx) {
+    // The vector is finished growing before any links or lookup pointers are stored.
+    for (std::size_t idx = 0; idx < base_pairs.size(); ++idx) {
         PKBasePair& bp = base_pairs[idx];
-        PKBasePair& next_bp = base_pairs[idx + 1];
+        bp.parent = idx == 0 ? nullptr : &base_pairs[idx - 1];
+        bp.next = idx + 1 < base_pairs.size() ? &base_pairs[idx + 1] : nullptr;
         pk_base_pair_table[bp.i] = &bp;
         pk_base_pair_table[bp.j] = &bp;
 
-        bp.parent = &prev_bp;
-        prev_bp.next = &bp;
-
-        if (bp.is_stack(next_bp)) {
+        if (bp.next == nullptr) {
+            bp.loop_type = LoopType::InnermostBP;
+        } else if (bp.is_stack(*bp.next)) {
             bp.loop_type = LoopType::Stack;
         } else if (bp.children.empty()) {
             bp.loop_type = LoopType::Internal;
@@ -147,10 +147,6 @@ void BandBuilder::assign_loop_types(std::vector<PKBasePair>& base_pairs,
             bp.loop_type = LoopType::Multibranch;
         }
     }
-
-    pk_base_pair_table[base_pairs.back().i] = &base_pairs.back();
-    pk_base_pair_table[base_pairs.back().j] = &base_pairs.back();
-    base_pairs.back().loop_type = LoopType::InnermostBP;
 }
 
 }  // namespace knotergy

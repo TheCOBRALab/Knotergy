@@ -15,6 +15,8 @@ using json = nlohmann::json;
 
 namespace knotergy {
 
+enum class PseudoknotModel { DirksPierce, Efn2Polymer };
+
 [[nodiscard]] inline const std::string& default_pk_param_path() {
     static const std::string path =
         FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");

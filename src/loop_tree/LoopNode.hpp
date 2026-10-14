@@ -6,11 +6,21 @@
 #include "preprocessing/ClosedRegion.hpp"
 
 #include <algorithm>
+#include <array>
 #include <iomanip>
 #include <memory>
+#include <optional>
 #include <sstream>
 
 namespace knotergy {
+
+// Polymer geometry for one pseudoknot closed region. Spanning lengths >= 15
+// share bucket 15; single-pair segments are counted but carry no spanning penalty.
+struct Efn2PkFeatures {
+    int ss = 0;
+    int ne = 0;
+    std::array<int, 16> il{};
+};
 
 /**
  * @brief Represents a node in the loop tree of an RNA secondary structure.
@@ -56,6 +66,7 @@ struct LoopNode {
     int number_of_withinband_children = 0;   // Count of children within pseudoknot bands.
     int number_of_outsideband_children = 0;  // Count of nested children.
     int unpaired_outside_bands_count = 0;    // Count of unpaired bases outside pseudoknot bands.
+    std::optional<Efn2PkFeatures> efn2_features;  // Populated by the polymer energy model.
 };
 
 /**

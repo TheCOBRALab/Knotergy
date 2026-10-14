@@ -28,6 +28,8 @@ knotergy::vrna_md_param load_vienna_params(const knotergy::CliArgs& args) {
 }
 
 knotergy::pk_param load_pseudoknot_params(const knotergy::CliArgs& args) {
+    // Polymer parameters are hardcoded in Efn2Pseudoknot.cpp for now.
+    if (args.pk_model == knotergy::PseudoknotModel::Efn2Polymer) return knotergy::pk_param{};
     return knotergy::PseudoknotParams::load_pk_param(args.pseudo_param_file, args.round_method());
 }
 
@@ -47,7 +49,8 @@ EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CliAr
     const knotergy::ProcessedRNAEntry processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
     knotergy::LoopFactory factory(processed_rna);
     knotergy::ComputeEnergy calculator(factory.get_root_node(), processed_rna, vp, pkp, mp,
-                                       args.pk_dangles, args.efn2_correction, args.verbosity);
+                                       args.pk_dangles, args.efn2_correction, args.verbosity,
+                                       args.pk_model);
     return {calculator.getEnergy(), calculator.getInfiniteEnergyFlag(), {}};
 }
 
@@ -87,7 +90,8 @@ int run_knotergy(const knotergy::CliArgs& args) {
     const knotergy::all_mod_params mp = load_modified_params(args);
 
     // The header of knotergy which includes the breakdown of the parameters and settings
-    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, args.efn2_correction);
+    knotergy::OutputManager::print_parameter_report(vp, pkp, mp, args.efn2_correction,
+                                                    args.pk_model);
 
     // ------------------------- Reading Inputs From File -----------------------------
     const std::vector<knotergy::RNAEntry> inputs =

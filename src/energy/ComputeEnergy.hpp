@@ -32,11 +32,13 @@ class ComputeEnergy {
      * @param pk_dangles Whether to include pseudoknot dangle energy contributions (default: false).
      * @param efn2_correction Whether to apply the efn2 single-bulge correction (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
+     * @param pk_model Dirks-Pierce or the hardcoded efn2 polymer pseudoknot model.
      */
     ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
                   const knotergy::pk_param& pkp, const all_mod_params& mp = {},
                   bool pk_dangles = false, bool efn2_correction = false,
-                  VerbosityLevel verbose = VerbosityLevel::Quiet)
+                  VerbosityLevel verbose = VerbosityLevel::Quiet,
+                  PseudoknotModel pk_model = PseudoknotModel::DirksPierce)
         : root_node_{root_node},
           pRNA_{processed_rna},
           vp_{vp},
@@ -46,6 +48,7 @@ class ComputeEnergy {
           mod_sequence_{processed_rna.get_modified_sequence()},
           pk_dangles_{pk_dangles},
           efn2_correction_{efn2_correction},
+          pk_model_{pk_model},
           has_modified_bases_{processed_rna.has_modified_bases()} {
         process_tree(root_node_, verbose);
     };
@@ -70,7 +73,8 @@ class ComputeEnergy {
     bool infinite_energy_flag_ = false;  ///< True if any loop produces infinite energy
     bool pk_dangles_ = false;            ///< Include pseudoknot dangle energy contributions
     bool efn2_correction_ = false;       ///< Flag for efn2 single-bulge correction
-    bool has_modified_bases_ = false;    ///< True if the RNA sequence contains modified bases
+    PseudoknotModel pk_model_ = PseudoknotModel::DirksPierce;
+    bool has_modified_bases_ = false;  ///< True if the RNA sequence contains modified bases
 
     /**
      * @brief Process the entire loop tree and calculate energies.
