@@ -202,6 +202,10 @@ int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, u
                                        const bool is_closing) {
     int energy = vp.p->MLintern[type];
 
+    if (node.loop_type == LoopType::Pseudoknot) {
+        return vp.p->MLintern[1];  // Use the default type for pseudoknots.
+    }
+
     if (si1 >= 0 && sj1 >= 0) {
         int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp,
                                                            is_closing);

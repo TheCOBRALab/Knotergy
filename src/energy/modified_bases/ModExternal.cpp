@@ -81,10 +81,16 @@ int ModExternal::external_dangle_1_energy(const std::vector<LoopNode*>& children
 
     return energy;
 }
+
 int ModExternal::mod_exterior_stem(const LoopNode& node, int n5d, int n3d, unsigned int type,
                                    const std::vector<std::string_view>& mod_sequence,
                                    vrna_md_param& vp, const all_mod_params& mp) {
+    if (node.loop_type == LoopType::Pseudoknot) {
+        return 0;
+    }
+
     int energy = 0;
+
     if (n5d >= 0 && n3d >= 0) {
         int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp);
         energy += mod_mm != NULL_ENERGY ? mod_mm : vp.p->mismatchExt[type][n5d][n3d];
