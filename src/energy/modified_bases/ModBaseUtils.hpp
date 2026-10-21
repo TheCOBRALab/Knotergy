@@ -130,7 +130,8 @@ class ModBaseUtils {
      */
     [[nodiscard]] static int get_mod_energy(const std::string& key,
                                             const std::vector<std::string_view>& unique_mod_bases,
-                                            const all_mod_params& mp, ModLookup lookup_type) {
+                                            const all_mod_params& mp, ModLookup lookup_type,
+                                            double temperature = 37.0) {
         // If no modified bases are present, return the unmodified energy
         if (unique_mod_bases.empty()) {
             return NULL_ENERGY;
@@ -146,12 +147,28 @@ class ModBaseUtils {
             }
 
             const param_map* energy_lookup = nullptr;
+            const param_map* enthalpy_lookup = nullptr;
             switch (lookup_type) {
-                case ModLookup::Stacking:   energy_lookup = &param->stacking_energies(); break;
-                case ModLookup::TerminalAU: energy_lookup = &param->terminal_energies(); break;
-                case ModLookup::Mismatch:   energy_lookup = &param->mismatch_energies(); break;
-                case ModLookup::Dangle5:    energy_lookup = &param->dangle5_energies(); break;
-                case ModLookup::Dangle3:    energy_lookup = &param->dangle3_energies(); break;
+                case ModLookup::Stacking:
+                    energy_lookup = &param->stacking_energies();
+                    enthalpy_lookup = &param->stacking_enthalpies();
+                    break;
+                case ModLookup::TerminalAU:
+                    energy_lookup = &param->terminal_energies();
+                    enthalpy_lookup = &param->terminal_enthalpies();
+                    break;
+                case ModLookup::Mismatch:
+                    energy_lookup = &param->mismatch_energies();
+                    enthalpy_lookup = &param->mismatch_enthalpies();
+                    break;
+                case ModLookup::Dangle5:
+                    energy_lookup = &param->dangle5_energies();
+                    enthalpy_lookup = &param->dangle5_enthalpies();
+                    break;
+                case ModLookup::Dangle3:
+                    energy_lookup = &param->dangle3_energies();
+                    enthalpy_lookup = &param->dangle3_enthalpies();
+                    break;
                 default:
                     THROW_ERROR("Invalid ModLookup type: " +
                                 std::to_string(static_cast<int>(lookup_type)));
@@ -167,6 +184,14 @@ class ModBaseUtils {
                     // mod_energy
                     //           << " Diff: " << mod_energy - unmod_energy
                     //           << std::endl;
+                    if (enthalpy_lookup) {
+                        auto enthalpy_it = enthalpy_lookup->find(key);
+                        if (enthalpy_it != enthalpy_lookup->end()) {
+                            int h = static_cast<int>(enthalpy_it->second * 100);
+                            mod_energy = static_cast<int>(
+                                h - (h - mod_energy) * ((temperature + 273.15) / 310.15));
+                        }
+                    }
                     return mod_energy;
                 }
             }
@@ -177,13 +202,14 @@ class ModBaseUtils {
 
     [[nodiscard]] static int get_mismatch_mod_energy(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
-        const all_mod_params& mp, bool is_closing = false) {
+        const all_mod_params& mp, double temperature = 37.0, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
         }
         std::string mismatch_key = get_mismatch_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(mismatch_key);
-        int mod_energy = get_mod_energy(mismatch_key, unique_mod_bases, mp, ModLookup::Mismatch);
+        int mod_energy =
+            get_mod_energy(mismatch_key, unique_mod_bases, mp, ModLookup::Mismatch, temperature);
         return mod_energy;
     }
 
@@ -193,8 +219,9 @@ class ModBaseUtils {
                                                  bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
+        double temperature = vp.md.temperature;
 
-        int energy = get_mismatch_mod_energy(i, j, mod_sequence, mp, is_closing);
+        int energy = get_mismatch_mod_energy(i, j, mod_sequence, mp, temperature, is_closing);
         if (energy != NULL_ENERGY) {
             return energy;
         } else {
@@ -219,15 +246,17 @@ class ModBaseUtils {
         }
     }
 
-    [[nodiscard]] static int get_dangle5_mod_energy(
+    [[nodiscard]] static int danlge5_mod_energy_lookup(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
-        const all_mod_params& mp, bool is_closing = false) {
+        const all_mod_params& mp, double temperature = 37.0, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
         }
         std::string dangle5_key = get_dangle5_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(dangle5_key);
-        int mod_energy = get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5);
+        int mod_energy =
+            get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5, temperature);
+
         return mod_energy;
     }
 
@@ -236,8 +265,9 @@ class ModBaseUtils {
                                                 const all_mod_params& mp, bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
+        double temperature = vp.md.temperature;
 
-        int energy = get_dangle5_mod_energy(i, j, mod_sequence, mp, is_closing);
+        int energy = danlge5_mod_energy_lookup(i, j, mod_sequence, mp, temperature, is_closing);
         if (energy != NULL_ENERGY) {
             return energy;
         } else {
@@ -269,15 +299,16 @@ class ModBaseUtils {
         return get_dangle5_energy(pk_pair.i, pk_pair.j, pRNA, vp, mp, is_closing);
     }
 
-    [[nodiscard]] static int get_dangle3_mod_energy(
+    [[nodiscard]] static int danlge3_mod_energy_lookup(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
-        const all_mod_params& mp, bool is_closing = false) {
+        const all_mod_params& mp, double temperature = 37.0, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
         }
         std::string dangle3_key = get_dangle3_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(dangle3_key);
-        int mod_energy = get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
+        int mod_energy =
+            get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3, temperature);
         return mod_energy;
     }
 
@@ -286,8 +317,9 @@ class ModBaseUtils {
                                                 const all_mod_params& mp, bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
+        double temperature = vp.md.temperature;
 
-        int energy = get_dangle3_mod_energy(i, j, mod_sequence, mp, is_closing);
+        int energy = danlge3_mod_energy_lookup(i, j, mod_sequence, mp, temperature, is_closing);
         if (energy != NULL_ENERGY) {
             return energy;
         } else {
@@ -321,13 +353,14 @@ class ModBaseUtils {
 
     [[nodiscard]] static int get_terminalAU_mod_energy(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
-        const all_mod_params& mp, bool is_closing = false) {
+        const all_mod_params& mp, double temperature = 37.0, bool is_closing = false) {
         if (mod_sequence.empty()) {
             return NULL_ENERGY;
         }
         std::string terminal_key = get_terminal_key(i, j, mod_sequence, is_closing);
         std::vector<std::string_view> unique_mod_bases = unique_mod_bases_in_string(terminal_key);
-        int mod_energy = get_mod_energy(terminal_key, unique_mod_bases, mp, ModLookup::TerminalAU);
+        int mod_energy =
+            get_mod_energy(terminal_key, unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
         return mod_energy;
     }
 
@@ -379,7 +412,7 @@ class ModBaseUtils {
         if (is_external && is_closing) {
             THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");
         }
-
+        double temperature = vp.md.temperature;
         viennarna::vrna_param_t* P = vp.p;
         int mismatch = 0;
         int dangle5 = 0;
@@ -408,14 +441,14 @@ class ModBaseUtils {
         }
 
         // Get modified energies
-        int modMismatch =
-            ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp, ModLookup::Mismatch);
-        int modDangle5 =
-            ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp, ModLookup::Dangle5);
-        int modDangle3 =
-            ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp, ModLookup::Dangle3);
-        int modTerminalAU =
-            ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp, ModLookup::TerminalAU);
+        int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp,
+                                                       ModLookup::Mismatch, temperature);
+        int modDangle5 = ModBaseUtils::get_mod_energy(dangle5_key, unique_mod_bases, mp,
+                                                      ModLookup::Dangle5, temperature);
+        int modDangle3 = ModBaseUtils::get_mod_energy(dangle3_key, unique_mod_bases, mp,
+                                                      ModLookup::Dangle3, temperature);
+        int modTerminalAU = ModBaseUtils::get_mod_energy(terminal_key, unique_mod_bases, mp,
+                                                         ModLookup::TerminalAU, temperature);
 
         modMismatch = modMismatch != NULL_ENERGY ? modMismatch : mismatch;
         modDangle5 = modDangle5 != NULL_ENERGY ? modDangle5 : dangle5;

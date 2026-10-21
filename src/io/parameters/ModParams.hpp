@@ -20,7 +20,7 @@ using json = nlohmann::json;
 }
 
 using string_list = std::vector<std::string>;
-using param_map = std::unordered_map<std::string, float>;
+using param_map = std::unordered_map<std::string, double>;
 
 /**
  * @brief Parameters for modified RNA bases.

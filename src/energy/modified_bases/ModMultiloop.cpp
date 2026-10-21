@@ -159,6 +159,10 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
             "dangles == 3");
     }
 
+    if (node.loop_type != LoopType::Multibranch) {
+        THROW_ERROR("multiloop_dangle_3_energy should only be called for multibranch loops");
+    }
+
     std::vector<MultiloopStem> multiloop_stems =
         CoaxialStacking::populate_multiloop_stems(node, pRNA, vp, mp);
 
@@ -179,11 +183,8 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
      */
     for (std::size_t idx = 0; idx < node.children.size(); ++idx) {
         const LoopNode& child = *node.children[idx];
-
         ModDiffs child_diffs = get_multiloop_diffs(child, pRNA, kIsNotClosing, vp, mp);
-
         MultiloopStem& stem = multiloop_stems[idx];
-
         stem.dangle5 += child_diffs.n5d;
         stem.dangle3 += child_diffs.n3d;
     }
@@ -201,6 +202,7 @@ int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, u
                                        vrna_md_param& vp, const all_mod_params& mp,
                                        const bool is_closing) {
     int energy = vp.p->MLintern[type];
+    double temperature = vp.md.temperature;
 
     if (node.loop_type == LoopType::Pseudoknot) {
         return vp.p->MLintern[1];  // Use the default type for pseudoknots.
@@ -208,20 +210,20 @@ int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, u
 
     if (si1 >= 0 && sj1 >= 0) {
         int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp,
-                                                           is_closing);
+                                                           temperature, is_closing);
         energy += mod_mm != NULL_ENERGY ? mod_mm : vp.p->mismatchM[type][si1][sj1];
     } else if (si1 >= 0) {
-        int mod_d5 = ModBaseUtils::get_dangle5_mod_energy(node.begin, node.end, mod_sequence, mp,
-                                                          is_closing);
+        int mod_d5 = ModBaseUtils::danlge5_mod_energy_lookup(node.begin, node.end, mod_sequence, mp,
+                                                             temperature, is_closing);
         energy += mod_d5 != NULL_ENERGY ? mod_d5 : vp.p->dangle5[type][si1];
     } else if (sj1 >= 0) {
-        int mod_d3 = ModBaseUtils::get_dangle3_mod_energy(node.begin, node.end, mod_sequence, mp,
-                                                          is_closing);
+        int mod_d3 = ModBaseUtils::danlge3_mod_energy_lookup(node.begin, node.end, mod_sequence, mp,
+                                                             temperature, is_closing);
         energy += mod_d3 != NULL_ENERGY ? mod_d3 : vp.p->dangle3[type][sj1];
     }
     if (type > 2) {
-        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end,
-                                                                   mod_sequence, mp, is_closing);
+        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(
+            node.begin, node.end, mod_sequence, mp, temperature, is_closing);
         energy += mod_terminal != NULL_ENERGY ? mod_terminal : vp.p->TerminalAU;
     }
 

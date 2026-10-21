@@ -15,6 +15,7 @@ class ModHairpin {
                                        vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
         // Get the unmodified hairpin energy
         int unmod_energy = ViennaFunctions::hairpin_energy(i, j, sequence, is_inf, vp);
+        double temperature = vp.md.temperature;
 
         // If the hairpin energy is infinite, return it directly
         if (is_inf) {
@@ -32,7 +33,8 @@ class ModHairpin {
 
         // Create a key for modified base lookup
         std::string key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
-        int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, ModLookup::TerminalAU);
+        int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, ModLookup::TerminalAU,
+                                                 temperature);
         modAU = modAU != NULL_ENERGY ? modAU : vp.p->TerminalAU;
 
         // Look up the modified hairpin energy

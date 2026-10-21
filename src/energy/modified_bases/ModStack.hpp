@@ -25,6 +25,7 @@ class ModStack {
                                      vrna_md_param& vp, const all_mod_params& mp) {
         // Get unmodified energy first to use as fallback if no modified nucleotides are found
         int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
+        double temperature = vp.md.temperature;
 
         // Find all modified bases at the inner edge of the stack (i, j, i+1, j-1)
         std::vector<std::string_view> unique_mod_bases =
@@ -33,13 +34,15 @@ class ModStack {
 
         // Used to look up stacking energies in modified base parameters
         std::string l_key = ModBaseUtils::join_string_views({i, ci, j, cj}, mod_sequence);
-        int e = ModBaseUtils::get_mod_energy(l_key, unique_mod_bases, mp, ModLookup::Stacking);
+        int e = ModBaseUtils::get_mod_energy(l_key, unique_mod_bases, mp, ModLookup::Stacking,
+                                             temperature);
 
         // Due to the symmetrical nature of stacks, if the key was not found, we check the reverse
         // order (ci, i, cj, j) for modified bases
         if (e == NULL_ENERGY) {
             std::string r_key = ModBaseUtils::join_string_views({cj, j, ci, i}, mod_sequence);
-            e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, ModLookup::Stacking);
+            e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, ModLookup::Stacking,
+                                             temperature);
         }
         int salt_stack_correction = vp.p->SaltStack;
         return e != NULL_ENERGY ? e + salt_stack_correction : unmod_energy;

@@ -61,6 +61,7 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
 
     for (const auto& child : node.children) {
         if (child->loop_type == LoopType::Pseudoknot) {
+            stems.push_back(MultiloopStem{child->begin, child->end, child->end, 0, 0, 0});
             continue;
         }
 
@@ -162,22 +163,24 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
         switch (unpaired_between) {
             case 0: {
                 // adjacent helices: possible flush coaxial stacking
-                int stack_energy;
-                if (pRNA.has_modified_bases()) {
-                    stack_energy = ModStack::find_mod_stack_energy(
-                        prev_stem.end, prev_stem.begin, stem.begin, stem.end, sequence,
-                        pRNA.get_modified_sequence(), vp, mp);
-                } else {
-                    stack_energy = vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
+                if (prev_type != 0 && current_type != 0) {
+                    int stack_energy;
+                    if (pRNA.has_modified_bases()) {
+                        stack_energy = ModStack::find_mod_stack_energy(
+                            prev_stem.end, prev_stem.begin, stem.begin, stem.end, sequence,
+                            pRNA.get_modified_sequence(), vp, mp);
+                    } else {
+                        stack_energy =
+                            vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
+                    }
+                    new_cx = energy + stack_energy;
+
+                    // swaps Base ML energy for Coaxial base energy,
+                    // and removes the 5' dangle of the previous stem (dangles don't apply in
+                    // coaxial stacking)
+                    new_cx += -ld5 - vp.p->MLintern[current_type] - vp.p->MLintern[prev_type] +
+                              2 * coaxial_ml_base_energy;
                 }
-                new_cx = energy + stack_energy;
-
-                // swaps Base ML energy for Coaxial base energy,
-                // and removes the 5' dangle of the previous stem (dangles don't apply in coaxial
-                // stacking)
-                new_cx += -ld5 - vp.p->MLintern[current_type] - vp.p->MLintern[prev_type] +
-                          2 * coaxial_ml_base_energy;
-
                 ld5 = 0;
                 energy = std::min(energy, cx_energy);
                 break;

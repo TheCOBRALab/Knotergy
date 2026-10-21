@@ -90,20 +90,24 @@ int ModExternal::mod_exterior_stem(const LoopNode& node, int n5d, int n3d, unsig
     }
 
     int energy = 0;
+    double temperature = vp.md.temperature;
 
     if (n5d >= 0 && n3d >= 0) {
-        int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp);
+        int mod_mm = ModBaseUtils::get_mismatch_mod_energy(node.begin, node.end, mod_sequence, mp,
+                                                           temperature);
         energy += mod_mm != NULL_ENERGY ? mod_mm : vp.p->mismatchExt[type][n5d][n3d];
     } else if (n5d >= 0) {
-        int mod_d5 = ModBaseUtils::get_dangle5_mod_energy(node.begin, node.end, mod_sequence, mp);
+        int mod_d5 = ModBaseUtils::danlge5_mod_energy_lookup(node.begin, node.end, mod_sequence, mp,
+                                                             temperature);
         energy += mod_d5 != NULL_ENERGY ? mod_d5 : vp.p->dangle5[type][n5d];
     } else if (n3d >= 0) {
-        int mod_d3 = ModBaseUtils::get_dangle3_mod_energy(node.begin, node.end, mod_sequence, mp);
+        int mod_d3 = ModBaseUtils::danlge3_mod_energy_lookup(node.begin, node.end, mod_sequence, mp,
+                                                             temperature);
         energy += mod_d3 != NULL_ENERGY ? mod_d3 : vp.p->dangle3[type][n3d];
     }
     if (type > 2) {
-        int mod_terminal =
-            ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end, mod_sequence, mp);
+        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end,
+                                                                   mod_sequence, mp, temperature);
         energy += mod_terminal != NULL_ENERGY ? mod_terminal : vp.p->TerminalAU;
     }
 

@@ -22,7 +22,7 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
     if (closing_unique_mod_bases.empty() && nested_unique_mod_bases.empty()) {
         return unmod_energy;
     }
-
+    double temperature = vp.md.temperature;
     int n1 = static_cast<int>(ci - i - 1);  // unpaired bases 5' side
     int n2 = static_cast<int>(j - cj - 1);  // unpaired bases 3' side
     int nl = std::max(n1, n2);
@@ -49,7 +49,7 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
                 if (type1 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
                     int mod_AU_penalty = ModBaseUtils::get_mod_energy(
-                        AU_key, closing_unique_mod_bases, mp, ModLookup::TerminalAU);
+                        AU_key, closing_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
 
                     int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
                     e += modAU - vp.p->TerminalAU;
@@ -57,7 +57,7 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
                 if (type2 > 2) {
                     std::string AU_key = ModBaseUtils::join_string_views({ci, cj}, mod_sequence);
                     int mod_AU_penalty = ModBaseUtils::get_mod_energy(
-                        AU_key, nested_unique_mod_bases, mp, ModLookup::TerminalAU);
+                        AU_key, nested_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
                     int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
                     e += modAU - vp.p->TerminalAU;
                 }
@@ -128,8 +128,9 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
 //     std::vector<std::string_view> nested_unique_mod_bases  =
 //     ModBaseUtils::unique_mod_bases_at_inner_edge(ci, cj, mod_sequence); int mod_mismatch1 =
 //     ModBaseUtils::get_mod_energy(mismatch1_key, closing_unique_mod_bases, mp, unmod_mismatch1,
-//     ModLookup::Mismatch); int mod_mismatch2 = ModBaseUtils::get_mod_energy(mismatch2_key,
-//     nested_unique_mod_bases, mp, unmod_mismatch2, ModLookup::Mismatch);
+//     ModLookup::Mismatch, temperature); int mod_mismatch2 =
+//     ModBaseUtils::get_mod_energy(mismatch2_key, nested_unique_mod_bases, mp, unmod_mismatch2,
+//     ModLookup::Mismatch, temperature);
 
 //     return (mod_mismatch1 + mod_mismatch2) - (unmod_mismatch1 + unmod_mismatch2);
 // }
