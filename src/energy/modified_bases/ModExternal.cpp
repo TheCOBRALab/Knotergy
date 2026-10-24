@@ -22,6 +22,10 @@ int ModExternal::find_mod_external_energy(const std::vector<LoopNode*>& children
 
 ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const ProcessedRNAEntry& pRNA,
                                                vrna_md_param& vp, const all_mod_params& mp) {
+    if (child.loop_type == LoopType::Pseudoknot) {
+        return ModDiffs{};  // pseudoknot children do not contribute to external loop energy
+    }
+
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
 

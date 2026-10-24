@@ -27,6 +27,10 @@ int ModMultiloop::find_mod_multiloop_energy(const LoopNode& node, const Processe
 ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                            bool is_closing, vrna_md_param& vp,
                                            const all_mod_params& mp) {
+    if (node.loop_type == LoopType::Pseudoknot) {
+        return ModDiffs{vp.p->MLintern[1], INF, INF,
+                        INF};  // pseudoknot children do not contribute to multiloop energy
+    }
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
 

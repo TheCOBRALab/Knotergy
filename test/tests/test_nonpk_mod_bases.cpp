@@ -126,5 +126,16 @@ TEST(mod_nonpk, non_au_terminal_penalty2) {
     EXPECT_NEAR(d3, -5.17, 0.000005);
 }
 
+TEST(mod_nonpk, pseudoknot_in_external_loop) {
+    std::string sequence = "6CGCAAAAGAGAAGCGUAAACUCU";
+    std::string structure = "((((...[[[[..))))...]]]]";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -8.6091, 0.000005);
+    EXPECT_NEAR(d1, -8.6091, 0.000005);
+    EXPECT_NEAR(d2, -8.6091, 0.000005);
+    EXPECT_NEAR(d3, -8.6091, 0.000005);
+}
+
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold
 // -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
