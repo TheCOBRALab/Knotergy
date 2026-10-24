@@ -45,21 +45,22 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
                     ModStack::find_mod_stack_energy(i, j, ci, cj, sequence, mod_sequence, vp, mp);
                 e += mod_stack_energy - unmod_stack_energy;
             } else {
-                if (type1 > 2) {
-                    std::string AU_key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
-                    int mod_AU_penalty = ModBaseUtils::get_mod_energy(
-                        AU_key, closing_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
+                // Type 1
+                int unmod_AU_penalty1 = type1 > 2 ? vp.p->TerminalAU : 0;
+                std::string AU_key1 = ModBaseUtils::join_string_views({i, j}, mod_sequence);
+                int mod_AU_penalty1 = ModBaseUtils::get_mod_energy(
+                    AU_key1, closing_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
 
-                    int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
-                    e += modAU - vp.p->TerminalAU;
-                }
-                if (type2 > 2) {
-                    std::string AU_key = ModBaseUtils::join_string_views({ci, cj}, mod_sequence);
-                    int mod_AU_penalty = ModBaseUtils::get_mod_energy(
-                        AU_key, nested_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
-                    int modAU = mod_AU_penalty != NULL_ENERGY ? mod_AU_penalty : vp.p->TerminalAU;
-                    e += modAU - vp.p->TerminalAU;
-                }
+                int mod_AU1 = mod_AU_penalty1 != NULL_ENERGY ? mod_AU_penalty1 : unmod_AU_penalty1;
+                e += mod_AU1 - unmod_AU_penalty1;
+
+                // Type 2
+                int unmod_AU_penalty2 = type2 > 2 ? vp.p->TerminalAU : 0;
+                std::string AU_key2 = ModBaseUtils::join_string_views({ci, cj}, mod_sequence);
+                int mod_AU_penalty2 = ModBaseUtils::get_mod_energy(
+                    AU_key2, nested_unique_mod_bases, mp, ModLookup::TerminalAU, temperature);
+                int mod_AU2 = mod_AU_penalty2 != NULL_ENERGY ? mod_AU_penalty2 : unmod_AU_penalty2;
+                e += mod_AU2 - unmod_AU_penalty2;
             }
             break;
             // case 1:

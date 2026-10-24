@@ -54,9 +54,9 @@ TEST(mod_nonpk, dangle_3_external) {
     // d0 has a dangle modification when there shouldn't be one
     // d1 & d2 use the wrong unmodified energy for the dangle and wrong keys for the modification
     EXPECT_NEAR(d0, 6.40, 0.000005);  // Turner 2004 // RNAfold gives 6.77
-    EXPECT_NEAR(d1, 5.70, 0.000005);  // Turner 2004 // RNAfold gives 6.07
+    EXPECT_NEAR(d1, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
     EXPECT_NEAR(d2, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
-    EXPECT_NEAR(d3, 5.70, 0.000005);  // Turner 2004 // RNAfold gives 6.07
+    EXPECT_NEAR(d3, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
 }
 
 // echo -e "A6AAAAUUU\n(((...)))" | RNAfold -C  --enforceConstraint  -m
@@ -135,6 +135,39 @@ TEST(mod_nonpk, pseudoknot_in_external_loop) {
     EXPECT_NEAR(d1, -8.6091, 0.000005);
     EXPECT_NEAR(d2, -8.6091, 0.000005);
     EXPECT_NEAR(d3, -8.6091, 0.000005);
+}
+
+TEST(mod_nonpk, multiloop_with_unpaired_both_sides) {
+    std::string sequence = "GACGGAAACCGUGGAAACC6AC";
+    std::string structure = "(.(((...)))(((...))).)";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 7.16, 0.000005);
+    EXPECT_NEAR(d1, 5.26, 0.000005);
+    EXPECT_NEAR(d2, 4.16, 0.000005);
+    EXPECT_NEAR(d3, 3.77, 0.000005);
+}
+
+TEST(mod_nonpk, multiloop_closing_dangle5) {
+    std::string sequence = "UAGGGAAACCCAAGGGAAACCCA6A";
+    std::string structure = "(.(((...)))..(((...)))..)";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 5.20, 0.000005);
+    EXPECT_NEAR(d1, 0.76, 0.000005);
+    EXPECT_NEAR(d2, 1.20, 0.000005);
+    EXPECT_NEAR(d3, -0.64, 0.000005);
+}
+
+TEST(mod_nonpk, multiloop_closing_dangle3) {
+    std::string sequence = "C6GGGAAACCCAAGGGAAACCCAG";
+    std::string structure = "(.(((...)))..(((...))).)";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 4.20, 0.000005);
+    EXPECT_NEAR(d1, -1.34, 0.000005);
+    EXPECT_NEAR(d2, -0.30, 0.000005);
+    EXPECT_NEAR(d3, -1.54, 0.000005);
 }
 
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold

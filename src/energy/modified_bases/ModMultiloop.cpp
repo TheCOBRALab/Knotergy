@@ -28,8 +28,7 @@ ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const Processed
                                            bool is_closing, vrna_md_param& vp,
                                            const all_mod_params& mp) {
     if (node.loop_type == LoopType::Pseudoknot) {
-        return ModDiffs{vp.p->MLintern[1], INF, INF,
-                        INF};  // pseudoknot children do not contribute to multiloop energy
+        return ModDiffs{};  // pseudoknot children do not contribute to multiloop energy
     }
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
@@ -52,14 +51,9 @@ ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const Processed
 
         std::tie(n5d, n3d) = ViennaUtils::encode_inner_dangles(node.begin, node.end, pRNA, vp.md);
 
-        /*
-         * Important:
-         *
-         * The closing pair is reversed relative to an ordinary outer stem.
-         * Therefore n3d, n5d is passed into get_mod_diffs().
-         */
-        return ModBaseUtils::get_mod_diffs(node, n3d, n5d, type, unique_mod_bases, mod_sequence, vp,
-                                           mp, kIsExternal, kIsClosing);
+        const ModDiffs d = ModBaseUtils::get_mod_diffs(
+            node, n3d, n5d, type, unique_mod_bases, mod_sequence, vp, mp, kIsExternal, kIsClosing);
+        return ModDiffs(d.terminalAU, d.mismatch, d.n3d, d.n5d);
     }
 
     unique_mod_bases =
@@ -178,8 +172,8 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
 
         MultiloopStem& closing_stem = multiloop_stems.back();
 
-        closing_stem.dangle5 += closing_diffs.n5d;
-        closing_stem.dangle3 += closing_diffs.n3d;
+        closing_stem.dangle5 += closing_diffs.n3d;  // j-1 dangle
+        closing_stem.dangle3 += closing_diffs.n5d;  // i+1 dangle
     }
 
     /*

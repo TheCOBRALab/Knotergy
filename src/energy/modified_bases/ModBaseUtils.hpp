@@ -462,9 +462,11 @@ class ModBaseUtils {
             return ModDiffs(modTerminalAU - terminal, 0, 0, 0);
         }
 
-        int diffMismatch = modMismatch - mismatch;
         int diff5 = modDangle5 - dangle5;
         int diff3 = modDangle3 - dangle3;
+        int diffMismatch = (n5d >= 0 && n3d >= 0) ? modMismatch - mismatch
+                           : (n5d >= 0)           ? diff5
+                                                  : diff3;
         int diffTerminal = modTerminalAU - terminal;
 
         return ModDiffs(diffTerminal, diffMismatch, diff5, diff3);

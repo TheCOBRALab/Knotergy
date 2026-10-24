@@ -18,13 +18,6 @@ namespace knotergy {
 // --------------------------------------------
 int ViennaFunctions::stack_energy(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
                                   const std::string& sequence, vrna_md_param& vp) {
-    bool stacked = i + 1 == ci && j == cj + 1 && ci < cj && j < sequence.size();
-    if (!stacked && vp.md.dangles != 3) {
-        THROW_ERROR("Invalid indices for stack energy calculation. Received i: " +
-                    std::to_string(i) + ", j: " + std::to_string(j) +
-                    ", ci: " + std::to_string(ci) + ", cj: " + std::to_string(cj));
-    }
-
     // c = child or nested base pair
     unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int child_type = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
