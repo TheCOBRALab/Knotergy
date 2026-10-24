@@ -55,7 +55,7 @@ TEST(mod_nonpk, dangle_3_external) {
     // d1 & d2 use the wrong unmodified energy for the dangle and wrong keys for the modification
     EXPECT_NEAR(d0, 6.40, 0.000005);  // Turner 2004 // RNAfold gives 6.77
     EXPECT_NEAR(d1, 5.70, 0.000005);  // Turner 2004 // RNAfold gives 6.07
-    EXPECT_NEAR(d2, 5.70, 0.000005);  // Turner 2004 // RNAfold gives 6.07
+    EXPECT_NEAR(d2, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
     EXPECT_NEAR(d3, 5.70, 0.000005);  // Turner 2004 // RNAfold gives 6.07
 }
 

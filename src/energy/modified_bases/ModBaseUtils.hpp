@@ -364,13 +364,15 @@ class ModBaseUtils {
         return mod_energy;
     }
 
+    // Key orientation is intentionally flipped
+    // https://github.com/ViennaRNA/ViennaRNA/blob/2d5a5c364a801da075c42d51bfe2a4e02d1317ad/src/ViennaRNA/constraints/sc_cb_mod_parser.c#L385-L389
     [[nodiscard]] static std::string get_mismatch_key(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         bool is_closing) {
         if (is_closing) {
-            return ModBaseUtils::join_string_views({j, j - 1, i, i + 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({i, i + 1, j, j - 1}, mod_sequence);
         } else {
-            return ModBaseUtils::join_string_views({i, i - 1, j, j + 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({j, j + 1, i, i - 1}, mod_sequence);
         }
     }
 
@@ -378,9 +380,9 @@ class ModBaseUtils {
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         bool is_closing) {
         if (is_closing) {
-            return ModBaseUtils::join_string_views({j, i, i + 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({i, j, i + 1}, mod_sequence);
         } else {
-            return ModBaseUtils::join_string_views({i, j, j + 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({j, i, j + 1}, mod_sequence);
         }
     }
 
@@ -388,9 +390,9 @@ class ModBaseUtils {
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence,
         bool is_closing) {
         if (is_closing) {
-            return ModBaseUtils::join_string_views({j, i, j - 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({i, j, j - 1}, mod_sequence);
         } else {
-            return ModBaseUtils::join_string_views({i, j, i - 1}, mod_sequence);
+            return ModBaseUtils::join_string_views({j, i, i - 1}, mod_sequence);
         }
     }
 
