@@ -15,7 +15,6 @@ class ModHairpin {
                                        vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
         // Get the unmodified hairpin energy
         int unmod_energy = ViennaFunctions::hairpin_energy(i, j, sequence, is_inf, vp);
-        double temperature = vp.md.temperature;
 
         // If the hairpin energy is infinite, return it directly
         if (is_inf) {
@@ -31,14 +30,19 @@ class ModHairpin {
             return unmod_energy;
         }
 
+        unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+        int unmod_AU_penalty =
+            type > 2 ? vp.p->TerminalAU : 0;  // Only apply AU penalty for non-GC pairs
+
         // Create a key for modified base lookup
+        double temperature = vp.md.temperature;
         std::string key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
         int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, ModLookup::TerminalAU,
                                                  temperature);
-        modAU = modAU != NULL_ENERGY ? modAU : vp.p->TerminalAU;
+        modAU = modAU != NULL_ENERGY ? modAU : unmod_AU_penalty;
 
         // Look up the modified hairpin energy
-        return unmod_energy + modAU - vp.p->TerminalAU;
+        return unmod_energy + modAU - unmod_AU_penalty;
     }
 
     static int find_mod_hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,

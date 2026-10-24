@@ -104,5 +104,27 @@ TEST(mod_nonpk, multiloop_no_lookup) {
     EXPECT_NEAR(d3, -10.90, 0.000005);
 }
 
+TEST(mod_nonpk, non_au_terminal_penalty) {
+    std::string sequence = "GGGIGAAACCCC";
+    std::string structure = "((((....))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -6.20, 0.000005);
+    EXPECT_NEAR(d1, -6.20, 0.000005);
+    EXPECT_NEAR(d2, -6.20, 0.000005);
+    EXPECT_NEAR(d3, -6.20, 0.000005);
+}
+
+TEST(mod_nonpk, non_au_terminal_penalty2) {
+    std::string sequence = "GGGIGAAAUCCC";
+    std::string structure = "((((....))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -5.17, 0.000005);
+    EXPECT_NEAR(d1, -5.17, 0.000005);
+    EXPECT_NEAR(d2, -5.17, 0.000005);
+    EXPECT_NEAR(d3, -5.17, 0.000005);
+}
+
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold
 // -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
