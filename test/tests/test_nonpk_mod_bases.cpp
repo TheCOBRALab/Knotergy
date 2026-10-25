@@ -50,13 +50,10 @@ TEST(mod_nonpk, dangle_3_external) {
     std::string structure = "(...).";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
-    // RNAfold gives different values due to a likely bug in their code
-    // d0 has a dangle modification when there shouldn't be one
-    // d1 & d2 use the wrong unmodified energy for the dangle and wrong keys for the modification
-    EXPECT_NEAR(d0, 6.40, 0.000005);  // Turner 2004 // RNAfold gives 6.77
-    EXPECT_NEAR(d1, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
-    EXPECT_NEAR(d2, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
-    EXPECT_NEAR(d3, 5.97, 0.000005);  // Turner 2004 // RNAfold gives 6.07
+    EXPECT_NEAR(d0, 6.40, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d1, 5.97, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d2, 5.97, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d3, 5.97, 0.000005);  // Turner 2004
 }
 
 // echo -e "A6AAAAUUU\n(((...)))" | RNAfold -C  --enforceConstraint  -m
@@ -65,10 +62,10 @@ TEST(mod_nonpk, simple_stack) {
     std::string structure = "(((...)))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d1, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d2, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
-    EXPECT_NEAR(d3, 4.65, 0.000005);  // Turner 2004 // RNAfold gives 4.65
+    EXPECT_NEAR(d0, 4.65, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d1, 4.65, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d2, 4.65, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d3, 4.65, 0.000005);  // Turner 2004
 }
 
 // echo -e
@@ -85,10 +82,10 @@ TEST(mod_nonpk, external1_0_dangle) {
         "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))";
     auto [d0, d1, d2, d3] = pipeline(sequence, structure);
 
-    EXPECT_NEAR(d0, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.11
-    EXPECT_NEAR(d1, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.11
-    EXPECT_NEAR(d2, -70.81, 0.000005);  // Turner 2004 // RNAfold gives -70.81
-    EXPECT_NEAR(d3, -70.11, 0.000005);  // Turner 2004 // RNAfold gives -70.81
+    EXPECT_NEAR(d0, -70.11, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d1, -70.11, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d2, -70.81, 0.000005);  // Turner 2004
+    EXPECT_NEAR(d3, -70.11, 0.000005);  // Turner 2004
 }
 
 TEST(mod_nonpk, multiloop_no_lookup) {
@@ -168,6 +165,17 @@ TEST(mod_nonpk, multiloop_closing_dangle3) {
     EXPECT_NEAR(d1, -1.34, 0.000005);
     EXPECT_NEAR(d2, -0.30, 0.000005);
     EXPECT_NEAR(d3, -1.54, 0.000005);
+}
+
+TEST(mod_nonpk, multiloop_one_unpaired_between_each_closing_pair) {
+    std::string sequence = "GGAIGCAAAAGCCAGCGAAAACGCACC";
+    std::string structure = "((.(((....))).(((....))).))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 0.39, 0.000005);
+    EXPECT_NEAR(d1, -4.11, 0.000005);
+    EXPECT_NEAR(d2, -3.71, 0.000005);
+    EXPECT_NEAR(d3, -4.03, 0.000005);
 }
 
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold

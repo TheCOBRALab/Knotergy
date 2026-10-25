@@ -437,10 +437,8 @@ class ModBaseUtils {
             dangle3_key = get_dangle3_key(node.begin, node.end, mod_sequence, is_closing);
         }
 
-        if (type > 2) {
-            terminal = P->TerminalAU;
-            terminal_key = get_terminal_key(node.begin, node.end, mod_sequence, is_closing);
-        }
+        terminal = type > 2 ? P->TerminalAU : 0;
+        terminal_key = get_terminal_key(node.begin, node.end, mod_sequence, is_closing);
 
         // Get modified energies
         int modMismatch = ModBaseUtils::get_mod_energy(mismatch_key, unique_mod_bases, mp,

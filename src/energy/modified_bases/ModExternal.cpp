@@ -109,11 +109,10 @@ int ModExternal::mod_exterior_stem(const LoopNode& node, int n5d, int n3d, unsig
                                                              temperature);
         energy += mod_d3 != NULL_ENERGY ? mod_d3 : vp.p->dangle3[type][n3d];
     }
-    if (type > 2) {
-        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end,
-                                                                   mod_sequence, mp, temperature);
-        energy += mod_terminal != NULL_ENERGY ? mod_terminal : vp.p->TerminalAU;
-    }
+    int canonical_AU = type > 2 ? vp.p->TerminalAU : 0;
+    int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end, mod_sequence,
+                                                               mp, temperature);
+    energy += mod_terminal != NULL_ENERGY ? mod_terminal : canonical_AU;
 
     return energy;
 }

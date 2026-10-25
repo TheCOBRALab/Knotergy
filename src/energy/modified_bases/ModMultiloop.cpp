@@ -219,11 +219,10 @@ int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, u
                                                              temperature, is_closing);
         energy += mod_d3 != NULL_ENERGY ? mod_d3 : vp.p->dangle3[type][sj1];
     }
-    if (type > 2) {
-        int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(
-            node.begin, node.end, mod_sequence, mp, temperature, is_closing);
-        energy += mod_terminal != NULL_ENERGY ? mod_terminal : vp.p->TerminalAU;
-    }
+    int canonical_AU = type > 2 ? vp.p->TerminalAU : 0;
+    int mod_terminal = ModBaseUtils::get_terminalAU_mod_energy(node.begin, node.end, mod_sequence,
+                                                               mp, temperature, is_closing);
+    energy += mod_terminal != NULL_ENERGY ? mod_terminal : canonical_AU;
 
     return energy;
 }
