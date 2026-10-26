@@ -38,7 +38,7 @@ class ModStack {
                                              temperature);
 
         // Due to the symmetrical nature of stacks, if the key was not found, we check the reverse
-        // order (ci, i, cj, j) for modified bases
+        // order (cj, j, ci, i) for modified bases
         if (e == NULL_ENERGY) {
             std::string r_key = ModBaseUtils::join_string_views({cj, j, ci, i}, mod_sequence);
             e = ModBaseUtils::get_mod_energy(r_key, unique_mod_bases, mp, ModLookup::Stacking,
