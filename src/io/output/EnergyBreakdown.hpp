@@ -132,7 +132,7 @@ class EnergyBreakdown {
         // Detailed pseudoknot band breakdown
         // ------------------------------------------------------------
         if (node->loop_type == LoopType::Pseudoknot && verbosity == VerbosityLevel::Detailed) {
-            const std::string pk_label = "Pseudoknot-level energy (excludes bands)";
+            const std::string pk_label = "Pseudoknot-level energy";
 
             // Longest band row:
             //

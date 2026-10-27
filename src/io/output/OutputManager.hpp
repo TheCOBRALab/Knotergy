@@ -11,7 +11,7 @@ namespace knotergy {
 
 class OutputManager {
    public:
-    static constexpr std::string_view version() { return "0.3.1"; }
+    static constexpr std::string_view version() { return "0.3.2"; }
 
     static void print_banner() {
         std::cout << R"(                                    
@@ -41,7 +41,7 @@ class OutputManager {
                   << vienna_params.md.salt << " M salt\n";
 
         std::cout << std::left << std::setw(W)
-                  << "ViennaRNA:" << vienna_params.get_source_info().resolved_name
+                  << "Pseudoknot-free:" << vienna_params.get_source_info().resolved_name
                   << " (Dangle Model: " << vienna_params.md.dangles << ")\n";
 
         std::cout << std::left << std::setw(W) << "Pseudoknot:" << pk_params.name
