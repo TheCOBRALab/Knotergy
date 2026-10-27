@@ -11,6 +11,31 @@
 
 namespace knotergy {
 
+namespace {
+
+// Helper to provide a unified interface for accessing either the unmodified or modified RNA
+// sequence.
+struct SequenceView {
+    SequenceView(const ProcessedRNAEntry& rna_entry) {
+        if (rna_entry.has_modified_bases()) {
+            canonical = nullptr;
+            modified = &rna_entry.get_modified_sequence();
+        } else {
+            canonical = &rna_entry.get_sequence();
+            modified = nullptr;
+        }
+    }
+
+    const std::string* canonical = nullptr;
+    const std::vector<std::string_view>* modified = nullptr;
+
+    std::string_view operator[](std::size_t i) const {
+        return modified ? (*modified)[i] : std::string_view(canonical->data() + i, 1);
+    }
+};
+
+}  // namespace
+
 enum class VerbosityLevel { Quiet = 0, Verbose = 1, Detailed = 2 };
 
 class EnergyBreakdown {
@@ -28,7 +53,7 @@ class EnergyBreakdown {
             return use_color ? ansi_code : "";
         };
 
-        const std::string& sequence = rna_entry.get_sequence();
+        const SequenceView sequence = SequenceView(rna_entry);
 
         // ViennaRNA uses at least 3 characters for indices.
         const std::size_t idx_w = std::max<std::size_t>(3, std::to_string(rna_entry.size()).size());
