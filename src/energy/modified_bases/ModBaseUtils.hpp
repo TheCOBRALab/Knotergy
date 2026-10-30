@@ -99,7 +99,7 @@ class ModBaseUtils {
         return unique_mod_bases;
     }
 
-    [[nodiscard]] static std::vector<std::string_view> unique_mod_bases_at_inner_edge(
+    [[nodiscard]] static std::vector<std::string_view> unique_modified_bases_at_inner_edge(
         std::size_t i, std::size_t j, const std::vector<std::string_view>& mod_sequence) {
         return unique_modified_bases_at_indices({i, j, i + 1, j - 1}, mod_sequence);
     }
@@ -244,6 +244,46 @@ class ModBaseUtils {
 
             return unmod_mismatch_energy;
         }
+    }
+
+    /**
+     * @brief Correction to the terminal mismatch of a pair in a hairpin or internal loop.
+     *
+     * The modified mismatch energy minus the canonical multiloop mismatch energy of the same pair
+     * and neighbours.
+     *
+     * @param is_closing If true, the mismatch inside the pair i.j (i + 1 and j - 1), as for the
+     *                   closing pair of the loop; otherwise the mismatch outside it (i - 1 and
+     *                   j + 1).
+     * @return The correction, or 0 if the parameters have no value for this mismatch.
+     */
+    [[nodiscard]] static int loop_mismatch_diff(std::size_t i, std::size_t j,
+                                                const std::string& sequence,
+                                                const std::vector<std::string_view>& mod_sequence,
+                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing) {
+        int mod_energy =
+            get_mismatch_mod_energy(i, j, mod_sequence, mp, vp.md.temperature, is_closing);
+        if (mod_energy == NULL_ENERGY) {
+            return 0;
+        }
+
+        unsigned int type;
+        int n5, n3;
+        if (is_closing) {
+            // The pair seen from inside the loop: j.i, with j - 1 on its 5' side
+            type = ViennaUtils::reverse_pair_type(sequence[i], sequence[j], vp.md);
+            n5 = ViennaUtils::fast_nucleotide_encode(sequence[j - 1]);
+            n3 = ViennaUtils::fast_nucleotide_encode(sequence[i + 1]);
+        } else {
+            type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            n5 = ViennaUtils::fast_nucleotide_encode(sequence[i - 1]);
+            n3 = ViennaUtils::fast_nucleotide_encode(sequence[j + 1]);
+        }
+
+        // ViennaRNA zeroes p->mismatchM under dangle model 0,
+        // vp.multiloop_mismatch() returns the correct baseline for all dangle models
+        return mod_energy - vp.multiloop_mismatch(type, n5, n3);
     }
 
     [[nodiscard]] static int danlge5_mod_energy_lookup(

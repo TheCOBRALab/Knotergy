@@ -178,5 +178,82 @@ TEST(mod_nonpk, multiloop_one_unpaired_between_each_closing_pair) {
     EXPECT_NEAR(d3, -4.03, 0.000005);
 }
 
+// Terminal mismatches of hairpin and internal loops, and helix ends of internal loops with
+// unpaired bases on both sides. Expected values from ViennaRNA's development version (test_dev,
+// 2d5a5c3), e.g. echo -e "GGC6AACGCC\n(((....)))" | RNAfold -C --enforceConstraint -m -d2
+// Under dangle model 0, ViennaRNA zeroes its multiloop mismatch table, which is the baseline of the
+// mismatch corrections, and so adds the whole modified mismatch energy (-4.45 here). Knotergy keeps
+// the baseline of the other dangle models.
+TEST(mod_nonpk, hairpin_mismatch) {
+    std::string sequence = "GGC6AACGCC";
+    std::string structure = "(((....)))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -2.95, 0.000005);
+    EXPECT_NEAR(d1, -2.95, 0.000005);
+    EXPECT_NEAR(d2, -2.95, 0.000005);
+    EXPECT_NEAR(d3, -2.95, 0.000005);
+}
+
+// m6A in the terminal mismatch of the closing pair of a 2x2 internal loop
+TEST(mod_nonpk, internal_loop_closing_mismatch) {
+    std::string sequence = "GGGC6AGCGCAAAAGCGCACGCCC";
+    std::string structure = "((((..((((....))))..))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -13.85, 0.000005);
+    EXPECT_NEAR(d1, -13.85, 0.000005);
+    EXPECT_NEAR(d2, -13.85, 0.000005);
+    EXPECT_NEAR(d3, -13.85, 0.000005);
+}
+
+// m6A in the terminal mismatch of the enclosed pair of a 2x2 internal loop, outside both pairs
+TEST(mod_nonpk, internal_loop_enclosed_mismatch) {
+    std::string sequence = "GGGCACGCGCAAAAGCGC6AGCCC";
+    std::string structure = "((((..((((....))))..))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -13.85, 0.000005);
+    EXPECT_NEAR(d1, -13.85, 0.000005);
+    EXPECT_NEAR(d2, -13.85, 0.000005);
+    EXPECT_NEAR(d3, -13.85, 0.000005);
+}
+
+// A 1x1 internal loop gets mismatch corrections
+TEST(mod_nonpk, internal_loop_1x1_mismatch) {
+    std::string sequence = "GGGC6GCGCAAAAGCGCCGCCC";
+    std::string structure = "((((.((((....)))).))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -14.95, 0.000005);
+    EXPECT_NEAR(d1, -14.95, 0.000005);
+    EXPECT_NEAR(d2, -14.95, 0.000005);
+    EXPECT_NEAR(d3, -14.95, 0.000005);
+}
+
+// Inosine in the closing pair of a 2x2 internal loop: helix-end correction (and stacking)
+TEST(mod_nonpk, internal_loop_helix_end) {
+    std::string sequence = "GGGIAAGCGCAAAAGCGCAACCCC";
+    std::string structure = "((((..((((....))))..))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -13.10, 0.000005);
+    EXPECT_NEAR(d1, -13.10, 0.000005);
+    EXPECT_NEAR(d2, -13.10, 0.000005);
+    EXPECT_NEAR(d3, -13.10, 0.000005);
+}
+
+// A 1x1 internal loop gets no helix-end correction (only the stacking correction applies)
+TEST(mod_nonpk, internal_loop_1x1_no_helix_end) {
+    std::string sequence = "GGGIAGCGCAAAAGCGCACCCC";
+    std::string structure = "((((.((((....)))).))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, -13.42, 0.000005);
+    EXPECT_NEAR(d1, -13.42, 0.000005);
+    EXPECT_NEAR(d2, -13.42, 0.000005);
+    EXPECT_NEAR(d3, -13.42, 0.000005);
+}
+
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold
 // -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json

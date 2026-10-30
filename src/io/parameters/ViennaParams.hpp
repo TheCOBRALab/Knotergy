@@ -37,6 +37,17 @@ struct vrna_md_param {
     viennarna::vrna_md_t md{};     ///< ViennaRNA model details.
     viennarna::vrna_param_t* p{};  ///< ViennaRNA parameters.
 
+    /// ViennaRNA sets p->mismatchM to zero under dangle model 0, but the modified-base corrections
+    /// of terminal mismatches in hairpin and internal loops use it as their baseline under every
+    /// dangle model for modified bases.
+    decltype(viennarna::vrna_param_t::mismatchM) mismatchM_dangles{};
+
+    // Gives mismatchM even in dangle model 0, which ViennaRNA sets to zero. This is the baseline
+    // for modified-base corrections of terminal mismatches in hairpin and internal loops.
+    [[nodiscard]] int multiloop_mismatch(unsigned int type, int n5, int n3) const {
+        return mismatchM_dangles[type][n5][n3];
+    }
+
     // ------- Details about loading the parameters, for reporting purposes -------
 
     [[nodiscard]] const ParamSourceInfo& get_source_info() const { return source_info; }

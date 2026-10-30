@@ -106,6 +106,21 @@ void save_param_cache(const std::string& cachePath, const int dangle, const doub
     out.write(reinterpret_cast<const char*>(&hdr), sizeof(hdr));
     out.write(reinterpret_cast<const char*>(&p), sizeof(viennarna::vrna_param_t));
 }
+
+// Fill md_param.mismatchM_dangles. ViennaRNA zeroes mismatchM under dangle model 0, so for that
+// model the table is taken from the same parameters loaded under dangle model 2.
+void set_mismatchM_dangles(vrna_md_param& md_param, const std::string& paramFile,
+                           const double temperature, const double salt, const bool disable_cache) {
+    if (md_param.md.dangles != 0) {
+        std::memcpy(md_param.mismatchM_dangles, md_param.p->mismatchM,
+                    sizeof(md_param.mismatchM_dangles));
+        return;
+    }
+    vrna_md_param with_dangles =
+        ViennaParams::load_energy_parameters(paramFile, 2, temperature, salt, disable_cache);
+    std::memcpy(md_param.mismatchM_dangles, with_dangles.p->mismatchM,
+                sizeof(md_param.mismatchM_dangles));
+}
 }  // namespace
 
 //------------------------- Load ViennaRNA Energy Parameters -----------------------
@@ -165,6 +180,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
     if (!disable_cache &&
         load_param_cache(cachePath, dangle, temperature, salt, srcMtime, md_param)) {
         md_param.set_source_info(source_info);
+        set_mismatchM_dangles(md_param, paramFile, temperature, salt, disable_cache);
         return md_param;
     }
 
@@ -211,6 +227,7 @@ vrna_md_param ViennaParams::load_energy_parameters(const std::string& paramFile,
         save_param_cache(cachePath, dangle, temperature, salt, srcMtime, *md_param.p);
     }
 
+    set_mismatchM_dangles(md_param, paramFile, temperature, salt, disable_cache);
     return md_param;
 }
 

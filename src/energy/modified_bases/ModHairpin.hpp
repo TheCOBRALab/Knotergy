@@ -9,7 +9,7 @@ namespace knotergy {
 
 class ModHairpin {
    public:
-    // Adds an AU penalty to the modified hairpin energy
+    // Corrects the AU penalty and terminal mismatch of hairpin
     static int find_mod_hairpin_energy(std::size_t i, std::size_t j, const std::string& sequence,
                                        const std::vector<std::string_view>& mod_sequence,
                                        vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
@@ -21,28 +21,33 @@ class ModHairpin {
             return unmod_energy;
         }
 
-        // Create a key for modified base lookup
-        std::vector<std::string_view> unique_mod_bases =
-            ModBaseUtils::unique_modified_bases_at_indices({i, j}, mod_sequence);
-
-        if (unique_mod_bases.empty()) {
-            // No modified bases found, return the unmodified energy
+        // No modified base in the closing pair or its terminal mismatch
+        if (ModBaseUtils::unique_modified_bases_at_inner_edge(i, j, mod_sequence).empty()) {
             return unmod_energy;
         }
 
-        unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
-        int unmod_AU_penalty =
-            type > 2 ? vp.p->TerminalAU : 0;  // Only apply AU penalty for non-GC pairs
+        int e = unmod_energy;
 
-        // Create a key for modified base lookup
-        double temperature = vp.md.temperature;
-        std::string key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
-        int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp, ModLookup::TerminalAU,
-                                                 temperature);
-        modAU = modAU != NULL_ENERGY ? modAU : unmod_AU_penalty;
+        // Helix end of the closing pair
+        std::vector<std::string_view> unique_mod_bases =
+            ModBaseUtils::unique_modified_bases_at_indices({i, j}, mod_sequence);
+        if (!unique_mod_bases.empty()) {
+            unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+            int unmod_AU_penalty =
+                type > 2 ? vp.p->TerminalAU : 0;  // Only apply AU penalty for non-GC pairs
 
-        // Look up the modified hairpin energy
-        return unmod_energy + modAU - unmod_AU_penalty;
+            double temperature = vp.md.temperature;
+            std::string key = ModBaseUtils::join_string_views({i, j}, mod_sequence);
+            int modAU = ModBaseUtils::get_mod_energy(key, unique_mod_bases, mp,
+                                                     ModLookup::TerminalAU, temperature);
+            modAU = modAU != NULL_ENERGY ? modAU : unmod_AU_penalty;
+            e += modAU - unmod_AU_penalty;
+        }
+
+        // Terminal mismatch inside the closing pair
+        e += ModBaseUtils::loop_mismatch_diff(i, j, sequence, mod_sequence, vp, mp, true);
+
+        return e;
     }
 
     static int find_mod_hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
