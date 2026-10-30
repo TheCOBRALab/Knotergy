@@ -255,5 +255,16 @@ TEST(mod_nonpk, internal_loop_1x1_no_helix_end) {
     EXPECT_NEAR(d3, -13.42, 0.000005);
 }
 
+TEST(mod_nonpk, stacking_with_inosine) {
+    std::string sequence = "GGUUAAAAIICC";
+    std::string structure = "((((....))))";
+    auto [d0, d1, d2, d3] = pipeline(sequence, structure);
+
+    EXPECT_NEAR(d0, 1.600, 0.000005);
+    EXPECT_NEAR(d1, 1.600, 0.000005);
+    EXPECT_NEAR(d2, 1.600, 0.000005);
+    EXPECT_NEAR(d3, 1.600, 0.000005);
+}
+
 // echo -e "AAAAAUUUUUUUUPGGGGGGGGGCCCCCCCCC" | RNAfold
 // -mod-file=./params/modified_bases/rna_mod_pseudouridine_parameters.json
