@@ -171,7 +171,8 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                             pRNA.get_modified_sequence(), vp, mp);
                     } else {
                         stack_energy =
-                            vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
+                            vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]] +
+                            vp.p->SaltStack;
                     }
                     new_cx = energy + stack_energy;
 
@@ -195,7 +196,8 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
 
                 // Since each nucleotide or helix end can participate in only one favorable
                 // interaction if the previous stem was coaxially stacked, only the 5' dangle of the
-                // current stem can be used https://rna.urmc.rochester.edu/NNDB/rna_2004/rna_2004_multibranch_loops.html
+                // current stem can be used
+                // https://rna.urmc.rochester.edu/NNDB/rna_2004/rna_2004_multibranch_loops.html
                 if (add_or_inf(cx_energy, curr_dang5) < energy) {
                     energy = add_or_inf(cx_energy, curr_dang5);
                     ld5 = curr_dang5;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(Knotergy
-    VERSION 0.3.0
+    VERSION 0.3.2
     LANGUAGES CXX
     DESCRIPTION "Knotergy: A C++ library for computing energy values of pseudoknotted structures"
 )
