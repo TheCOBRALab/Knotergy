@@ -73,8 +73,14 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
             ViennaUtils::get_pair_type(sequence[child->begin], sequence[child->end], vp.md);
 
         int dangle5 = n5d_outer >= 0 ? vp.p->dangle5[pair_type][n5d_outer] : 0;
-
         int dangle3 = n3d_outer >= 0 ? vp.p->dangle3[pair_type][n3d_outer] : 0;
+
+        if (pRNA.has_modified_bases() && n5d_outer >= 0) {
+            dangle5 = ModBaseUtils::get_dangle5_energy(child->begin, child->end, pRNA, vp, mp);
+        }
+        if (pRNA.has_modified_bases() && n3d_outer >= 0) {
+            dangle3 = ModBaseUtils::get_dangle3_energy(child->begin, child->end, pRNA, vp, mp);
+        }
 
         stems.push_back(
             MultiloopStem{child->begin, child->end, child->end, pair_type, dangle5, dangle3});
@@ -167,12 +173,12 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                     int stack_energy;
                     if (pRNA.has_modified_bases()) {
                         stack_energy = ModStack::find_mod_stack_energy(
-                            prev_stem.end, prev_stem.begin, stem.begin, stem.end, sequence,
-                            pRNA.get_modified_sequence(), vp, mp);
+                                           prev_stem.end, prev_stem.begin, stem.begin, stem.end,
+                                           sequence, pRNA.get_modified_sequence(), vp, mp) -
+                                       vp.p->SaltStack;
                     } else {
                         stack_energy =
-                            vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]] +
-                            vp.p->SaltStack;
+                            vp.p->stack[vp.md.rtype[prev_type]][vp.md.rtype[current_type]];
                     }
                     new_cx = energy + stack_energy;
 
