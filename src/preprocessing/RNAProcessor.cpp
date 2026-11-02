@@ -1,5 +1,7 @@
 #include "RNAProcessor.hpp"
 
+#include <sstream>
+
 namespace knotergy {
 ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params) {
     bool has_modified_bases = false;
@@ -125,15 +127,17 @@ std::vector<std::size_t> RNAProcessor::compute_pair_table(
 
             // Validate pair_table if sequence information is available
             if (check_pairs && !can_pair(unmodified_sequence[j], unmodified_sequence[i])) {
+                std::ostringstream warning;
                 if (have_mod_seq) {
-                    std::cerr << WARNING << " Base pair '" << mod_sequence[j]
-                              << "' can't pair with '" << mod_sequence[i] << "' at indices " << j
-                              << ", " << i << ANSI_COLOR_RESET << '\n';
+                    warning << WARNING << " Base pair '" << mod_sequence[j] << "' can't pair with '"
+                            << mod_sequence[i] << "' at indices " << j << ", " << i
+                            << ANSI_COLOR_RESET << '\n';
                 } else {
-                    std::cerr << WARNING << " Base pair '" << unmodified_sequence[j]
-                              << "' can't pair with '" << unmodified_sequence[i] << "' at indices "
-                              << j << ", " << i << ANSI_COLOR_RESET << '\n';
+                    warning << WARNING << " Base pair '" << unmodified_sequence[j]
+                            << "' can't pair with '" << unmodified_sequence[i] << "' at indices "
+                            << j << ", " << i << ANSI_COLOR_RESET << '\n';
                 }
+                std::cerr << warning.str();
             }
 
             continue;
