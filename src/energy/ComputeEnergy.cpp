@@ -1,11 +1,11 @@
 #include "ComputeEnergy.hpp"
 
-#include "energy/efn2/efn2.hpp"
 #include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModMultiloop.hpp"
 #include "energy/modified_bases/ModStack.hpp"
+#include "energy/rna_structure/efn2.hpp"
 #include "io/output/EnergyBreakdown.hpp"
 
 namespace knotergy {
