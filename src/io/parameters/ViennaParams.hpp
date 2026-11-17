@@ -3,8 +3,12 @@
 #include "io/output/Report.hpp"
 #include "utils/FileUtils.hpp"
 
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <new>
+#include <utility>
 
 // used for load_energy_parameters
 #include <ViennaRNA/model.hpp>
@@ -30,6 +34,31 @@ namespace knotergy {
 }
 
 struct vrna_md_param {
+    vrna_md_param() = default;
+
+    // Copy constructor
+    vrna_md_param(const vrna_md_param& other)
+        : md(other.md), p(clone(other.p)), source_info(other.source_info) {
+        std::memcpy(mismatchM_dangles, other.mismatchM_dangles, sizeof(mismatchM_dangles));
+    }
+
+    // Move constructor
+    vrna_md_param(vrna_md_param&& other) noexcept
+        : md(other.md),
+          p(std::exchange(other.p, nullptr)),
+          source_info(std::move(other.source_info)) {
+        std::memcpy(mismatchM_dangles, other.mismatchM_dangles, sizeof(mismatchM_dangles));
+    }
+
+    // Copy assignment operator
+    vrna_md_param& operator=(vrna_md_param other) noexcept {
+        std::swap(md, other.md);
+        std::swap(p, other.p);
+        std::swap(mismatchM_dangles, other.mismatchM_dangles);
+        std::swap(source_info, other.source_info);
+        return *this;
+    }
+
     ~vrna_md_param() {
         if (p) free(p);
     }
@@ -54,6 +83,15 @@ struct vrna_md_param {
     void set_source_info(const ParamSourceInfo& info) { source_info = info; }
 
    private:
+    [[nodiscard]] static viennarna::vrna_param_t* clone(const viennarna::vrna_param_t* source) {
+        if (source == nullptr) return nullptr;
+        auto* copy =
+            static_cast<viennarna::vrna_param_t*>(std::malloc(sizeof(viennarna::vrna_param_t)));
+        if (copy == nullptr) throw std::bad_alloc();
+        std::memcpy(copy, source, sizeof(viennarna::vrna_param_t));
+        return copy;
+    }
+
     ParamSourceInfo source_info;
 };
 

@@ -1,8 +1,14 @@
+#pragma once
 
 #include "io/parameters/ModParams.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/RNAstructureParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
+
+#include <cstddef>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace knotergy {
 
@@ -29,7 +35,8 @@ class AllParams {
     [[nodiscard]] int d3();
     [[nodiscard]] int mismatch();
     [[nodiscard]] int terminal();
-    [[nodiscard]] int hairpin();
+    [[nodiscard]] int hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
+                              const std::vector<std::string_view>& mod_sequence, bool& is_inf);
     [[nodiscard]] int internal();
     [[nodiscard]] int multibranch();
 };
