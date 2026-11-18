@@ -29,8 +29,11 @@ class RNAstructureUtils {
                     std::to_string(k));
     }
 
+    // RNAstructure marks a forbidden table entry with INFINITE_ENERGY (1400 kcal/mol) and adds it
+    // up like any other term, so a forbidden loop comes out near a multiple of that (efn2 prints
+    // 1399.9, 1400.5, 2800.5, ...). No allowed loop is anywhere near half of it.
     [[nodiscard]] static int from_rnastructure(int energy) {
-        return energy >= rnastructure::kInfiniteEnergy ? INF : 10 * energy;
+        return energy >= rnastructure::kInfiniteEnergy / 2 ? INF : 10 * energy;
     }
 };
 }  // namespace knotergy

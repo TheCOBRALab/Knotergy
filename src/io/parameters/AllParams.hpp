@@ -37,7 +37,9 @@ class AllParams {
     [[nodiscard]] int terminal();
     [[nodiscard]] int hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
                               const std::vector<std::string_view>& mod_sequence, bool& is_inf);
-    [[nodiscard]] int internal();
+    [[nodiscard]] int internal(const std::size_t i, const std::size_t j, const std::size_t ci,
+                               const std::size_t cj, const std::string& sequence,
+                               const std::vector<std::string_view>& mod_sequence);
     [[nodiscard]] int multibranch();
 };
 
