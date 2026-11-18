@@ -106,22 +106,16 @@ int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
 
 double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
-    double energy = 0;
     switch (node.parent->loop_type) {
-        case (LoopType::External):    energy += pkp.pk_in_ext; break;
-        case (LoopType::Multibranch): energy += pkp.pk_in_mloop; break;
+        case (LoopType::External):    return pkp.pk_in_ext;
+        case (LoopType::Multibranch): return pkp.pk_in_mloop;
         case (LoopType::Pseudoknot):
-            energy +=
-                node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop : pkp.pk_in_pk;
-            break;
+            return node.pseudo_type == PseudoNestedType::WithinBand ? pkp.pk_in_mloop
+                                                                    : pkp.pk_in_pk;
         default:
-            std::cerr << WARNING
-                      << "Parent of this node is not a pseudoknot, external, or "
-                         "multiloop"
-                      << node << std::endl;
-            break;
+            THROW_ERROR("Invalid parent loop type for pseudoknot initialization penalty: " +
+                        std::to_string(static_cast<int>(node.parent->loop_type)));
     }
-    return energy;
 }
 
 double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
@@ -131,14 +125,6 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
     double energy = 0;
 
     for (Band& band : node.bands) {
-        // Sanity check: left inner border must be less than right inner border
-        if (band.left_inner() >= band.right_inner()) {
-            THROW_ERROR("Invalid band with borders (" + std::to_string(band.left_border()) + ", " +
-                        std::to_string(band.right_border()) + ") in pseudoknot (" +
-                        std::to_string(node.begin) + ", " + std::to_string(node.end) +
-                        "). Left inner border must be less than right inner border.");
-        }
-
         std::vector<PKBasePair>& bps = band.base_pairs();
 
         // loops through each base pair in band (except last one)
