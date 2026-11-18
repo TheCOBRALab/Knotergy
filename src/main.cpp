@@ -1,5 +1,5 @@
 #include "energy/ComputeEnergy.hpp"
-#include "io/input/CliArgs.hpp"
+#include "io/input/CLIArgs.hpp"
 #include "io/input/RNAInputManager.hpp"
 #include "io/output/OutputManager.hpp"
 #include "io/output/colors.hpp"
@@ -22,16 +22,16 @@
 namespace {
 
 // ------------- Parameter loading helper functions ----------------
-knotergy::vrna_md_param load_vienna_params(const knotergy::CliArgs& args) {
+knotergy::vrna_md_param load_vienna_params(const knotergy::CLIArgs& args) {
     return knotergy::ViennaParams::load_energy_parameters(
         args.vienna_param_file, args.dangle, args.temperature, args.salt, args.disable_cache);
 }
 
-knotergy::pk_param load_pseudoknot_params(const knotergy::CliArgs& args) {
+knotergy::pk_param load_pseudoknot_params(const knotergy::CLIArgs& args) {
     return knotergy::PseudoknotParams::load_pk_param(args.pseudo_param_file, args.round_method());
 }
 
-knotergy::all_mod_params load_modified_params(const knotergy::CliArgs& args) {
+knotergy::all_mod_params load_modified_params(const knotergy::CLIArgs& args) {
     return knotergy::ModParams::load_modified_params(args.mod_param_paths);
 }
 
@@ -41,7 +41,7 @@ struct EnergyResult {
     std::exception_ptr error;
 };
 
-EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CliArgs& args,
+EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CLIArgs& args,
                             knotergy::vrna_md_param& vp, const knotergy::pk_param& pkp,
                             const knotergy::all_mod_params& mp) {
     const knotergy::ProcessedRNAEntry processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
@@ -51,7 +51,7 @@ EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CliAr
     return {calculator.getEnergy(), calculator.getInfiniteEnergyFlag(), {}};
 }
 
-void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CliArgs& args) {
+void print_per_entry_header(const knotergy::RNAEntry& rna, const knotergy::CLIArgs& args) {
     std::cout << "\n--------- Name: " << rna.name << " ---------" << '\n';
     if (args.show_input) {
         std::cout << "Sequence : " << rna.sequence << '\n';
@@ -77,7 +77,7 @@ void print_results(const EnergyResult& result, const bool use_color) {
     }
 }
 
-int run_knotergy(const knotergy::CliArgs& args) {
+int run_knotergy(const knotergy::CLIArgs& args) {
     const bool use_color = knotergy::should_use_color();
 
     // ------------------------- Load Parameters -----------------------
@@ -136,9 +136,9 @@ int main(int argc, char** argv) {
     const bool verbose = knotergy::has_verbose_flag(argc, argv);
 
     try {
-        knotergy::CliArgs args;
+        knotergy::CLIArgs args;
 
-        switch (knotergy::CliArgs::parse(argc, argv, args)) {
+        switch (knotergy::CLIArgs::parse(argc, argv, args)) {
             case knotergy::ParseStatus::ExitSuccess: return EXIT_SUCCESS;
             case knotergy::ParseStatus::ExitFailure: return EXIT_FAILURE;
             case knotergy::ParseStatus::Ok:          break;

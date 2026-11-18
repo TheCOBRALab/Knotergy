@@ -1,4 +1,4 @@
-#include "io/input/CliArgs.hpp"
+#include "io/input/CLIArgs.hpp"
 
 #include "io/output/OutputManager.hpp"
 #include "io/output/colors.hpp"
@@ -132,7 +132,7 @@ bool has_verbose_flag(int argc, char** argv) {
 
 // ------------------------------ Parsing ---------------------------------
 
-ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
+ParseStatus CLIArgs::parse(int argc, char** argv, CLIArgs& out) {
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
 
@@ -256,7 +256,7 @@ ParseStatus CliArgs::parse(int argc, char** argv, CliArgs& out) {
 
 // ---------------------------- Interactive -------------------------------
 
-void CliArgs::prompt_for_missing_input() {
+void CLIArgs::prompt_for_missing_input() {
     if (!input_file.empty()) return;
 
     if (sequence.empty()) {
@@ -274,7 +274,7 @@ void CliArgs::prompt_for_missing_input() {
 
 // ---------------------------- Validation --------------------------------
 
-bool CliArgs::validate() const {
+bool CLIArgs::validate() const {
     if (!input_file.empty() && !FileUtils::file_exists(input_file)) {
         std::cerr << ERROR << " Input file not found: " << input_file << '\n';
         return false;

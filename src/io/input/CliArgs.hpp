@@ -11,7 +11,7 @@ namespace knotergy {
 
 // What the caller should do once the command line has been read.
 enum class ParseStatus {
-    Ok,           // Carry on; the CliArgs instance is populated.
+    Ok,           // Carry on; the CLIArgs instance is populated.
     ExitSuccess,  // A terminal flag such as --help or --version was handled.
     ExitFailure,  // The command line was malformed; a message was already printed.
 };
@@ -19,7 +19,7 @@ enum class ParseStatus {
 enum class Convert { None, TtoU, UtoT };
 
 // Every setting Knotergy takes from the command line.
-struct CliArgs {
+struct CLIArgs {
     // Input.
     std::string sequence;
     std::string structure;
@@ -47,7 +47,7 @@ struct CliArgs {
 
     // Reads argv into `out`. Problems are reported on stderr, so the caller
     // only has to act on the returned status.
-    static ParseStatus parse(int argc, char** argv, CliArgs& out);
+    static ParseStatus parse(int argc, char** argv, CLIArgs& out);
 
     // Prompts on stdin for whichever of sequence/structure is still missing,
     // unless an input file was supplied.
