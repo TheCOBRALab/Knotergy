@@ -44,7 +44,8 @@ struct EnergyResult {
 EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CLIArgs& args,
                             knotergy::vrna_md_param& vp, const knotergy::pk_param& pkp,
                             const knotergy::all_mod_params& mp) {
-    const knotergy::ProcessedRNAEntry processed_rna = knotergy::RNAProcessor::process_rna(rna, mp);
+    const knotergy::ProcessedRNAEntry processed_rna =
+        knotergy::RNAProcessor::process_rna(rna, mp, args.convert);
     knotergy::LoopFactory factory(processed_rna);
     knotergy::ComputeEnergy calculator(factory.get_root_node(), processed_rna, vp, pkp, mp,
                                        args.pk_dangles, args.efn2_correction, args.verbosity);

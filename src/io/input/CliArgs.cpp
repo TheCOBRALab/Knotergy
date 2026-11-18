@@ -113,8 +113,8 @@ void print_help() {
         << "      --show-input                      Show the input sequence and structure\n"
         << "      --disable-cache                   Disable parameter caching\n"
         << "      --salt <salt>                     Salt Concentration (default: 1.021)"
-        //   << "      --convertU                        Convert T to U"
-        //   << "      --convertT                        Convert U to T"
+        << "      --convertU                        Convert T to U"
+        << "      --convertT                        Convert U to T"
         //   << "      --efn2-correction                 Apply efn2 single-bulge correction\n"
         ;
 }

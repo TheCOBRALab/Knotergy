@@ -3,10 +3,23 @@
 #include <sstream>
 
 namespace knotergy {
-ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params) {
+ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& modified_params,
+                                            Convert convert) {
     bool has_modified_bases = false;
     std::string unmodified_sequence;
     std::vector<std::string_view> mod_sequence;
+    std::string& raw_sequence = rna.sequence;
+    std::string& structure = rna.structure;
+
+    if (convert == Convert::TtoU) {
+        for (char& base : raw_sequence) {
+            if (base == 'T') base = 'U';
+        }
+    } else if (convert == Convert::UtoT) {
+        for (char& base : raw_sequence) {
+            if (base == 'U') base = 'T';
+        }
+    }
 
     // Helper lambda to validate that the sequence length matches the structure length
     auto validate_sequence_structure_length = [&](std::size_t sequence_length) {
@@ -19,7 +32,7 @@ ProcessedRNAEntry RNAProcessor::process_rna(RNAEntry rna, const all_mod_params& 
 
     // Modified bases present
     if (!modified_params.empty()) {
-        mod_sequence = ProcessedRNAEntry::parse_modified_sequence(rna.sequence, rna.structure);
+        mod_sequence = ProcessedRNAEntry::parse_modified_sequence(raw_sequence, structure);
         validate_sequence_structure_length(mod_sequence.size());
         unmodified_sequence = compute_unmodified_sequence(mod_sequence, modified_params, rna.size(),
                                                           has_modified_bases);

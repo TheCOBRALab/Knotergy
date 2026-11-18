@@ -2,6 +2,7 @@
 
 #include "io/output/EnergyBreakdown.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
+#include "preprocessing/RNAProcessor.hpp"
 #include "utils/common.hpp"
 
 #include <string>
@@ -15,8 +16,6 @@ enum class ParseStatus {
     ExitSuccess,  // A terminal flag such as --help or --version was handled.
     ExitFailure,  // The command line was malformed; a message was already printed.
 };
-
-enum class Convert { None, TtoU, UtoT };
 
 // Every setting Knotergy takes from the command line.
 struct CLIArgs {

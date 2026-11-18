@@ -10,6 +10,9 @@
 #include <vector>
 namespace knotergy {
 
+// Convert T to U or U to T in the input sequence.
+enum class Convert { None, TtoU, UtoT };
+
 /**
  * @brief Utilities for parsing RNA secondary-structure strings.
  *
@@ -29,7 +32,8 @@ class RNAProcessor {
     RNAProcessor();
 
     /// High-level pipeline that produces a processed entry from raw RNA input.
-    static ProcessedRNAEntry process_rna(RNAEntry rna, const all_mod_params& modified_params = {});
+    static ProcessedRNAEntry process_rna(RNAEntry rna, const all_mod_params& modified_params = {},
+                                         Convert convert = Convert::None);
 
     /**
      * @brief Compute base-pair indices from a structure string.
