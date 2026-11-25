@@ -24,6 +24,36 @@ int raw_helix_end(std::size_t a, std::size_t b, const std::string& sequence,
     return d.helix_ends(code(b), code(a), code(b + 1), code(a - 1));  // at an end of the sequence
 }
 
+// The last index of RNAstructure's dangle table: which side of the helix the nucleotide is on.
+constexpr std::size_t kDangle3 = 1;
+constexpr std::size_t kDangle5 = 2;
+
+// efn2's erg4. The table has the pair as the loop sees it: first the nucleotide whose 3'
+// neighbor is in the loop (the 3' dangle), then the one whose 5' neighbor is (the 5' dangle).
+// For a branch of the loop that is j then i; for the pair that closes it, i then j.
+int dangle_energy(std::size_t i, std::size_t j, std::size_t side, bool is_closing,
+                  const std::string& sequence, const std::vector<std::string_view>& mod_sequence,
+                  const rnastructure_param& rsp) {
+    const bool has_nucleotide =
+        is_closing ? j > i + 1 : (side == kDangle5 ? i > 0 : j + 1 < sequence.size());
+    if (j <= i || j >= sequence.size() || !has_nucleotide) {
+        THROW_ERROR(std::string("Invalid indices for ") + (side == kDangle5 ? "5'" : "3'") +
+                    " dangle energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j) +
+                    (is_closing ? ", dangle inside the pair" : ", dangle outside the pair"));
+    }
+
+    const rnastructure::Datatable& d = rsp.data;
+    const auto code = [&](std::size_t k) {
+        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
+    };
+    const std::size_t first = is_closing ? i : j;
+    const std::size_t second = is_closing ? j : i;
+    const std::size_t dangling = side == kDangle3 ? first + 1 : second - 1;
+    return RNAstructureUtils::from_rnastructure(
+        d.dangle(code(first), code(second), code(dangling), side));
+}
+
 }  // namespace
 
 // --------------------------------------------
@@ -235,6 +265,21 @@ int RNAstructureFunctions::internal_loop_energy(std::size_t i, std::size_t j, st
         energy += std::min<int>(m.maxpen, lopsided * m.poppen[shorter]);
     }
     return RNAstructureUtils::from_rnastructure(energy + helix_ends());
+}
+
+// --------------------------------------------
+//              Dangle Energy
+// --------------------------------------------
+int RNAstructureFunctions::dangle5_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                          const std::vector<std::string_view>& mod_sequence,
+                                          const rnastructure_param& rsp, bool is_closing) {
+    return dangle_energy(i, j, kDangle5, is_closing, sequence, mod_sequence, rsp);
+}
+
+int RNAstructureFunctions::dangle3_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                          const std::vector<std::string_view>& mod_sequence,
+                                          const rnastructure_param& rsp, bool is_closing) {
+    return dangle_energy(i, j, kDangle3, is_closing, sequence, mod_sequence, rsp);
 }
 
 }  // namespace knotergy

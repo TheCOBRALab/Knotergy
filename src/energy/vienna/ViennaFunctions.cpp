@@ -196,4 +196,38 @@ int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
     }
     return energy;
 }
+
+// --------------------------------------------
+//              Dangle Energy
+// --------------------------------------------
+
+int ViennaFunctions::dangle5_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                    vrna_md_param& vp, bool is_closing) {
+    if (j <= i || j >= sequence.size() || (is_closing ? j == i + 1 : i == 0)) {
+        THROW_ERROR("Invalid indices for 5' dangle energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j));
+    }
+
+    // A closing pair is seen from inside the loop: j.i, with j - 1 on its 5' side.
+    const unsigned int type = is_closing
+                                  ? ViennaUtils::get_pair_type(sequence[j], sequence[i], vp.md)
+                                  : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+    const int n5d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? j - 1 : i - 1]);
+    return vp.p->dangle5[type][n5d];
+}
+
+int ViennaFunctions::dangle3_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                    vrna_md_param& vp, bool is_closing) {
+    if (j <= i || j >= sequence.size() || (is_closing ? j == i + 1 : j + 1 == sequence.size())) {
+        THROW_ERROR("Invalid indices for 3' dangle energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j));
+    }
+
+    // A closing pair is seen from inside the loop: j.i, with i + 1 on its 3' side.
+    const unsigned int type = is_closing
+                                  ? ViennaUtils::get_pair_type(sequence[j], sequence[i], vp.md)
+                                  : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+    const int n3d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? i + 1 : j + 1]);
+    return vp.p->dangle3[type][n3d];
+}
 }  // namespace knotergy

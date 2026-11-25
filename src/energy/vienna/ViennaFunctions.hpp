@@ -137,5 +137,39 @@ class ViennaFunctions {
      */
     [[nodiscard]] static int external_energy(const std::vector<LoopNode*>& children,
                                              const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
+
+    /**
+     * @brief Calculate the energy of a 5' dangling end on base pair i-j.
+     *
+     * The dangling nucleotide is i - 1, outside the pair, or j - 1 when the pair closes a
+     * multibranch loop (is_closing) and its dangles are inside it.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param vp The ViennaRNA model parameters.
+     * @param is_closing True when i-j closes a multibranch loop: the dangle is inside the pair.
+     * @return Dangle energy in centicalories.
+     */
+    [[nodiscard]] static int dangle5_energy(std::size_t i, std::size_t j,
+                                            const std::string& sequence, vrna_md_param& vp,
+                                            bool is_closing = false);
+
+    /**
+     * @brief Calculate the energy of a 3' dangling end on base pair i-j.
+     *
+     * The dangling nucleotide is j + 1, outside the pair, or i + 1 when the pair closes a
+     * multibranch loop (is_closing) and its dangles are inside it.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param vp The ViennaRNA model parameters.
+     * @param is_closing True when i-j closes a multibranch loop: the dangle is inside the pair.
+     * @return Dangle energy in centicalories.
+     */
+    [[nodiscard]] static int dangle3_energy(std::size_t i, std::size_t j,
+                                            const std::string& sequence, vrna_md_param& vp,
+                                            bool is_closing = false);
 };
 }  // namespace knotergy

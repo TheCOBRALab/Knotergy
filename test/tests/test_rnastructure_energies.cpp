@@ -6,6 +6,7 @@
 
 #include "test_utils.hpp"
 
+#include <energy/modified_bases/ModBaseUtils.hpp>
 #include <energy/modified_bases/ModHairpin.hpp>
 #include <energy/modified_bases/ModInternal.hpp>
 #include <energy/rna_structure/RNAstructureFunctions.hpp>
@@ -54,17 +55,19 @@ struct LoopPairs {
     std::size_t cj;
 };
 
+// Position paired with the one that opens at position i of a dot-bracket structure.
+std::size_t partner(const std::string& structure, std::size_t i) {
+    int depth = 0;
+    for (std::size_t k = i; k < structure.size(); ++k) {
+        if (structure[k] == '(') ++depth;
+        if (structure[k] == ')' && --depth == 0) return k;
+    }
+    return structure.size();
+}
+
 LoopPairs loop_at(const std::string& structure, std::size_t i) {
-    const auto partner = [&](std::size_t open) {
-        int depth = 0;
-        for (std::size_t k = open; k < structure.size(); ++k) {
-            if (structure[k] == '(') ++depth;
-            if (structure[k] == ')' && --depth == 0) return k;
-        }
-        return structure.size();
-    };
     const std::size_t ci = structure.find('(', i + 1);
-    return {i, partner(i), ci, partner(ci)};
+    return {i, partner(structure, i), ci, partner(structure, ci)};
 }
 
 // Energy of the internal loop or bulge closed by the pair that opens at position i.
@@ -84,6 +87,27 @@ struct LoopCase {
     std::size_t i;  // 5' position of the closing pair (efn2 prints i + 1)
     int expected;
 };
+
+// A dangling end on the pair that opens at position i, and its energy in centicalories.
+struct DangleCase {
+    const char* what;
+    std::string sequence;
+    std::string structure;
+    std::size_t i;    // 5' position of the pair
+    char side;        // '5' or '3'
+    bool is_closing;  // the dangle is inside the pair
+    int expected;
+};
+
+int dangle(const DangleCase& c, const knotergy::rnastructure_param& rsp) {
+    const knotergy::ProcessedRNAEntry rna = process(c.sequence, c.structure);
+    const std::size_t j = partner(c.structure, c.i);
+    return c.side == '5'
+               ? RNAstructureFunctions::dangle5_energy(
+                     c.i, j, rna.get_sequence(), rna.get_modified_sequence(), rsp, c.is_closing)
+               : RNAstructureFunctions::dangle3_energy(
+                     c.i, j, rna.get_sequence(), rna.get_modified_sequence(), rsp, c.is_closing);
+}
 
 }  // namespace
 
@@ -316,6 +340,95 @@ TEST(RNAstructureEnergies, ForbiddenInternalLoopsAreInfinite) {
                  knotergy::DetailedException);
 }
 
+// efn2 -w does not print dangles, so the values are differences of its loop energies: the loop
+// with the nucleotide minus the same loop with N in its place, which never stacks.
+// - Outside a pair: one nucleotide next to the only helix of the exterior loop.
+// - Inside a pair: one nucleotide next to the pair that closes a multibranch loop whose other
+//   nucleotides are all N.
+TEST(RNAstructureEnergies, DanglesMatchEfn2) {
+    const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
+
+    const std::string before = ".((((....))))";
+    const std::string after = "((((....)))).";
+    const std::string multiloop = "((..((((....))))..((((....))))..))";
+    const std::vector<DangleCase> cases = {
+        // "Exterior loop" of efn2 -w, and 0.0 with N
+        {"3' A after a C-G helix", "CGACAAAAGUCGA", after, 0, '3', false, -110},
+        {"3' C after a C-G helix", "CGACAAAAGUCGC", after, 0, '3', false, -40},
+        {"3' G after a G-C helix", "GGACAAAAGUCCG", after, 0, '3', false, -170},
+        {"5' A before a C-G helix", "ACGACAAAAGUCG", before, 1, '5', false, -50},
+        {"5' A before a G-C helix", "AGGACAAAAGUCC", before, 1, '5', false, -20},
+        // -0.2, 0.3 and 0.4, where N gives the 0.5 of the helix end
+        {"3' A after an A-U helix", "AGACAAAAGUCUA", after, 0, '3', false, -70},
+        {"5' G before a U-A helix", "GUGACAAAAGUCA", before, 1, '5', false, -20},
+        {"3' U after a G-U helix", "GGACAAAAGUCUU", after, 0, '3', false, -10},
+        // "Multiloop" of efn2 -w: 5.8, 7.3 and 6.2 against 7.5 with N, 7.7 against 8.0
+        {"3' A inside a closing C-G", "GCANGGACAAAAGUCCNNGGACAAAAGUCCNNGC", multiloop, 1, '3', true,
+         -170},
+        {"5' A inside a closing C-G", "GCNNGGACAAAAGUCCNNGGACAAAAGUCCNAGC", multiloop, 1, '5', true,
+         -20},
+        {"3' G inside a closing G-C", "GGGNGGACAAAAGUCCNNGGACAAAAGUCCNNCC", multiloop, 1, '3', true,
+         -130},
+        {"5' A inside a closing A-U", "GANNGGACAAAAGUCCNNGGACAAAAGUCCNAUC", multiloop, 1, '5', true,
+         -30},
+        // N stacks with 0 on the 3' side and is not allowed on the 5' side
+        {"3' N", "CGACAAAAGUCGN", after, 0, '3', false, 0},
+        {"5' N", "NCGACAAAAGUCG", before, 1, '5', false, INF},
+        // A pair RNAstructure does not allow
+        {"3' A after an A-A pair", "AGACAAAAGUCAA", after, 0, '3', false, INF},
+    };
+    for (const DangleCase& c : cases) {
+        EXPECT_EQ(dangle(c, rsp), c.expected) << c.what << ": " << c.sequence;
+    }
+
+    // efn2 -w on AGACAAAAGUCUA ((((....)))). has Exterior loop = -0.2: the end of the helix and
+    // the A after it.
+    const knotergy::ProcessedRNAEntry rna = process("AGACAAAAGUCUA", after);
+    const std::string& sequence = rna.get_sequence();
+    const std::vector<std::string_view>& mod_sequence = rna.get_modified_sequence();
+    EXPECT_EQ(RNAstructureFunctions::helix_end(0, 11, sequence, mod_sequence, rsp) +
+                  RNAstructureFunctions::dangle3_energy(0, 11, sequence, mod_sequence, rsp),
+              -20);
+
+    // There has to be a nucleotide on that side of the pair.
+    EXPECT_THROW((void) RNAstructureFunctions::dangle5_energy(0, 11, sequence, mod_sequence, rsp),
+                 knotergy::DetailedException);
+    EXPECT_THROW((void) RNAstructureFunctions::dangle3_energy(1, 12, sequence, mod_sequence, rsp),
+                 knotergy::DetailedException);
+    EXPECT_THROW(
+        (void) RNAstructureFunctions::dangle3_energy(3, 4, sequence, mod_sequence, rsp, true),
+        knotergy::DetailedException);
+    EXPECT_THROW((void) RNAstructureFunctions::dangle5_energy(11, 0, sequence, mod_sequence, rsp),
+                 knotergy::DetailedException);
+}
+
+// efn2 -a m6A -w, efn2 -a PSU -w and efn2 -a 1 -w, as in DanglesMatchEfn2
+TEST(RNAstructureEnergies, DanglesWithModifiedBases) {
+    const knotergy::rnastructure_param rsp =
+        knotergy::RNAstructureParams::load("turner2004", {"m6A", "Ψ", "m1Ψ"});
+
+    const std::string before = ".((((....))))";
+    const std::string after = "((((....)))).";
+    const std::string multiloop = "((..((((....))))..((((....))))..))";
+    const std::vector<DangleCase> cases = {
+        {"5' m6A before an A-U helix", "6AGACAAAAGUCU", before, 1, '5', false, -90},
+        {"3' m6A after an A-U helix", "AGACAAAAGUCU6", after, 0, '3', false, -100},
+        {"3' m6A after a G-C helix", "GGACAAAAGUCC6", after, 0, '3', false, -130},
+        {"3' A after an m6A-U helix", "6GACAAAAGUCUA", after, 0, '3', false, -90},
+        {"5' A inside a closing U-m6A", "GUNNGGACAAAAGUCCNNGGACAAAAGUCCNA6C", multiloop, 1, '5',
+         true, -40},
+        {"3' Ψ after a G-C helix", "GGACAAAAGUCCP", after, 0, '3', false, -150},
+        {"5' Ψ before a G-C helix", "PGGACAAAAGUCC", before, 1, '5', false, -50},
+        {"3' m1Ψ after a G-C helix", "GGACAAAAGUCC1", after, 0, '3', false, -120},
+        {"3' A after an A-m1Ψ helix", "AGACAAAAGUC1A", after, 0, '3', false, -160},
+        {"3' A inside a closing m1Ψ-G", "G1ANGGACAAAAGUCCNNGGACAAAAGUCCNNGC", multiloop, 1, '3',
+         true, -160},
+    };
+    for (const DangleCase& c : cases) {
+        EXPECT_EQ(dangle(c, rsp), c.expected) << c.what << ": " << c.sequence;
+    }
+}
+
 // A symbol RNAstructure's sets do not know is an error that names the symbol, with or without
 // modified bases in the sequence.
 TEST(RNAstructureEnergies, UnknownSymbolsAreReported) {
@@ -398,4 +511,74 @@ TEST(AllParams, InternalFollowsTheLoadedParameters) {
     // RNAstructure, once its parameters are loaded
     params.rnastructure_params_loaded = true;
     EXPECT_EQ(params.internal(3, 16, 5, 14, sequence, mod_sequence), 90);
+}
+
+TEST(AllParams, DanglesFollowTheLoadedParameters) {
+    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
+    const knotergy::pk_param pkp =
+        knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
+    std::vector<knotergy::modified_base_param> json_params =
+        knotergy::ModParams::load_modified_energy_parameters(mod_folder);
+    const knotergy::all_mod_params mp{json_params};
+    const knotergy::rnastructure_param rsp =
+        knotergy::RNAstructureParams::load("turner2004", {"m6A"});
+
+    // m6A on both sides of an A-U pair: outside it, at the end of a helix (pair 1-12), and
+    // inside it, where it closes a multibranch loop (pair 1-32). The JSON file has both dangles.
+    const std::string helix = ".((((....)))).";
+    const std::string multiloop = "((..((((....))))..((((....))))..))";
+    const knotergy::ProcessedRNAEntry rna = process("6AGACAAAAGUCU6", helix);
+    const knotergy::ProcessedRNAEntry closed =
+        process("GU6NGGACAAAAGUCCNNGGACAAAAGUCCN6AC", multiloop);
+    // The same sequences without modified bases, as ViennaRNA alone sees them
+    const knotergy::ProcessedRNAEntry plain_rna =
+        knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(rna.get_sequence(), helix));
+    const knotergy::ProcessedRNAEntry plain_closed =
+        knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(closed.get_sequence(), multiloop));
+    const knotergy::all_mod_params no_mods;
+
+    knotergy::AllParams params(mp, pkp, vp, rsp);
+    const auto d5 = [&](const knotergy::ProcessedRNAEntry& entry, std::size_t i, std::size_t j,
+                        bool is_closing) {
+        return params.d5(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
+    };
+    const auto d3 = [&](const knotergy::ProcessedRNAEntry& entry, std::size_t i, std::size_t j,
+                        bool is_closing) {
+        return params.d3(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
+    };
+
+    // Nothing loaded
+    EXPECT_EQ(d5(rna, 1, 12, false), knotergy::NULL_ENERGY);
+    EXPECT_EQ(d3(rna, 1, 12, false), knotergy::NULL_ENERGY);
+
+    // ViennaRNA only: its tables, as the modified-base code reads them when nothing is modified
+    params.vienna_params_loaded = true;
+    const int vienna_d5 = d5(rna, 1, 12, false);
+    const int vienna_d3 = d3(rna, 1, 12, false);
+    EXPECT_EQ(vienna_d5, knotergy::ModBaseUtils::get_dangle5_energy(1, 12, plain_rna, vp, no_mods));
+    EXPECT_EQ(vienna_d3, knotergy::ModBaseUtils::get_dangle3_energy(1, 12, plain_rna, vp, no_mods));
+    EXPECT_EQ(d5(closed, 1, 32, true),
+              knotergy::ModBaseUtils::get_dangle5_energy(1, 32, plain_closed, vp, no_mods, true));
+    EXPECT_EQ(d3(closed, 1, 32, true),
+              knotergy::ModBaseUtils::get_dangle3_energy(1, 32, plain_closed, vp, no_mods, true));
+
+    // ViennaRNA with the JSON modified-base parameters
+    params.modified_params_loaded = true;
+    EXPECT_EQ(d5(rna, 1, 12, false),
+              knotergy::ModBaseUtils::get_dangle5_energy(1, 12, rna, vp, mp));
+    EXPECT_EQ(d3(rna, 1, 12, false),
+              knotergy::ModBaseUtils::get_dangle3_energy(1, 12, rna, vp, mp));
+    EXPECT_EQ(d5(closed, 1, 32, true),
+              knotergy::ModBaseUtils::get_dangle5_energy(1, 32, closed, vp, mp, true));
+    EXPECT_EQ(d3(closed, 1, 32, true),
+              knotergy::ModBaseUtils::get_dangle3_energy(1, 32, closed, vp, mp, true));
+    EXPECT_NE(d5(rna, 1, 12, false), vienna_d5);
+    EXPECT_NE(d3(rna, 1, 12, false), vienna_d3);
+
+    // RNAstructure, once its parameters are loaded (efn2 -a m6A -w, see DanglesWithModifiedBases)
+    params.rnastructure_params_loaded = true;
+    EXPECT_EQ(d5(rna, 1, 12, false), -90);
+    EXPECT_EQ(d3(rna, 1, 12, false), -100);
+    EXPECT_EQ(d5(closed, 1, 32, true), -90);
+    EXPECT_EQ(d3(closed, 1, 32, true), -100);
 }

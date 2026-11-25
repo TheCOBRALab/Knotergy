@@ -108,6 +108,53 @@ class RNAstructureFunctions {
                                                   std::size_t cj, const std::string& sequence,
                                                   const std::vector<std::string_view>& mod_sequence,
                                                   const rnastructure_param& rsp);
+
+    /**
+     * @brief Calculate the energy of a 5' dangling end on base pair i-j (efn2's erg4).
+     *
+     * A dangling end is an unpaired nucleotide of an exterior or multibranch loop that stacks
+     * on the end of a helix. Going through the loop 5' to 3', the 5' dangle is the nucleotide
+     * just before the helix: i - 1 for a branch of the loop, j - 1 for the pair that closes a
+     * multibranch loop (is_closing), whose dangles are inside it.
+     *
+     * efn2 uses a dangle only where it gives the lowest energy among the ways the nucleotides
+     * next to a helix can stack (5' dangle, 3' dangle, terminal mismatch, coaxial stack, or
+     * none of them), so this is a term to choose from, not one to always add.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The unmodified RNA nucleotide sequence.
+     * @param mod_sequence The modified RNA sequence (grapheme views); empty without modified bases.
+     * @param rsp RNAstructure parameters.
+     * @param is_closing True when i-j closes a multibranch loop: the dangle is inside the pair.
+     * @return Dangle energy in centicalories; INF where RNAstructure's table has no value: a
+     * pair it cannot form, or N, which it does not allow as a 5' dangle.
+     */
+    [[nodiscard]] static int dangle5_energy(std::size_t i, std::size_t j,
+                                            const std::string& sequence,
+                                            const std::vector<std::string_view>& mod_sequence,
+                                            const rnastructure_param& rsp, bool is_closing = false);
+
+    /**
+     * @brief Calculate the energy of a 3' dangling end on base pair i-j (efn2's erg4).
+     *
+     * Going through the loop 5' to 3', the 3' dangle is the nucleotide just after the helix:
+     * j + 1 for a branch of an exterior or multibranch loop, i + 1 for the pair that closes a
+     * multibranch loop (is_closing). See dangle5_energy.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The unmodified RNA nucleotide sequence.
+     * @param mod_sequence The modified RNA sequence (grapheme views); empty without modified bases.
+     * @param rsp RNAstructure parameters.
+     * @param is_closing True when i-j closes a multibranch loop: the dangle is inside the pair.
+     * @return Dangle energy in centicalories, 0 when the dangling nucleotide is N; otherwise INF
+     * for a pair RNAstructure cannot form.
+     */
+    [[nodiscard]] static int dangle3_energy(std::size_t i, std::size_t j,
+                                            const std::string& sequence,
+                                            const std::vector<std::string_view>& mod_sequence,
+                                            const rnastructure_param& rsp, bool is_closing = false);
 };
 
 }  // namespace knotergy

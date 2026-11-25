@@ -1,5 +1,6 @@
 #include "io/parameters/AllParams.hpp"
 
+#include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
@@ -21,6 +22,52 @@ int AllParams::stack(const std::size_t i, const std::size_t j, const std::size_t
 
     if (vienna_params_loaded) {
         return ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp_);
+    }
+
+    return NULL_ENERGY;
+}
+
+int AllParams::d5(const std::size_t i, const std::size_t j, const std::string& sequence,
+                  const std::vector<std::string_view>& mod_sequence, const bool is_closing) {
+    if (rnastructure_params_loaded) {
+        return RNAstructureFunctions::dangle5_energy(i, j, sequence, mod_sequence, rsp_,
+                                                     is_closing);
+    }
+
+    if (modified_params_loaded) {
+        // The JSON files only have the dangles that involve a modified base.
+        const int energy = ModBaseUtils::danlge5_mod_energy_lookup(i, j, mod_sequence, mp_,
+                                                                   vp_.md.temperature, is_closing);
+        return energy != NULL_ENERGY
+                   ? energy
+                   : ViennaFunctions::dangle5_energy(i, j, sequence, vp_, is_closing);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::dangle5_energy(i, j, sequence, vp_, is_closing);
+    }
+
+    return NULL_ENERGY;
+}
+
+int AllParams::d3(const std::size_t i, const std::size_t j, const std::string& sequence,
+                  const std::vector<std::string_view>& mod_sequence, const bool is_closing) {
+    if (rnastructure_params_loaded) {
+        return RNAstructureFunctions::dangle3_energy(i, j, sequence, mod_sequence, rsp_,
+                                                     is_closing);
+    }
+
+    if (modified_params_loaded) {
+        // The JSON files only have the dangles that involve a modified base.
+        const int energy = ModBaseUtils::danlge3_mod_energy_lookup(i, j, mod_sequence, mp_,
+                                                                   vp_.md.temperature, is_closing);
+        return energy != NULL_ENERGY
+                   ? energy
+                   : ViennaFunctions::dangle3_energy(i, j, sequence, vp_, is_closing);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::dangle3_energy(i, j, sequence, vp_, is_closing);
     }
 
     return NULL_ENERGY;

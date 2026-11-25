@@ -71,7 +71,7 @@ set(THERMORNA_RNASTRUCTURE ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(ThermoRNA
     GIT_REPOSITORY https://github.com/TheCOBRALab/ThermoRNA.git
-    GIT_TAG        v0.2.0
+    GIT_TAG        v0.2.1
 )
 
 fetch_dependency(ThermoRNA)

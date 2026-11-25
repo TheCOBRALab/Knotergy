@@ -31,8 +31,12 @@ class AllParams {
     [[nodiscard]] int stack(const std::size_t i, const std::size_t j, const std::size_t ci,
                             const std::size_t cj, const std::string& sequence,
                             const std::vector<std::string_view>& mod_sequence);
-    [[nodiscard]] int d5();
-    [[nodiscard]] int d3();
+    [[nodiscard]] int d5(const std::size_t i, const std::size_t j, const std::string& sequence,
+                         const std::vector<std::string_view>& mod_sequence,
+                         const bool is_closing = false);
+    [[nodiscard]] int d3(const std::size_t i, const std::size_t j, const std::string& sequence,
+                         const std::vector<std::string_view>& mod_sequence,
+                         const bool is_closing = false);
     [[nodiscard]] int mismatch();
     [[nodiscard]] int terminal();
     [[nodiscard]] int hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
