@@ -2,6 +2,8 @@
 
 #include "energy/rna_structure/RNAstructureUtils.hpp"
 #include "io/parameters/RNAstructureParams.hpp"
+#include "loop_tree/LoopNode.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
 #include "utils/common.hpp"
 
 #include <cstddef>
@@ -155,6 +157,56 @@ class RNAstructureFunctions {
                                             const std::string& sequence,
                                             const std::vector<std::string_view>& mod_sequence,
                                             const rnastructure_param& rsp, bool is_closing = false);
+
+    /**
+     * @brief Calculate the terminal mismatch energy of base pair i-j in an exterior or
+     * multibranch loop.
+     *
+     * A terminal mismatch is the two unpaired nucleotides on either side of the end of a
+     * helix, stacked on it together: i - 1 and j + 1 for a branch of the loop, j - 1 and i + 1
+     * for the pair that closes a multibranch loop (is_closing). efn2 has one table for exterior
+     * loops (is_external) and one for multibranch loops. Like a dangle, it is a term to choose
+     * from (see dangle5_energy), and it does not include the helix end (see helix_end).
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The unmodified RNA nucleotide sequence.
+     * @param mod_sequence The modified RNA sequence (grapheme views); empty without modified bases.
+     * @param rsp RNAstructure parameters.
+     * @param is_external True in an exterior loop, false in a multibranch loop.
+     * @param is_closing True when i-j closes a multibranch loop: the mismatch is inside the pair.
+     * @return Mismatch energy in centicalories; INF for a pair RNAstructure cannot form.
+     */
+    [[nodiscard]] static int mismatch_energy(std::size_t i, std::size_t j,
+                                             const std::string& sequence,
+                                             const std::vector<std::string_view>& mod_sequence,
+                                             const rnastructure_param& rsp,
+                                             bool is_external = false, bool is_closing = false);
+
+    /**
+     * @brief Calculate exterior loop energy (efn2's ergexterior).
+     *
+     * The helix end of every branch, plus the lowest energy over the ways the helices and the
+     * nucleotides next to them can stack. Going through the loop 5' to 3', a helix does at most
+     * one of these, and a nucleotide is used at most once:
+     * - take the nucleotide before it as a 5' dangle, or the one after it as a 3' dangle;
+     * - take both as a terminal mismatch;
+     * - stack coaxially on the next helix when no nucleotide separates them;
+     * - stack coaxially on the next helix across the single nucleotide between them, which
+     *   forms a mismatch with the nucleotide before the first helix or after the second.
+     *
+     * A pseudoknotted child is not a helix RNAstructure has stacking rules for: nothing stacks
+     * on it, and the branches on its two sides do not stack on each other.
+     *
+     * @param children Child loop nodes of the exterior loop, in 5' to 3' order.
+     * @param pRNA Processed RNA entry.
+     * @param rsp RNAstructure parameters.
+     * @return Exterior loop energy in centicalories; INF when RNAstructure does not allow the
+     * end of a branch (a pair it cannot form, for example).
+     */
+    [[nodiscard]] static int external_energy(const std::vector<LoopNode*>& children,
+                                             const ProcessedRNAEntry& pRNA,
+                                             const rnastructure_param& rsp);
 };
 
 }  // namespace knotergy

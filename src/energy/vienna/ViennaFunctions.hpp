@@ -171,5 +171,36 @@ class ViennaFunctions {
     [[nodiscard]] static int dangle3_energy(std::size_t i, std::size_t j,
                                             const std::string& sequence, vrna_md_param& vp,
                                             bool is_closing = false);
+
+    /**
+     * @brief Calculate the terminal mismatch energy of base pair i-j in an exterior or
+     * multibranch loop.
+     *
+     * The mismatched nucleotides are i - 1 and j + 1, outside the pair, or j - 1 and i + 1 when
+     * the pair closes a multibranch loop (is_closing). The terminal AU penalty is not included.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param vp The ViennaRNA model parameters.
+     * @param is_external True in an exterior loop, false in a multibranch loop.
+     * @param is_closing True when i-j closes a multibranch loop: the mismatch is inside the pair.
+     * @return Mismatch energy in centicalories.
+     */
+    [[nodiscard]] static int mismatch_energy(std::size_t i, std::size_t j,
+                                             const std::string& sequence, vrna_md_param& vp,
+                                             bool is_external = false, bool is_closing = false);
+
+    /**
+     * @brief Calculate the terminal AU penalty of base pair i-j at the end of a helix.
+     *
+     * @param i 5' position of the base pair.
+     * @param j 3' position of the base pair.
+     * @param sequence The RNA nucleotide sequence.
+     * @param vp The ViennaRNA model parameters.
+     * @return The penalty in centicalories; 0 for G-C pairs.
+     */
+    [[nodiscard]] static int terminal_energy(std::size_t i, std::size_t j,
+                                             const std::string& sequence, vrna_md_param& vp);
 };
 }  // namespace knotergy

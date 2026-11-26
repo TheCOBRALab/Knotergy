@@ -230,4 +230,43 @@ int ViennaFunctions::dangle3_energy(std::size_t i, std::size_t j, const std::str
     const int n3d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? i + 1 : j + 1]);
     return vp.p->dangle3[type][n3d];
 }
+
+// --------------------------------------------
+//          Terminal Mismatch Energy
+// --------------------------------------------
+
+int ViennaFunctions::mismatch_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                     vrna_md_param& vp, bool is_external, bool is_closing) {
+    if (is_external && is_closing) {
+        THROW_ERROR("An external loop has no closing pair to put a mismatch inside of.");
+    }
+    const bool has_nucleotides = is_closing ? j > i + 2 : (i > 0 && j + 1 < sequence.size());
+    if (j <= i || j >= sequence.size() || !has_nucleotides) {
+        THROW_ERROR("Invalid indices for mismatch energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j));
+    }
+
+    // A closing pair is seen from inside the loop: j.i, between j - 1 and i + 1.
+    const unsigned int type = is_closing
+                                  ? ViennaUtils::get_pair_type(sequence[j], sequence[i], vp.md)
+                                  : ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+    const int n5d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? j - 1 : i - 1]);
+    const int n3d = ViennaUtils::fast_nucleotide_encode(sequence[is_closing ? i + 1 : j + 1]);
+    return is_external ? vp.p->mismatchExt[type][n5d][n3d] : vp.p->mismatchM[type][n5d][n3d];
+}
+
+// --------------------------------------------
+//            Terminal AU Penalty
+// --------------------------------------------
+
+int ViennaFunctions::terminal_energy(std::size_t i, std::size_t j, const std::string& sequence,
+                                     vrna_md_param& vp) {
+    if (j <= i || j >= sequence.size()) {
+        THROW_ERROR("Invalid indices for terminal energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j));
+    }
+
+    const unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
+    return type > 2 ? vp.p->TerminalAU : 0;
+}
 }  // namespace knotergy

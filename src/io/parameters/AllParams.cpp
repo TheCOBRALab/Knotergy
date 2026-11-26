@@ -1,6 +1,7 @@
 #include "io/parameters/AllParams.hpp"
 
 #include "energy/modified_bases/ModBaseUtils.hpp"
+#include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
 #include "energy/modified_bases/ModStack.hpp"
@@ -73,6 +74,53 @@ int AllParams::d3(const std::size_t i, const std::size_t j, const std::string& s
     return NULL_ENERGY;
 }
 
+int AllParams::mismatch(const std::size_t i, const std::size_t j, const std::string& sequence,
+                        const std::vector<std::string_view>& mod_sequence, const bool is_external,
+                        const bool is_closing) {
+    if (rnastructure_params_loaded) {
+        return RNAstructureFunctions::mismatch_energy(i, j, sequence, mod_sequence, rsp_,
+                                                      is_external, is_closing);
+    }
+
+    if (modified_params_loaded) {
+        // The JSON files only have the mismatches that involve a modified base.
+        const int energy = ModBaseUtils::get_mismatch_mod_energy(i, j, mod_sequence, mp_,
+                                                                 vp_.md.temperature, is_closing);
+        return energy != NULL_ENERGY
+                   ? energy
+                   : ViennaFunctions::mismatch_energy(i, j, sequence, vp_, is_external, is_closing);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::mismatch_energy(i, j, sequence, vp_, is_external, is_closing);
+    }
+
+    return NULL_ENERGY;
+}
+
+int AllParams::terminal(const std::size_t i, const std::size_t j, const std::string& sequence,
+                        const std::vector<std::string_view>& mod_sequence, const bool is_closing) {
+    if (rnastructure_params_loaded) {
+        // The end of the helix as the loop sees it: from inside the pair when it closes the loop.
+        return is_closing ? RNAstructureFunctions::helix_end(j, i, sequence, mod_sequence, rsp_)
+                          : RNAstructureFunctions::helix_end(i, j, sequence, mod_sequence, rsp_);
+    }
+
+    if (modified_params_loaded) {
+        // The JSON files only have the pairs that involve a modified base.
+        const int energy = ModBaseUtils::get_terminalAU_mod_energy(i, j, mod_sequence, mp_,
+                                                                   vp_.md.temperature, is_closing);
+        return energy != NULL_ENERGY ? energy
+                                     : ViennaFunctions::terminal_energy(i, j, sequence, vp_);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::terminal_energy(i, j, sequence, vp_);
+    }
+
+    return NULL_ENERGY;
+}
+
 int AllParams::hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
                        const std::vector<std::string_view>& mod_sequence, bool& is_inf) {
     if (rnastructure_params_loaded) {
@@ -105,6 +153,22 @@ int AllParams::internal(const std::size_t i, const std::size_t j, const std::siz
 
     if (vienna_params_loaded) {
         return ViennaFunctions::internal_loop_energy(i, j, ci, cj, sequence, vp_);
+    }
+
+    return NULL_ENERGY;
+}
+
+int AllParams::external(const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA) {
+    if (rnastructure_params_loaded) {
+        return RNAstructureFunctions::external_energy(children, pRNA, rsp_);
+    }
+
+    if (modified_params_loaded) {
+        return ModExternal::find_mod_external_energy(children, pRNA, vp_, mp_);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::external_energy(children, pRNA, vp_);
     }
 
     return NULL_ENERGY;

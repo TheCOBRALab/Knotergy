@@ -4,6 +4,8 @@
 #include "io/parameters/PseudoknotParams.hpp"
 #include "io/parameters/RNAstructureParams.hpp"
 #include "io/parameters/ViennaParams.hpp"
+#include "loop_tree/LoopNode.hpp"
+#include "preprocessing/ProcessedRNAEntry.hpp"
 
 #include <cstddef>
 #include <string>
@@ -37,14 +39,22 @@ class AllParams {
     [[nodiscard]] int d3(const std::size_t i, const std::size_t j, const std::string& sequence,
                          const std::vector<std::string_view>& mod_sequence,
                          const bool is_closing = false);
-    [[nodiscard]] int mismatch();
-    [[nodiscard]] int terminal();
+    [[nodiscard]] int mismatch(const std::size_t i, const std::size_t j,
+                               const std::string& sequence,
+                               const std::vector<std::string_view>& mod_sequence,
+                               const bool is_external = false, const bool is_closing = false);
+    [[nodiscard]] int terminal(const std::size_t i, const std::size_t j,
+                               const std::string& sequence,
+                               const std::vector<std::string_view>& mod_sequence,
+                               const bool is_closing = false);
     [[nodiscard]] int hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
                               const std::vector<std::string_view>& mod_sequence, bool& is_inf);
     [[nodiscard]] int internal(const std::size_t i, const std::size_t j, const std::size_t ci,
                                const std::size_t cj, const std::string& sequence,
                                const std::vector<std::string_view>& mod_sequence);
     [[nodiscard]] int multibranch();
+    [[nodiscard]] int external(const std::vector<LoopNode*>& children,
+                               const ProcessedRNAEntry& pRNA);
 };
 
 }  // namespace knotergy

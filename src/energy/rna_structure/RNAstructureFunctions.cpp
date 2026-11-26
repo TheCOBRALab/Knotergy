@@ -54,6 +54,78 @@ int dangle_energy(std::size_t i, std::size_t j, std::size_t side, bool is_closin
         d.dangle(code(first), code(second), code(dangling), side));
 }
 
+// One step through an exterior or multibranch loop, 5' to 3': an unpaired nucleotide, or a
+// helix as the loop sees it (see dangle_energy).
+struct LoopElement {
+    bool is_helix = false;
+    rnastructure::Code first = 0;   // the nucleotide, or where the loop leaves the helix
+    rnastructure::Code second = 0;  // where the loop reaches the helix
+};
+
+// The minimisation of efn2's ergexterior and ergmulti, in RNAstructure's units: the lowest
+// energy over the ways the helices and the nucleotides next to them can stack. best[n] is the
+// lowest energy of the first n elements; each option uses up the elements it stacks.
+int lowest_stacking_energy(const std::vector<LoopElement>& elements, rnastructure::Table4D mismatch,
+                           const rnastructure::Datatable& d) {
+    std::vector<int> best(elements.size() + 1, 0);
+    for (std::size_t n = 1; n <= elements.size(); ++n) {
+        const std::size_t k = n - 1;
+        const LoopElement& e = elements[k];
+        const auto helix = [&](std::size_t back) {
+            return n > back && elements[k - back].is_helix;
+        };
+        const auto unpaired = [&](std::size_t back) {
+            return n > back && !elements[k - back].is_helix;
+        };
+        int lowest = best[n - 1];  // nothing stacks here
+        const auto option = [&](std::size_t used, int energy) {
+            lowest = std::min(lowest, best[n - used] + energy);
+        };
+
+        if (!e.is_helix) {
+            if (helix(1)) {
+                const LoopElement& h = elements[k - 1];
+                // 3' dangle on the helix before this nucleotide
+                option(2, d.dangle(h.first, h.second, e.first, kDangle3));
+                // Terminal mismatch with the nucleotide before that helix
+                if (unpaired(2)) {
+                    option(3,
+                           d.table4(mismatch, h.first, h.second, e.first, elements[k - 2].first));
+                }
+                // The two helices before this nucleotide stack across the nucleotide between
+                // them, which forms a mismatch with this one.
+                if (unpaired(2) && helix(3)) {
+                    const LoopElement& between = elements[k - 2];
+                    const LoopElement& h2 = elements[k - 3];
+                    option(4, d.coaxstack(h2.first, h2.second, between.first, e.first) +
+                                  d.tstackcoax(h.first, h.second, e.first, between.first));
+                }
+            }
+        } else {
+            // 5' dangle of the nucleotide before this helix
+            if (unpaired(1)) {
+                option(2, d.dangle(e.first, e.second, elements[k - 1].first, kDangle5));
+            }
+            // Flush coaxial stack on the helix right before this one
+            if (helix(1)) {
+                const LoopElement& h = elements[k - 1];
+                option(2, d.coax(h.first, h.second, e.second, e.first));
+            }
+            // This helix and the one before it stack across the nucleotide between them, which
+            // forms a mismatch with the nucleotide before that helix.
+            if (unpaired(1) && helix(2) && unpaired(3)) {
+                const LoopElement& between = elements[k - 1];
+                const LoopElement& h = elements[k - 2];
+                const LoopElement& before = elements[k - 3];
+                option(4, d.coaxstack(e.first, e.second, before.first, between.first) +
+                              d.tstackcoax(h.first, h.second, between.first, before.first));
+            }
+        }
+        best[n] = lowest;
+    }
+    return best.back();
+}
+
 }  // namespace
 
 // --------------------------------------------
@@ -280,6 +352,80 @@ int RNAstructureFunctions::dangle3_energy(std::size_t i, std::size_t j, const st
                                           const std::vector<std::string_view>& mod_sequence,
                                           const rnastructure_param& rsp, bool is_closing) {
     return dangle_energy(i, j, kDangle3, is_closing, sequence, mod_sequence, rsp);
+}
+
+// --------------------------------------------
+//          Terminal Mismatch Energy
+// --------------------------------------------
+int RNAstructureFunctions::mismatch_energy(std::size_t i, std::size_t j,
+                                           const std::string& sequence,
+                                           const std::vector<std::string_view>& mod_sequence,
+                                           const rnastructure_param& rsp, bool is_external,
+                                           bool is_closing) {
+    if (is_external && is_closing) {
+        THROW_ERROR("An external loop has no closing pair to put a mismatch inside of.");
+    }
+    const bool has_nucleotides = is_closing ? j > i + 2 : (i > 0 && j + 1 < sequence.size());
+    if (j <= i || j >= sequence.size() || !has_nucleotides) {
+        THROW_ERROR("Invalid indices for mismatch energy calculation: i = " + std::to_string(i) +
+                    ", j = " + std::to_string(j) +
+                    (is_closing ? ", mismatch inside the pair" : ", mismatch outside the pair"));
+    }
+
+    const rnastructure::Datatable& d = rsp.data;
+    const auto code = [&](std::size_t k) {
+        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
+    };
+    // The pair as the loop sees it, as for the dangles: then its 3' and its 5' dangle.
+    const std::size_t first = is_closing ? i : j;
+    const std::size_t second = is_closing ? j : i;
+    const rnastructure::Table4D table =
+        is_external ? rnastructure::Table4D::Tstack : rnastructure::Table4D::Tstkm;
+    return RNAstructureUtils::from_rnastructure(
+        d.table4(table, code(first), code(second), code(first + 1), code(second - 1)));
+}
+
+// --------------------------------------------
+//            External Loop Energy
+// --------------------------------------------
+int RNAstructureFunctions::external_energy(const std::vector<LoopNode*>& children,
+                                           const ProcessedRNAEntry& pRNA,
+                                           const rnastructure_param& rsp) {
+    const std::string& sequence = pRNA.get_sequence();
+    const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+    const rnastructure::Datatable& d = rsp.data;
+    const auto code = [&](std::size_t k) {
+        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
+    };
+
+    int energy = 0;
+    std::vector<LoopElement> elements;
+    std::size_t next = 0;  // first position of the loop not yet in elements
+    const auto add_unpaired_up_to = [&](std::size_t end) {
+        for (; next < end; ++next) elements.push_back({false, code(next), 0});
+    };
+
+    for (const LoopNode* child : children) {
+        if (child->begin < next || child->end <= child->begin || child->end >= sequence.size()) {
+            THROW_ERROR("Invalid child of the external loop: begin = " +
+                        std::to_string(child->begin) + ", end = " + std::to_string(child->end));
+        }
+        add_unpaired_up_to(child->begin);
+        next = child->end + 1;
+
+        if (child->loop_type == LoopType::Pseudoknot) {
+            // Nothing stacks on a pseudoknot, so the two sides of it are separate problems.
+            energy += lowest_stacking_energy(elements, rnastructure::Table4D::Tstack, d);
+            elements.clear();
+            continue;
+        }
+        elements.push_back({true, code(child->end), code(child->begin)});
+        energy += raw_helix_end(child->begin, child->end, sequence, mod_sequence, rsp);
+    }
+    add_unpaired_up_to(sequence.size());
+    energy += lowest_stacking_energy(elements, rnastructure::Table4D::Tstack, d);
+
+    return RNAstructureUtils::from_rnastructure(energy);
 }
 
 }  // namespace knotergy
