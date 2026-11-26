@@ -184,6 +184,36 @@ class RNAstructureFunctions {
                                              bool is_external = false, bool is_closing = false);
 
     /**
+     * @brief Calculate multibranch loop energy (efn2's ergmulti).
+     *
+     * The loop is a circle of helices with unpaired nucleotides between them: the pair that
+     * closes it, seen from inside, and its branches. Its energy is the sum of
+     * - an offset, a penalty per helix and a penalty per unpaired nucleotide, which is
+     *   logarithmic beyond 8 nucleotides;
+     * - an asymmetry penalty, for how much the numbers of unpaired nucleotides on the two sides
+     *   of a helix differ, averaged over the helices;
+     * - a strain penalty when an odd number of helices has at most one unpaired nucleotide
+     *   among them (a three-way junction without unpaired nucleotides, for example);
+     * - the helix end of every helix;
+     * - the lowest energy over the ways the helices and the nucleotides next to them can stack,
+     *   as in an exterior loop (see external_energy), with the mismatches of multibranch loops.
+     *
+     * This is efn2's default. Its --simple option, which leaves out the logarithm, the
+     * asymmetry and the strain like RNAstructure's folding algorithms do, is not implemented.
+     *
+     * A pseudoknotted child counts as a helix of the loop, but it has no helix end and nothing
+     * stacks on it, as in an exterior loop.
+     *
+     * @param node The loop node representing the multibranch loop.
+     * @param pRNA Processed RNA entry.
+     * @param rsp RNAstructure parameters.
+     * @return Multibranch loop energy in centicalories; INF when RNAstructure does not allow the
+     * end of one of the helices (a pair it cannot form, for example).
+     */
+    [[nodiscard]] static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                                const rnastructure_param& rsp);
+
+    /**
      * @brief Calculate exterior loop energy (efn2's ergexterior).
      *
      * The helix end of every branch, plus the lowest energy over the ways the helices and the

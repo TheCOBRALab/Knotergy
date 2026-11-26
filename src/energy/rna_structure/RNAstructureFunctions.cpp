@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <optional>
 
@@ -54,10 +55,11 @@ int dangle_energy(std::size_t i, std::size_t j, std::size_t side, bool is_closin
         d.dangle(code(first), code(second), code(dangling), side));
 }
 
-// One step through an exterior or multibranch loop, 5' to 3': an unpaired nucleotide, or a
-// helix as the loop sees it (see dangle_energy).
+// One step through an exterior or multibranch loop, 5' to 3': an unpaired nucleotide, a helix
+// as the loop sees it (see dangle_energy), or a pseudoknot, which nothing stacks on.
 struct LoopElement {
-    bool is_helix = false;
+    enum class Type { Unpaired, Helix, Pseudoknot };
+    Type type = Type::Unpaired;
     rnastructure::Code first = 0;   // the nucleotide, or where the loop leaves the helix
     rnastructure::Code second = 0;  // where the loop reaches the helix
 };
@@ -72,17 +74,17 @@ int lowest_stacking_energy(const std::vector<LoopElement>& elements, rnastructur
         const std::size_t k = n - 1;
         const LoopElement& e = elements[k];
         const auto helix = [&](std::size_t back) {
-            return n > back && elements[k - back].is_helix;
+            return n > back && elements[k - back].type == LoopElement::Type::Helix;
         };
         const auto unpaired = [&](std::size_t back) {
-            return n > back && !elements[k - back].is_helix;
+            return n > back && elements[k - back].type == LoopElement::Type::Unpaired;
         };
         int lowest = best[n - 1];  // nothing stacks here
         const auto option = [&](std::size_t used, int energy) {
             lowest = std::min(lowest, best[n - used] + energy);
         };
 
-        if (!e.is_helix) {
+        if (e.type == LoopElement::Type::Unpaired) {
             if (helix(1)) {
                 const LoopElement& h = elements[k - 1];
                 // 3' dangle on the helix before this nucleotide
@@ -101,7 +103,7 @@ int lowest_stacking_energy(const std::vector<LoopElement>& elements, rnastructur
                                   d.tstackcoax(h.first, h.second, e.first, between.first));
                 }
             }
-        } else {
+        } else if (e.type == LoopElement::Type::Helix) {
             // 5' dangle of the nucleotide before this helix
             if (unpaired(1)) {
                 option(2, d.dangle(e.first, e.second, elements[k - 1].first, kDangle5));
@@ -124,6 +126,43 @@ int lowest_stacking_energy(const std::vector<LoopElement>& elements, rnastructur
         best[n] = lowest;
     }
     return best.back();
+}
+
+// Goes through a loop from position `next` up to `end` (not included) and adds what it finds
+// to `elements`: unpaired nucleotides and the loop's branches. Returns the helix ends of the
+// branches, in RNAstructure's units.
+int add_loop_elements(std::vector<LoopElement>& elements, const std::vector<LoopNode*>& children,
+                      std::size_t next, std::size_t end, const char* loop_name,
+                      const ProcessedRNAEntry& pRNA, const rnastructure_param& rsp) {
+    const std::string& sequence = pRNA.get_sequence();
+    const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+    const auto code = [&](std::size_t k) {
+        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
+    };
+    const auto add_unpaired_up_to = [&](std::size_t position) {
+        for (; next < position; ++next) {
+            elements.push_back({LoopElement::Type::Unpaired, code(next), 0});
+        }
+    };
+
+    int helix_ends = 0;
+    for (const LoopNode* child : children) {
+        if (child->begin < next || child->end <= child->begin || child->end >= end) {
+            THROW_ERROR(std::string("Invalid child of the ") + loop_name + ": begin = " +
+                        std::to_string(child->begin) + ", end = " + std::to_string(child->end));
+        }
+        add_unpaired_up_to(child->begin);
+        next = child->end + 1;
+
+        if (child->loop_type == LoopType::Pseudoknot) {
+            elements.push_back({LoopElement::Type::Pseudoknot, 0, 0});
+            continue;
+        }
+        elements.push_back({LoopElement::Type::Helix, code(child->end), code(child->begin)});
+        helix_ends += raw_helix_end(child->begin, child->end, sequence, mod_sequence, rsp);
+    }
+    add_unpaired_up_to(end);
+    return helix_ends;
 }
 
 }  // namespace
@@ -386,46 +425,92 @@ int RNAstructureFunctions::mismatch_energy(std::size_t i, std::size_t j,
 }
 
 // --------------------------------------------
+//            Multibranch Energy
+// --------------------------------------------
+int RNAstructureFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
+                                              const rnastructure_param& rsp) {
+    const std::string& sequence = pRNA.get_sequence();
+    const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
+    if (node.loop_type != LoopType::Multibranch || node.end <= node.begin ||
+        node.end >= sequence.size()) {
+        THROW_ERROR("multibranch_energy should only be called for multibranch loops: begin = " +
+                    std::to_string(node.begin) + ", end = " + std::to_string(node.end));
+    }
+
+    const rnastructure::Datatable& d = rsp.data;
+    const rnastructure::MiscLoop& m = d.misc();
+    const auto code = [&](std::size_t k) {
+        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
+    };
+
+    // The loop is a circle. Start it at the closing pair, which the loop sees from inside.
+    std::vector<LoopElement> elements;
+    elements.push_back({LoopElement::Type::Helix, code(node.begin), code(node.end)});
+    int energy = raw_helix_end(node.end, node.begin, sequence, mod_sequence, rsp) +
+                 add_loop_elements(elements, node.children, node.begin + 1, node.end,
+                                   "multibranch loop", pRNA, rsp);
+
+    // Unpaired nucleotides before each helix, going round the loop; the closing pair is last.
+    std::vector<int> gaps;
+    int gap = 0;
+    for (std::size_t k = 1; k < elements.size(); ++k) {
+        if (elements[k].type == LoopElement::Type::Unpaired) {
+            ++gap;
+        } else {
+            gaps.push_back(gap);
+            gap = 0;
+        }
+    }
+    gaps.push_back(gap);
+    const int helices = static_cast<int>(gaps.size());
+    const int unpaired = static_cast<int>(elements.size()) - helices;
+
+    // Offset, penalty per helix and penalty per unpaired nucleotide. Beyond 8 nucleotides efn2
+    // switches to a logarithm with a fixed coefficient of 1.1 kcal/mol.
+    energy += m.efn2a + helices * m.efn2c;
+    if (unpaired > 8) {
+        energy += 8 * m.efn2b + static_cast<int>(11.0 * std::log(unpaired / 8.0) + 0.5);
+    } else {
+        energy += unpaired * m.efn2b;
+    }
+
+    // Strain: an odd number of helices with at most one unpaired nucleotide among them
+    if (helices % 2 != 0 && unpaired <= 1) energy += m.strain;
+
+    // Asymmetry: how much the gaps on the two sides of a helix differ, averaged over the
+    // helices and capped at 2. In single precision like efn2, so that it rounds the same way.
+    int differences = 0;
+    for (std::size_t k = 0; k < gaps.size(); ++k) {
+        differences += std::abs(gaps[k] - gaps[(k + 1) % gaps.size()]);
+    }
+    const float asymmetry =
+        std::min(2.0F, static_cast<float>(differences) / static_cast<float>(helices));
+    energy += static_cast<int>(static_cast<float>(m.mlasym) * asymmetry + 0.5);
+
+    // Stacking, as in an exterior loop. The loop has to be opened somewhere to go through it,
+    // and what stacks together covers up to 4 elements, so efn2 opens it in 4 places next to
+    // each other and keeps the best: one of them does not cut through a stack.
+    int stacking = 0;
+    for (int opening = 0; opening < 4; ++opening) {
+        stacking =
+            std::min(stacking, lowest_stacking_energy(elements, rnastructure::Table4D::Tstkm, d));
+        std::rotate(elements.begin(), elements.begin() + 1, elements.end());
+    }
+
+    return RNAstructureUtils::from_rnastructure(energy + stacking);
+}
+
+// --------------------------------------------
 //            External Loop Energy
 // --------------------------------------------
 int RNAstructureFunctions::external_energy(const std::vector<LoopNode*>& children,
                                            const ProcessedRNAEntry& pRNA,
                                            const rnastructure_param& rsp) {
-    const std::string& sequence = pRNA.get_sequence();
-    const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
-    const rnastructure::Datatable& d = rsp.data;
-    const auto code = [&](std::size_t k) {
-        return RNAstructureUtils::rnastructure_code(k, sequence, mod_sequence, rsp);
-    };
-
-    int energy = 0;
     std::vector<LoopElement> elements;
-    std::size_t next = 0;  // first position of the loop not yet in elements
-    const auto add_unpaired_up_to = [&](std::size_t end) {
-        for (; next < end; ++next) elements.push_back({false, code(next), 0});
-    };
-
-    for (const LoopNode* child : children) {
-        if (child->begin < next || child->end <= child->begin || child->end >= sequence.size()) {
-            THROW_ERROR("Invalid child of the external loop: begin = " +
-                        std::to_string(child->begin) + ", end = " + std::to_string(child->end));
-        }
-        add_unpaired_up_to(child->begin);
-        next = child->end + 1;
-
-        if (child->loop_type == LoopType::Pseudoknot) {
-            // Nothing stacks on a pseudoknot, so the two sides of it are separate problems.
-            energy += lowest_stacking_energy(elements, rnastructure::Table4D::Tstack, d);
-            elements.clear();
-            continue;
-        }
-        elements.push_back({true, code(child->end), code(child->begin)});
-        energy += raw_helix_end(child->begin, child->end, sequence, mod_sequence, rsp);
-    }
-    add_unpaired_up_to(sequence.size());
-    energy += lowest_stacking_energy(elements, rnastructure::Table4D::Tstack, d);
-
-    return RNAstructureUtils::from_rnastructure(energy);
+    const int helix_ends = add_loop_elements(elements, children, 0, pRNA.get_sequence().size(),
+                                             "external loop", pRNA, rsp);
+    return RNAstructureUtils::from_rnastructure(
+        helix_ends + lowest_stacking_energy(elements, rnastructure::Table4D::Tstack, rsp.data));
 }
 
 }  // namespace knotergy

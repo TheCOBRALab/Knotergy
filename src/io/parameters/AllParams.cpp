@@ -4,6 +4,7 @@
 #include "energy/modified_bases/ModExternal.hpp"
 #include "energy/modified_bases/ModHairpin.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
+#include "energy/modified_bases/ModMultiloop.hpp"
 #include "energy/modified_bases/ModStack.hpp"
 #include "energy/rna_structure/RNAstructureFunctions.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
@@ -153,6 +154,22 @@ int AllParams::internal(const std::size_t i, const std::size_t j, const std::siz
 
     if (vienna_params_loaded) {
         return ViennaFunctions::internal_loop_energy(i, j, ci, cj, sequence, vp_);
+    }
+
+    return NULL_ENERGY;
+}
+
+int AllParams::multibranch(const LoopNode& node, const ProcessedRNAEntry& pRNA) {
+    if (rnastructure_params_loaded) {
+        return RNAstructureFunctions::multibranch_energy(node, pRNA, rsp_);
+    }
+
+    if (modified_params_loaded) {
+        return ModMultiloop::find_mod_multiloop_energy(node, pRNA, vp_, mp_);
+    }
+
+    if (vienna_params_loaded) {
+        return ViennaFunctions::multibranch_energy(node, pRNA, vp_);
     }
 
     return NULL_ENERGY;

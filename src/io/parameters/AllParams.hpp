@@ -52,7 +52,7 @@ class AllParams {
     [[nodiscard]] int internal(const std::size_t i, const std::size_t j, const std::size_t ci,
                                const std::size_t cj, const std::string& sequence,
                                const std::vector<std::string_view>& mod_sequence);
-    [[nodiscard]] int multibranch();
+    [[nodiscard]] int multibranch(const LoopNode& node, const ProcessedRNAEntry& pRNA);
     [[nodiscard]] int external(const std::vector<LoopNode*>& children,
                                const ProcessedRNAEntry& pRNA);
 };

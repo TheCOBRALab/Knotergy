@@ -10,14 +10,17 @@
 #include <energy/modified_bases/ModExternal.hpp>
 #include <energy/modified_bases/ModHairpin.hpp>
 #include <energy/modified_bases/ModInternal.hpp>
+#include <energy/modified_bases/ModMultiloop.hpp>
 #include <energy/rna_structure/RNAstructureFunctions.hpp>
 #include <energy/rna_structure/RNAstructureUtils.hpp>
 #include <energy/vienna/ViennaFunctions.hpp>
 #include <io/parameters/AllParams.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -126,22 +129,31 @@ int exterior(const std::string& sequence, const std::string& structure,
     return RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp);
 }
 
-// Energy of a structure without multibranch loops: its exterior loop and every stack, hairpin
-// and internal loop.
+// Energy of the multibranch loop closed by the pair that opens at position i.
+int multibranch(const std::string& sequence, const std::string& structure, std::size_t i,
+                const knotergy::rnastructure_param& rsp) {
+    const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
+    knotergy::LoopFactory factory(rna);
+    return RNAstructureFunctions::multibranch_energy(*factory.get_node_table()[i], rna, rsp);
+}
+
+// Energy of a structure: its exterior loop and every loop inside it.
 int total(const std::string& sequence, const std::string& structure,
           const knotergy::rnastructure_param& rsp) {
     const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
-    int energy = exterior(sequence, structure, rsp);
+    knotergy::LoopFactory factory(rna);
+    int energy = RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp);
     for (std::size_t i = 0; i < structure.size(); ++i) {
         if (structure[i] != '(') continue;
-        const std::size_t j = partner(structure, i);
-        const std::size_t ci = structure.find('(', i + 1);
-        if (ci > j) {  // no pair inside
-            energy += hairpin(rna, i, j, rsp);
-        } else {  // a stack when nothing is unpaired
-            energy += RNAstructureFunctions::internal_loop_energy(i, j, ci, partner(structure, ci),
-                                                                  rna.get_sequence(),
-                                                                  rna.get_modified_sequence(), rsp);
+        const knotergy::LoopNode& loop = *factory.get_node_table()[i];
+        if (loop.loop_type == knotergy::LoopType::Hairpin) {
+            energy += hairpin(rna, loop.begin, loop.end, rsp);
+        } else if (loop.loop_type == knotergy::LoopType::Multibranch) {
+            energy += RNAstructureFunctions::multibranch_energy(loop, rna, rsp);
+        } else {  // internal loop or bulge, or a stack when nothing is unpaired
+            energy += RNAstructureFunctions::internal_loop_energy(
+                loop.begin, loop.end, loop.children[0]->begin, loop.children[0]->end,
+                rna.get_sequence(), rna.get_modified_sequence(), rsp);
         }
     }
     return energy;
@@ -593,8 +605,136 @@ TEST(RNAstructureEnergies, ExteriorLoopsMatchEfn2) {
     EXPECT_EQ(exterior(hairpin + knot + hairpin, h + knot_structure + h, rsp), 0);
 }
 
-// "Total energy" of efn2 -w for structures without multibranch loops: the exterior loop plus
-// every stack, hairpin and internal loop.
+// "Multiloop" of efn2 -w. The loop is closed by the second pair of the structure (2-N in
+// efn2's output), except where noted.
+TEST(RNAstructureEnergies, MultibranchLoopsMatchEfn2) {
+    const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
+
+    const std::string h = "((((....))))";
+    const std::vector<LoopCase> cases = {
+        // 9.3 - 0.6 per helix, plus a strain of 3.1 when an odd number of helices has at most
+        // one unpaired nucleotide among them. The rest is the stacking of the helices.
+        {"three helices, nothing unpaired", "GCGGACAAAAGUCCGGACAAAAGUCCGC", "((" + h + h + "))", 1,
+         820},
+        {"three helices, one nucleotide", "GCGGACAAAAGUCCAGGACAAAAGUCCGC",
+         "((" + h + "." + h + "))", 1, 710},
+        {"three helices, two nucleotides", "GCGGACAAAAGUCCAAGGACAAAAGUCCGC",
+         "((" + h + ".." + h + "))", 1, 460},
+        {"four helices, nothing unpaired", "GCGGACAAAAGUCCGGACAAAAGUCCGGACAAAAGUCCGC",
+         "((" + h + h + h + "))", 1, 210},
+        {"four helices, one nucleotide", "GCGGACAAAAGUCCGGACAAAAGUCCAGGACAAAAGUCCGC",
+         "((" + h + h + "." + h + "))", 1, 260},
+        {"five helices, nothing unpaired", "GCGGACAAAAGUCCGGACAAAAGUCCGGACAAAAGUCCGGACAAAAGUCCGC",
+         "((" + h + h + h + h + "))", 1, 460},
+        {"five helices, one nucleotide", "GCAGGACAAAAGUCCGGACAAAAGUCCGGACAAAAGUCCGGACAAAAGUCCGC",
+         "((." + h + h + h + h + "))", 1, 330},
+        // Asymmetry: 0.9 times the mean difference between neighbouring gaps, which is 0,
+        // 2/3, 4/3 and 10/3 here; the mean counts up to 2.
+        {"a nucleotide in every gap", "GCAGGACAAAAGUCCAGGACAAAAGUCCAGC",
+         "((." + h + "." + h + ".))", 1, 210},
+        {"gaps of 1, 0 and 1", "GCAGGACAAAAGUCCGGACAAAAGUCCAGC", "((." + h + h + ".))", 1, 400},
+        {"gaps of 2, 1 and 0", "GCAGGGACAAAAGUCCAGGACAAAAGUCCGC", "((.." + h + "." + h + "))", 1,
+         340},
+        {"all the nucleotides in one gap", "GCAAAAAGGACAAAAGUCCGGACAAAAGUCCGC",
+         "((....." + h + h + "))", 1, 520},
+        // More than 8 unpaired nucleotides: 1.1 ln(n / 8), which is 0.1 for 9 and 1.0 for 20
+        {"eight nucleotides", "GCAAAGGACAAAAGUCCAAGGACAAAAGUCCAAAGC",
+         "((..." + h + ".." + h + "...))", 1, 300},
+        {"nine nucleotides", "GCAAAGGACAAAAGUCCAAAGGACAAAAGUCCAAAGC",
+         "((..." + h + "..." + h + "...))", 1, 250},
+        {"twenty nucleotides", "GCAAAAAAAGGACAAAAGUCCAAAAAAGGACAAAAGUCCAAAAAAAGC",
+         "((......." + h + "......" + h + ".......))", 1, 400},
+        // Other pairs at the ends of the helices
+        {"A-U closing pair", "GAGGACAAAAGUCCAGGACAAAAGUCCUC", "((" + h + "." + h + "))", 1, 790},
+        {"U-G closing pair", "GUAGGACAAAAGUCCAGGACAAAAGUCCAGC", "((." + h + "." + h + ".))", 1,
+         260},
+        {"branches that end in A-U and G-U", "GCAGACAAAAGUCUAGGACAAAAGUCUAGC",
+         "((" + h + "." + h + ".))", 1, 590},
+        {"G and A around C-G branches", "GCGCGACAAAAGUCGAGCGACAAAAGUCGAGC",
+         "((." + h + ".." + h + ".))", 1, 330},
+        {"a branch of one pair", "GCACAAAAGAGGACAAAAGUCCGC", "((.(....)." + h + "))", 1, 460},
+        {"five different helices", "GUCAGACAAAAGUCUGGCGGAAACGCCGACAAAAGUCGAAGGACAAAAGUCUUAC",
+         "((.((((....)))).(((....)))((((....))))..((((....)))).))", 1, 90},
+        {"a branch with a bulge and an internal loop", "GCAGCGAAGGACGUUCGCGAGCCUCGCGCGGAAACGCGGC",
+         "((.((((.((.((....))..))))))(((....))).))", 1, 400},
+        // A multibranch loop that is a branch of another (closures 2-42 and 4-28)
+        {"loop around another loop", "GCAAGGACAAAAGUCCGCGGAAACGCAUAGGACAAAAGUCCGC",
+         "((.(((((....))))(((....))).).((((....))))))", 1, 520},
+        {"loop inside another loop", "GCAAGGACAAAAGUCCGCGGAAACGCAUAGGACAAAAGUCCGC",
+         "((.(((((....))))(((....))).).((((....))))))", 3, 790},
+        // N does not stack
+        {"N in every gap", "GCNGGACAAAAGUCCNGGACAAAAGUCCNGC", "((." + h + "." + h + ".))", 1, 750},
+        // A helix end RNAstructure does not allow: a G-A pair (efn2 prints 1408.8), N next to
+        // the pair of a helix of one pair, inside a branch (1404.6) or outside the closing
+        // pair (1407.1, closure 2-28)
+        {"pair that cannot form", "GCGGACAAAAGUCAAGGACAAAAGUCCGC", "((" + h + "." + h + "))", 1,
+         INF},
+        {"N inside a branch of one pair", "GCACNAAAGAGGACAAAAGUCCGC", "((.(....)." + h + "))", 1,
+         INF},
+        {"N outside a closing helix of one pair", "NCGGACAAAAGUCCAGGACAAAAGUCCGA",
+         ".(" + h + "." + h + ").", 1, INF},
+    };
+    for (const LoopCase& c : cases) {
+        EXPECT_EQ(multibranch(c.sequence, c.structure, c.i, rsp), c.expected)
+            << c.what << ": " << c.sequence;
+    }
+
+    // Only for multibranch loops: not a stack, a hairpin or the exterior loop
+    EXPECT_THROW((void) multibranch("GGACAAAAGUCC", h, 0, rsp), knotergy::DetailedException);
+    EXPECT_THROW((void) multibranch("GGACAAAAGUCC", h, 3, rsp), knotergy::DetailedException);
+    const knotergy::ProcessedRNAEntry rna = process("GGACAAAAGUCC", h);
+    knotergy::LoopFactory factory(rna);
+    EXPECT_THROW(
+        (void) RNAstructureFunctions::multibranch_energy(factory.get_root_node(), rna, rsp),
+        knotergy::DetailedException);
+}
+
+// A pseudoknotted child counts as a helix of the loop, but it has no helix end and nothing
+// stacks on it. efn2 has no rule for this case, so the expected values are put together from
+// the parameters.
+TEST(RNAstructureEnergies, PseudoknotsInMultibranchLoops) {
+    const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
+    const auto& m = rsp.data.misc();
+
+    const std::string knot = "GGCAAGCGAAGCCAACGC";
+    const std::string knot_structure = "(((..[[[..)))..]]]";
+    // Energy of the loop closed by the second pair, and the end of that pair seen from inside
+    const auto loop_and_end = [&](const std::string& sequence, const std::string& structure) {
+        const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
+        const std::size_t j = sequence.size() - 2;
+        return std::pair<int, int>{multibranch(sequence, structure, 1, rsp),
+                                   RNAstructureFunctions::helix_end(
+                                       j, 1, rna.get_sequence(), rna.get_modified_sequence(), rsp)};
+    };
+
+    // Around one pseudoknot: two helices
+    const auto [alone, alone_end] = loop_and_end("GC" + knot + "GC", "((" + knot_structure + "))");
+    EXPECT_EQ(alone, 10 * (m.efn2a + 2 * m.efn2c) + alone_end);
+
+    // Around two: three helices with nothing unpaired, which are strained
+    const auto [two, two_end] =
+        loop_and_end("GC" + knot + knot + "GC", "((" + knot_structure + knot_structure + "))");
+    EXPECT_EQ(two, 10 * (m.efn2a + 3 * m.efn2c + m.strain) + two_end);
+
+    // The nucleotides next to a pseudoknot can only stack on the closing pair.
+    const std::string sequence = "GCA" + knot + "AGC";
+    const std::string structure = "((." + knot_structure + ".))";
+    const auto [flanked, flanked_end] = loop_and_end(sequence, structure);
+    const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
+    const std::size_t j = sequence.size() - 2;
+    const int stacking =
+        std::min({0,
+                  RNAstructureFunctions::dangle5_energy(1, j, rna.get_sequence(),
+                                                        rna.get_modified_sequence(), rsp, true),
+                  RNAstructureFunctions::dangle3_energy(1, j, rna.get_sequence(),
+                                                        rna.get_modified_sequence(), rsp, true),
+                  RNAstructureFunctions::mismatch_energy(
+                      1, j, rna.get_sequence(), rna.get_modified_sequence(), rsp, false, true)});
+    EXPECT_LT(stacking, 0);
+    EXPECT_EQ(flanked, 10 * (m.efn2a + 2 * m.efn2c) + flanked_end + stacking);
+}
+
+// "Total energy" of efn2 -w: the exterior loop plus every loop inside the structure.
 TEST(RNAstructureEnergies, TotalsMatchEfn2) {
     const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
 
@@ -605,6 +745,16 @@ TEST(RNAstructureEnergies, TotalsMatchEfn2) {
          ".((((.((.((....))..)))))).((((....))))..", -1330},
         {"three branches", "GCGGAAACGCGCGAAGGACGUUCGCGAGCCUCGCUAGACAAAAGUCUC",
          "(((....)))((((.((.((....))..)))))).((((....)))).", -1350},
+        {"one multibranch loop", "AGCGGACAAAAGUCCAGGACAAAAGUCCGCG",
+         ".((((((....)))).((((....)))))).", -560},
+        {"three helices with nothing unpaired", "GACGCGGAAACGCCGACAAAAGUCGGUC",
+         "((((((....)))((((....)))))))", -290},
+        {"a multibranch loop inside another",
+         "GGCAAGGACAAAAGUCCGCGGAAACGCAUAGGACAAAAGUCCGCAGCGGAAACGC",
+         ".((.(((((....))))(((....))).).((((....)))))).(((....)))", -690},
+        {"two multibranch loops, a bulge and an internal loop",
+         "GCGGACAAAAGUCCAAGCGGAAACGCAGCUCUGCGAAGGACGUUCGCGAGCCUCGCAAGACAAAAGUCUCAAAAGAGC",
+         "((((((....))))..(((....))).)).((((((.((.((....))..)))))).((((....))))(....))).", -1180},
     };
     for (const StructureCase& c : cases) {
         EXPECT_EQ(total(c.sequence, c.structure, rsp), c.expected) << c.what << ": " << c.sequence;
@@ -638,6 +788,45 @@ TEST(RNAstructureEnergies, ExteriorLoopsWithModifiedBases) {
 
     // Total energy = -8.1
     EXPECT_EQ(total("6GGACAAAAGUCC6G6GGA6ACUCA", ".((((....)))).(((....))).", rsp), -810);
+}
+
+// efn2 -a m6A -w, efn2 -a PSU -w and efn2 -a 1 -w
+TEST(RNAstructureEnergies, MultibranchLoopsWithModifiedBases) {
+    const knotergy::rnastructure_param rsp =
+        knotergy::RNAstructureParams::load("turner2004", {"m6A", "Ψ", "m1Ψ"});
+
+    const std::string h = "((((....))))";
+    const std::string gaps = "((." + h + "." + h + ".))";
+    const std::string between = "((" + h + "." + h + "))";
+    const std::vector<LoopCase> cases = {
+        {"m6A in every gap", "GC6GGACAAAAGUCC6GGACAAAAGUCC6GC", gaps, 1, 220},
+        {"m6A next to the closing pair", "GC6GGACAAAAGUCCGGACAAAAGUCC6GC", "((." + h + h + ".))", 1,
+         390},
+        {"a branch that ends in m6A-U", "GCA6GACAAAAGUCUAGGACAAAAGUCCGC",
+         "((." + h + "." + h + "))", 1, 440},
+        {"m6A-U closing pair", "G6GGACAAAAGUCCAGGACAAAAGUCCUC", between, 1, 790},
+        {"m6A between two helices", "GCGGACAAAAGUCC6GGACAAAAGUCCGC", between, 1, 750},
+        {"Ψ in every gap", "GCPGGACAAAAGUCCPGGACAAAAGUCCPGC", gaps, 1, 170},
+        {"a branch that ends in Ψ-A", "GCAPGACAAAAGUCAAGGACAAAAGUCCGC", "((." + h + "." + h + "))",
+         1, 500},
+        {"A-Ψ closing pair", "GAGGACAAAAGUCCAGGACAAAAGUCCPC", between, 1, 720},
+        {"Ψ between two helices", "GCGGACAAAAGUCCPGGACAAAAGUCCGC", between, 1, 730},
+        {"m1Ψ in every gap", "GC1GGACAAAAGUCC1GGACAAAAGUCC1GC", gaps, 1, 260},
+        {"a branch that ends in m1Ψ-A", "GCA1GACAAAAGUCAAGGACAAAAGUCCGC",
+         "((." + h + "." + h + "))", 1, 470},
+        {"A-m1Ψ closing pair", "GAGGACAAAAGUCCAGGACAAAAGUCC1C", between, 1, 730},
+        {"m1Ψ between two helices", "GCGGACAAAAGUCC1GGACAAAAGUCCGC", between, 1, 760},
+    };
+    for (const LoopCase& c : cases) {
+        EXPECT_EQ(multibranch(c.sequence, c.structure, c.i, rsp), c.expected)
+            << c.what << ": " << c.sequence;
+    }
+
+    // Total energy = -5.4, -6.9 and -6.5
+    const std::string structure = ".((" + h + ".(((....))).)).";
+    EXPECT_EQ(total("6GCGGACAAAAGUCC6G6GGA6ACUCAGCA", structure, rsp), -540);
+    EXPECT_EQ(total("PGCGGACAAAAGUCCPGAGGAPACPCAGCA", structure, rsp), -690);
+    EXPECT_EQ(total("1GCGGACAAAAGUCC1GAGGA1AC1CAGCA", structure, rsp), -650);
 }
 
 // A symbol RNAstructure's sets do not know is an error that names the symbol, with or without
@@ -867,6 +1056,48 @@ TEST(AllParams, MismatchAndTerminalFollowTheLoadedParameters) {
     // Without m6A, the end of an A-U helix costs 0.5 (Exterior loop = 0.5 for AGACAAAAGUCU).
     const knotergy::ProcessedRNAEntry au = process("AGACAAAAGUCU", "((((....))))");
     EXPECT_EQ(params.terminal(0, 11, au.get_sequence(), au.get_modified_sequence()), 50);
+}
+
+TEST(AllParams, MultibranchFollowsTheLoadedParameters) {
+    knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
+    const knotergy::pk_param pkp =
+        knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
+    std::vector<knotergy::modified_base_param> json_params =
+        knotergy::ModParams::load_modified_energy_parameters(mod_folder);
+    const knotergy::all_mod_params mp{json_params};
+    const knotergy::rnastructure_param rsp =
+        knotergy::RNAstructureParams::load("turner2004", {"m6A"});
+
+    // m6A in every gap of a loop of three helices (efn2 -a m6A -w: Multiloop = 2.2)
+    const std::string structure = "((.((((....)))).((((....)))).))";
+    const knotergy::ProcessedRNAEntry rna = process("GC6GGACAAAAGUCC6GGACAAAAGUCC6GC", structure);
+    knotergy::LoopFactory factory(rna);
+    const knotergy::LoopNode& loop = *factory.get_node_table()[1];
+    // The same sequence without modified bases, as ViennaRNA alone sees it
+    const knotergy::ProcessedRNAEntry plain_rna =
+        knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(rna.get_sequence(), structure));
+    knotergy::LoopFactory plain_factory(plain_rna);
+    const knotergy::LoopNode& plain_loop = *plain_factory.get_node_table()[1];
+
+    knotergy::AllParams params(mp, pkp, vp, rsp);
+
+    // Nothing loaded
+    EXPECT_EQ(params.multibranch(loop, rna), knotergy::NULL_ENERGY);
+
+    // ViennaRNA only
+    params.vienna_params_loaded = true;
+    const int vienna = params.multibranch(loop, rna);
+    EXPECT_EQ(vienna, knotergy::ViennaFunctions::multibranch_energy(plain_loop, plain_rna, vp));
+
+    // ViennaRNA with the JSON modified-base corrections
+    params.modified_params_loaded = true;
+    EXPECT_EQ(params.multibranch(loop, rna),
+              knotergy::ModMultiloop::find_mod_multiloop_energy(loop, rna, vp, mp));
+    EXPECT_NE(params.multibranch(loop, rna), vienna);
+
+    // RNAstructure, once its parameters are loaded
+    params.rnastructure_params_loaded = true;
+    EXPECT_EQ(params.multibranch(loop, rna), 220);
 }
 
 TEST(AllParams, ExternalFollowsTheLoadedParameters) {
