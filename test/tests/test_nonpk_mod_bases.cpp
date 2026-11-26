@@ -74,7 +74,7 @@ TEST(mod_nonpk, simple_stack) {
 // ./build/Knotergy -s
 // "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC" -r
 // "(((((((((((((((((((....)))))))))))))))))))((((((((((((((((((((....))))))))))))))))))))" -p
-// ./params/common/rna_turner2004.par
+// ./params/ViennaRNA/rna_turner2004.par
 TEST(mod_nonpk, external1_0_dangle) {
     std::string sequence =
         "AAAAAAAAAAAAAAAAAAAAAAUUUUUUUUUUUUUUUUUUUPGGGGGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCC";

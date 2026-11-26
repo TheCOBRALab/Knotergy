@@ -3,9 +3,9 @@
 namespace {
 
 const std::string DP_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_DirksPierce09.par";
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/ViennaRNA/rna_DirksPierce09.par";
 const std::string turner_file =
-    std::string(KNOTERGY_SOURCE_DIR) + "/params/common/rna_turner2004.par";
+    std::string(KNOTERGY_SOURCE_DIR) + "/params/ViennaRNA/rna_turner2004.par";
 const std::string pkp_file =
     std::string(KNOTERGY_SOURCE_DIR) + "/params/pseudo/rna_pk_DirksPierce09.json";
 const int round = 0;

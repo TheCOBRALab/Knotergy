@@ -23,13 +23,13 @@ namespace knotergy {
 [[nodiscard]] inline const std::string& cache_path() {
     bool check_exists = false;  // Doesn not need to exist and can be created if it doesn't exist
     static const std::string path =
-        FileUtils::resolve_data_path("params/common/cache/", check_exists);
+        FileUtils::resolve_data_path("params/ViennaRNA/cache/", check_exists);
     return path;
 }
 
 [[nodiscard]] inline const std::string& default_param_path() {
     static const std::string path =
-        FileUtils::resolve_data_path("params/common/rna_DirksPierce09.par");
+        FileUtils::resolve_data_path("params/ViennaRNA/rna_DirksPierce09.par");
     return path;
 }
 

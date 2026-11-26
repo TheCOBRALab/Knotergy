@@ -14,9 +14,9 @@
 #include <vector>
 
 const std::string DP_file =
-    knotergy::FileUtils::resolve_data_path("params/common/rna_DirksPierce09.par");
+    knotergy::FileUtils::resolve_data_path("params/ViennaRNA/rna_DirksPierce09.par");
 const std::string turner_file =
-    knotergy::FileUtils::resolve_data_path("params/common/rna_turner2004.par");
+    knotergy::FileUtils::resolve_data_path("params/ViennaRNA/rna_turner2004.par");
 const std::string pkp_file =
     knotergy::FileUtils::resolve_data_path("params/pseudo/rna_pk_DirksPierce09.json");
 const std::string mod_folder = knotergy::FileUtils::resolve_data_path("params/modified_bases");
