@@ -6,6 +6,9 @@
 #include "preprocessing/ProcessedRNAEntry.hpp"
 #include "utils/common.hpp"
 
+#include <RNAstructure/eval/multibranch.hpp>
+#include <RNAstructure/eval/stacking.hpp>
+
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -19,6 +22,13 @@ namespace knotergy {
  * The functions follow RNAstructure's src/structure.cpp (erg1, erg3, ...) with 0-based
  * positions. Like ViennaFunctions, they return centicalories (hundredths of kcal/mol) and INF
  * for forbidden loops; RNAstructure's own tables are in tenths of kcal/mol.
+ *
+ * The loop energies themselves are calculated by ThermoRNA (RNAstructure/eval). Its functions
+ * take the encoded nucleotides of a loop instead of a sequence and positions, like its ViennaRNA
+ * functions. The functions here encode the nucleotides the loop needs and pass them on. To
+ * calculate energies from nucleotides that are already encoded (rsp.data.encode(), or
+ * RNAstructureUtils::rnastructure_code()), call ThermoRNA's functions and convert the result
+ * with RNAstructureUtils::from_rnastructure().
  */
 class RNAstructureFunctions {
    public:
@@ -198,8 +208,16 @@ class RNAstructureFunctions {
      * - the lowest energy over the ways the helices and the nucleotides next to them can stack,
      *   as in an exterior loop (see external_energy), with the mismatches of multibranch loops.
      *
-     * This is efn2's default. Its --simple option, which leaves out the logarithm, the
-     * asymmetry and the strain like RNAstructure's folding algorithms do, is not implemented.
+     * This is efn2's default. Two arguments change it:
+     * - rule: rnastructure::MultibranchRule::Simple is efn2 --simple, which leaves out the
+     *   logarithm, the asymmetry and the strain like RNAstructure's folding algorithms do. What
+     *   is left is a penalty per unpaired nucleotide and a sum over the helices.
+     * - coaxial: with rnastructure::CoaxialStacking::Off the helices do not stack on each other,
+     *   only unpaired nucleotides stack on them (dangling ends and terminal mismatches, each
+     *   nucleotide once). That is the scheme of dangle model 1.
+     * Together, Simple and Off give the energy that a folding algorithm without coaxial
+     * stacking minimizes: RNAstructure's Fold --disablecoax, or HFold's recursion with these
+     * parameters. efn2 has no option for it.
      *
      * A pseudoknotted child counts as a helix of the loop, but it has no helix end and nothing
      * stacks on it, as in an exterior loop.
@@ -207,11 +225,15 @@ class RNAstructureFunctions {
      * @param node The loop node representing the multibranch loop.
      * @param pRNA Processed RNA entry.
      * @param rsp RNAstructure parameters.
+     * @param rule efn2's default energy, or the simple one.
+     * @param coaxial Whether helices can stack on each other.
      * @return Multibranch loop energy in centicalories; INF when RNAstructure does not allow the
      * end of one of the helices (a pair it cannot form, for example).
      */
-    [[nodiscard]] static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                                const rnastructure_param& rsp);
+    [[nodiscard]] static int multibranch_energy(
+        const LoopNode& node, const ProcessedRNAEntry& pRNA, const rnastructure_param& rsp,
+        rnastructure::MultibranchRule rule = rnastructure::MultibranchRule::Efn2,
+        rnastructure::CoaxialStacking coaxial = rnastructure::CoaxialStacking::On);
 
     /**
      * @brief Calculate exterior loop energy (efn2's ergexterior).
@@ -225,18 +247,24 @@ class RNAstructureFunctions {
      * - stack coaxially on the next helix across the single nucleotide between them, which
      *   forms a mismatch with the nucleotide before the first helix or after the second.
      *
+     * With rnastructure::CoaxialStacking::Off the last two are left out: the scheme of dangle
+     * model 1, and the exterior loop of a folding algorithm without coaxial stacking (see
+     * multibranch_energy). The default is efn2's energy.
+     *
      * A pseudoknotted child is not a helix RNAstructure has stacking rules for: nothing stacks
      * on it, and the branches on its two sides do not stack on each other.
      *
      * @param children Child loop nodes of the exterior loop, in 5' to 3' order.
      * @param pRNA Processed RNA entry.
      * @param rsp RNAstructure parameters.
+     * @param coaxial Whether helices can stack on each other.
      * @return Exterior loop energy in centicalories; INF when RNAstructure does not allow the
      * end of a branch (a pair it cannot form, for example).
      */
-    [[nodiscard]] static int external_energy(const std::vector<LoopNode*>& children,
-                                             const ProcessedRNAEntry& pRNA,
-                                             const rnastructure_param& rsp);
+    [[nodiscard]] static int external_energy(
+        const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA,
+        const rnastructure_param& rsp,
+        rnastructure::CoaxialStacking coaxial = rnastructure::CoaxialStacking::On);
 };
 
 }  // namespace knotergy

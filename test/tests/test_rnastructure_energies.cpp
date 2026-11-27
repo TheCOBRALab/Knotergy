@@ -6,6 +6,11 @@
 
 #include "test_utils.hpp"
 
+#include <RNAstructure/eval/exterior.hpp>
+#include <RNAstructure/eval/hairpin.hpp>
+#include <RNAstructure/eval/internal.hpp>
+#include <RNAstructure/eval/loop_element.hpp>
+#include <RNAstructure/eval/multibranch.hpp>
 #include <energy/modified_bases/ModBaseUtils.hpp>
 #include <energy/modified_bases/ModExternal.hpp>
 #include <energy/modified_bases/ModHairpin.hpp>
@@ -121,35 +126,45 @@ struct StructureCase {
     int expected;
 };
 
+namespace rs = knotergy::rnastructure;
+
 // Energy of the exterior loop of a structure.
 int exterior(const std::string& sequence, const std::string& structure,
-             const knotergy::rnastructure_param& rsp) {
+             const knotergy::rnastructure_param& rsp,
+             rs::CoaxialStacking coaxial = rs::CoaxialStacking::On) {
     const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
     knotergy::LoopFactory factory(rna);
-    return RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp);
+    return RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp,
+                                                  coaxial);
 }
 
 // Energy of the multibranch loop closed by the pair that opens at position i.
 int multibranch(const std::string& sequence, const std::string& structure, std::size_t i,
-                const knotergy::rnastructure_param& rsp) {
+                const knotergy::rnastructure_param& rsp,
+                rs::MultibranchRule rule = rs::MultibranchRule::Efn2,
+                rs::CoaxialStacking coaxial = rs::CoaxialStacking::On) {
     const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
     knotergy::LoopFactory factory(rna);
-    return RNAstructureFunctions::multibranch_energy(*factory.get_node_table()[i], rna, rsp);
+    return RNAstructureFunctions::multibranch_energy(*factory.get_node_table()[i], rna, rsp, rule,
+                                                     coaxial);
 }
 
 // Energy of a structure: its exterior loop and every loop inside it.
 int total(const std::string& sequence, const std::string& structure,
-          const knotergy::rnastructure_param& rsp) {
+          const knotergy::rnastructure_param& rsp,
+          rs::MultibranchRule rule = rs::MultibranchRule::Efn2,
+          rs::CoaxialStacking coaxial = rs::CoaxialStacking::On) {
     const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
     knotergy::LoopFactory factory(rna);
-    int energy = RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp);
+    int energy =
+        RNAstructureFunctions::external_energy(factory.get_root_node().children, rna, rsp, coaxial);
     for (std::size_t i = 0; i < structure.size(); ++i) {
         if (structure[i] != '(') continue;
         const knotergy::LoopNode& loop = *factory.get_node_table()[i];
         if (loop.loop_type == knotergy::LoopType::Hairpin) {
             energy += hairpin(rna, loop.begin, loop.end, rsp);
         } else if (loop.loop_type == knotergy::LoopType::Multibranch) {
-            energy += RNAstructureFunctions::multibranch_energy(loop, rna, rsp);
+            energy += RNAstructureFunctions::multibranch_energy(loop, rna, rsp, rule, coaxial);
         } else {  // internal loop or bulge, or a stack when nothing is unpaired
             energy += RNAstructureFunctions::internal_loop_energy(
                 loop.begin, loop.end, loop.children[0]->begin, loop.children[0]->end,
@@ -829,8 +844,121 @@ TEST(RNAstructureEnergies, MultibranchLoopsWithModifiedBases) {
     EXPECT_EQ(total("1GCGGACAAAAGUCC1GAGGA1AC1CAGCA", structure, rsp), -650);
 }
 
+// Nucleotides that are already encoded go straight to ThermoRNA's functions, which take the
+// codes of a loop instead of a sequence and positions, and from_rnastructure() converts the
+// result. Here a sequence is encoded once and used for every loop.
+TEST(RNAstructureEnergies, EncodedNucleotidesGiveTheSameEnergies) {
+    using Element = rs::LoopElement;
+    const knotergy::rnastructure_param rsp =
+        knotergy::RNAstructureParams::load("turner2004", {"m6A", "Ψ", "m1Ψ"});
+    const rs::Datatable& d = rsp.data;
+    const auto convert = [](int energy) {
+        return knotergy::RNAstructureUtils::from_rnastructure(energy);
+    };
+
+    //                             0         1         2
+    //                             0123456789012345678901234567
+    const std::string structure = "((((((....))))((((....))))))";
+    // Some loops of the structure: the stack of 0-27 and 1-26, the hairpin closed by 5-10, the
+    // stack of 2-13 and 3-12 as an internal loop without unpaired nucleotides, the multibranch
+    // loop closed by 1-26 and the exterior loop.
+    const auto energies = [&](const std::vector<rs::Code>& s) {
+        return std::vector<int>{
+            convert(d.stack(s[0], s[27], s[1], s[26])),
+            convert(rs::hairpin_energy(4, &s[5], s[4], s[3], s[11], d)),
+            convert(rs::internal_loop_energy(0, 0, s[2], s[13], s[3], s[12], s[3], s[12], s[2],
+                                             s[13], s[1], s[14], s[4], s[11], 1, d)),
+            convert(rs::multibranch_energy(s[1], s[26], s[0], s[27],
+                                           {Element::helix(s[2], s[13], s[3], s[12]),
+                                            Element::helix(s[14], s[25], s[15], s[24])},
+                                           d)),
+            convert(rs::exterior_energy({Element::helix(s[0], s[27], s[1], s[26])}, d))};
+    };
+    const auto from_the_sequence = [&](const std::string& sequence) {
+        const knotergy::ProcessedRNAEntry rna = process(sequence, structure);
+        return std::vector<int>{
+            stack(rna, 0, 27, rsp), hairpin(rna, 5, 10, rsp), internal(sequence, structure, 2, rsp),
+            multibranch(sequence, structure, 1, rsp), exterior(sequence, structure, rsp)};
+    };
+
+    // efn2 -w: Stack = -3.4, Hairpin = 4.1, Stack = -3.3, Multiloop = 8.2, Exterior loop = 0.0
+    const std::string plain = "GCGGACAAAAGUCCGGACAAAAGUCCGC";
+    EXPECT_EQ(energies(d.encode(plain)), (std::vector<int>{-340, 410, -330, 820, 0}));
+    EXPECT_EQ(from_the_sequence(plain), energies(d.encode(plain)));
+
+    // With modified bases, the symbols to encode are those of the modified sequence. Here an
+    // m6A-U pair closes the multibranch loop and a pseudouridine follows the first hairpin.
+    const std::string modified = "G6GGACAAAAGPCCGGACAAAAGUCCUC";
+    const knotergy::ProcessedRNAEntry rna = process(modified, structure);
+    ASSERT_TRUE(rna.has_modified_bases());
+    EXPECT_EQ(from_the_sequence(modified), energies(d.encode(rna.get_modified_sequence())));
+    EXPECT_NE(from_the_sequence(modified), from_the_sequence("GAGGACAAAAGUCCGGACAAAAGUCCUC"));
+}
+
 // A symbol RNAstructure's sets do not know is an error that names the symbol, with or without
 // modified bases in the sequence.
+// The two arguments of multibranch_energy and external_energy that leave efn2's default:
+// the simple multibranch rule (efn2 --simple), and loops without coaxial stacking. efn2 has no
+// option for the second. Its expected values are what RNAstructure's own folding recursion
+// gives a structure when its coaxial stacking is disabled (as with Fold --disablecoax) and the
+// structure is the only one it is allowed to find; that recursion uses the simple rule.
+TEST(RNAstructureEnergies, SimpleRuleAndNoCoaxialStacking) {
+    const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
+    const rs::MultibranchRule simple = rs::MultibranchRule::Simple;
+    const rs::CoaxialStacking off = rs::CoaxialStacking::Off;
+
+    // Three helices with nothing unpaired: efn2 -w has Multiloop = 8.2, efn2 -w -s 5.1. Without
+    // coaxial stacking nothing is left that can stack: the offset and the penalty per helix.
+    const std::string sequence = "GCGGACAAAAGUCCGGACAAAAGUCCGC";
+    const std::string structure = "((((((....))))((((....))))))";
+    EXPECT_EQ(multibranch(sequence, structure, 1, rsp), 820);
+    EXPECT_EQ(multibranch(sequence, structure, 1, rsp, simple), 510);
+    EXPECT_EQ(multibranch(sequence, structure, 1, rsp, simple, off), 750);
+    // The rule and the stacking are independent: efn2's rule adds the strain (3.1) either way.
+    EXPECT_EQ(multibranch(sequence, structure, 1, rsp, rs::MultibranchRule::Efn2, off), 1060);
+
+    // Two helices one nucleotide apart: efn2 stacks them across it (Exterior loop = -3.7).
+    // Without coaxial stacking each takes the A after it as a 3' dangle, twice -1.7.
+    const std::string two = "GGACAAAAGUCCAGGACAAAAGUCCA";
+    EXPECT_EQ(exterior(two, "((((....)))).((((....)))).", rsp), -370);
+    EXPECT_EQ(exterior(two, "((((....)))).((((....)))).", rsp, off), -340);
+
+    // The structures of TotalsMatchEfn2: their totals from efn2 -s, and from RNAstructure's
+    // folding recursion without coaxial stacking.
+    struct Case {
+        const char* what;
+        std::string sequence;
+        std::string structure;
+        int simple;
+        int folding;
+    };
+    const std::vector<Case> cases = {
+        {"one hairpin", "GGACAAAAGUCC", "((((....))))", -380, -380},
+        {"two hairpins", "AGGACAAAAGUCCAGCGGAAACGCG", ".((((....)))).(((....))).", -1020, -990},
+        {"a bulge and an internal loop", "CGCGAAGGACGUUCGCGAGCCUCGCAGGACAAAAGUCCAA",
+         ".((((.((.((....))..)))))).((((....))))..", -1330, -1300},
+        {"three branches", "GCGGAAACGCGCGAAGGACGUUCGCGAGCCUCGCUAGACAAAAGUCUC",
+         "(((....)))((((.((.((....))..)))))).((((....)))).", -1350, -1190},
+        {"one multibranch loop", "AGCGGACAAAAGUCCAGGACAAAAGUCCGCG",
+         ".((((((....)))).((((....)))))).", -930, -690},
+        {"three helices with nothing unpaired", "GACGCGGAAACGCCGACAAAAGUCGGUC",
+         "((((((....)))((((....)))))))", -600, -270},
+        {"a multibranch loop inside another",
+         "GGCAAGGACAAAAGUCCGCGGAAACGCAUAGGACAAAAGUCCGCAGCGGAAACGC",
+         ".((.(((((....))))(((....))).).((((....)))))).(((....)))", -1120, -620},
+        {"two multibranch loops, a bulge and an internal loop",
+         "GCGGACAAAAGUCCAAGCGGAAACGCAGCUCUGCGAAGGACGUUCGCGAGCCUCGCAAGACAAAAGUCUCAAAAGAGC",
+         "((((((....))))..(((....))).)).((((((.((.((....))..)))))).((((....))))(....))).", -1350,
+         -760},
+    };
+    for (const Case& c : cases) {
+        EXPECT_EQ(total(c.sequence, c.structure, rsp, simple), c.simple)
+            << c.what << ": " << c.sequence;
+        EXPECT_EQ(total(c.sequence, c.structure, rsp, simple, off), c.folding)
+            << c.what << ": " << c.sequence;
+    }
+}
+
 TEST(RNAstructureEnergies, UnknownSymbolsAreReported) {
     const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
     const std::string sequence = "GGACAZAAGUCC";
@@ -1140,4 +1268,45 @@ TEST(AllParams, ExternalFollowsTheLoadedParameters) {
     // RNAstructure, once its parameters are loaded
     params.rnastructure_params_loaded = true;
     EXPECT_EQ(params.external(children, rna), -180);
+}
+
+// efn2 --simple: AllParams passes the simple multibranch rule on when simple_multibranch_rule is
+// set. The dangle model of the ViennaRNA parameters changes nothing with RNAstructure's: the
+// energies are efn2's under every one of them.
+TEST(AllParams, SimpleMultibranchRuleWithRNAstructureParameters) {
+    const knotergy::pk_param pkp =
+        knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
+    const knotergy::all_mod_params mp{};
+    const knotergy::rnastructure_param rsp = knotergy::RNAstructureParams::load();
+
+    // efn2 -w has Multiloop = 8.2 for this loop and efn2 -w -s 5.1; Exterior loop = -3.7 for
+    // the two helices below with either.
+    const knotergy::ProcessedRNAEntry junction =
+        process("GCGGACAAAAGUCCGGACAAAAGUCCGC", "((((((....))))((((....))))))");
+    knotergy::LoopFactory junction_factory(junction);
+    const knotergy::LoopNode& loop = *junction_factory.get_node_table()[1];
+    const knotergy::ProcessedRNAEntry helices =
+        process("GGACAAAAGUCCAGGACAAAAGUCCA", "((((....)))).((((....)))).");
+    knotergy::LoopFactory helices_factory(helices);
+    const std::vector<knotergy::LoopNode*>& children = helices_factory.get_root_node().children;
+
+    for (const int dangles : {0, 1, 2, 3}) {
+        knotergy::vrna_md_param vp =
+            knotergy::ViennaParams::load_energy_parameters(turner_file, dangles);
+        knotergy::AllParams params(mp, pkp, vp, rsp);
+        params.vienna_params_loaded = true;
+        params.rnastructure_params_loaded = true;
+        EXPECT_EQ(params.multibranch(loop, junction), 820) << dangles;
+        EXPECT_EQ(params.external(children, helices), -370) << dangles;
+
+        params.simple_multibranch_rule = true;
+        EXPECT_EQ(params.multibranch(loop, junction), 510) << dangles;
+        EXPECT_EQ(params.external(children, helices), -370) << dangles;
+
+        // Without RNAstructure's parameters the setting does nothing.
+        params.rnastructure_params_loaded = false;
+        const int vienna = params.multibranch(loop, junction);
+        params.simple_multibranch_rule = false;
+        EXPECT_EQ(params.multibranch(loop, junction), vienna) << dangles;
+    }
 }

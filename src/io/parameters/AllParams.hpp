@@ -30,6 +30,11 @@ class AllParams {
     bool pseudoknot_params_loaded = false;
     bool modified_params_loaded = false;
 
+    /// efn2 --simple: with RNAstructure's parameters, multibranch loops follow the simple rule,
+    /// without the logarithm, the asymmetry and the strain of efn2's default (see
+    /// RNAstructureFunctions::multibranch_energy). The other loops do not depend on it.
+    bool simple_multibranch_rule = false;
+
     [[nodiscard]] int stack(const std::size_t i, const std::size_t j, const std::size_t ci,
                             const std::size_t cj, const std::string& sequence,
                             const std::vector<std::string_view>& mod_sequence);
@@ -52,6 +57,8 @@ class AllParams {
     [[nodiscard]] int internal(const std::size_t i, const std::size_t j, const std::size_t ci,
                                const std::size_t cj, const std::string& sequence,
                                const std::vector<std::string_view>& mod_sequence);
+    /// With RNAstructure's parameters: efn2's energy, or efn2 --simple's when
+    /// simple_multibranch_rule is set.
     [[nodiscard]] int multibranch(const LoopNode& node, const ProcessedRNAEntry& pRNA);
     [[nodiscard]] int external(const std::vector<LoopNode*>& children,
                                const ProcessedRNAEntry& pRNA);

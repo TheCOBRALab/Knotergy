@@ -161,7 +161,10 @@ int AllParams::internal(const std::size_t i, const std::size_t j, const std::siz
 
 int AllParams::multibranch(const LoopNode& node, const ProcessedRNAEntry& pRNA) {
     if (rnastructure_params_loaded) {
-        return RNAstructureFunctions::multibranch_energy(node, pRNA, rsp_);
+        return RNAstructureFunctions::multibranch_energy(node, pRNA, rsp_,
+                                                         simple_multibranch_rule
+                                                             ? rnastructure::MultibranchRule::Simple
+                                                             : rnastructure::MultibranchRule::Efn2);
     }
 
     if (modified_params_loaded) {

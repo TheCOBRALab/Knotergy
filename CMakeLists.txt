@@ -62,7 +62,8 @@ fetch_dependency(uni_algo)
 
 # ----------------- ThermoRNA (ViennaRNA + RNAstructure) -----------------
 set(THERMORNA_VIENNARNA ON CACHE BOOL "" FORCE)
-# RNAstructure (efn2) parameter tables, with any number of modified-base alphabets.
+# RNAstructure (efn2) parameter tables and energy functions, with any number of modified-base
+# alphabets.
 set(THERMORNA_RNASTRUCTURE ON CACHE BOOL "" FORCE)
 
 # set(FETCHCONTENT_SOURCE_DIR_THERMORNA
@@ -71,7 +72,7 @@ set(THERMORNA_RNASTRUCTURE ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(ThermoRNA
     GIT_REPOSITORY https://github.com/TheCOBRALab/ThermoRNA.git
-    GIT_TAG        v0.2.1
+    GIT_TAG        v0.2.2
 )
 
 fetch_dependency(ThermoRNA)
