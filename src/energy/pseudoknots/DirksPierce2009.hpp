@@ -15,7 +15,7 @@ namespace knotergy {
  * pseudoknot initialization, bands, unpaired bases, and nested structures within
  * pseudoknots.
  */
-class PseudoknotFunctions {
+class DirksPierce2009 {
    public:
     /**
      * @brief Calculate the total energy of a pseudoknot loop.

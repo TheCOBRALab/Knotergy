@@ -1,4 +1,4 @@
-#include "PseudoknotFunctions.hpp"
+#include "DirksPierce2009.hpp"
 
 #include "energy/modified_bases/ModBaseUtils.hpp"
 #include "energy/modified_bases/ModInternal.hpp"
@@ -11,11 +11,10 @@
 
 namespace knotergy {
 
-double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
-                                              const ProcessedRNAEntry& processed_rna,
-                                              const vrna_md_param& vp, const all_mod_params& mp,
-                                              const pk_param& pkp, bool& is_inf,
-                                              const bool pk_dangles) {
+double DirksPierce2009::pseudoknot_energy(LoopNode& node, const ProcessedRNAEntry& processed_rna,
+                                          const vrna_md_param& vp, const all_mod_params& mp,
+                                          const pk_param& pkp, bool& is_inf,
+                                          const bool pk_dangles) {
     // Where most of the energy calculations are done
     // Populate the breakdown with all the energies and information for reporting
     double energy = get_pk_energy(node, processed_rna, vp, mp, pkp, is_inf);
@@ -28,9 +27,9 @@ double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
     return energy;
 }
 
-double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntry& processed_rna,
-                                          const vrna_md_param& vp, const all_mod_params& mp,
-                                          const pk_param& pkp, bool& is_inf) {
+double DirksPierce2009::get_pk_energy(LoopNode& node, const ProcessedRNAEntry& processed_rna,
+                                      const vrna_md_param& vp, const all_mod_params& mp,
+                                      const pk_param& pkp, bool& is_inf) {
     // Calculate the number of unpaired bases outside of bands
 
     // Store breakdown information (excluding energies)
@@ -51,11 +50,10 @@ double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntr
     return round_energy(node.pk_level_energy + loop_energies, pkp.round);
 }
 
-DangleSet PseudoknotFunctions::get_pk_dangle_set(const LoopNode& node,
-                                                 const ProcessedRNAEntry& processed_rna,
-                                                 const std::vector<PKBasePair*>& pk_base_pair_table,
-                                                 const vrna_md_param& vp,
-                                                 const all_mod_params& mp) {
+DangleSet DirksPierce2009::get_pk_dangle_set(const LoopNode& node,
+                                             const ProcessedRNAEntry& processed_rna,
+                                             const std::vector<PKBasePair*>& pk_base_pair_table,
+                                             const vrna_md_param& vp, const all_mod_params& mp) {
     // Implementation for getting the dangle set for a pseudoknot
     if (node.loop_type != LoopType::Pseudoknot) {
         THROW_ERROR("get_pk_dangle_set called on a non-pseudoknot loop node.");
@@ -81,8 +79,8 @@ DangleSet PseudoknotFunctions::get_pk_dangle_set(const LoopNode& node,
     return DangleSet(b, n5d_energy + b, n3d_energy + b, both_dangle_energy + b);
 }
 
-int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
-                                                       const ProcessedRNAEntry& processed_rna) {
+int DirksPierce2009::get_unpaired_outside_of_bands(const LoopNode& node,
+                                                   const ProcessedRNAEntry& processed_rna) {
     int unpaired = node.exclusive_unpaired_bases_count;
 
     // remove unpaired bases within bands since they're already included in ViennaRNA's energy
@@ -105,7 +103,7 @@ int PseudoknotFunctions::get_unpaired_outside_of_bands(const LoopNode& node,
     return unpaired;
 }
 
-double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
+double DirksPierce2009::get_init_penalty(const LoopNode& node, const knotergy::pk_param& pkp) {
     // initialization penalties
     switch (node.parent->loop_type) {
         case (LoopType::External):    return pkp.pk_in_ext;
@@ -119,10 +117,10 @@ double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knoterg
     }
 }
 
-double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
-                                                  const ProcessedRNAEntry& processed_rna,
-                                                  const vrna_md_param& vp, const all_mod_params& mp,
-                                                  const knotergy::pk_param& pkp, bool& is_inf) {
+double DirksPierce2009::compute_loop_energies(LoopNode& node,
+                                              const ProcessedRNAEntry& processed_rna,
+                                              const vrna_md_param& vp, const all_mod_params& mp,
+                                              const knotergy::pk_param& pkp, bool& is_inf) {
     double energy = 0;
 
     for (Band& band : node.bands) {
@@ -169,9 +167,9 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
     return energy;
 }
 
-double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
-                                               const ProcessedRNAEntry& processed_rna,
-                                               const vrna_md_param& vp, const all_mod_params& mp) {
+double DirksPierce2009::pk_dangling_energy(const LoopNode& node,
+                                           const ProcessedRNAEntry& processed_rna,
+                                           const vrna_md_param& vp, const all_mod_params& mp) {
     double energy = 0;
     int dangles = vp.md.dangles;
     const std::vector<std::size_t>& pair_table = processed_rna.get_pair_table();
@@ -227,7 +225,7 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
 }
 
 // Checks if innermost base pair is infinite energy or not
-double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, const vrna_md_param& vp) {
+double DirksPierce2009::pk_innermost_energy(PKBasePair& bp, const vrna_md_param& vp) {
     // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
     std::size_t size = bp.j - bp.i - 1;
 
@@ -241,10 +239,10 @@ double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, const vrna_md_pa
     return 0;
 }
 
-double PseudoknotFunctions::pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
-                                            const ProcessedRNAEntry& processed_rna,
-                                            const vrna_md_param& vp, const knotergy::pk_param& pkp,
-                                            const all_mod_params& mp) {
+double DirksPierce2009::pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
+                                        const ProcessedRNAEntry& processed_rna,
+                                        const vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                        const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
 
     int stack_energy = processed_rna.has_modified_bases()
@@ -255,11 +253,10 @@ double PseudoknotFunctions::pk_stack_energy(const PKBasePair& bp, const PKBasePa
     return round_energy(stack_pk_energy, pkp.round);
 }
 
-double PseudoknotFunctions::pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
-                                               const ProcessedRNAEntry& processed_rna,
-                                               const vrna_md_param& vp,
-                                               const knotergy::pk_param& pkp,
-                                               const all_mod_params& mp) {
+double DirksPierce2009::pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
+                                           const ProcessedRNAEntry& processed_rna,
+                                           const vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                           const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
     int internal_energy =
         processed_rna.has_modified_bases()
@@ -270,9 +267,9 @@ double PseudoknotFunctions::pk_internal_energy(const PKBasePair& bp, const PKBas
     return round_energy(internal_pk_energy, pkp.round);
 }
 
-double PseudoknotFunctions::pk_multiloop_energy(const PKBasePair& bp, const PKBasePair& next_bp,
-                                                const ProcessedRNAEntry& processed_rna,
-                                                const knotergy::pk_param& pkp) {
+double DirksPierce2009::pk_multiloop_energy(const PKBasePair& bp, const PKBasePair& next_bp,
+                                            const ProcessedRNAEntry& processed_rna,
+                                            const knotergy::pk_param& pkp) {
     double multiloop_penalty = pkp.pk_mloop_init;
 
     // Since a multiloop is nested between two base pairs, we add 2 * bp_penalty
@@ -301,7 +298,7 @@ double PseudoknotFunctions::pk_multiloop_energy(const PKBasePair& bp, const PKBa
     return multiloop_penalty;
 }
 
-double PseudoknotFunctions::round_energy(double energy, RoundMethod round) {
+double DirksPierce2009::round_energy(double energy, RoundMethod round) {
     switch (round) {
         case RoundMethod::None:           return energy;              // no rounding
         case RoundMethod::Bankers:        return std::rint(energy);   // banker's rounding

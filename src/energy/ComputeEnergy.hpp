@@ -1,5 +1,5 @@
 #pragma once
-#include "energy/pseudoknots/PseudoknotFunctions.hpp"
+#include "energy/pseudoknots/DirksPierce2009.hpp"
 #include "energy/vienna/ViennaFunctions.hpp"
 #include "io/output/EnergyBreakdown.hpp"
 #include "io/parameters/PseudoknotParams.hpp"
