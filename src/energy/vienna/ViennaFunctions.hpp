@@ -31,7 +31,7 @@ class ViennaFunctions {
      */
     [[nodiscard]] static int stack_energy(std::size_t i, std::size_t j, std::size_t ci,
                                           std::size_t cj, const std::string& sequence,
-                                          vrna_md_param& vp);
+                                          const vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for two consecutive base pairs.
@@ -42,7 +42,7 @@ class ViennaFunctions {
      * @return Stacking energy in centicalories.
      */
     [[nodiscard]] static int stack_energy(const LoopNode& node, const std::string& sequence,
-                                          vrna_md_param& vp);
+                                          const vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for two consecutive base pairs.
@@ -53,7 +53,7 @@ class ViennaFunctions {
      * @return Stacking energy in centicalories.
      */
     [[nodiscard]] static int stack_energy(PKBasePair pair, PKBasePair child,
-                                          const std::string& sequence, vrna_md_param& vp);
+                                          const std::string& sequence, const vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -66,7 +66,7 @@ class ViennaFunctions {
      */
     [[nodiscard]] static int hairpin_energy(std::size_t i, std::size_t j,
                                             const std::string& sequence, bool& is_inf,
-                                            vrna_md_param& vp);
+                                            const vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -77,7 +77,7 @@ class ViennaFunctions {
      * @return Hairpin loop energy in centicalories.
      */
     [[nodiscard]] static int hairpin_energy(const LoopNode& node, const std::string& sequence,
-                                            bool& is_inf, vrna_md_param& vp);
+                                            bool& is_inf, const vrna_md_param& vp);
 
     /**
      * @brief Calculate hairpin loop energy.
@@ -88,7 +88,7 @@ class ViennaFunctions {
      * @return Hairpin loop energy in centicalories.
      */
     [[nodiscard]] static int hairpin_energy(const PKBasePair& pair, const std::string& sequence,
-                                            bool& is_inf, vrna_md_param& vp);
+                                            bool& is_inf, const vrna_md_param& vp);
 
     /**
      * @brief Calculate internal loop or bulge energy.
@@ -102,10 +102,10 @@ class ViennaFunctions {
      */
     [[nodiscard]] static int internal_loop_energy(std::size_t i, std::size_t j, std::size_t ci,
                                                   std::size_t cj, const std::string& sequence,
-                                                  vrna_md_param& vp);
+                                                  const vrna_md_param& vp);
 
     [[nodiscard]] static int internal_loop_energy(const LoopNode& node, const std::string& sequence,
-                                                  vrna_md_param& vp);
+                                                  const vrna_md_param& vp);
 
     /**
      * @brief Calculate internal loop or bulge energy.
@@ -116,7 +116,8 @@ class ViennaFunctions {
      * @return Internal loop energy in centicalories.
      */
     [[nodiscard]] static int internal_loop_energy(PKBasePair pair, PKBasePair child,
-                                                  const std::string& sequence, vrna_md_param& vp);
+                                                  const std::string& sequence,
+                                                  const vrna_md_param& vp);
 
     /**
      * @brief Calculate multibranch loop energy.
@@ -126,7 +127,7 @@ class ViennaFunctions {
      * @return Multibranch loop energy in centicalories.
      */
     [[nodiscard]] static int multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp);
+                                                const vrna_md_param& vp);
 
     /**
      * @brief Calculate external loop energy.
@@ -136,7 +137,8 @@ class ViennaFunctions {
      * @return External loop energy in centicalories.
      */
     [[nodiscard]] static int external_energy(const std::vector<LoopNode*>& children,
-                                             const ProcessedRNAEntry& pRNA, vrna_md_param& vp);
+                                             const ProcessedRNAEntry& pRNA,
+                                             const vrna_md_param& vp);
 
     /**
      * @brief Calculate the energy of a 5' dangling end on base pair i-j.
@@ -152,7 +154,7 @@ class ViennaFunctions {
      * @return Dangle energy in centicalories.
      */
     [[nodiscard]] static int dangle5_energy(std::size_t i, std::size_t j,
-                                            const std::string& sequence, vrna_md_param& vp,
+                                            const std::string& sequence, const vrna_md_param& vp,
                                             bool is_closing = false);
 
     /**
@@ -169,7 +171,7 @@ class ViennaFunctions {
      * @return Dangle energy in centicalories.
      */
     [[nodiscard]] static int dangle3_energy(std::size_t i, std::size_t j,
-                                            const std::string& sequence, vrna_md_param& vp,
+                                            const std::string& sequence, const vrna_md_param& vp,
                                             bool is_closing = false);
 
     /**
@@ -188,7 +190,7 @@ class ViennaFunctions {
      * @return Mismatch energy in centicalories.
      */
     [[nodiscard]] static int mismatch_energy(std::size_t i, std::size_t j,
-                                             const std::string& sequence, vrna_md_param& vp,
+                                             const std::string& sequence, const vrna_md_param& vp,
                                              bool is_external = false, bool is_closing = false);
 
     /**
@@ -201,6 +203,6 @@ class ViennaFunctions {
      * @return The penalty in centicalories; 0 for G-C pairs.
      */
     [[nodiscard]] static int terminal_energy(std::size_t i, std::size_t j,
-                                             const std::string& sequence, vrna_md_param& vp);
+                                             const std::string& sequence, const vrna_md_param& vp);
 };
 }  // namespace knotergy

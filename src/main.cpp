@@ -42,7 +42,7 @@ struct EnergyResult {
 };
 
 EnergyResult evaluate_entry(const knotergy::RNAEntry& rna, const knotergy::CLIArgs& args,
-                            knotergy::vrna_md_param& vp, const knotergy::pk_param& pkp,
+                            const knotergy::vrna_md_param& vp, const knotergy::pk_param& pkp,
                             const knotergy::all_mod_params& mp) {
     const knotergy::ProcessedRNAEntry processed_rna =
         knotergy::RNAProcessor::process_rna(rna, mp, args.convert);
@@ -82,8 +82,7 @@ int run_knotergy(const knotergy::CLIArgs& args) {
     const bool use_color = knotergy::should_use_color();
 
     // ------------------------- Load Parameters -----------------------
-    // Not const cuz ViennaRNA accidentally didn't mark their functions as const
-    knotergy::vrna_md_param vp = load_vienna_params(args);
+    const knotergy::vrna_md_param vp = load_vienna_params(args);
     const knotergy::pk_param pkp = load_pseudoknot_params(args);
     const knotergy::all_mod_params mp = load_modified_params(args);
 

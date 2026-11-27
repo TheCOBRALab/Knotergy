@@ -42,29 +42,29 @@ class CoaxialStacking {
     [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
                                                       const std::vector<MultiloopStem>& stems,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param& vp,
+                                                      const vrna_md_param& vp,
                                                       const all_mod_params& mp = {});
 
     [[nodiscard]] static int get_multibranch_dangle_3(const LoopNode& node,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param& vp,
+                                                      const vrna_md_param& vp,
                                                       const all_mod_params& mp = {});
 
     [[nodiscard]] static std::vector<MultiloopStem> populate_multiloop_stems(
-        const LoopNode& node, const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+        const LoopNode& node, const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
         const all_mod_params& mp = {});
 
    private:
     // ------------------- Dangle 3 (coaxial stacking) --------------------
     [[nodiscard]] static int compute_initial_ld5_for_d3(const MultiloopStem& stem,
                                                         const ProcessedRNAEntry& pRNA,
-                                                        vrna_md_param& vp,
+                                                        const vrna_md_param& vp,
                                                         const all_mod_params& mp);
 
     [[nodiscard]] static int walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                                                           std::size_t start_prev,
                                                           const std::vector<MultiloopStem>& stems,
-                                                          vrna_md_param& vp,
+                                                          const vrna_md_param& vp,
                                                           const all_mod_params& mp);
 };
 

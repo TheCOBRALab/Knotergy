@@ -17,7 +17,7 @@ namespace knotergy {
 //               Stack Energy
 // --------------------------------------------
 int ViennaFunctions::stack_energy(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
-                                  const std::string& sequence, vrna_md_param& vp) {
+                                  const std::string& sequence, const vrna_md_param& vp) {
     // c = child or nested base pair
     unsigned int type = ViennaUtils::get_pair_type(sequence[i], sequence[j], vp.md);
     unsigned int child_type = ViennaUtils::reverse_pair_type(sequence[ci], sequence[cj], vp.md);
@@ -27,14 +27,14 @@ int ViennaFunctions::stack_energy(std::size_t i, std::size_t j, std::size_t ci, 
 }
 
 int ViennaFunctions::stack_energy(const LoopNode& node, const std::string& sequence,
-                                  vrna_md_param& vp) {
+                                  const vrna_md_param& vp) {
     return stack_energy(node.begin, node.end, node.children[0]->begin, node.children[0]->end,
                         sequence, vp);
 }
 
 // Helper function for stack_energy that takes PKBasePair objects instead of indices
 int ViennaFunctions::stack_energy(PKBasePair pair, PKBasePair child, const std::string& sequence,
-                                  vrna_md_param& vp) {
+                                  const vrna_md_param& vp) {
     return stack_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
@@ -42,7 +42,7 @@ int ViennaFunctions::stack_energy(PKBasePair pair, PKBasePair child, const std::
 //             Hairpin Energy
 // --------------------------------------------
 int ViennaFunctions::hairpin_energy(std::size_t i, std::size_t j, const std::string& sequence,
-                                    bool& is_inf, vrna_md_param& vp) {
+                                    bool& is_inf, const vrna_md_param& vp) {
     if (j <= i || j >= sequence.size()) {
         std::cerr << "Invalid indices for hairpin energy calculation." << std::endl;
         return 0;
@@ -77,12 +77,12 @@ int ViennaFunctions::hairpin_energy(std::size_t i, std::size_t j, const std::str
 }
 
 int ViennaFunctions::hairpin_energy(const LoopNode& node, const std::string& sequence, bool& is_inf,
-                                    vrna_md_param& vp) {
+                                    const vrna_md_param& vp) {
     return hairpin_energy(node.begin, node.end, sequence, is_inf, vp);
 }
 
 int ViennaFunctions::hairpin_energy(const PKBasePair& pair, const std::string& sequence,
-                                    bool& is_inf, vrna_md_param& vp) {
+                                    bool& is_inf, const vrna_md_param& vp) {
     return hairpin_energy(pair.i, pair.j, sequence, is_inf, vp);
 }
 
@@ -91,7 +91,7 @@ int ViennaFunctions::hairpin_energy(const PKBasePair& pair, const std::string& s
 // --------------------------------------------
 int ViennaFunctions::internal_loop_energy(std::size_t i, std::size_t j, std::size_t ci,
                                           std::size_t cj, const std::string& sequence,
-                                          vrna_md_param& vp) {
+                                          const vrna_md_param& vp) {
     // c = child or nested bp
 
     if (j <= i || cj <= ci || ci <= i || j <= cj || j >= sequence.size()) {
@@ -111,13 +111,13 @@ int ViennaFunctions::internal_loop_energy(std::size_t i, std::size_t j, std::siz
 }
 
 int ViennaFunctions::internal_loop_energy(const LoopNode& node, const std::string& sequence,
-                                          vrna_md_param& vp) {
+                                          const vrna_md_param& vp) {
     return internal_loop_energy(node.begin, node.end, node.children[0]->begin,
                                 node.children[0]->end, sequence, vp);
 }
 
 int ViennaFunctions::internal_loop_energy(PKBasePair pair, PKBasePair child,
-                                          const std::string& sequence, vrna_md_param& vp) {
+                                          const std::string& sequence, const vrna_md_param& vp) {
     return internal_loop_energy(pair.i, pair.j, child.i, child.j, sequence, vp);
 }
 
@@ -126,7 +126,7 @@ int ViennaFunctions::internal_loop_energy(PKBasePair pair, PKBasePair child,
 // --------------------------------------------
 
 int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                        vrna_md_param& vp) {
+                                        const vrna_md_param& vp) {
     // ------------------- Penalties -------------------
     // closing penalty + unpaired bases penalty
     int penalties = vp.p->MLclosing + node.exclusive_unpaired_bases_count * vp.p->MLbase;
@@ -174,7 +174,7 @@ int ViennaFunctions::multibranch_energy(const LoopNode& node, const ProcessedRNA
 // --------------------------------------------
 
 int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
-                                     const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+                                     const ProcessedRNAEntry& pRNA, const vrna_md_param& vp) {
     // ------------------ Dangle 1 Energy ------------------
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         return Dangle1::get_external_dangle_1(children, pRNA, vp);
@@ -202,7 +202,7 @@ int ViennaFunctions::external_energy(const std::vector<LoopNode*>& children,
 // --------------------------------------------
 
 int ViennaFunctions::dangle5_energy(std::size_t i, std::size_t j, const std::string& sequence,
-                                    vrna_md_param& vp, bool is_closing) {
+                                    const vrna_md_param& vp, bool is_closing) {
     if (j <= i || j >= sequence.size() || (is_closing ? j == i + 1 : i == 0)) {
         THROW_ERROR("Invalid indices for 5' dangle energy calculation: i = " + std::to_string(i) +
                     ", j = " + std::to_string(j));
@@ -217,7 +217,7 @@ int ViennaFunctions::dangle5_energy(std::size_t i, std::size_t j, const std::str
 }
 
 int ViennaFunctions::dangle3_energy(std::size_t i, std::size_t j, const std::string& sequence,
-                                    vrna_md_param& vp, bool is_closing) {
+                                    const vrna_md_param& vp, bool is_closing) {
     if (j <= i || j >= sequence.size() || (is_closing ? j == i + 1 : j + 1 == sequence.size())) {
         THROW_ERROR("Invalid indices for 3' dangle energy calculation: i = " + std::to_string(i) +
                     ", j = " + std::to_string(j));
@@ -236,7 +236,7 @@ int ViennaFunctions::dangle3_energy(std::size_t i, std::size_t j, const std::str
 // --------------------------------------------
 
 int ViennaFunctions::mismatch_energy(std::size_t i, std::size_t j, const std::string& sequence,
-                                     vrna_md_param& vp, bool is_external, bool is_closing) {
+                                     const vrna_md_param& vp, bool is_external, bool is_closing) {
     if (is_external && is_closing) {
         THROW_ERROR("An external loop has no closing pair to put a mismatch inside of.");
     }
@@ -260,7 +260,7 @@ int ViennaFunctions::mismatch_energy(std::size_t i, std::size_t j, const std::st
 // --------------------------------------------
 
 int ViennaFunctions::terminal_energy(std::size_t i, std::size_t j, const std::string& sequence,
-                                     vrna_md_param& vp) {
+                                     const vrna_md_param& vp) {
     if (j <= i || j >= sequence.size()) {
         THROW_ERROR("Invalid indices for terminal energy calculation: i = " + std::to_string(i) +
                     ", j = " + std::to_string(j));

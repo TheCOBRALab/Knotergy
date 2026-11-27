@@ -34,19 +34,19 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pseudoknot_energy(LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
-                                                  vrna_md_param& vp, const all_mod_params& mp,
+                                                  const vrna_md_param& vp, const all_mod_params& mp,
                                                   const pk_param& pkp, bool& is_inf,
                                                   const bool pk_dangles = false);
 
     [[nodiscard]] static DangleSet get_pk_dangle_set(
         const LoopNode& node, const ProcessedRNAEntry& processed_rna,
-        const std::vector<PKBasePair*>& pk_base_pair_table, vrna_md_param& vp,
+        const std::vector<PKBasePair*>& pk_base_pair_table, const vrna_md_param& vp,
         const all_mod_params& mp);
 
    private:
     [[nodiscard]] static double get_pk_energy(LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
-                                              vrna_md_param& vp, const all_mod_params& mp,
+                                              const vrna_md_param& vp, const all_mod_params& mp,
                                               const pk_param& pkp, bool& is_inf);
 
     /**
@@ -94,7 +94,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double compute_loop_energies(LoopNode& node,
                                                       const ProcessedRNAEntry& processed_rna,
-                                                      vrna_md_param& vp, const all_mod_params& mp,
+                                                      const vrna_md_param& vp,
+                                                      const all_mod_params& mp,
                                                       const knotergy::pk_param& pkp, bool& is_inf);
 
     /**
@@ -108,7 +109,7 @@ class PseudoknotFunctions {
      * @param is_inf Reference to a boolean that will be set to true if the energy is infinite.
      * @return The energy of the innermost base pair (0 if valid, INF if invalid).
      */
-    [[nodiscard]] static double pk_innermost_energy(PKBasePair& bp, vrna_md_param& vp);
+    [[nodiscard]] static double pk_innermost_energy(PKBasePair& bp, const vrna_md_param& vp);
 
     /**
      * @brief Calculate stacking energy for base pairs in a pseudoknot band.
@@ -125,7 +126,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                 const ProcessedRNAEntry& processed_rna,
-                                                vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                                const vrna_md_param& vp,
+                                                const knotergy::pk_param& pkp,
                                                 const all_mod_params& mp);
 
     /**
@@ -143,7 +145,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                    const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                                   const vrna_md_param& vp,
+                                                   const knotergy::pk_param& pkp,
                                                    const all_mod_params& mp);
 
     /**
@@ -176,7 +179,8 @@ class PseudoknotFunctions {
      */
     [[nodiscard]] static double pk_dangling_energy(const LoopNode& node,
                                                    const ProcessedRNAEntry& processed_rna,
-                                                   vrna_md_param& vp, const all_mod_params& mp);
+                                                   const vrna_md_param& vp,
+                                                   const all_mod_params& mp);
 };
 
 }  // namespace knotergy

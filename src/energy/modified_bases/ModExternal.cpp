@@ -9,7 +9,7 @@ int is_external = true;  // external loop energy correction applies to children 
 }  // namespace
 
 int ModExternal::find_mod_external_energy(const std::vector<LoopNode*>& children,
-                                          const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                          const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
                                           const all_mod_params& mp) {
     if (vp.md.dangles == 1 || vp.md.dangles == 3) {
         return external_dangle_1_energy(children, pRNA, vp, mp);
@@ -21,7 +21,7 @@ int ModExternal::find_mod_external_energy(const std::vector<LoopNode*>& children
 }
 
 ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const ProcessedRNAEntry& pRNA,
-                                               vrna_md_param& vp, const all_mod_params& mp) {
+                                               const vrna_md_param& vp, const all_mod_params& mp) {
     if (child.loop_type == LoopType::Pseudoknot) {
         return ModDiffs{};  // pseudoknot children do not contribute to external loop energy
     }
@@ -44,7 +44,7 @@ ModDiffs ModExternal::get_external_child_diffs(const LoopNode& child, const Proc
 }
 
 int ModExternal::external_dangle_0_2_energy(const std::vector<LoopNode*>& children,
-                                            const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                            const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
                                             const all_mod_params& mp) {
     if (vp.md.dangles != 0 && vp.md.dangles != 2) {
         THROW_ERROR("external_dangle_0_2_energy should only be called when dangles == 0 or 2");
@@ -64,7 +64,7 @@ int ModExternal::external_dangle_0_2_energy(const std::vector<LoopNode*>& childr
 }
 
 int ModExternal::external_dangle_1_energy(const std::vector<LoopNode*>& children,
-                                          const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                          const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
                                           const all_mod_params& mp) {
     if (vp.md.dangles != 1 && vp.md.dangles != 3) {
         THROW_ERROR("external_dangle_1_energy should only be called when dangles == 1 or 3");
@@ -88,7 +88,7 @@ int ModExternal::external_dangle_1_energy(const std::vector<LoopNode*>& children
 
 int ModExternal::mod_exterior_stem(const LoopNode& node, int n5d, int n3d, unsigned int type,
                                    const std::vector<std::string_view>& mod_sequence,
-                                   vrna_md_param& vp, const all_mod_params& mp) {
+                                   const vrna_md_param& vp, const all_mod_params& mp) {
     if (node.loop_type == LoopType::Pseudoknot) {
         return 0;
     }

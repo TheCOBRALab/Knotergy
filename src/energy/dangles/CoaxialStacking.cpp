@@ -7,8 +7,8 @@ namespace knotergy {
 
 // applies to closing pair and first child
 int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
-                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-                                                const all_mod_params& mp) {
+                                                const ProcessedRNAEntry& pRNA,
+                                                const vrna_md_param& vp, const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
     const std::vector<std::size_t>& pair_table = pRNA.get_pair_table();
 
@@ -52,7 +52,7 @@ int CoaxialStacking::compute_initial_ld5_for_d3(const MultiloopStem& stem,
 
 std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopNode& node,
                                                                      const ProcessedRNAEntry& pRNA,
-                                                                     vrna_md_param& vp,
+                                                                     const vrna_md_param& vp,
                                                                      const all_mod_params& mp) {
     std::vector<MultiloopStem> stems;
     stems.reserve(node.children.size() + 1);
@@ -111,7 +111,8 @@ std::vector<MultiloopStem> CoaxialStacking::populate_multiloop_stems(const LoopN
 int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
                                                   std::size_t start_prev,
                                                   const std::vector<MultiloopStem>& stems,
-                                                  vrna_md_param& vp, const all_mod_params& mp) {
+                                                  const vrna_md_param& vp,
+                                                  const all_mod_params& mp) {
     const std::string& sequence = pRNA.get_sequence();
     const std::size_t stem_count = stems.size();
 
@@ -241,8 +242,8 @@ int CoaxialStacking::walk_multiloop_d3_from_start(const ProcessedRNAEntry& pRNA,
 // For now, this is a direct translation of ViennaRNA's d3 multiloop walk.
 int CoaxialStacking::get_multibranch_dangle_3([[maybe_unused]] const LoopNode& node,
                                               const std::vector<MultiloopStem>& stems,
-                                              const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-                                              const all_mod_params& mp) {
+                                              const ProcessedRNAEntry& pRNA,
+                                              const vrna_md_param& vp, const all_mod_params& mp) {
     // First walk:
     // start from the multiloop closing pair. This disallows stacking of the
     // last child back into the closing pair at the final edge of this walk.
@@ -259,7 +260,7 @@ int CoaxialStacking::get_multibranch_dangle_3([[maybe_unused]] const LoopNode& n
 }
 
 int CoaxialStacking::get_multibranch_dangle_3(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                              vrna_md_param& vp, const all_mod_params& mp) {
+                                              const vrna_md_param& vp, const all_mod_params& mp) {
     std::vector<MultiloopStem> stems = populate_multiloop_stems(node, pRNA, vp);
     return get_multibranch_dangle_3(node, stems, pRNA, vp, mp);
 };

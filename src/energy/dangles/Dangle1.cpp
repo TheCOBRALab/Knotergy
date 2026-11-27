@@ -75,7 +75,7 @@ int Dangle1::get_external_dangle_1(const std::vector<LoopNode*>& children,
 }
 
 int Dangle1::get_external_dangle_1(const std::vector<LoopNode*>& children,
-                                   const ProcessedRNAEntry& pRNA, vrna_md_param& vp) {
+                                   const ProcessedRNAEntry& pRNA, const vrna_md_param& vp) {
     std::vector<DangleSet> dangle_energies = populate_children_dangle_energies(children, pRNA, vp);
     return get_external_dangle_1(children, dangle_energies);
 }
@@ -106,7 +106,7 @@ int Dangle1::get_multibranch_dangle_1(const LoopNode& node,
 }
 
 int Dangle1::get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                      vrna_md_param& vp) {
+                                      const vrna_md_param& vp) {
     const bool is_external = false;
     std::vector<DangleSet> dangle_energies =
         populate_children_dangle_energies(node.children, pRNA, vp, is_external);
@@ -116,7 +116,7 @@ int Dangle1::get_multibranch_dangle_1(const LoopNode& node, const ProcessedRNAEn
 }
 
 DangleSet Dangle1::get_ml_closing_dangle_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp) {
+                                                const vrna_md_param& vp) {
     const std::string& sequence = pRNA.get_sequence();
     std::size_t pi = node.begin;
     std::size_t pj = node.end;
@@ -136,7 +136,7 @@ DangleSet Dangle1::get_ml_closing_dangle_energy(const LoopNode& node, const Proc
 }
 
 DangleSet Dangle1::get_child_dangle_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                           vrna_md_param& vp, bool is_external) {
+                                           const vrna_md_param& vp, bool is_external) {
     const std::string& sequence = pRNA.get_sequence();
     std::size_t ci = node.begin;
     std::size_t cj = node.end;
@@ -159,7 +159,7 @@ DangleSet Dangle1::get_child_dangle_energy(const LoopNode& node, const Processed
 
 // Precompute dangle energies for all children in the loop
 std::vector<DangleSet> Dangle1::populate_children_dangle_energies(
-    const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+    const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
     bool is_external) {
     std::vector<DangleSet> dangle_energies;
     dangle_energies.reserve(children.size());

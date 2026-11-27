@@ -13,7 +13,7 @@ namespace knotergy {
 
 double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
                                               const ProcessedRNAEntry& processed_rna,
-                                              vrna_md_param& vp, const all_mod_params& mp,
+                                              const vrna_md_param& vp, const all_mod_params& mp,
                                               const pk_param& pkp, bool& is_inf,
                                               const bool pk_dangles) {
     // Where most of the energy calculations are done
@@ -29,7 +29,7 @@ double PseudoknotFunctions::pseudoknot_energy(LoopNode& node,
 }
 
 double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntry& processed_rna,
-                                          vrna_md_param& vp, const all_mod_params& mp,
+                                          const vrna_md_param& vp, const all_mod_params& mp,
                                           const pk_param& pkp, bool& is_inf) {
     // Calculate the number of unpaired bases outside of bands
 
@@ -54,7 +54,8 @@ double PseudoknotFunctions::get_pk_energy(LoopNode& node, const ProcessedRNAEntr
 DangleSet PseudoknotFunctions::get_pk_dangle_set(const LoopNode& node,
                                                  const ProcessedRNAEntry& processed_rna,
                                                  const std::vector<PKBasePair*>& pk_base_pair_table,
-                                                 vrna_md_param& vp, const all_mod_params& mp) {
+                                                 const vrna_md_param& vp,
+                                                 const all_mod_params& mp) {
     // Implementation for getting the dangle set for a pseudoknot
     if (node.loop_type != LoopType::Pseudoknot) {
         THROW_ERROR("get_pk_dangle_set called on a non-pseudoknot loop node.");
@@ -120,7 +121,7 @@ double PseudoknotFunctions::get_init_penalty(const LoopNode& node, const knoterg
 
 double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
                                                   const ProcessedRNAEntry& processed_rna,
-                                                  vrna_md_param& vp, const all_mod_params& mp,
+                                                  const vrna_md_param& vp, const all_mod_params& mp,
                                                   const knotergy::pk_param& pkp, bool& is_inf) {
     double energy = 0;
 
@@ -170,7 +171,7 @@ double PseudoknotFunctions::compute_loop_energies(LoopNode& node,
 
 double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
                                                const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp, const all_mod_params& mp) {
+                                               const vrna_md_param& vp, const all_mod_params& mp) {
     double energy = 0;
     int dangles = vp.md.dangles;
     const std::vector<std::size_t>& pair_table = processed_rna.get_pair_table();
@@ -226,7 +227,7 @@ double PseudoknotFunctions::pk_dangling_energy(const LoopNode& node,
 }
 
 // Checks if innermost base pair is infinite energy or not
-double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, vrna_md_param& vp) {
+double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, const vrna_md_param& vp) {
     // check if the band is valid (has at least 3 base pairs to avoid infinite energy)
     std::size_t size = bp.j - bp.i - 1;
 
@@ -242,7 +243,7 @@ double PseudoknotFunctions::pk_innermost_energy(PKBasePair& bp, vrna_md_param& v
 
 double PseudoknotFunctions::pk_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                             const ProcessedRNAEntry& processed_rna,
-                                            vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                            const vrna_md_param& vp, const knotergy::pk_param& pkp,
                                             const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
 
@@ -256,7 +257,8 @@ double PseudoknotFunctions::pk_stack_energy(const PKBasePair& bp, const PKBasePa
 
 double PseudoknotFunctions::pk_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
                                                const ProcessedRNAEntry& processed_rna,
-                                               vrna_md_param& vp, const knotergy::pk_param& pkp,
+                                               const vrna_md_param& vp,
+                                               const knotergy::pk_param& pkp,
                                                const all_mod_params& mp) {
     const std::string& sequence = processed_rna.get_sequence();
     int internal_energy =

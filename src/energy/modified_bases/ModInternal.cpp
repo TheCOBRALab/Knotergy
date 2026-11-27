@@ -16,7 +16,7 @@ namespace knotergy {
 int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::size_t ci,
                                           std::size_t cj,
                                           const std::vector<std::string_view>& mod_sequence,
-                                          const std::string& sequence, vrna_md_param& vp,
+                                          const std::string& sequence, const vrna_md_param& vp,
                                           const all_mod_params& mp) {
     int unmod_energy = ViennaFunctions::internal_loop_energy(i, j, ci, cj, sequence, vp);
     // Both pairs and their terminal mismatches inside the loop
@@ -80,14 +80,14 @@ int ModInternal::find_mod_internal_energy(std::size_t i, std::size_t j, std::siz
 }
 
 int ModInternal::find_mod_internal_energy(const PKBasePair& bp, const PKBasePair& next_bp,
-                                          const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                          const ProcessedRNAEntry& pRNA, const vrna_md_param& vp,
                                           const all_mod_params& mp) {
     return find_mod_internal_energy(bp.i, bp.j, next_bp.i, next_bp.j, pRNA.get_modified_sequence(),
                                     pRNA.get_sequence(), vp, mp);
 }
 
 int ModInternal::find_mod_internal_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                          vrna_md_param& vp, const all_mod_params& mp) {
+                                          const vrna_md_param& vp, const all_mod_params& mp) {
     return find_mod_internal_energy(node.begin, node.end, node.children[0]->begin,
                                     node.children[0]->end, pRNA.get_modified_sequence(),
                                     pRNA.get_sequence(), vp, mp);

@@ -49,12 +49,12 @@ class EnergyFunctions {
                                const ProcessedRNAEntry& pRNA);
 
    private:
-    const AllParams& params_;
-    vrna_md_param& vp_;
+    [[maybe_unused]] const AllParams& params_;
+    const vrna_md_param& vp_;
     const rnastructure_param& rsp_;
-    const pk_param& pkp_;
+    [[maybe_unused]] const pk_param& pkp_;
     const all_mod_params& mp_;
     const PKFreeEnergyModel em_;
-    const PKEnergyModel pk_em_;
+    [[maybe_unused]] const PKEnergyModel pk_em_;
 };
 }  // namespace knotergy

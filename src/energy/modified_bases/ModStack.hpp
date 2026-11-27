@@ -22,7 +22,7 @@ class ModStack {
     static int find_mod_stack_energy(std::size_t i, std::size_t j, std::size_t ci, std::size_t cj,
                                      const std::string& sequence,
                                      const std::vector<std::string_view>& mod_sequence,
-                                     vrna_md_param& vp, const all_mod_params& mp) {
+                                     const vrna_md_param& vp, const all_mod_params& mp) {
         // Get unmodified energy first to use as fallback if no modified nucleotides are found
         int unmod_energy = ViennaFunctions::stack_energy(i, j, ci, cj, sequence, vp);
         double temperature = vp.md.temperature;
@@ -64,7 +64,8 @@ class ModStack {
      *
      */
     [[nodiscard]] static int find_mod_stack_energy(const PKBasePair& bp, const PKBasePair& next_bp,
-                                                   const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                   const ProcessedRNAEntry& pRNA,
+                                                   const vrna_md_param& vp,
                                                    const all_mod_params& mp) {
         const std::string& sequence = pRNA.get_sequence();
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
@@ -73,7 +74,8 @@ class ModStack {
     }
 
     [[nodiscard]] static int find_mod_stack_energy(const LoopNode& node,
-                                                   const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
+                                                   const ProcessedRNAEntry& pRNA,
+                                                   const vrna_md_param& vp,
                                                    const all_mod_params& mp) {
         const std::string& sequence = pRNA.get_sequence();
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();

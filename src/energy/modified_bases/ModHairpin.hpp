@@ -12,7 +12,8 @@ class ModHairpin {
     // Corrects the AU penalty and terminal mismatch of hairpin
     static int find_mod_hairpin_energy(std::size_t i, std::size_t j, const std::string& sequence,
                                        const std::vector<std::string_view>& mod_sequence,
-                                       vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
+                                       const vrna_md_param& vp, const all_mod_params& mp,
+                                       bool& is_inf) {
         // Get the unmodified hairpin energy
         int unmod_energy = ViennaFunctions::hairpin_energy(i, j, sequence, is_inf, vp);
 
@@ -52,7 +53,8 @@ class ModHairpin {
 
     static int find_mod_hairpin_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
                                        const std::vector<std::string_view>& mod_sequence,
-                                       vrna_md_param& vp, const all_mod_params& mp, bool& is_inf) {
+                                       const vrna_md_param& vp, const all_mod_params& mp,
+                                       bool& is_inf) {
         return find_mod_hairpin_energy(node.begin, node.end, pRNA.get_sequence(), mod_sequence, vp,
                                        mp, is_inf);
     }

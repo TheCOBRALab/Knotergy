@@ -33,10 +33,10 @@ class ComputeEnergy {
      * @param efn2_correction Whether to apply the efn2 single-bulge correction (default: false).
      * @param verbose Whether to print detailed energy breakdown (default: false).
      */
-    ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna, vrna_md_param& vp,
-                  const knotergy::pk_param& pkp, const all_mod_params& mp = {},
-                  bool pk_dangles = false, bool efn2_correction = false,
-                  VerbosityLevel verbose = VerbosityLevel::Quiet)
+    ComputeEnergy(LoopNode& root_node, const ProcessedRNAEntry& processed_rna,
+                  const vrna_md_param& vp, const knotergy::pk_param& pkp,
+                  const all_mod_params& mp = {}, bool pk_dangles = false,
+                  bool efn2_correction = false, VerbosityLevel verbose = VerbosityLevel::Quiet)
         : root_node_{root_node},
           pRNA_{processed_rna},
           vp_{vp},
@@ -61,7 +61,7 @@ class ComputeEnergy {
    private:
     LoopNode& root_node_;
     const ProcessedRNAEntry& pRNA_;
-    vrna_md_param& vp_;
+    const vrna_md_param& vp_;
     const knotergy::pk_param& pkp_;
     const all_mod_params& mp_;
     const std::string& sequence_;

@@ -214,8 +214,9 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_mismatch_energy(std::size_t i, std::size_t j,
-                                                 const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-                                                 const all_mod_params& mp, bool is_external = false,
+                                                 const ProcessedRNAEntry& pRNA,
+                                                 const vrna_md_param& vp, const all_mod_params& mp,
+                                                 bool is_external = false,
                                                  bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
@@ -260,7 +261,7 @@ class ModBaseUtils {
     [[nodiscard]] static int loop_mismatch_diff(std::size_t i, std::size_t j,
                                                 const std::string& sequence,
                                                 const std::vector<std::string_view>& mod_sequence,
-                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
                                                 bool is_closing) {
         int mod_energy =
             get_mismatch_mod_energy(i, j, mod_sequence, mp, vp.md.temperature, is_closing);
@@ -301,8 +302,9 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle5_energy(std::size_t i, std::size_t j,
-                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-                                                const all_mod_params& mp, bool is_closing = false) {
+                                                const ProcessedRNAEntry& pRNA,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
         double temperature = vp.md.temperature;
@@ -328,13 +330,13 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle5_energy(LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
                                                 bool is_closing = false) {
         return get_dangle5_energy(node.begin, node.end, pRNA, vp, mp, is_closing);
     }
 
     [[nodiscard]] static int get_dangle5_energy(PKBasePair& pk_pair, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
                                                 bool is_closing = false) {
         return get_dangle5_energy(pk_pair.i, pk_pair.j, pRNA, vp, mp, is_closing);
     }
@@ -353,8 +355,9 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle3_energy(std::size_t i, std::size_t j,
-                                                const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-                                                const all_mod_params& mp, bool is_closing = false) {
+                                                const ProcessedRNAEntry& pRNA,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
+                                                bool is_closing = false) {
         const std::vector<std::string_view>& mod_sequence = pRNA.get_modified_sequence();
         const std::string& sequence = pRNA.get_sequence();
         double temperature = vp.md.temperature;
@@ -380,13 +383,13 @@ class ModBaseUtils {
     }
 
     [[nodiscard]] static int get_dangle3_energy(LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
                                                 bool is_closing = false) {
         return get_dangle3_energy(node.begin, node.end, pRNA, vp, mp, is_closing);
     }
 
     [[nodiscard]] static int get_dangle3_energy(PKBasePair& pk_pair, const ProcessedRNAEntry& pRNA,
-                                                vrna_md_param& vp, const all_mod_params& mp,
+                                                const vrna_md_param& vp, const all_mod_params& mp,
                                                 bool is_closing = false) {
         return get_dangle3_energy(pk_pair.i, pk_pair.j, pRNA, vp, mp, is_closing);
     }
@@ -449,7 +452,7 @@ class ModBaseUtils {
     [[nodiscard]] static ModDiffs get_mod_diffs(
         const LoopNode& node, int n5d, int n3d, unsigned int type,
         const std::vector<std::string_view>& unique_mod_bases,
-        const std::vector<std::string_view>& mod_sequence, vrna_md_param& vp,
+        const std::vector<std::string_view>& mod_sequence, const vrna_md_param& vp,
         const all_mod_params& mp, bool is_external, bool is_closing) {
         if (is_external && is_closing) {
             THROW_ERROR("An external loop cannot be a closing pair, check loop tree construction");

@@ -21,7 +21,7 @@ class Dangle1 {
      */
     [[nodiscard]] static int get_external_dangle_1(const std::vector<LoopNode*>& children,
                                                    const ProcessedRNAEntry& pRNA,
-                                                   vrna_md_param& vp);
+                                                   const vrna_md_param& vp);
 
     /**
      * @brief Calculate optimal external loop dangle energy using precomputed dangle sets.
@@ -43,7 +43,7 @@ class Dangle1 {
      */
     [[nodiscard]] static int get_multibranch_dangle_1(const LoopNode& node,
                                                       const ProcessedRNAEntry& pRNA,
-                                                      vrna_md_param& vp);
+                                                      const vrna_md_param& vp);
 
     /**
      * @brief Calculate optimal multibranch loop dangle energy using precomputed values.
@@ -67,8 +67,8 @@ class Dangle1 {
      * @return Vector of DangleSet objects containing energies for each child.
      */
     [[nodiscard]] static std::vector<DangleSet> populate_children_dangle_energies(
-        const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA, vrna_md_param& vp,
-        bool is_external = true);
+        const std::vector<LoopNode*>& children, const ProcessedRNAEntry& pRNA,
+        const vrna_md_param& vp, bool is_external = true);
 
     /**
      * @brief Get dangle energy for a multibranch loop closing pair.
@@ -80,11 +80,11 @@ class Dangle1 {
      */
     [[nodiscard]] static DangleSet get_ml_closing_dangle_energy(const LoopNode& node,
                                                                 const ProcessedRNAEntry& pRNA,
-                                                                vrna_md_param& vp);
+                                                                const vrna_md_param& vp);
 
     [[nodiscard]] static DangleSet get_child_dangle_energy(const LoopNode& node,
                                                            const ProcessedRNAEntry& pRNA,
-                                                           vrna_md_param& vp,
+                                                           const vrna_md_param& vp,
                                                            bool is_external = true);
 };
 };  // namespace knotergy

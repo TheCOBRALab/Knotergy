@@ -14,7 +14,7 @@ constexpr bool kIsNotClosing = false;
 }  // namespace
 
 int ModMultiloop::find_mod_multiloop_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                            vrna_md_param& vp, const all_mod_params& mp) {
+                                            const vrna_md_param& vp, const all_mod_params& mp) {
     switch (vp.md.dangles) {
         case 0:
         case 2:  return multiloop_dangle_0_2_energy(node, pRNA, vp, mp);
@@ -25,7 +25,7 @@ int ModMultiloop::find_mod_multiloop_energy(const LoopNode& node, const Processe
 }
 
 ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                           bool is_closing, vrna_md_param& vp,
+                                           bool is_closing, const vrna_md_param& vp,
                                            const all_mod_params& mp) {
     if (node.loop_type == LoopType::Pseudoknot) {
         return ModDiffs{};  // pseudoknot children do not contribute to multiloop energy
@@ -72,7 +72,7 @@ ModDiffs ModMultiloop::get_multiloop_diffs(const LoopNode& node, const Processed
 }
 
 int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                              vrna_md_param& vp, const all_mod_params& mp) {
+                                              const vrna_md_param& vp, const all_mod_params& mp) {
     if (vp.md.dangles != 0 && vp.md.dangles != 2) {
         THROW_ERROR(
             "multiloop_dangle_0_2_energy should only be called when "
@@ -110,7 +110,7 @@ int ModMultiloop::multiloop_dangle_0_2_energy(const LoopNode& node, const Proces
 }
 
 int ModMultiloop::multiloop_dangle_1_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                            vrna_md_param& vp, const all_mod_params& mp) {
+                                            const vrna_md_param& vp, const all_mod_params& mp) {
     if (vp.md.dangles != 1) {
         THROW_ERROR(
             "multiloop_dangle_1_energy should only be called when "
@@ -150,7 +150,7 @@ int ModMultiloop::multiloop_dangle_1_energy(const LoopNode& node, const Processe
 }
 
 int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const ProcessedRNAEntry& pRNA,
-                                            vrna_md_param& vp, const all_mod_params& mp) {
+                                            const vrna_md_param& vp, const all_mod_params& mp) {
     if (vp.md.dangles != 3) {
         THROW_ERROR(
             "multiloop_dangle_3_energy should only be called when "
@@ -197,7 +197,7 @@ int ModMultiloop::multiloop_dangle_3_energy(const LoopNode& node, const Processe
 
 int ModMultiloop::mod_multibranch_stem(const LoopNode& node, int si1, int sj1, unsigned int type,
                                        const std::vector<std::string_view>& mod_sequence,
-                                       vrna_md_param& vp, const all_mod_params& mp,
+                                       const vrna_md_param& vp, const all_mod_params& mp,
                                        const bool is_closing) {
     int energy = vp.p->MLintern[type];
     double temperature = vp.md.temperature;
