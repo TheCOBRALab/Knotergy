@@ -112,9 +112,9 @@ void print_help() {
         //   << "      --pk-dangles                      Enable pseudoknot dangle calculations\n"
         << "      --show-input                      Show the input sequence and structure\n"
         << "      --disable-cache                   Disable parameter caching\n"
-        << "      --salt <salt>                     Salt Concentration (default: 1.021)"
-        << "      --convertU                        Convert T to U"
-        << "      --convertT                        Convert U to T"
+        << "      --salt <salt>                     Salt Concentration (default: 1.021)\n"
+        << "      --convertTtoU                        Convert T to U\n"
+        << "      --convertUtoT                        Convert U to T\n"
         //   << "      --efn2-correction                 Apply efn2 single-bulge correction\n"
         ;
 }
@@ -239,10 +239,10 @@ ParseStatus CLIArgs::parse(int argc, char** argv, CLIArgs& out) {
         } else if (arg == "--disable-cache") {
             out.disable_cache = true;
 
-        } else if (arg == "--convertU") {
+        } else if (arg == "--convertUtoT") {
             out.convert = Convert::UtoT;
 
-        } else if (arg == "--convertT") {
+        } else if (arg == "--convertTtoU") {
             out.convert = Convert::TtoU;
 
         } else {
