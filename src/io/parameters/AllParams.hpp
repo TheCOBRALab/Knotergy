@@ -14,54 +14,36 @@
 
 namespace knotergy {
 
+enum class PKFreeEnergyModel {
+    ViennaRNA2,  // ViennaRNA 2.x.x (Modified version of Turner 2004)
+    efn2,        // RNAstructure's efn2 (Turner 2004)
+    enf2Simple,  // RNAstructure's efn2 --simple (Turner 2004)
+};
+
+enum class PKEnergyModel {
+    DP09,    // Dirks-Pierce 2009 (HotKnots V2)
+    Hajdin,  // Hajdin 2013's polymer physics model (ShapeKnots/RNAstructure/efn2)
+};
+
 class AllParams {
    public:
     AllParams(const all_mod_params& mod, const pk_param& pk, const vrna_md_param& vienna,
-              const rnastructure_param& rnastructure)
-        : mp_(mod), pkp_(pk), vp_(vienna), rsp_(rnastructure) {}
+              const rnastructure_param& rnastructure,
+              PKFreeEnergyModel pk_free_energy_model = PKFreeEnergyModel::ViennaRNA2,
+              PKEnergyModel pk_energy_model = PKEnergyModel::DP09)
+        : mp_(mod),
+          pkp_(pk),
+          vp_(vienna),
+          rsp_(rnastructure),
+          pk_free_energy_model_(pk_free_energy_model),
+          pk_energy_model_(pk_energy_model) {}
 
     const all_mod_params mp_;
     const pk_param pkp_;
     vrna_md_param vp_;
     const rnastructure_param rsp_;
-
-    bool rnastructure_params_loaded = false;
-    bool vienna_params_loaded = false;
-    bool pseudoknot_params_loaded = false;
-    bool modified_params_loaded = false;
-
-    /// efn2 --simple: with RNAstructure's parameters, multibranch loops follow the simple rule,
-    /// without the logarithm, the asymmetry and the strain of efn2's default (see
-    /// RNAstructureFunctions::multibranch_energy). The other loops do not depend on it.
-    bool simple_multibranch_rule = false;
-
-    [[nodiscard]] int stack(const std::size_t i, const std::size_t j, const std::size_t ci,
-                            const std::size_t cj, const std::string& sequence,
-                            const std::vector<std::string_view>& mod_sequence);
-    [[nodiscard]] int d5(const std::size_t i, const std::size_t j, const std::string& sequence,
-                         const std::vector<std::string_view>& mod_sequence,
-                         const bool is_closing = false);
-    [[nodiscard]] int d3(const std::size_t i, const std::size_t j, const std::string& sequence,
-                         const std::vector<std::string_view>& mod_sequence,
-                         const bool is_closing = false);
-    [[nodiscard]] int mismatch(const std::size_t i, const std::size_t j,
-                               const std::string& sequence,
-                               const std::vector<std::string_view>& mod_sequence,
-                               const bool is_external = false, const bool is_closing = false);
-    [[nodiscard]] int terminal(const std::size_t i, const std::size_t j,
-                               const std::string& sequence,
-                               const std::vector<std::string_view>& mod_sequence,
-                               const bool is_closing = false);
-    [[nodiscard]] int hairpin(const std::size_t i, const std::size_t j, const std::string& sequence,
-                              const std::vector<std::string_view>& mod_sequence, bool& is_inf);
-    [[nodiscard]] int internal(const std::size_t i, const std::size_t j, const std::size_t ci,
-                               const std::size_t cj, const std::string& sequence,
-                               const std::vector<std::string_view>& mod_sequence);
-    /// With RNAstructure's parameters: efn2's energy, or efn2 --simple's when
-    /// simple_multibranch_rule is set.
-    [[nodiscard]] int multibranch(const LoopNode& node, const ProcessedRNAEntry& pRNA);
-    [[nodiscard]] int external(const std::vector<LoopNode*>& children,
-                               const ProcessedRNAEntry& pRNA);
+    const PKFreeEnergyModel pk_free_energy_model_;
+    const PKEnergyModel pk_energy_model_;
 };
 
 }  // namespace knotergy

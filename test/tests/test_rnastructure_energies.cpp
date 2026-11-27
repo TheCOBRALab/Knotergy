@@ -11,6 +11,7 @@
 #include <RNAstructure/eval/internal.hpp>
 #include <RNAstructure/eval/loop_element.hpp>
 #include <RNAstructure/eval/multibranch.hpp>
+#include <energy/EnergyFunctions.hpp>
 #include <energy/modified_bases/ModBaseUtils.hpp>
 #include <energy/modified_bases/ModExternal.hpp>
 #include <energy/modified_bases/ModHairpin.hpp>
@@ -971,7 +972,7 @@ TEST(RNAstructureEnergies, UnknownSymbolsAreReported) {
     }
 }
 
-TEST(AllParams, HairpinFollowsTheLoadedParameters) {
+TEST(EnergyFunctions, HairpinFollowsTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -986,26 +987,26 @@ TEST(AllParams, HairpinFollowsTheLoadedParameters) {
     const std::vector<std::string_view>& mod_sequence = rna.get_modified_sequence();
     bool is_inf = false;
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
 
-    // ViennaRNA only
-    params.vienna_params_loaded = true;
-    EXPECT_EQ(params.hairpin(3, 8, sequence, mod_sequence, is_inf),
+    // ViennaRNA with unmodified input
+    EXPECT_EQ(vienna_energy.hairpin(3, 8, sequence, {}, is_inf),
               knotergy::ViennaFunctions::hairpin_energy(3, 8, sequence, is_inf, vp));
 
     // ViennaRNA with the JSON modified-base corrections
-    params.modified_params_loaded = true;
-    EXPECT_EQ(params.hairpin(3, 8, sequence, mod_sequence, is_inf),
+    EXPECT_EQ(vienna_energy.hairpin(3, 8, sequence, mod_sequence, is_inf),
               knotergy::ModHairpin::find_mod_hairpin_energy(3, 8, sequence, mod_sequence, vp, mp,
                                                             is_inf));
 
-    // RNAstructure, once its parameters are loaded
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(params.hairpin(3, 8, sequence, mod_sequence, is_inf), 410);
+    // RNAstructure selected explicitly
+    EXPECT_EQ(rs_energy.hairpin(3, 8, sequence, mod_sequence, is_inf), 410);
     EXPECT_FALSE(is_inf);
 }
 
-TEST(AllParams, InternalFollowsTheLoadedParameters) {
+TEST(EnergyFunctions, InternalFollowsTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -1020,28 +1021,25 @@ TEST(AllParams, InternalFollowsTheLoadedParameters) {
     const std::string& sequence = rna.get_sequence();
     const std::vector<std::string_view>& mod_sequence = rna.get_modified_sequence();
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
 
-    // Nothing loaded
-    EXPECT_EQ(params.internal(3, 16, 5, 14, sequence, mod_sequence), knotergy::NULL_ENERGY);
-
-    // ViennaRNA only
-    params.vienna_params_loaded = true;
-    EXPECT_EQ(params.internal(3, 16, 5, 14, sequence, mod_sequence),
+    // ViennaRNA with unmodified input
+    EXPECT_EQ(vienna_energy.internal(3, 16, 5, 14, sequence, {}),
               knotergy::ViennaFunctions::internal_loop_energy(3, 16, 5, 14, sequence, vp));
 
     // ViennaRNA with the JSON modified-base corrections
-    params.modified_params_loaded = true;
-    EXPECT_EQ(params.internal(3, 16, 5, 14, sequence, mod_sequence),
+    EXPECT_EQ(vienna_energy.internal(3, 16, 5, 14, sequence, mod_sequence),
               knotergy::ModInternal::find_mod_internal_energy(3, 16, 5, 14, mod_sequence, sequence,
                                                               vp, mp));
 
-    // RNAstructure, once its parameters are loaded
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(params.internal(3, 16, 5, 14, sequence, mod_sequence), 90);
+    // RNAstructure selected explicitly
+    EXPECT_EQ(rs_energy.internal(3, 16, 5, 14, sequence, mod_sequence), 90);
 }
 
-TEST(AllParams, DanglesFollowTheLoadedParameters) {
+TEST(EnergyFunctions, DanglesFollowTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -1065,53 +1063,50 @@ TEST(AllParams, DanglesFollowTheLoadedParameters) {
         knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(closed.get_sequence(), multiloop));
     const knotergy::all_mod_params no_mods;
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
-    const auto d5 = [&](const knotergy::ProcessedRNAEntry& entry, std::size_t i, std::size_t j,
-                        bool is_closing) {
-        return params.d5(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
+    const auto d5 = [&](knotergy::EnergyFunctions& energy, const knotergy::ProcessedRNAEntry& entry,
+                        std::size_t i, std::size_t j, bool is_closing) {
+        return energy.d5(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
     };
-    const auto d3 = [&](const knotergy::ProcessedRNAEntry& entry, std::size_t i, std::size_t j,
-                        bool is_closing) {
-        return params.d3(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
+    const auto d3 = [&](knotergy::EnergyFunctions& energy, const knotergy::ProcessedRNAEntry& entry,
+                        std::size_t i, std::size_t j, bool is_closing) {
+        return energy.d3(i, j, entry.get_sequence(), entry.get_modified_sequence(), is_closing);
     };
 
-    // Nothing loaded
-    EXPECT_EQ(d5(rna, 1, 12, false), knotergy::NULL_ENERGY);
-    EXPECT_EQ(d3(rna, 1, 12, false), knotergy::NULL_ENERGY);
-
-    // ViennaRNA only: its tables, as the modified-base code reads them when nothing is modified
-    params.vienna_params_loaded = true;
-    const int vienna_d5 = d5(rna, 1, 12, false);
-    const int vienna_d3 = d3(rna, 1, 12, false);
+    // ViennaRNA with unmodified input: its tables, as the modified-base code reads them when
+    // nothing is modified
+    const int vienna_d5 = d5(vienna_energy, plain_rna, 1, 12, false);
+    const int vienna_d3 = d3(vienna_energy, plain_rna, 1, 12, false);
     EXPECT_EQ(vienna_d5, knotergy::ModBaseUtils::get_dangle5_energy(1, 12, plain_rna, vp, no_mods));
     EXPECT_EQ(vienna_d3, knotergy::ModBaseUtils::get_dangle3_energy(1, 12, plain_rna, vp, no_mods));
-    EXPECT_EQ(d5(closed, 1, 32, true),
+    EXPECT_EQ(d5(vienna_energy, plain_closed, 1, 32, true),
               knotergy::ModBaseUtils::get_dangle5_energy(1, 32, plain_closed, vp, no_mods, true));
-    EXPECT_EQ(d3(closed, 1, 32, true),
+    EXPECT_EQ(d3(vienna_energy, plain_closed, 1, 32, true),
               knotergy::ModBaseUtils::get_dangle3_energy(1, 32, plain_closed, vp, no_mods, true));
 
     // ViennaRNA with the JSON modified-base parameters
-    params.modified_params_loaded = true;
-    EXPECT_EQ(d5(rna, 1, 12, false),
+    EXPECT_EQ(d5(vienna_energy, rna, 1, 12, false),
               knotergy::ModBaseUtils::get_dangle5_energy(1, 12, rna, vp, mp));
-    EXPECT_EQ(d3(rna, 1, 12, false),
+    EXPECT_EQ(d3(vienna_energy, rna, 1, 12, false),
               knotergy::ModBaseUtils::get_dangle3_energy(1, 12, rna, vp, mp));
-    EXPECT_EQ(d5(closed, 1, 32, true),
+    EXPECT_EQ(d5(vienna_energy, closed, 1, 32, true),
               knotergy::ModBaseUtils::get_dangle5_energy(1, 32, closed, vp, mp, true));
-    EXPECT_EQ(d3(closed, 1, 32, true),
+    EXPECT_EQ(d3(vienna_energy, closed, 1, 32, true),
               knotergy::ModBaseUtils::get_dangle3_energy(1, 32, closed, vp, mp, true));
-    EXPECT_NE(d5(rna, 1, 12, false), vienna_d5);
-    EXPECT_NE(d3(rna, 1, 12, false), vienna_d3);
+    EXPECT_NE(d5(vienna_energy, rna, 1, 12, false), vienna_d5);
+    EXPECT_NE(d3(vienna_energy, rna, 1, 12, false), vienna_d3);
 
-    // RNAstructure, once its parameters are loaded (efn2 -a m6A -w, see DanglesWithModifiedBases)
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(d5(rna, 1, 12, false), -90);
-    EXPECT_EQ(d3(rna, 1, 12, false), -100);
-    EXPECT_EQ(d5(closed, 1, 32, true), -90);
-    EXPECT_EQ(d3(closed, 1, 32, true), -100);
+    // RNAstructure selected explicitly (efn2 -a m6A -w, see DanglesWithModifiedBases)
+    EXPECT_EQ(d5(rs_energy, rna, 1, 12, false), -90);
+    EXPECT_EQ(d3(rs_energy, rna, 1, 12, false), -100);
+    EXPECT_EQ(d5(rs_energy, closed, 1, 32, true), -90);
+    EXPECT_EQ(d3(rs_energy, closed, 1, 32, true), -100);
 }
 
-TEST(AllParams, MismatchAndTerminalFollowTheLoadedParameters) {
+TEST(EnergyFunctions, MismatchAndTerminalFollowTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -1136,57 +1131,60 @@ TEST(AllParams, MismatchAndTerminalFollowTheLoadedParameters) {
         knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(closed.get_sequence(), multiloop));
     const knotergy::all_mod_params no_mods;
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
-    const auto mismatch = [&](const knotergy::ProcessedRNAEntry& entry, std::size_t i,
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
+    const auto mismatch = [&](knotergy::EnergyFunctions& energy,
+                              const knotergy::ProcessedRNAEntry& entry, std::size_t i,
                               std::size_t j, bool is_external, bool is_closing) {
-        return params.mismatch(i, j, entry.get_sequence(), entry.get_modified_sequence(),
+        return energy.mismatch(i, j, entry.get_sequence(), entry.get_modified_sequence(),
                                is_external, is_closing);
     };
-    const auto terminal = [&](bool is_closing) {
-        return params.terminal(1, 12, end.get_sequence(), end.get_modified_sequence(), is_closing);
+    const auto terminal = [&](knotergy::EnergyFunctions& energy, bool is_closing,
+                              bool modified = true) {
+        return energy.terminal(
+            1, 12, end.get_sequence(),
+            modified ? end.get_modified_sequence() : std::vector<std::string_view>{}, is_closing);
     };
 
-    // Nothing loaded
-    EXPECT_EQ(mismatch(rna, 1, 12, true, false), knotergy::NULL_ENERGY);
-    EXPECT_EQ(terminal(false), knotergy::NULL_ENERGY);
-
-    // ViennaRNA only: its tables, as the modified-base code reads them when nothing is modified
-    params.vienna_params_loaded = true;
-    const int vienna_mismatch = mismatch(rna, 1, 12, true, false);
+    // ViennaRNA with unmodified input: its tables, as the modified-base code reads them when
+    // nothing is modified
+    const int vienna_mismatch = mismatch(vienna_energy, plain_rna, 1, 12, true, false);
     EXPECT_EQ(vienna_mismatch,
               knotergy::ModBaseUtils::get_mismatch_energy(1, 12, plain_rna, vp, no_mods, true));
-    EXPECT_EQ(mismatch(rna, 1, 12, false, false),
+    EXPECT_EQ(mismatch(vienna_energy, plain_rna, 1, 12, false, false),
               knotergy::ModBaseUtils::get_mismatch_energy(1, 12, plain_rna, vp, no_mods, false));
     EXPECT_EQ(
-        mismatch(closed, 1, 32, false, true),
+        mismatch(vienna_energy, plain_closed, 1, 32, false, true),
         knotergy::ModBaseUtils::get_mismatch_energy(1, 32, plain_closed, vp, no_mods, false, true));
-    EXPECT_EQ(terminal(false), vp.p->TerminalAU);  // the unmodified pair is A-U
-    EXPECT_EQ(terminal(true), vp.p->TerminalAU);
+    EXPECT_EQ(terminal(vienna_energy, false, false),
+              vp.p->TerminalAU);  // the unmodified pair is A-U
+    EXPECT_EQ(terminal(vienna_energy, true, false), vp.p->TerminalAU);
 
     // ViennaRNA with the JSON modified-base parameters
-    params.modified_params_loaded = true;
-    EXPECT_EQ(mismatch(rna, 1, 12, true, false),
+    EXPECT_EQ(mismatch(vienna_energy, rna, 1, 12, true, false),
               knotergy::ModBaseUtils::get_mismatch_energy(1, 12, rna, vp, mp, true));
-    EXPECT_EQ(mismatch(rna, 1, 12, false, false),
+    EXPECT_EQ(mismatch(vienna_energy, rna, 1, 12, false, false),
               knotergy::ModBaseUtils::get_mismatch_energy(1, 12, rna, vp, mp, false));
-    EXPECT_EQ(mismatch(closed, 1, 32, false, true),
+    EXPECT_EQ(mismatch(vienna_energy, closed, 1, 32, false, true),
               knotergy::ModBaseUtils::get_mismatch_energy(1, 32, closed, vp, mp, false, true));
-    EXPECT_NE(mismatch(rna, 1, 12, true, false), vienna_mismatch);
-    EXPECT_EQ(terminal(false), 0);  // the JSON file has no penalty for the end of an m6A-U pair
-    EXPECT_EQ(terminal(true), 0);
+    EXPECT_NE(mismatch(vienna_energy, rna, 1, 12, true, false), vienna_mismatch);
+    EXPECT_EQ(terminal(vienna_energy, false),
+              0);  // the JSON file has no penalty for the end of an m6A-U pair
+    EXPECT_EQ(terminal(vienna_energy, true), 0);
 
-    // RNAstructure, once its parameters are loaded. efn2 -a m6A -w: Exterior loop = -1.8 with
+    // RNAstructure selected explicitly. efn2 -a m6A -w: Exterior loop = -1.8 with
     // the m6As and 0.0 with N; Multiloop = 5.7 and 7.5; Exterior loop = 0.0 for N6GACAAAAGUCUN.
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(mismatch(rna, 1, 12, true, false), -180);
-    EXPECT_EQ(mismatch(closed, 1, 32, false, true), -180);
-    EXPECT_EQ(terminal(false), 0);
+    EXPECT_EQ(mismatch(rs_energy, rna, 1, 12, true, false), -180);
+    EXPECT_EQ(mismatch(rs_energy, closed, 1, 32, false, true), -180);
+    EXPECT_EQ(terminal(rs_energy, false), 0);
     // Without m6A, the end of an A-U helix costs 0.5 (Exterior loop = 0.5 for AGACAAAAGUCU).
     const knotergy::ProcessedRNAEntry au = process("AGACAAAAGUCU", "((((....))))");
-    EXPECT_EQ(params.terminal(0, 11, au.get_sequence(), au.get_modified_sequence()), 50);
+    EXPECT_EQ(rs_energy.terminal(0, 11, au.get_sequence(), au.get_modified_sequence()), 50);
 }
 
-TEST(AllParams, MultibranchFollowsTheLoadedParameters) {
+TEST(EnergyFunctions, MultibranchFollowsTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -1207,28 +1205,25 @@ TEST(AllParams, MultibranchFollowsTheLoadedParameters) {
     knotergy::LoopFactory plain_factory(plain_rna);
     const knotergy::LoopNode& plain_loop = *plain_factory.get_node_table()[1];
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
 
-    // Nothing loaded
-    EXPECT_EQ(params.multibranch(loop, rna), knotergy::NULL_ENERGY);
-
-    // ViennaRNA only
-    params.vienna_params_loaded = true;
-    const int vienna = params.multibranch(loop, rna);
+    // ViennaRNA with unmodified input
+    const int vienna = vienna_energy.multibranch(plain_loop, plain_rna);
     EXPECT_EQ(vienna, knotergy::ViennaFunctions::multibranch_energy(plain_loop, plain_rna, vp));
 
     // ViennaRNA with the JSON modified-base corrections
-    params.modified_params_loaded = true;
-    EXPECT_EQ(params.multibranch(loop, rna),
+    EXPECT_EQ(vienna_energy.multibranch(loop, rna),
               knotergy::ModMultiloop::find_mod_multiloop_energy(loop, rna, vp, mp));
-    EXPECT_NE(params.multibranch(loop, rna), vienna);
+    EXPECT_NE(vienna_energy.multibranch(loop, rna), vienna);
 
-    // RNAstructure, once its parameters are loaded
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(params.multibranch(loop, rna), 220);
+    // RNAstructure selected explicitly
+    EXPECT_EQ(rs_energy.multibranch(loop, rna), 220);
 }
 
-TEST(AllParams, ExternalFollowsTheLoadedParameters) {
+TEST(EnergyFunctions, ExternalFollowsTheSelectedModel) {
     knotergy::vrna_md_param vp = knotergy::ViennaParams::load_energy_parameters(turner_file, 2);
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
@@ -1248,32 +1243,28 @@ TEST(AllParams, ExternalFollowsTheLoadedParameters) {
         knotergy::RNAProcessor::process_rna(knotergy::RNAEntry(rna.get_sequence(), structure));
     knotergy::LoopFactory plain_factory(plain_rna);
 
-    knotergy::AllParams params(mp, pkp, vp, rsp);
+    knotergy::AllParams vienna_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::ViennaRNA2);
+    knotergy::AllParams rs_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+    knotergy::EnergyFunctions vienna_energy(vienna_params);
+    knotergy::EnergyFunctions rs_energy(rs_params);
 
-    // Nothing loaded
-    EXPECT_EQ(params.external(children, rna), knotergy::NULL_ENERGY);
-
-    // ViennaRNA only
-    params.vienna_params_loaded = true;
-    const int vienna = params.external(children, rna);
+    // ViennaRNA with unmodified input
+    const int vienna = vienna_energy.external(plain_factory.get_root_node().children, plain_rna);
     EXPECT_EQ(vienna, knotergy::ViennaFunctions::external_energy(
                           plain_factory.get_root_node().children, plain_rna, vp));
 
     // ViennaRNA with the JSON modified-base corrections
-    params.modified_params_loaded = true;
-    EXPECT_EQ(params.external(children, rna),
+    EXPECT_EQ(vienna_energy.external(children, rna),
               knotergy::ModExternal::find_mod_external_energy(children, rna, vp, mp));
-    EXPECT_NE(params.external(children, rna), vienna);
+    EXPECT_NE(vienna_energy.external(children, rna), vienna);
 
-    // RNAstructure, once its parameters are loaded
-    params.rnastructure_params_loaded = true;
-    EXPECT_EQ(params.external(children, rna), -180);
+    // RNAstructure selected explicitly
+    EXPECT_EQ(rs_energy.external(children, rna), -180);
 }
 
-// efn2 --simple: AllParams passes the simple multibranch rule on when simple_multibranch_rule is
-// set. The dangle model of the ViennaRNA parameters changes nothing with RNAstructure's: the
-// energies are efn2's under every one of them.
-TEST(AllParams, SimpleMultibranchRuleWithRNAstructureParameters) {
+// efn2 --simple: select the simple multibranch rule via the model enum.
+// ViennaRNA dangle settings do not change RNAstructure energies.
+TEST(EnergyFunctions, SimpleMultibranchRuleWithRNAstructureParameters) {
     const knotergy::pk_param pkp =
         knotergy::PseudoknotParams::load_pk_param(pkp_file, knotergy::RoundMethod::None);
     const knotergy::all_mod_params mp{};
@@ -1293,20 +1284,14 @@ TEST(AllParams, SimpleMultibranchRuleWithRNAstructureParameters) {
     for (const int dangles : {0, 1, 2, 3}) {
         knotergy::vrna_md_param vp =
             knotergy::ViennaParams::load_energy_parameters(turner_file, dangles);
-        knotergy::AllParams params(mp, pkp, vp, rsp);
-        params.vienna_params_loaded = true;
-        params.rnastructure_params_loaded = true;
-        EXPECT_EQ(params.multibranch(loop, junction), 820) << dangles;
-        EXPECT_EQ(params.external(children, helices), -370) << dangles;
-
-        params.simple_multibranch_rule = true;
-        EXPECT_EQ(params.multibranch(loop, junction), 510) << dangles;
-        EXPECT_EQ(params.external(children, helices), -370) << dangles;
-
-        // Without RNAstructure's parameters the setting does nothing.
-        params.rnastructure_params_loaded = false;
-        const int vienna = params.multibranch(loop, junction);
-        params.simple_multibranch_rule = false;
-        EXPECT_EQ(params.multibranch(loop, junction), vienna) << dangles;
+        knotergy::AllParams normal_params(mp, pkp, vp, rsp, knotergy::PKFreeEnergyModel::efn2);
+        knotergy::AllParams simple_params(mp, pkp, vp, rsp,
+                                          knotergy::PKFreeEnergyModel::enf2Simple);
+        knotergy::EnergyFunctions normal(normal_params);
+        knotergy::EnergyFunctions simple(simple_params);
+        EXPECT_EQ(normal.multibranch(loop, junction), 820) << dangles;
+        EXPECT_EQ(normal.external(children, helices), -370) << dangles;
+        EXPECT_EQ(simple.multibranch(loop, junction), 510) << dangles;
+        EXPECT_EQ(simple.external(children, helices), -370) << dangles;
     }
 }
